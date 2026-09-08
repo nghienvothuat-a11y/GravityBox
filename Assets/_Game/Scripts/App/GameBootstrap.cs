@@ -29,6 +29,7 @@ namespace GravityBox.App
             var hud = new GameObject("HUD").AddComponent<GameHud>();
             hud.transform.SetParent(transform, false);
             hud.Initialize(Levels);
+            GameplayCamera.GetComponent<CameraRig>()?.Initialize(Levels);
             var input = new GameObject("Rotation Input").AddComponent<RotationInputController>();
             input.transform.SetParent(transform, false);
             input.Initialize(Levels, GameplayCamera, hud);

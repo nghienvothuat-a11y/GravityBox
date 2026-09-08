@@ -66,7 +66,7 @@ namespace GravityBox.Presentation
             environmentDot = Panel("Signal", badge, Accent, 24, 26, 12, 12).GetComponent<Image>();
             environment = Label("Environment", badge, "GRAVITY", 24, Accent, 53, 12, 250, 43);
             title = Label("Puzzle name", safe, "First principles", 51, Ink, 60, 361, 940, 76);
-            state = Label("Status", safe, "ROTATE THE WORLD. FIND THE EXIT.", 21, Muted, 62, 446, 945, 40);
+            state = Label("Status", safe, "ROLL THROUGH THE GREEN OPENING.", 21, Muted, 62, 446, 945, 40);
 
             var bottom = Rect("Controls", safe, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 410), new Vector2(0, 410));
             bottom.pivot = new Vector2(0.5f, 1);
@@ -175,11 +175,11 @@ namespace GravityBox.Presentation
 
         private void OnStateChanged(SessionState session)
         {
-            state.text = session == SessionState.Completing ? "LOCKED IN. BEAUTIFULLY DONE."
+            state.text = session == SessionState.Completing ? "BALL ESCAPED. WELL PLAYED."
                 : session == SessionState.Failed ? "TRY A DIFFERENT ANGLE. RESETTING…"
                 : session == SessionState.Paused ? "SIMULATION PAUSED"
                 : session == SessionState.Finished ? "ALL EXPERIMENTS COMPLETE"
-                : "ROTATE THE WORLD. FIND THE EXIT.";
+                : "ROLL THROUGH THE GREEN OPENING.";
             state.color = session == SessionState.Completing ? Accent : Muted;
             pauseOverlay.SetActive(session == SessionState.Paused && !ModalOpen);
             finishOverlay.SetActive(session == SessionState.Finished);

@@ -28,6 +28,11 @@ namespace GravityBox.Editor
                 foreach (PressurePlate plate in level.Prefab.GetComponentsInChildren<PressurePlate>(true)) channels.Add(plate.Channel);
                 foreach (SignalDoor door in level.Prefab.GetComponentsInChildren<SignalDoor>(true))
                     Require(door.Blocker != null && channels.Contains(door.Channel), level.Id + ": door missing blocker or plate channel.");
+                var outlet = level.Prefab.Exit;
+                Require(outlet.ApertureHalfSize.x > catalog.BallProfile.Radius + 0.05f &&
+                    outlet.ApertureHalfSize.y > catalog.BallProfile.Radius + 0.05f, level.Id + ": aperture too narrow for ball.");
+                Vector3 escaped = outlet.transform.position + outlet.transform.forward * (outlet.WallHalfDepth + catalog.BallProfile.Radius + 0.03f);
+                Require(!level.Prefab.IsOutside(escaped), level.Id + ": escape threshold must precede failure bounds.");
                 string required = level.Prefab.Exit.RequiredChannel;
                 Require(string.IsNullOrEmpty(required) || channels.Contains(required), level.Id + ": exit requires an unknown channel.");
                 ValidateSpawn(level, catalog.BallProfile.Radius);
@@ -53,6 +58,14 @@ namespace GravityBox.Editor
                     bool overlap = UnityEngine.Physics.ComputePenetration(sphere, spawn, Quaternion.identity, solid,
                         solid.transform.position, solid.transform.rotation, out _, out float depth);
                     Require(!overlap || depth < 0.005f, definition.Id + ": spawn overlaps " + solid.name);
+                    if (solid.GetComponentInParent<SignalDoor>() != null) continue;
+                    for (int sample = 0; sample <= 6; sample++)
+                    {
+                        Vector3 point = level.Exit.transform.TransformPoint(new Vector3(0, 0, Mathf.Lerp(-0.3f, 0.3f, sample / 6f)));
+                        bool blocked = UnityEngine.Physics.ComputePenetration(sphere, point, Quaternion.identity, solid,
+                            solid.transform.position, solid.transform.rotation, out _, out float obstruction);
+                        Require(!blocked || obstruction < 0.005f, definition.Id + ": aperture obstructed by " + solid.name);
+                    }
                 }
             }
             finally { EditorSceneManager.ClosePreviewScene(preview); }

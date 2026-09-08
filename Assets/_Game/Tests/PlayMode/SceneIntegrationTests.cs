@@ -26,8 +26,20 @@ namespace GravityBox.Tests
             {
                 Assert.That(levels.Index, Is.EqualTo(i));
                 foreach (var plate in levels.Current.Plates) plate.SetActive(true);
-                Assert.That(levels.Current.Exit.TryCapture(levels.Ball), Is.True);
-                yield return new WaitForSeconds(levels.Catalog.CompletionDelay + 0.05f);
+                var outlet = levels.Current.Exit;
+                levels.Ball.Body.position = outlet.transform.TransformPoint(new Vector3(0, 0, -0.7f));
+                levels.Ball.Body.linearVelocity = outlet.transform.forward * 6;
+                UnityEngine.Physics.SyncTransforms();
+                outlet.BeginTracking();
+                float deadline = Time.unscaledTime + 2;
+                while (!outlet.HasExited && Time.unscaledTime < deadline) yield return null;
+                Assert.That(outlet.HasExited, Is.True, levels.Definition.Id);
+                Assert.That(levels.Ball.Body.isKinematic, Is.False);
+                Vector3 escapedAt = levels.Ball.Body.position;
+                yield return new WaitForSecondsRealtime(0.3f);
+                Assert.That(levels.Index, Is.EqualTo(i), "Keep the escape visible before advancing.");
+                Assert.That(Vector3.Distance(escapedAt, levels.Ball.Body.position), Is.GreaterThan(0.1f));
+                yield return new WaitForSecondsRealtime(levels.Catalog.CompletionDelay);
             }
             Assert.That(levels.Session.State, Is.EqualTo(SessionState.Finished));
             levels.Load(0);

@@ -40,6 +40,7 @@ namespace GravityBox.Gameplay
             Signals.Clear();
             Resets.RestoreAll();
             UnityEngine.Physics.SyncTransforms();
+            Exit.BeginTracking();
         }
 
         public bool IsOutside(Vector3 worldPosition)

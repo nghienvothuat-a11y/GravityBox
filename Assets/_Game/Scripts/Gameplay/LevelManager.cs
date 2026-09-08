@@ -50,7 +50,7 @@ namespace GravityBox.Gameplay
             Ball.Configure(catalog.BallProfile, Current.transform.TransformDirection(level.InitialLocalVelocity), level.Environment.IsZeroGravity);
             forces.Configure(Ball, level.Environment);
             Current.Initialize(Ball, catalog.Rotation, level.RotationMode);
-            Current.Exit.Captured += Complete;
+            Current.Exit.Exited += Complete;
             foreach (KillVolume hazard in Current.Hazards) hazard.Hit += Fail;
             ResetCount = 0;
             DragCount = 0;
@@ -80,11 +80,11 @@ namespace GravityBox.Gameplay
             DragDistance += distance;
         }
 
-        public void Complete()
+        private void Complete()
         {
             if (!Session.TryComplete()) return;
             GameplayEvent?.Invoke("level_complete");
-            transitionAt = Time.time + catalog.CompletionDelay;
+            transitionAt = Time.unscaledTime + catalog.CompletionDelay;
         }
 
         public void Fail()
@@ -92,7 +92,7 @@ namespace GravityBox.Gameplay
             if (!Session.TryFail()) return;
             Ball.Capture(Ball.Body.position);
             GameplayEvent?.Invoke("level_fail");
-            transitionAt = Time.time + catalog.FailureDelay;
+            transitionAt = Time.unscaledTime + catalog.FailureDelay;
         }
 
         public void Next()
@@ -101,6 +101,7 @@ namespace GravityBox.Gameplay
             else
             {
                 transitionAt = float.PositiveInfinity;
+                Ball.Capture(Ball.Body.position);
                 Session.Finish();
                 GameplayEvent?.Invoke("catalog_complete");
             }
@@ -111,8 +112,12 @@ namespace GravityBox.Gameplay
         private void Update()
         {
             if (Current == null) return;
-            if (Session.State == SessionState.Active && Current.IsOutside(Ball.Body.position)) Fail();
-            if (Time.time < transitionAt) return;
+            if (Session.State == SessionState.Active)
+            {
+                Current.Exit.EvaluateTraversal();
+                if (!Current.Exit.HasExited && Current.IsOutside(Ball.Body.position)) Fail();
+            }
+            if (Time.unscaledTime < transitionAt) return;
             transitionAt = float.PositiveInfinity;
             if (Session.State == SessionState.Completing) Next();
             else if (Session.State == SessionState.Failed) ResetLevel();
@@ -125,7 +130,7 @@ namespace GravityBox.Gameplay
                 Current.Rotation.InputEnabled = state == SessionState.Active;
                 Current.Exit.Accepting = state == SessionState.Active;
             }
-            Time.timeScale = state == SessionState.Paused ? 0 : 1;
+            Time.timeScale = state == SessionState.Paused ? 0 : state == SessionState.Completing ? 0.35f : 1;
         }
 
         private void CleanupLevel()
@@ -133,7 +138,7 @@ namespace GravityBox.Gameplay
             forces.Clear();
             if (Current != null)
             {
-                Current.Exit.Captured -= Complete;
+                Current.Exit.Exited -= Complete;
                 foreach (KillVolume hazard in Current.Hazards) hazard.Hit -= Fail;
                 Current.gameObject.SetActive(false);
                 Destroy(Current.gameObject);

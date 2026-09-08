@@ -15,7 +15,7 @@ Không triển khai magnetism, water, acid, wind, backend, tài khoản hay mone
 - Một scene Gameplay lâu dài, mỗi puzzle là LevelPrefab được tham chiếu bởi LevelDefinition. GameBootstrap là composition root.
 - Ball là Rigidbody độc lập trong world space. LevelRoot là kinematic compound body và xoay bằng MoveRotation trong FixedUpdate. Không parent Ball vào LevelRoot.
 - Force providers trả acceleration trong world space. Physics.gravity = zero, lực gravity áp riêng mỗi fixed tick. Zero-G không xoay velocity theo hộp.
-- Reset có thứ tự và theo scope từng màn; không reload scene. Reset xóa transition đang chờ, trạng thái signal, pose, vận tốc, cooldown, capture, trail và collision-ignore.
+- Reset có thứ tự và theo scope từng màn; không reload scene. Reset xóa transition đang chờ, trạng thái signal, pose, vận tốc, cooldown, quá trình đi qua cửa, trail và collision-ignore.
 - asmdef thực thi hướng phụ thuộc. Không dùng static service locator, global event bus hoặc DI framework nặng.
 
 Chi tiết: [ARCHITECTURE.md](ARCHITECTURE.md) và [DECISIONS.md](DECISIONS.md).
@@ -26,7 +26,7 @@ Chi tiết: [ARCHITECTURE.md](ARCHITECTURE.md) và [DECISIONS.md](DECISIONS.md).
 | --- | --- | --- | --- |
 | M0 | Project, packages, asmdef, settings, Git hygiene, docs | Import sạch, project mở được | 0.5 ngày |
 | M1 | Camera, shell, touch/mouse, free/assisted/90°, sensitivity | Drag rõ ràng, không nhảy khi chạm UI, release ổn định | 1–2 ngày |
-| M2 | Ball, gravity provider, ramp, exit capture | Contact ổn định; gravity world-down; không steering ball | 1–2 ngày |
+| M2 | Ball, gravity provider, ramp, cửa thật và xác nhận bi thoát hẳn | Contact ổn định; gravity world-down; không steering ball | 1–2 ngày |
 | M3 | State machine, reset registry, fail/bounds | 100 reset không drift; terminal event chỉ một lần | 1 ngày |
 | M4 | Catalog/definition/prefab, lifecycle load/next, authoring | Load đúng profile/prefab, listener không nhân đôi | 1 ngày |
 | M5 | Plate-door signal, one-way, spring, impulse | Từng cơ cấu hoạt động và reset trong lúc chuyển động | 2–3 ngày |
@@ -99,3 +99,7 @@ Rủi ro lớn nhất là xoay compound body gây contact bùng lực. Biện ph
 16 level prefab không chứng minh 16 puzzle đã cân bằng. Cần lưu solve route có input/timing và đánh dấu từng màn đã kiểm chứng, rồi playtest tránh lối giải random spin. Màn có plate cần exit prerequisite để không bỏ qua trình tự bằng cách quay hộp.
 
 Build Android/iOS phụ thuộc module, SDK, signing và phần cứng. Giữ build script tái lập được; báo rõ build nào đã compile, build nào đã cài/chạy, và phép đo nào chưa thực hiện.
+
+## Thay đổi yêu cầu ngày 08/09/2026: bi phải thoát ra ngoài
+
+Yêu cầu trực tiếp của người dùng thay thế capture trong GDD gốc. Tiêu chí nghiệm thu: vỏ có lỗ thật, bi đi xuyên bằng Rigidbody, chưa thắng khi còn chồng mép cửa, chỉ thắng từ phía trong ra, không teleport/hút bi, và thấy chuyển động ngoài hộp trước khi đổi màn. Màn có prerequisite phải khóa cả vật lý lẫn điều kiện thắng. Reset phải xóa quá trình đi qua cửa và hủy chuyển màn đang chờ. Kiểm tra lại toàn bộ 16 đường giải sau khi sửa geometry.

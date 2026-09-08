@@ -66,7 +66,7 @@ stateDiagram-v2
     Loading --> Active: load complete
     Active --> Paused: pause
     Paused --> Active: resume
-    Active --> Completing: exit accepts ball
+    Active --> Completing: entire ball clears aperture outward
     Active --> Failed: hazard or bounds
     Completing --> Loading: next after payoff
     Completing --> Finished: last level
@@ -77,16 +77,16 @@ stateDiagram-v2
     Finished --> Loading: play again
 ```
 
-TryComplete/TryFail chỉ chuyển từ Active, không phát lặp khi nhiều trigger báo cùng tick. Capture khóa rigidbody và input. Reset hủy thời điểm chuyển màn đang chờ trước khi khôi phục; không dùng coroutine chuyển màn khó hủy. Pause đóng băng physics, giữ UI bằng unscaled time. Focus/touch cancel kết thúc drag.
+TryComplete/TryFail chỉ chuyển từ Active. ExitSocket theo dõi chuyển động từ trong qua cửa thật; chỉ phát Exited khi toàn bộ bi vượt mép ngoài. Khi thắng, chỉ khóa input xoay, giữ ball dynamic và vận tốc thực trong 1,8 giây thực với slow motion 0,35; camera giữ cả bi và hộp trong khung. Capture chỉ dùng để giữ bi khi fail hoặc sau phần quan sát của màn cuối. Reset hủy thời điểm chuyển màn đang chờ trước khi khôi phục; không dùng coroutine chuyển màn khó hủy. Pause đóng băng physics, giữ UI bằng unscaled time. Focus/touch cancel kết thúc drag.
 
 ## Reset contract
 
 1. Time scale trở lại 1 và transition timer bị hủy.
 2. Xóa signal state theo scope màn.
 3. Khôi phục root pose và xóa rotation backlog.
-4. Khôi phục plate, door, gate, pad, exit theo registry; bao gồm IgnoreCollision/cooldown/capture state.
+4. Khôi phục plate, door, gate, pad, exit theo registry; bao gồm IgnoreCollision/cooldown/exit traversal state.
 5. Khôi phục world pose, launch velocity và angular velocity của ball; clear trail và wake.
-6. Physics.SyncTransforms; session chuyển Active.
+6. Physics.SyncTransforms; Exit.BeginTracking lấy lại mẫu từ pose đã reset; session chuyển Active.
 
 InitialLocalVelocity của zero-G là chủ ý thiết kế, vì vậy reset màn có launch velocity phải khôi phục vận tốc ấy, không ép zero. CaptureInitialState chỉ chạy khi đăng ký một lần lúc load. Reset không capture lại trạng thái đã bị biến đổi. PhysX không hứa deterministic bit-for-bit giữa nền tảng; test dùng sai số cho tích phân, còn trạng thái reset được kiểm tra tường minh.
 
@@ -94,7 +94,7 @@ InitialLocalVelocity của zero-G là chủ ý thiết kế, vì vậy reset mà
 
 LevelCatalog giữ danh sách có thứ tự, shared ball prefab/profile, rotation config và timing. LevelDefinition chứa stable ID, display index/name, profile, prefab, hint, rotation override, launch velocity và solution note. Index phục vụ thứ tự prototype; stable ID dành cho save/analytics về sau. Runtime không mutate ScriptableObject.
 
-Mỗi prefab level có BallSpawn, Exit, Geometry, Mechanisms, Shell và root Rigidbody. Prefab cơ cấu dùng component chung; kênh string nối plate-door trong instance bus, exit có thể yêu cầu channel. Cùng tên channel ở hai prefab không chia sẻ trạng thái. Editor validator phải bắt reference null, ID trùng, spawn chồng collider, trigger chưa gán và catalog sai thứ tự.
+Mỗi prefab level có BallSpawn, Exit, Geometry, Mechanisms, Shell và root Rigidbody. Prefab cơ cấu dùng component chung; kênh string nối plate-door trong instance bus, exit có thể yêu cầu channel. Cùng tên channel ở hai prefab không chia sẻ trạng thái. Editor validator bắt reference null, ID trùng, spawn chồng collider, kênh cơ cấu sai, cửa quá hẹp, tâm cửa bị solid chặn và ngưỡng thoát vượt failure bounds. Cửa có trục +Z hướng ra ngoài; hình học vỏ/viền và detector phải dùng cùng ApertureHalfSize, WallHalfDepth.
 
 Nguồn tạo baseline là Editor/PrototypeBuilder; prefab và ScriptableObject được commit để project chạy không cần generator. Generator chỉ chạy theo menu/CLI tường minh và cập nhật đúng thư mục generated. Khi designer chỉnh tay, tạo prefab/definition riêng ngoài baseline hoặc dùng variant; không chạy regenerate lên dữ liệu đã chỉnh mà chưa backup/version control.
 

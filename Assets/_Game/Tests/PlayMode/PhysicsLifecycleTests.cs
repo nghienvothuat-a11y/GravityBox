@@ -60,6 +60,7 @@ namespace GravityBox.Tests
                 foreach (OneWayGate gate in levels.Current.GetComponentsInChildren<OneWayGate>()) gate.Step();
                 forces.Step();
                 UnityEngine.Physics.Simulate(Dt);
+                levels.Current.Exit.EvaluateTraversal();
             }
         }
 
@@ -141,33 +142,111 @@ namespace GravityBox.Tests
             Assert.That(levels.Ball.Body.linearVelocity, Is.EqualTo(levels.Definition.InitialLocalVelocity));
         }
 
-        [Test]
-        public void ExitTrigger_CapturesExactlyOnceAndLocksInput()
+        private void PlaceAtExit(Vector3 localPosition, bool begin = false)
         {
-            int count = 0;
-            levels.GameplayEvent += e => { if (e == "level_complete") count++; };
-            levels.Ball.Body.position = levels.Current.Exit.transform.position;
-            UnityEngine.Physics.SyncTransforms(); Steps(3);
-            Assert.That(count, Is.EqualTo(1));
-            Assert.That(levels.Ball.IsCaptured, Is.True);
-            Assert.That(levels.Ball.Body.isKinematic, Is.True);
-            Assert.That(levels.Current.Rotation.InputEnabled, Is.False);
-            Assert.That(levels.Session.State, Is.EqualTo(SessionState.Completing));
-            levels.ResetLevel();
-            Assert.That(levels.Ball.IsCaptured, Is.False);
-            Assert.That(levels.Current.Exit.HasCaptured, Is.False);
+            levels.Ball.Body.position = levels.Current.Exit.transform.TransformPoint(localPosition);
+            UnityEngine.Physics.SyncTransforms();
+            if (begin) levels.Current.Exit.BeginTracking();
+            else levels.Current.Exit.EvaluateTraversal();
+        }
+
+        private void LaunchThroughExit()
+        {
+            PlaceAtExit(new Vector3(0, 0, -0.7f), true);
+            levels.Ball.Body.linearVelocity = levels.Current.Exit.transform.forward * 6;
+            Steps(18);
         }
 
         [Test]
-        public void PlateDoorPrerequisite_PreventsBypassingSequence()
+        public void Exit_RequiresWholeBallOutsideThenKeepsMomentumAndEmitsOnce()
+        {
+            Load(10);
+            int count = 0;
+            levels.GameplayEvent += e => { if (e == "level_complete") count++; };
+            PlaceAtExit(new Vector3(0, 0, -0.7f), true);
+            PlaceAtExit(Vector3.zero);
+            Assert.That(levels.Session.State, Is.EqualTo(SessionState.Active), "Touching the opening is not victory.");
+            float clear = levels.Current.Exit.WallHalfDepth + levels.Ball.Profile.Radius;
+            PlaceAtExit(new Vector3(0, 0, clear - 0.01f));
+            Assert.That(count, Is.Zero, "The rear of the sphere still overlaps the outlet.");
+            levels.Ball.Body.linearVelocity = levels.Current.Exit.transform.forward * 2;
+            Vector3 velocity = levels.Ball.Body.linearVelocity;
+            PlaceAtExit(new Vector3(0, 0, clear + 0.03f));
+            Vector3 position = levels.Ball.Body.position;
+            Assert.That(count, Is.EqualTo(1));
+            Assert.That(levels.Ball.IsCaptured, Is.False);
+            Assert.That(levels.Ball.Body.isKinematic, Is.False);
+            Assert.That(levels.Ball.Body.linearVelocity, Is.EqualTo(velocity));
+            Assert.That(levels.Current.Rotation.InputEnabled, Is.False);
+            Assert.That(levels.Session.State, Is.EqualTo(SessionState.Completing));
+            Steps(6);
+            Assert.That(Vector3.Distance(position, levels.Ball.Body.position), Is.GreaterThan(0.15f));
+            Assert.That(count, Is.EqualTo(1));
+            levels.ResetLevel();
+            Assert.That(levels.Current.Exit.HasExited, Is.False);
+            Assert.That(Time.timeScale, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Exit_RejectsOutsideInwardTravelAndMissedAperture()
+        {
+            Load(10);
+            PlaceAtExit(new Vector3(0, 0, 1), true);
+            PlaceAtExit(Vector3.zero);
+            PlaceAtExit(new Vector3(0, 0, 1));
+            Assert.That(levels.Current.Exit.HasExited, Is.False, "Must first approach from inside.");
+            levels.ResetLevel();
+            PlaceAtExit(new Vector3(1.2f, 0, -1), true);
+            PlaceAtExit(new Vector3(1.2f, 0, 1));
+            Assert.That(levels.Current.Exit.HasExited, Is.False, "Crossing the wall elsewhere is not a win.");
+        }
+
+        [Test]
+        public void Exit_SweptCheckDetectsOneStepTraversalAndResetClearsPartialPassage()
+        {
+            Load(10);
+            PlaceAtExit(new Vector3(0, 0, -1), true);
+            PlaceAtExit(new Vector3(0, 0, 1));
+            Assert.That(levels.Current.Exit.HasExited, Is.True);
+            levels.ResetLevel();
+            PlaceAtExit(new Vector3(0, 0, -1), true);
+            PlaceAtExit(Vector3.zero);
+            levels.ResetLevel();
+            PlaceAtExit(Vector3.zero, true);
+            PlaceAtExit(new Vector3(0, 0, 1));
+            Assert.That(levels.Current.Exit.HasExited, Is.False, "Reset cannot retain the old passage.");
+        }
+
+        [Test]
+        public void EveryLevel_HasPhysicalApertureBallCanPassWithoutTeleporting()
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                Load(i);
+                foreach (var plate in levels.Current.Plates) plate.SetActive(true);
+                LaunchThroughExit();
+                Assert.That(levels.Current.Exit.HasExited, Is.True, levels.Definition.Id);
+                Assert.That(levels.Ball.Body.isKinematic, Is.False, levels.Definition.Id);
+                Vector3 local = levels.Current.Exit.transform.InverseTransformPoint(levels.Ball.Body.position);
+                Assert.That(local.z, Is.GreaterThan(levels.Current.Exit.WallHalfDepth + levels.Ball.Profile.Radius));
+            }
+        }
+
+        [Test]
+        public void PlateDoorPrerequisite_BlocksPhysicalExitUntilSwitchIsPressed()
         {
             Load(5);
-            Assert.That(levels.Current.Exit.TryCapture(levels.Ball), Is.False);
+            Assert.That(levels.Current.Exit.IsUnlocked, Is.False);
+            LaunchThroughExit();
+            Assert.That(levels.Current.Exit.HasExited, Is.False);
+            Assert.That(levels.Current.Exit.transform.InverseTransformPoint(levels.Ball.Body.position).z, Is.LessThan(0));
+            levels.ResetLevel();
             levels.Ball.Body.position = levels.Current.Plates[0].transform.position;
             UnityEngine.Physics.SyncTransforms(); Steps(1);
             Assert.That(levels.Current.Plates[0].IsActive, Is.True);
-            Assert.That(levels.Current.GetComponentInChildren<SignalDoor>().Blocker.enabled, Is.False);
-            Assert.That(levels.Current.Exit.TryCapture(levels.Ball), Is.True);
+            Assert.That(levels.Current.Exit.IsUnlocked, Is.True);
+            LaunchThroughExit();
+            Assert.That(levels.Current.Exit.HasExited, Is.True);
         }
 
         [Test]
@@ -229,9 +308,10 @@ namespace GravityBox.Tests
         public IEnumerator ResetDuringCompletion_CancelsPendingAdvance()
         {
             levels.enabled = true;
-            levels.Current.Exit.TryCapture(levels.Ball);
+            LaunchThroughExit();
+            Assert.That(levels.Current.Exit.HasExited, Is.True);
             levels.ResetLevel();
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSecondsRealtime(levels.Catalog.CompletionDelay + 0.1f);
             Assert.That(levels.Index, Is.Zero);
             Assert.That(levels.Session.State, Is.EqualTo(SessionState.Active));
         }
@@ -315,6 +395,7 @@ namespace GravityBox.Tests
                     foreach (OneWayGate gate in gates) gate.Step();
                     forces.Step();
                     UnityEngine.Physics.Simulate(Dt);
+                    levels.Current.Exit.EvaluateTraversal();
                     actual.ticks++;
                     if (levels.Session.State == SessionState.Completing) return true;
                     if (levels.Session.State == SessionState.Failed || levels.Current.IsOutside(levels.Ball.Body.position)) return false;

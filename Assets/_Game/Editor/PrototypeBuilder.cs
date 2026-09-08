@@ -56,6 +56,7 @@ namespace GravityBox.Editor
             var catalog = Asset<LevelCatalog>(CatalogPath);
             catalog.BallProfile = physics;
             catalog.Rotation = rotation;
+            catalog.CompletionDelay = 1.8f;
             catalog.BallPrefab = BuildBall();
             AddBallReadability();
             catalog.Levels = new LevelDefinition[16];
@@ -263,7 +264,7 @@ namespace GravityBox.Editor
             AssetDatabase.SaveAssets();
         }
 
-        private static void BuildShell(Transform root)
+        private static void BuildShell(Transform root, ExitSocket outlet)
         {
             Transform group = Node("GlassShell", root, Vector3.zero).transform;
             Vector3[] sizes = { new Vector3(0.18f, 6.1f, 6.1f), new Vector3(6.1f, 0.18f, 6.1f), new Vector3(6.1f, 6.1f, 0.18f) };
@@ -272,8 +273,25 @@ namespace GravityBox.Editor
                 for (int sign = -1; sign <= 1; sign += 2)
                 {
                     Vector3 p = Vector3.zero; p[axis] = sign * 3f;
-                    GameObject wall = Cube("Acrylic wall", group, p, sizes[axis], shell);
-                    wall.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+                    Vector3 normal = Vector3.zero; normal[axis] = sign;
+                    if (Vector3.Dot(outlet.transform.forward, normal) > 0.99f)
+                    {
+                        // Four separate solids leave a real square aperture through this face.
+                        Transform face = Node("Acrylic wall with opening", group, p).transform;
+                        face.rotation = outlet.transform.rotation;
+                        Vector3 center = face.InverseTransformPoint(outlet.transform.position);
+                        Vector2 half = outlet.ApertureHalfSize;
+                        const float extent = 3.05f;
+                        WallPanel(face, "Left of opening", -extent, center.x - half.x, -extent, extent);
+                        WallPanel(face, "Right of opening", center.x + half.x, extent, -extent, extent);
+                        WallPanel(face, "Below opening", center.x - half.x, center.x + half.x, -extent, center.y - half.y);
+                        WallPanel(face, "Above opening", center.x - half.x, center.x + half.x, center.y + half.y, extent);
+                    }
+                    else
+                    {
+                        GameObject wall = Cube("Acrylic wall", group, p, sizes[axis], shell);
+                        wall.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+                    }
                 }
                 for (int a = -1; a <= 1; a += 2)
                     for (int b = -1; b <= 1; b += 2)
@@ -298,22 +316,82 @@ namespace GravityBox.Editor
             Cube("Front edge inlay", platform.transform, new Vector3(0, 0.12f, -2.88f), new Vector3(width, 0.045f, 0.035f), blue, false);
         }
 
+        private static void WallPanel(Transform face, string name, float left, float right, float bottom, float top)
+        {
+            GameObject panel = Cube(name, face, new Vector3((left + right) / 2, (bottom + top) / 2, 0),
+                new Vector3(right - left, top - bottom, 0.18f), shell);
+            panel.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+        }
+
         private static ExitSocket Exit(Transform parent, Vector2 position, string required = "")
         {
-            var go = Node("Exit socket", parent, new Vector3(position.x, position.y, 0));
-            var trigger = go.AddComponent<BoxCollider>();
-            trigger.size = new Vector3(0.92f, 0.92f, 5.7f); trigger.isTrigger = true;
+            bool bottom = position.y < -1.5f;
+            Vector3 center = bottom ? new Vector3(Mathf.Clamp(position.x, -2.05f, 2.05f), -3, -1.15f)
+                : new Vector3(3, Mathf.Clamp(position.y, -2.05f, 2.05f), -1.15f);
+            var go = Node("Exit aperture", parent, center);
+            go.transform.localRotation = Quaternion.LookRotation(bottom ? Vector3.down : Vector3.right, Vector3.back);
             var socket = go.AddComponent<ExitSocket>(); socket.RequiredChannel = required;
-            socket.CapturePoint = Node("Capture", go.transform, new Vector3(0, 0, -2.1f)).transform;
-            const int segments = 12;
-            for (int side = -1; side <= 1; side += 2)
-                for (int i = 0; i < segments; i++)
+            float half = socket.ApertureHalfSize.x;
+            for (int sign = -1; sign <= 1; sign += 2)
+            {
+                Cube("Port side", go.transform, new Vector3(sign * (half + 0.05f), 0, 0), new Vector3(0.1f, half * 2 + 0.2f, 0.60f), dark);
+                Cube("Port sill", go.transform, new Vector3(0, sign * (half + 0.05f), 0), new Vector3(half * 2, 0.1f, 0.60f), dark);
+                foreach (float depth in new[] { -0.31f, 0.31f })
                 {
-                    float angle = i * Mathf.PI * 2 / segments;
-                    Cube("Socket collar", go.transform, new Vector3(Mathf.Cos(angle) * 0.56f, Mathf.Sin(angle) * 0.56f, side * 2.8f), new Vector3(0.32f, 0.09f, 0.09f), accent, false, angle * Mathf.Rad2Deg + 90);
+                    Cube("Green outlet rim", go.transform, new Vector3(sign * (half + 0.05f), 0, depth), new Vector3(0.1f, half * 2 + 0.2f, 0.04f), accent, false);
+                    Cube("Green outlet rim", go.transform, new Vector3(0, sign * (half + 0.05f), depth), new Vector3(half * 2, 0.1f, 0.04f), accent, false);
                 }
-            for (int i = -1; i <= 1; i += 2) Cube("Capture rail", go.transform, new Vector3(i * 0.55f, -0.45f, 0), new Vector3(0.035f, 0.035f, 5.6f), accent, false);
+            }
+            if (!string.IsNullOrEmpty(required))
+            {
+                var shutter = Node("Exit safety shutter", go.transform, Vector3.zero);
+                var door = shutter.AddComponent<SignalDoor>(); door.Channel = required;
+                var blocker = shutter.AddComponent<BoxCollider>(); blocker.size = new Vector3(half * 2, half * 2, 0.12f);
+                blocker.sharedMaterial = currentContact;
+                door.Blocker = blocker;
+                door.Visual = Cube("Amber exit shutter", shutter.transform, Vector3.zero, blocker.size, gold, false).transform;
+                door.OpenOffset = new Vector3(half * 2 + 0.15f, 0, 0);
+            }
             return socket;
+        }
+
+        [MenuItem("Gravity Box/Upgrade Physical Exits")]
+        public static void UpgradePhysicalExits()
+        {
+            frame = AssetDatabase.LoadAssetAtPath<Material>(GamePath + "/Materials/Titanium frame.mat");
+            shell = AssetDatabase.LoadAssetAtPath<Material>(GamePath + "/Materials/Clear acrylic.mat");
+            accent = AssetDatabase.LoadAssetAtPath<Material>(GamePath + "/Materials/Exit mint.mat");
+            dark = AssetDatabase.LoadAssetAtPath<Material>(GamePath + "/Materials/Graphite.mat");
+            gold = AssetDatabase.LoadAssetAtPath<Material>(GamePath + "/Materials/Mechanism amber.mat");
+            steel = AssetDatabase.LoadAssetAtPath<Material>(GamePath + "/Materials/Ball polished steel.mat");
+            var catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(CatalogPath);
+            foreach (LevelDefinition definition in catalog.Levels)
+            {
+                currentContact = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(GamePath + "/Materials/" + (definition.Environment.IsZeroGravity ? "ZeroG contact" : "Earth contact") + ".physicMaterial");
+                string path = AssetDatabase.GetAssetPath(definition.Prefab);
+                GameObject contents = PrefabUtility.LoadPrefabContents(path);
+                try
+                {
+                    var level = contents.GetComponent<LevelRuntime>();
+                    Vector3 previous = level.Exit.transform.localPosition;
+                    string channel = level.Exit.RequiredChannel;
+                    Transform parent = level.Exit.transform.parent;
+                    UnityEngine.Object.DestroyImmediate(level.Exit.gameObject);
+                    UnityEngine.Object.DestroyImmediate(contents.transform.Find("GlassShell").gameObject);
+                    level.Exit = Exit(parent, previous, channel);
+                    BuildShell(contents.transform, level.Exit);
+                    PrefabUtility.SaveAsPrefabAsset(contents, path);
+                }
+                finally { PrefabUtility.UnloadPrefabContents(contents); }
+            }
+            var library = new GameObject("Exit library");
+            ExitSocket standalone = Exit(library.transform, Vector2.zero);
+            PrefabUtility.SaveAsPrefabAsset(standalone.gameObject, GamePath + "/Prefabs/Mechanisms/ExitSocket.prefab");
+            UnityEngine.Object.DestroyImmediate(library);
+            catalog.CompletionDelay = 1.8f;
+            EditorUtility.SetDirty(catalog);
+            AssetDatabase.SaveAssets();
+            ContentValidator.Validate();
         }
 
         private static PressurePlate Plate(Transform parent, Vector2 p, string channel = "gate-a")
@@ -373,7 +451,6 @@ namespace GravityBox.Editor
             var go = new GameObject($"L{index + 1:00} {Names[index]}", typeof(Rigidbody), typeof(BoxRotationController), typeof(LevelRuntime));
             var root = go.GetComponent<LevelRuntime>(); root.Rotation = go.GetComponent<BoxRotationController>();
             Rigidbody rb = go.GetComponent<Rigidbody>(); rb.isKinematic = true; rb.useGravity = false;
-            BuildShell(go.transform);
             Transform geo = Node("Geometry", go.transform, Vector3.zero).transform;
             Transform mech = Node("Mechanisms", go.transform, Vector3.zero).transform;
             Vector2 spawn = new Vector2(-2, 1.8f);
@@ -432,6 +509,7 @@ namespace GravityBox.Editor
             }
             root.BallSpawn = Node("BallSpawn", go.transform, new Vector3(spawn.x, spawn.y, -1.15f)).transform;
             root.Exit = Exit(mech, exit, required);
+            BuildShell(go.transform, root.Exit);
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, $"{GamePath}/Prefabs/Levels/L{index + 1:00}.prefab");
             UnityEngine.Object.DestroyImmediate(go);
             return prefab.GetComponent<LevelRuntime>();

@@ -5,29 +5,67 @@ using UnityEngine;
 
 namespace GravityBox.Gameplay
 {
+    // Local +Z points out of the box. Geometry and this contract share the same aperture.
     public sealed class ExitSocket : MonoBehaviour, IResettable
     {
-        public Transform CapturePoint;
+        public Vector2 ApertureHalfSize = new Vector2(0.72f, 0.72f);
+        [Min(0.01f)] public float WallHalfDepth = 0.30f;
         public string RequiredChannel;
         private BallController ball;
         private MechanismSignals signals;
+        private Vector3 previous;
+        private bool traversing, clearing;
         public bool Accepting { get; set; } = true;
-        public bool HasCaptured { get; private set; }
-        public event Action Captured;
+        public bool HasExited { get; private set; }
+        public bool IsUnlocked => string.IsNullOrEmpty(RequiredChannel) || (signals != null && signals.Read(RequiredChannel));
+        public event Action Exited;
 
-        public void Bind(BallController target, MechanismSignals bus) { ball = target; signals = bus; }
-        public void CaptureInitialState() { }
-        public void ResetState() { HasCaptured = false; Accepting = true; }
-        public bool TryCapture(BallController candidate)
+        public void Bind(BallController target, MechanismSignals bus)
         {
-            if (!Accepting || HasCaptured || candidate != ball || candidate.IsCaptured) return false;
-            if (!string.IsNullOrEmpty(RequiredChannel) && (signals == null || !signals.Read(RequiredChannel))) return false;
-            HasCaptured = true;
-            candidate.Capture(CapturePoint != null ? CapturePoint.position : transform.position);
-            Captured?.Invoke();
-            return true;
+            ball = target;
+            signals = bus;
+            BeginTracking();
         }
-        private void OnTriggerEnter(Collider other) { if (ball != null && other.attachedRigidbody == ball.Body) TryCapture(ball); }
-        private void OnTriggerStay(Collider other) { if (ball != null && other.attachedRigidbody == ball.Body) TryCapture(ball); }
+        public void CaptureInitialState() { }
+        public void ResetState() { HasExited = false; Accepting = true; traversing = clearing = false; }
+        public void BeginTracking() { if (ball != null) previous = transform.InverseTransformPoint(ball.Body.position); }
+
+        // Also called after manual Physics.Simulate in tests and before out-of-bounds checks.
+        // Sweeping between samples prevents a fast ball from skipping the opening.
+        public void EvaluateTraversal()
+        {
+            if (ball == null) return;
+            Vector3 current = transform.InverseTransformPoint(ball.Body.position);
+            Vector3 from = previous;
+            previous = current;
+            if (!Accepting || HasExited || ball.IsCaptured || !IsUnlocked)
+            {
+                traversing = clearing = false;
+                return;
+            }
+            float radius = ball.Profile.Radius;
+            float inner = -WallHalfDepth;
+            float outer = WallHalfDepth;
+            if (current.z <= inner) { traversing = clearing = false; return; }
+            if (from.z <= inner && current.z > inner)
+                traversing = Fits(AtDepth(from, current, inner), radius);
+            if (traversing)
+            {
+                Vector3 end = current.z > outer ? AtDepth(from, current, outer) : current;
+                if (!Fits(end, radius)) { traversing = clearing = false; return; }
+                if (current.z > outer) { traversing = false; clearing = true; }
+            }
+            if (clearing && current.z < outer) { clearing = false; traversing = Fits(current, radius); }
+            if (!clearing || current.z < outer + radius + 0.02f) return;
+            HasExited = true;
+            // Keep the Rigidbody dynamic, at its actual position and velocity, for the escape payoff.
+            Exited?.Invoke();
+        }
+
+        private bool Fits(Vector3 point, float radius) =>
+            Mathf.Abs(point.x) <= ApertureHalfSize.x - radius + 0.015f &&
+            Mathf.Abs(point.y) <= ApertureHalfSize.y - radius + 0.015f;
+        private static Vector3 AtDepth(Vector3 a, Vector3 b, float z) => Vector3.LerpUnclamped(a, b, (z - a.z) / (b.z - a.z));
+        private void FixedUpdate() => EvaluateTraversal();
     }
 }

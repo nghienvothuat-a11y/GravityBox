@@ -70,6 +70,14 @@ Trong development player, **F12** lưu ảnh render gốc vào `Application.pers
 
 ## Ảnh từ bản chạy
 
-| Gravity | Zero-G |
-| --- | --- |
-| ![Gravity puzzle](Docs/Images/Gravity.png) | ![Zero-G puzzle](Docs/Images/ZeroG.png) |
+Chuỗi ảnh native từ cùng một lần chơi màn L11 với cửa vật lý mới:
+
+| Bi trong hộp | Bi đang qua cửa, chưa thắng | Bi ngoài cửa, đã thắng |
+| --- | --- | --- |
+| ![Inside](Docs/Images/Exit-Inside.png) | ![Through aperture](Docs/Images/Exit-Through.png) | ![Escaped](Docs/Images/Exit-Escaped.png) |
+
+### Điều kiện thắng hiện tại
+
+Lăn bi xuyên qua cửa viền xanh trên vỏ hộp. Chỉ khi toàn bộ bi ra ngoài mới thắng; chạm vào cửa chưa đủ. Bi tiếp tục rơi/bay theo vận tốc thực, cảnh giữ 1,8 giây ở slow motion trước khi chuyển màn. Màn có switch dùng shutter hổ phách khóa cửa cho đến khi kích hoạt đúng channel.
+
+Chi tiết hợp đồng geometry/detector và quyết định thay thế GDD cũ: [ADR 011](Docs/DECISIONS.md). Khi chỉnh kích thước cửa phải chỉnh cả các tấm vỏ/viền tương ứng, rồi chạy Validate Content và bộ test vật lý.

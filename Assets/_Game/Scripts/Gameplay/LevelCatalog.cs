@@ -10,7 +10,7 @@ namespace GravityBox.Gameplay
         public BallController BallPrefab;
         public BallPhysicsProfile BallProfile;
         public RotationSettings Rotation;
-        [Min(0.1f)] public float CompletionDelay = 0.8f;
+        [Min(0.1f)] public float CompletionDelay = 1.8f;
         [Min(0.1f)] public float FailureDelay = 0.7f;
     }
 }
