@@ -1,6 +1,6 @@
 # Triết lý thiết kế: cảm giác của bi thép
 
-Đối tượng quan trọng nhất là viên bi: người chơi phải cảm thấy nó có quán tính, đang quay, nhận gia tốc khi nghiêng và truyền xung lực khi va vào hộp. Tám hộp là công cụ quan sát hành vi này; năm hình mới mở rộng các điều kiện tiếp xúc, giữ nguyên mô hình vật lý đã chọn.
+Đối tượng quan trọng nhất là viên bi: người chơi phải cảm thấy nó có quán tính, đang quay, nhận gia tốc khi nghiêng và truyền xung lực khi va vào hộp. Tám hộp thử hình học quan sát hành vi này; bàn 09 đưa thêm một thanh chặn trượt để tạo puzzle bằng cùng trọng lực và contact.
 
 ## Các nguyên tắc đang áp dụng
 
@@ -25,5 +25,6 @@
 | Vành khuyên | Lăn quanh một lõi rỗng thật, tiếp xúc cả thành trong lẫn thành ngoài |
 | Quả tạ | Đi từ buồng rộng qua cổ hẹp sang buồng còn lại |
 | Ngôi sao | Đổi hướng ở các góc lồi/lõm và đưa bi từ một cánh qua vùng giữa |
+| 09 — Leave it behind | Giữ bi bằng thành hốc trong khi trọng lực dời thanh chặn, rồi đi qua khoảng trống thật |
 
-Trong bản này không cần nắp, công tắc, zero-G hoặc cơ chế mở đường. Chúng được giữ ở lịch sử để tham khảo, không làm tiêu chí chấp nhận hiện tại. Đường giải tự động không chứng minh cảm giác nặng; kiểm tra định lượng phải đi kèm thử bằng chuột/touch và đánh giá của người dùng.
+Thanh trượt ở bàn 09 luôn tự do dọc ray, nhận gia tốc thế giới và giữ collider suốt hành trình. Mở cửa nghĩa là vật cản đã dời đủ chỗ; đổi độ nghiêng có thể khiến nó trượt về đóng lại. Không dùng trigger/hốc giữ để gửi unlock, không cho latch vô hình hoặc thêm lực hỗ trợ lời giải. Nếu bi đi qua được một cửa mở một phần hoặc dùng quán tính để giải, đó là kết quả vật lý hợp lệ. Các công tắc, zero-G và nắp của baseline cũ tiếp tục nằm ngoài catalog. Đường giải tự động không chứng minh cảm giác nặng; kiểm tra định lượng phải đi kèm thử bằng chuột/touch.

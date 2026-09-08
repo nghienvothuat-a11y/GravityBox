@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using GravityBox.Foundation;
 using GravityBox.Gameplay;
+using GravityBox.Simulation;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -15,11 +16,15 @@ namespace GravityBox.Presentation
         private static readonly Color Muted = new Color(0.46f, 0.57f, 0.62f);
         private static readonly Color Surface = new Color(0.072f, 0.105f, 0.13f);
         private static readonly Color Accent = new Color(0.70f, 0.96f, 0.52f);
+        private static readonly Color Amber = new Color(0.86f, 0.66f, 0.38f);
         private Font font;
         private LevelManager levels;
         private RectTransform safe;
         private Rect lastSafe;
         private Text title, number, environment, hint, state, progress, stats, pauseLabel, debugText;
+        private Text selectorCaption;
+        private ScrollRect selectorScroll;
+        private GravitySliderGuide gravitySlider;
         private GameObject levelModal, pauseOverlay, debugPanel;
         private float nextRefresh;
         public bool ModalOpen => levelModal != null && levelModal.activeSelf;
@@ -91,7 +96,7 @@ namespace GravityBox.Presentation
             levelModal = panel.gameObject;
             panel.GetComponent<Image>().raycastTarget = true;
             Label("Selector title", panel, "Choose a box", 43, Ink, 40, 30, 860, 80);
-            Label("Selector caption", panel, $"{levels.Catalog.Levels.Length} BOX SHAPES   /   SAME STEEL BALL", 24, Muted, 42, 116, 920, 46);
+            selectorCaption = Label("Selector caption", panel, $"{levels.Catalog.Levels.Length} BOXES   /   SAME STEEL BALL", 24, Muted, 42, 116, 920, 46);
 
             // The first eight shapes fit as two columns on portrait phones. A
             // clipped scroll area keeps later additions and shorter windows usable.
@@ -102,6 +107,7 @@ namespace GravityBox.Presentation
             scrollSurface.color = Color.clear;
             viewport.gameObject.AddComponent<RectMask2D>();
             var scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            selectorScroll = scroll;
             scroll.viewport = viewport;
             scroll.horizontal = false;
             scroll.vertical = true;
@@ -193,27 +199,64 @@ namespace GravityBox.Presentation
             if (open && levels.Session.State == SessionState.Active) levels.TogglePause();
             else if (!open && levels.Session.State == SessionState.Paused) levels.TogglePause();
             pauseOverlay.SetActive(false);
+            if (open)
+            {
+                Canvas.ForceUpdateCanvases();
+                RefreshSelectorCaption();
+            }
         }
 
         private void OnLoaded(LevelDefinition definition)
         {
+            gravitySlider = null;
+            // Props live outside the rotating hierarchy after initialization.
+            foreach (PhysicalProp prop in levels.Current.Props)
+            {
+                gravitySlider = prop.GetComponent<GravitySliderGuide>();
+                if (gravitySlider != null) break;
+            }
             number.text = definition.DisplayIndex.ToString("00");
             title.text = definition.DisplayName;
             environment.text = $"STEEL · {levels.Ball.Body.mass * 1000:0} g · Ø {levels.Ball.Profile.Radius * 2000:0} mm";
             hint.text = definition.TeachingHint;
             progress.text = $"{definition.DisplayIndex:00} / {levels.Catalog.Levels.Length:00}";
+            RefreshStatusText(levels.Session.State);
         }
 
         private void OnStateChanged(SessionState session)
         {
+            RefreshStatusText(session);
+            pauseOverlay.SetActive(session == SessionState.Paused && !ModalOpen);
+            pauseLabel.text = session == SessionState.Paused ? ">" : "II";
+        }
+
+        private void RefreshStatusText(SessionState session)
+        {
+            if (session == SessionState.Active && gravitySlider != null)
+            {
+                // Read actual joint displacement and relative speed. These labels
+                // never unlock anything or change the physical guide/ball state.
+                bool clear = gravitySlider.IsPassageClear;
+                state.text = clear ? "PASSAGE CLEAR · GUIDE THE BALL ACROSS."
+                    : Mathf.Abs(gravitySlider.TravelSpeed) > 0.001f ? "AMBER SLIDER · MOVING."
+                    : gravitySlider.Displacement <= 0.002f ? "AMBER SLIDER · PASSAGE BLOCKED."
+                    : "AMBER SLIDER · PARTLY RETRACTED.";
+                state.color = clear ? Accent : Amber;
+                return;
+            }
             state.text = session == SessionState.Completing ? "BALL OUTSIDE. RESET OR CHOOSE THE NEXT BOX."
                 : session == SessionState.Failed ? "TRY A DIFFERENT ANGLE. RESETTING…"
                 : session == SessionState.Paused ? "SIMULATION PAUSED"
                 : session == SessionState.Finished ? "CHOOSE A BOX TO CONTINUE."
                 : "ROLL THROUGH THE GREEN OPENING.";
             state.color = session == SessionState.Completing ? Accent : Muted;
-            pauseOverlay.SetActive(session == SessionState.Paused && !ModalOpen);
-            pauseLabel.text = session == SessionState.Paused ? ">" : "II";
+        }
+
+        private void RefreshSelectorCaption()
+        {
+            bool overflow = selectorScroll.content.rect.height > selectorScroll.viewport.rect.height + 1;
+            selectorCaption.text = $"{levels.Catalog.Levels.Length} BOXES   /   "
+                + (overflow ? "SCROLL TO EXPLORE" : "SAME STEEL BALL");
         }
 
         private void Update()
@@ -222,6 +265,8 @@ namespace GravityBox.Presentation
             if (Screen.safeArea != lastSafe) ApplySafeArea();
             if (Time.unscaledTime < nextRefresh) return;
             nextRefresh = Time.unscaledTime + 0.25f;
+            if (gravitySlider != null && levels.Session.State == SessionState.Active) RefreshStatusText(SessionState.Active);
+            if (ModalOpen) RefreshSelectorCaption();
             if (levels.Ball != null) stats.text = $"{levels.Ball.Body.linearVelocity.magnitude:0.00} m/s";
             if (debugPanel.activeSelf && levels.Ball != null)
             {

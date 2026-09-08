@@ -1,6 +1,14 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** ADR 015 mở rộng ba hộp của ADR 014 thành tám hộp và giữ nguyên mô hình bi thép. Các đoạn mô tả 16 màn, zero-G, nắp rơi, slow motion và tự chuyển màn là lịch sử.
+**Phạm vi hiện tại:** ADR 016 thêm puzzle vật lý bàn 09 vào tám hộp của ADR 015 và giữ nguyên mô hình bi thép. Các đoạn mô tả 16 màn, zero-G, nắp rơi, slow motion và tự chuyển màn là lịch sử.
+
+## ADR 016 Thanh trượt trọng lực và hốc giữ bi
+
+Bàn 09 **Leave it behind** dùng một PhysicalProp 0,18 kg trên ConfigurableJoint nối root hộp, hành trình 0–0,12 m dọc local +Z. Joint khóa các trục còn lại; không spring, motor, drive hoặc projection. Thanh chặn luôn dynamic và luôn va chạm. GravitySliderGuide chỉ đọc vị trí/vận tốc tương đối và clearance hình học, không có logic unlock.
+
+Hốc giữ bi dùng vách vật lý: khi nghiêng +Z, bi bị thành sau giữ trong khi thanh trượt tiếp tục mở cửa. Chuyển sang +X đưa bi qua cửa; hướng nghiêng ngược có thể đóng thanh chặn lại. Tám hộp thử giữ nguyên nội dung và physics tuning. Số force targets là một ở các hộp thử và hai ở bàn 09; reset/release được quản lý qua PhysicalProp/LevelRuntime có sẵn.
+
+Ray là ràng buộc lý tưởng không ma sát dọc trục; contact material áp dụng cho tiếp xúc thật với housing/end stop. Đây là giới hạn mô hình được khai báo, không bù bằng điều kiện góc hoặc xung lực riêng. Bằng chứng cần gồm cửa đóng ngăn toàn bộ cầu, mở/đóng dưới trọng lực, reset hai body và một route từ spawn chỉ điều khiển hộp.
 
 ## ADR 015 Năm hình mới dùng polygon lõm và lõi rỗng thật
 

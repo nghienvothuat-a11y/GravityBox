@@ -287,6 +287,12 @@ namespace GravityBox.Tests
             SceneManager.MoveGameObjectToScene(container, scene);
             LevelRuntime level = container.GetComponent<LevelRuntime>();
             level.Rotation.enabled = false;
+            foreach (PhysicalProp prop in level.GetComponentsInChildren<PhysicalProp>(true))
+            {
+                Own(prop.gameObject);
+                prop.Initialize();
+                forces.Register(prop);
+            }
             return level;
         }
 
@@ -298,6 +304,7 @@ namespace GravityBox.Tests
         [TestCase(5)]
         [TestCase(6)]
         [TestCase(7)]
+        [TestCase(8)]
         public void ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(int index)
         {
             LevelRuntime level = LoadShippedContainer(index);

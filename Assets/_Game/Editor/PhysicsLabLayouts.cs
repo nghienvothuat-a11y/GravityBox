@@ -39,7 +39,10 @@ namespace GravityBox.Editor
                         V(.33f,.07f), V(.27f,.14f), V(.13f,.14f), V(.065f,.05f), V(-.065f,.05f), V(-.13f,.14f), V(-.27f,.14f), V(-.33f,.07f) },
                     V(-.225f,0), V(.235f,0)),
                 Layout(ContainerShape.Star, "Star box", "Leave the pointed pocket. Cross the centre and find the upper arm.",
-                    Star(), V(-.115f,-.14f), V(0,.207f))
+                    Star(), V(-.115f,-.14f), V(0,.207f)),
+                Layout(ContainerShape.GravityLock, "Leave it behind", "Park in the blue recess. Let the amber slider fall away, then cross.",
+                    new[] { V(-.28f,-.19f), V(.28f,-.19f), V(.28f,.19f), V(-.28f,.19f) },
+                    V(-.20f,.12f), V(.19f,-.10f))
             };
         }
 

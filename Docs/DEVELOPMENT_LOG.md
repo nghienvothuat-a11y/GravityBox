@@ -1,5 +1,16 @@
 # Nhật ký phát triển Gravity Box
 
+## Bàn 09 — Leave it behind — 08/09/2026
+
+Thêm một puzzle sau tám hộp thử hình học. Vách chia hai khoang, một thanh chặn trượt do gravity và hốc giữ bi tạo chuỗi suy luận: giữ bi bằng thành hốc, để thanh chặn rời cửa, rồi nghiêng bi qua khoang phải tới lỗ thoát.
+
+- Bi dùng nguyên profile thép; thanh chặn PhysicalProp 0,18 kg, kích thước 0,026 × 0,080 × 0,076 m, hành trình +Z 0,12 m. Joint một trục không motor/drive/spring/projection; collider luôn bật và không phát unlock signal.
+- Chuyển catalog/scene suites sang chín bàn, force registry theo số body thật. Bổ sung test cửa đóng ở toàn bộ chiều sâu, va chạm thật, gravity mở/đóng, 100 reset root/prop, thu hồi force target và route chỉ xoay từ spawn tới thoát thật.
+- Lượt test với ray giữ sát sàn phát hiện mép nhô khoảng 1 mm cản bi đang lăn nhẹ dù thanh chặn đã mở. Đã bỏ hai ray dưới và giữ hai ray gắn phía nắp, để sàn qua cửa phẳng. Đây là sửa hình học từ lỗi passage thật, không nới ngưỡng test hoặc thêm lực đẩy bi.
+- Generate và ContentValidator đã qua cho chín bàn. **8/8 EditMode + 49/49 PlayMode = 57 tests passed**, không failure/skipped; EditMode kết thúc 15:07:44 UTC, PlayMode từ 15:07:51 tới 15:08:14 UTC. [XML và phạm vi bằng chứng](Verification/README.md). Đường giải từ spawn tới thoát thật chỉ dùng rotation intent, giữ nguyên policy sau sửa ray.
+- **Build/native:** macOS player và Android ARM64 APK đã build thành công; APK 59.194.461 bytes (56,45 MiB). Native macOS đã kiểm tra bộ chọn cuộn tới 09, bố cục, kéo xoay hộp/bi lăn, thanh chặn trượt mở theo gravity và reset trả root/bi/thanh chặn về đầu. [Ảnh cửa đóng/mở](Images/Level09/README.md). Native QA chưa hoàn thành một lượt giải từ spawn; bằng chứng lời giải đầy đủ ở fixture rotation-only. Chưa chạy APK trên Android thật hoặc xuất lại iOS.
+- Một số thao tác kéo tự động native bị gộp sự kiện: callback nhấn/thả đều nhận tọa độ cuối và delta 0. Log tạm xác nhận các sự kiện có đủ đầu/cuối làm hộp xoay đúng; không sửa gameplay để đoán dữ liệu đã mất. Đã bỏ toàn bộ log input tạm khỏi source bàn giao.
+
 ## Bổ sung năm hình dạng — 08/09/2026
 
 Theo yêu cầu mới, ba hộp cơ bản được giữ và bổ sung chữ L, chữ U, vành khuyên, quả tạ, ngôi sao, tổng cộng tám bàn. Mô hình bi thép 30 mm/111 g, gravity 9,81 m/s², contact và clock 120 Hz tiếp tục dùng chung.
@@ -8,7 +19,7 @@ Theo yêu cầu mới, ba hộp cơ bản được giữ và bổ sung chữ L, 
 - Mở rộng catalog, rest/reset/containment/exit và scene manual-next sang cả tám bàn. Test hình học đi theo từng cạnh contour thay vì giả định origin luôn nằm bên trong; các grid probe kiểm tra sàn/nắp không lấp phần khuyết/lõi rỗng.
 - Năm fixture passage dùng sphere sweep đầy đủ rồi nghiêng hộp qua waypoint tại các góc/cổ nối; không lái ball bằng lực riêng hoặc đặt lại vị trí giữa các waypoint. Các phép đo thép và cube của ba hình đầu vẫn giữ nguyên.
 - Passage chạy riêng **5/5 passed lúc 14:40:35 UTC**. Policy đầu quá mạnh so với độ trễ/giới hạn đổi góc của hộp, khiến bi qua sát mục tiêu rồi dao động; log xác nhận mặt đỡ và contact bình thường. Giảm riêng gain/cap của policy kiểm thử (`P=8`, `D=5`, cap 1 m/s²) cho phép đi qua đủ waypoint; không sửa geometry/vật lý hoặc nới điều kiện clearance để làm test qua.
-- Toàn bộ **8/8 EditMode + 44/44 PlayMode = 52 tests passed**, không có failure hoặc skipped test. EditMode kết thúc 14:41:26 UTC; PlayMode chạy từ 14:41:33 đến 14:41:53 UTC. Bằng chứng: [EditMode.xml](Verification/EditMode.xml), [PlayMode.xml](Verification/PlayMode.xml). Cả tám bàn qua kiểm tra nằm yên: không impact lặp lại, biên độ độ cao dưới độ phân giải log; peak speed lớn nhất 0,000002 m/s ở vành khuyên, lực đỡ khoảng 1,08868 N.
+- Toàn bộ **8/8 EditMode + 44/44 PlayMode = 52 tests passed**, không có failure hoặc skipped test. EditMode kết thúc 14:41:26 UTC; PlayMode chạy từ 14:41:33 đến 14:41:53 UTC. Bằng chứng mốc tám hộp: [EditMode.xml](Archive/Verification/EightBoxes/EditMode.xml), [PlayMode.xml](Archive/Verification/EightBoxes/PlayMode.xml). Cả tám bàn qua kiểm tra nằm yên: không impact lặp lại, biên độ độ cao dưới độ phân giải log; peak speed lớn nhất 0,000002 m/s ở vành khuyên, lực đỡ khoảng 1,08868 N.
 - **Build/chạy thực tế:** bản macOS và APK Android ARM64 tám hộp đã build thành công (APK khoảng 56 MiB). Đã quan sát native bộ chọn tám bàn và cả năm hình mới; các thao tác Next đều chuyển bàn đúng. Kéo trên hộp ngôi sao làm hộp xoay và bi lăn từ hốc dưới lên nhánh phía trên; reset trả lại trạng thái đầu. [Chỉ mục ảnh native](Images/WeirdBoxes/README.md) ghi các hình được xem. Chưa chạy APK trên thiết bị Android hoặc xuất lại iOS cho mốc này. Kết quả build của mốc ba hộp bên dưới không tự xác nhận bản mở rộng.
 
 ## Đổi phạm vi sang ba hộp và bi thép — 08/09/2026

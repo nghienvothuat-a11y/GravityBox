@@ -63,6 +63,8 @@ namespace GravityBox.Editor
                 level.RotationMode = RotationMode.Free; level.InitialLocalVelocity = Vector3.zero;
                 level.Tutorial = false; level.ParSeconds = 0;
                 level.DesignerSolution = "Explore rolling, acceleration and impacts. Tilt the ball through the flush circular opening to observe a complete physical escape. Reset or choose another shape manually.";
+                if (layout.Shape == ContainerShape.GravityLock)
+                    level.DesignerSolution = "From spawn, roll down the left chamber and around the south end of the holding recess. Roll right, then north beneath its back wall. Keep the ball against this wall while northward gravity slides the amber block into its rail housing. Tilt mainly right, retaining a little northward slope, to cross the open passage. Guide the ball to the circular exit in the right chamber. All motion comes from gravity, contacts and a passive slider joint; the recess sends no signal.";
                 level.Prefab = BuildContainer(layout);
                 catalog.Levels[i] = level;
                 EditorUtility.SetDirty(level);
@@ -182,6 +184,7 @@ namespace GravityBox.Editor
                 cube.GetComponent<Renderer>().sharedMaterial = obstacle;
                 cube.GetComponent<Collider>().sharedMaterial = contact; cube.GetComponent<Collider>().contactOffset = 0.0005f;
             }
+            if (shape == ContainerShape.GravityLock) BuildGravityPuzzle(root.transform);
             var spawnObject = new GameObject("BallSpawn"); spawnObject.transform.SetParent(root.transform, false);
             spawnObject.transform.localPosition = new Vector3(spawn.x, -Depth / 2 + Thickness / 2 + Radius + 0.003f, spawn.y);
             level.BallSpawn = spawnObject.transform;
@@ -192,6 +195,78 @@ namespace GravityBox.Editor
             MeshObject("Subtle light inlay", outlet.transform, PhysicsLabGeometry.Inlay(Aperture, Thickness / 2), rim, false);
             GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, Folder + "/Prefabs/" + shape + " box.prefab");
             Object.DestroyImmediate(root); return saved.GetComponent<LevelRuntime>();
+        }
+
+        private static void BuildGravityPuzzle(Transform parent)
+        {
+            // The partition reaches both skins: flipping the box cannot bypass the gate.
+            const float height = Depth - Thickness;
+            PuzzleWall("Lower partition", -.036f, .036f, -.19f, -.04f);
+            PuzzleWall("Left rail housing", -.036f, -.024f, .04f, .19f);
+            PuzzleWall("Right rail housing", .024f, .036f, .04f, .19f);
+            PuzzleWall("Rail end stop", -.024f, .024f, .158f, .19f);
+            PuzzleWall("Holding recess back wall", -.136f, -.036f, .030f, .042f);
+            PuzzleWall("Holding recess side wall", -.148f, -.136f, -.065f, .042f);
+
+            Material amber = Material("Amber gravity slider", new Color(.79f, .43f, .12f), .62f, .42f);
+            string path = Folder + "/Materials/Slider on metal.physicMaterial";
+            var sliderContact = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(path);
+            if (sliderContact == null)
+            {
+                sliderContact = new PhysicsMaterial("Slider on metal");
+                AssetDatabase.CreateAsset(sliderContact, path);
+            }
+            sliderContact.staticFriction = .20f; sliderContact.dynamicFriction = .14f;
+            sliderContact.bounciness = .06f;
+            sliderContact.frictionCombine = PhysicsMaterialCombine.Average;
+            sliderContact.bounceCombine = PhysicsMaterialCombine.Minimum;
+            EditorUtility.SetDirty(sliderContact);
+            GravitySliderAuthoring.Build(parent, amber, sliderContact);
+
+            // Cover-mounted runners engage the carriage throughout its stroke,
+            // including the closed position, and leave the rolling floor flush.
+            foreach (float side in new[] { -1f, 1f })
+            {
+                var rail = GameObject.CreatePrimitive(PrimitiveType.Cube); rail.name = "Captured slider rail";
+                rail.transform.SetParent(parent, false);
+                rail.transform.localPosition = new Vector3(side * .014f, .0416f, .060f);
+                rail.transform.localScale = new Vector3(.006f, .001f, .196f);
+                rail.GetComponent<Renderer>().sharedMaterial = frame;
+                rail.GetComponent<Collider>().sharedMaterial = sliderContact;
+                rail.GetComponent<Collider>().contactOffset = .0005f;
+            }
+
+            // Quiet floor markings describe the real holding space and travel direction.
+            Material marking = Material("Recess floor marking", new Color(.30f, .54f, .60f), .25f, .35f);
+            Mark("Recess left inlay", new Vector3(-.114f, -.0418f, -.024f), new Vector3(.0015f, .0002f, .057f), marking);
+            Mark("Recess back inlay", new Vector3(-.085f, -.0418f, .004f), new Vector3(.058f, .0002f, .0015f), marking);
+            for (int i = 0; i < 3; i++)
+                Mark("Rail travel notch " + i, new Vector3(.032f, .0422f, .085f + i * .025f), new Vector3(.008f, .0004f, .002f), amber);
+
+            void PuzzleWall(string name, float x0, float x1, float z0, float z1)
+            {
+                var wall = GameObject.CreatePrimitive(PrimitiveType.Cube); wall.name = name;
+                wall.transform.SetParent(parent, false);
+                wall.transform.localPosition = new Vector3((x0 + x1) / 2, 0, (z0 + z1) / 2);
+                wall.transform.localScale = new Vector3(x1 - x0, height, z1 - z0);
+                wall.GetComponent<Renderer>().sharedMaterial = glass;
+                wall.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+                wall.GetComponent<Collider>().sharedMaterial = contact;
+                wall.GetComponent<Collider>().contactOffset = .0005f;
+                Mark(name + " upper edge", new Vector3((x0 + x1) / 2, .041f, (z0 + z1) / 2),
+                    new Vector3(x1 - x0, .002f, z1 - z0), frame);
+                Mark(name + " lower edge", new Vector3((x0 + x1) / 2, -.041f, (z0 + z1) / 2),
+                    new Vector3(x1 - x0, .002f, z1 - z0), frame);
+            }
+
+            void Mark(string name, Vector3 position, Vector3 size, Material material)
+            {
+                var visual = GameObject.CreatePrimitive(PrimitiveType.Cube); visual.name = name;
+                visual.transform.SetParent(parent, false); visual.transform.localPosition = position;
+                visual.transform.localScale = size; Object.DestroyImmediate(visual.GetComponent<Collider>());
+                visual.GetComponent<Renderer>().sharedMaterial = material;
+                visual.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+            }
         }
 
         private static GameObject MeshObject(string name, Transform parent, Mesh mesh, Material material, bool collision)

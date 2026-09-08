@@ -53,7 +53,9 @@ namespace GravityBox.Tests
         {
             GameObject root = levels.Current != null ? levels.Current.gameObject : null;
             GameObject ball = levels.Ball != null ? levels.Ball.gameObject : null;
+            PhysicalProp[] props = levels.Current != null ? levels.Current.Props : System.Array.Empty<PhysicalProp>();
             Object.DestroyImmediate(services);
+            foreach (PhysicalProp prop in props) if (prop != null) Object.DestroyImmediate(prop.gameObject);
             if (root != null) Object.DestroyImmediate(root);
             if (ball != null) Object.DestroyImmediate(ball);
             UnityEngine.Physics.simulationMode = previousMode;
@@ -111,7 +113,7 @@ namespace GravityBox.Tests
             {
                 Load(index);
                 Assert.That(forces.Environment, Is.SameAs(levels.Definition.Environment));
-                Assert.That(forces.TargetCount, Is.EqualTo(1));
+                Assert.That(forces.TargetCount, Is.EqualTo(1 + levels.Current.Props.Length));
                 Assert.That(levels.Ball.transform.parent, Is.Null);
                 Assert.That(levels.Current.IsOutside(levels.Ball.Body.position), Is.False);
                 SphereCollider sphere = levels.Ball.GetComponent<SphereCollider>();
@@ -153,7 +155,7 @@ namespace GravityBox.Tests
                     Assert.That(Quaternion.Angle(levels.Current.Rotation.Orientation, orientation), Is.LessThan(0.001f));
                     Assert.That(levels.Current.Exit.HasExited, Is.False);
                     Assert.That(levels.Current.Resets.Count, Is.EqualTo(registryCount));
-                    Assert.That(forces.TargetCount, Is.EqualTo(1));
+                    Assert.That(forces.TargetCount, Is.EqualTo(1 + levels.Current.Props.Length));
                     Assert.That(levels.Session.State, Is.EqualTo(SessionState.Active));
                 }
             }
@@ -273,7 +275,8 @@ namespace GravityBox.Tests
                         float nearest = float.PositiveInfinity;
                         Vector3 surface = Vector3.zero;
                         foreach (RaycastHit hit in UnityEngine.Physics.SphereCastAll(origin, Radius * 0.05f, direction, 0.012f, ~0, QueryTriggerInteraction.Ignore))
-                            if (hit.collider.transform.IsChildOf(levels.Current.transform) && hit.distance < nearest)
+                            if ((hit.collider.name == "Clear side walls" || hit.collider.name.StartsWith("Inner clear wall "))
+                                && hit.collider.transform.IsChildOf(levels.Current.transform) && hit.distance < nearest)
                             {
                                 nearest = hit.distance;
                                 surface = levels.Current.transform.InverseTransformPoint(hit.point);
@@ -515,6 +518,167 @@ namespace GravityBox.Tests
                 case 7: return new[] { new Vector2(-0.115f, -0.14f), Vector2.zero, new Vector2(0, 0.207f) };
                 default: throw new System.ArgumentOutOfRangeException(nameof(index));
             }
+        }
+
+        private GravitySliderGuide Slider()
+        {
+            Assert.That(levels.Current.Props, Has.Length.EqualTo(1));
+            var guide = levels.Current.Props[0].GetComponent<GravitySliderGuide>();
+            Assert.That(guide, Is.Not.Null);
+            return guide;
+        }
+
+        [Test]
+        public void GravitySlider_HasNoMotorOrSignalAndBlocksTheFullDepthDoorway()
+        {
+            Load(8);
+            var guide = Slider();
+            Assert.That(guide.Body.isKinematic, Is.False);
+            Assert.That(guide.transform.parent, Is.Null);
+            Assert.That(guide.Joint.connectedBody, Is.SameAs(levels.Current.GetComponent<Rigidbody>()));
+            Assert.That(guide.Joint.xDrive.positionSpring + guide.Joint.xDrive.positionDamper + guide.Joint.xDrive.maximumForce, Is.Zero);
+            Assert.That(guide.Joint.linearLimitSpring.spring + guide.Joint.linearLimitSpring.damper, Is.Zero);
+            Assert.That(guide.Joint.projectionMode, Is.EqualTo(JointProjectionMode.None));
+            Assert.That(guide.Joint.xMotion, Is.EqualTo(ConfigurableJointMotion.Limited));
+            Assert.That(guide.Joint.yMotion, Is.EqualTo(ConfigurableJointMotion.Locked));
+            Assert.That(guide.Joint.zMotion, Is.EqualTo(ConfigurableJointMotion.Locked));
+            Assert.That(guide.Travel, Is.EqualTo(0.12f).Within(0.0001f));
+            Assert.That(guide.IsPassageClear, Is.False);
+            Assert.That(levels.Current.Exit.RequiredChannel, Is.Null.Or.Empty);
+            Assert.That(levels.Current.Plates, Is.Empty);
+            Assert.That(levels.Current.GetComponentsInChildren<SignalDoor>(), Is.Empty);
+            Collider sliderCollider = guide.GetComponent<Collider>();
+            Assert.That(sliderCollider, Is.Not.Null);
+            foreach (float y in new[] { -0.027f, 0, 0.027f })
+            foreach (float z in new[] { -0.023f, 0, 0.023f })
+            {
+                Vector3 origin = levels.Current.transform.TransformPoint(new Vector3(-0.08f, y, z));
+                bool blocked = false;
+                foreach (RaycastHit hit in UnityEngine.Physics.SphereCastAll(origin, Radius, levels.Current.transform.right, 0.16f, ~0, QueryTriggerInteraction.Ignore))
+                    if (hit.collider == sliderCollider) blocked = true;
+                Assert.That(blocked, Is.True, "Closed slider must stop the whole sphere at every legal depth/height.");
+            }
+            foreach (float y in new[] { -0.026f, 0, 0.026f })
+            {
+                levels.ResetLevel();
+                levels.Ball.Body.position = new Vector3(-0.075f, y, 0);
+                levels.Ball.Body.linearVelocity = Vector3.right;
+                UnityEngine.Physics.SyncTransforms();
+                for (int tick = 0; tick < 48; tick++)
+                {
+                    Steps(1);
+                    Assert.That(levels.Current.transform.InverseTransformPoint(levels.Ball.Body.position).x, Is.LessThan(-0.024f));
+                }
+                Assert.That(guide.Displacement, Is.LessThan(0.005f), "A side impact must not unlock a guided slider.");
+                Assert.That(levels.Current.Exit.HasExited, Is.False);
+            }
+        }
+
+        [Test]
+        public void GravitySlider_OpensAndReturnsUnderWorldGravityWithoutPublishingAnUnlock()
+        {
+            Load(8);
+            var guide = Slider();
+            int signalChanges = 0;
+            levels.Current.Signals.Changed += (_, __) => signalChanges++;
+            levels.Ball.Capture(levels.Ball.Body.position);
+            forces.Register(levels.Current.Props[0]);
+            Assert.That(forces.TargetCount, Is.EqualTo(2));
+            levels.Current.Rotation.SetTargetOrientation(Quaternion.FromToRotation(new Vector3(0, -9.81f, 3), Vector3.down));
+            Steps(300);
+            Assert.That(guide.Displacement, Is.InRange(0.115f, 0.122f));
+            Assert.That(guide.IsPassageClear, Is.True);
+            Assert.That(guide.Body.isKinematic, Is.False);
+            Assert.That(guide.GetComponent<Collider>().enabled, Is.True);
+            levels.Current.Rotation.SetTargetOrientation(Quaternion.FromToRotation(new Vector3(0, -9.81f, -3), Vector3.down));
+            Steps(300);
+            Assert.That(guide.Displacement, Is.InRange(-0.002f, 0.003f));
+            Assert.That(guide.IsPassageClear, Is.False);
+            Assert.That(signalChanges, Is.Zero);
+            Assert.That(levels.Session.State, Is.EqualTo(SessionState.Active));
+        }
+
+        [Test]
+        public void GravitySlider_ResetRestoresRootAndPropAndUnloadRemovesItsForceTarget()
+        {
+            Load(8);
+            PhysicalProp prop = levels.Current.Props[0];
+            var guide = Slider();
+            Vector3 initialPosition = prop.Body.position;
+            Quaternion initialRotation = prop.Body.rotation;
+            int registryCount = levels.Current.Resets.Count;
+            for (int reset = 0; reset < 100; reset++)
+            {
+                levels.Current.GetComponent<Rigidbody>().rotation = Quaternion.Euler(reset * 2, reset, 30);
+                prop.Body.position = Vector3.one;
+                prop.Body.rotation = Quaternion.Euler(reset, 90, reset * 2);
+                prop.Body.linearVelocity = Vector3.one;
+                prop.Body.angularVelocity = Vector3.one * 5;
+                levels.ResetLevel();
+                Assert.That(Vector3.Distance(prop.Body.position, initialPosition), Is.LessThan(0.00001f));
+                Assert.That(Quaternion.Angle(prop.Body.rotation, initialRotation), Is.LessThan(0.001f));
+                Assert.That(Quaternion.Angle(levels.Current.Rotation.Orientation, Quaternion.identity), Is.LessThan(0.001f));
+                Assert.That(prop.Body.linearVelocity.sqrMagnitude + prop.Body.angularVelocity.sqrMagnitude, Is.Zero);
+                Assert.That(Mathf.Abs(guide.Displacement), Is.LessThan(0.0001f));
+                Assert.That(levels.Current.Resets.Count, Is.EqualTo(registryCount));
+                Assert.That(forces.TargetCount, Is.EqualTo(2));
+                Assert.That(guide.GetComponent<Collider>().enabled, Is.True);
+            }
+            GameObject oldProp = prop.gameObject;
+            Load(0);
+            Assert.That(forces.TargetCount, Is.EqualTo(1));
+            Assert.That(oldProp.activeSelf, Is.False);
+        }
+
+        [Test]
+        public void GravityLock_CanBeSolvedFromSpawnByHoldingBallOpeningSliderAndTiltingOnly()
+        {
+            Load(8);
+            int signalChanges = 0;
+            levels.Current.Signals.Changed += (_, __) => signalChanges++;
+            TiltPuzzleTo(new Vector2(-0.20f, -0.11f));
+            TiltPuzzleTo(new Vector2(-0.075f, -0.11f));
+            TiltPuzzleTo(new Vector2(-0.075f, 0));
+            levels.Current.Rotation.SetTargetOrientation(Quaternion.FromToRotation(new Vector3(0, -9.81f, 3), Vector3.down));
+            Steps(300);
+            Vector3 held = levels.Current.transform.InverseTransformPoint(levels.Ball.Body.position);
+            Assert.That(held.x, Is.InRange(-0.12f, -0.05f));
+            Assert.That(held.z, Is.InRange(-0.01f, 0.021f), "The recess back wall must physically hold the ball while the gate moves north.");
+            Assert.That(Slider().IsPassageClear, Is.True);
+            TiltPuzzleTo(new Vector2(0.09f, 0.012f));
+            Assert.That(levels.Current.transform.InverseTransformPoint(levels.Ball.Body.position).x, Is.GreaterThan(0.05f));
+            TiltPuzzleTo(new Vector2(0.19f, -0.10f), true);
+            Assert.That(levels.Current.Exit.HasExited, Is.True);
+            Assert.That(levels.Ball.IsCaptured, Is.False);
+            Assert.That(levels.Ball.Body.isKinematic, Is.False);
+            Assert.That(signalChanges, Is.Zero);
+            Assert.That(levels.Session.State, Is.EqualTo(SessionState.Completing));
+        }
+
+        private void TiltPuzzleTo(Vector2 goal, bool requireEscape = false)
+        {
+            Rigidbody box = levels.Current.GetComponent<Rigidbody>();
+            float closest = float.PositiveInfinity;
+            for (int tick = 0; tick < 1800; tick++)
+            {
+                Transform root = levels.Current.transform;
+                Vector3 local = root.InverseTransformPoint(levels.Ball.Body.position);
+                Vector3 relativeVelocity = root.InverseTransformDirection(levels.Ball.Body.linearVelocity - box.GetPointVelocity(levels.Ball.Body.position));
+                Vector2 error = goal - new Vector2(local.x, local.z);
+                Vector2 velocity = new Vector2(relativeVelocity.x, relativeVelocity.z);
+                closest = Mathf.Min(closest, error.magnitude);
+                Vector2 acceleration = Vector2.ClampMagnitude(error * 8f - velocity * 5f, 1f);
+                levels.Current.Rotation.SetTargetOrientation(Quaternion.FromToRotation(new Vector3(acceleration.x, -9.81f, acceleration.y), Vector3.down));
+                Steps(1);
+                if ((requireEscape && levels.Current.Exit.HasExited) || (!requireEscape && error.magnitude < Radius * 1.1f && velocity.magnitude < 0.16f))
+                {
+                    TestContext.WriteLine($"GRAVITY LOCK waypoint {goal:F4}: {(tick + 1) * Dt:F3}s, ball {local:F5}, slider {Slider().Displacement:F5} m, escape {levels.Current.Exit.HasExited}.");
+                    return;
+                }
+                Assert.That(levels.Current.IsOutside(levels.Ball.Body.position), Is.False, "The ball must remain in the physical box until valid escape.");
+            }
+            Vector3 final = levels.Current.transform.InverseTransformPoint(levels.Ball.Body.position);
+            Assert.Fail($"Gravity lock cannot reach {goal:F4}; ball {final:F5}; closest {closest:F5} m; slider {Slider().Displacement:F5} m.");
         }
 
         [UnityTest]

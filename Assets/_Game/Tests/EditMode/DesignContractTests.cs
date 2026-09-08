@@ -99,11 +99,11 @@ namespace GravityBox.Tests
         }
 
         [Test]
-        public void Catalog_ContainsEightDistinctEarthGravityExperiments()
+        public void Catalog_ContainsEightShapeExperimentsAndOneGravityPuzzle()
         {
             var catalog = Catalog(); var ids = new HashSet<string>();
             var shapes = new HashSet<ContainerShape>();
-            Assert.That(catalog.Levels.Length, Is.EqualTo(8));
+            Assert.That(catalog.Levels.Length, Is.EqualTo(9));
             Assert.That(catalog.BallPrefab, Is.Not.Null);
             Assert.That(catalog.Rotation, Is.Not.Null);
             for (int i = 0; i < catalog.Levels.Length; i++)
@@ -125,13 +125,14 @@ namespace GravityBox.Tests
                 Assert.That(level.Prefab.GetComponentsInChildren<OneWayGate>(true), Is.Empty);
                 Assert.That(level.Prefab.GetComponentsInChildren<ImpulsePad>(true), Is.Empty);
                 Assert.That(level.Prefab.GetComponentsInChildren<KillVolume>(true), Is.Empty);
-                Assert.That(level.Prefab.GetComponentsInChildren<PhysicalProp>(true), Is.Empty);
+                Assert.That(level.Prefab.GetComponentsInChildren<PhysicalProp>(true).Length,
+                    Is.EqualTo(level.Shape == ContainerShape.GravityLock ? 1 : 0));
                 Assert.That(level.Prefab.Exit.RequiredChannel, Is.Null.Or.Empty);
                 Assert.That(level.TeachingHint, Is.Not.Empty);
                 Assert.That(level.DesignerSolution, Is.Not.Empty);
             }
             CollectionAssert.AreEquivalent(new[] { ContainerShape.Circle, ContainerShape.Square, ContainerShape.Triangle,
-                ContainerShape.LShape, ContainerShape.UShape, ContainerShape.Annulus, ContainerShape.Dumbbell, ContainerShape.Star }, shapes);
+                ContainerShape.LShape, ContainerShape.UShape, ContainerShape.Annulus, ContainerShape.Dumbbell, ContainerShape.Star, ContainerShape.GravityLock }, shapes);
         }
 
         [Test]

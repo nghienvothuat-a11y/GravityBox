@@ -49,6 +49,19 @@ namespace GravityBox.Editor
                     foreach (MeshCollider collider in prop.GetComponentsInChildren<MeshCollider>(true))
                         Require(collider.convex && collider.sharedMesh != null, level.Id + ": free prop requires convex collision meshes.");
                 }
+                foreach (GravitySliderGuide slider in level.Prefab.GetComponentsInChildren<GravitySliderGuide>(true))
+                {
+                    ConfigurableJoint joint = slider.GetComponent<ConfigurableJoint>();
+                    Require(joint != null && joint.connectedBody == level.Prefab.GetComponent<Rigidbody>(),
+                        level.Id + ": slider rail must be connected to its rotating box.");
+                    Require(joint.xMotion == ConfigurableJointMotion.Limited &&
+                        joint.yMotion == ConfigurableJointMotion.Locked && joint.zMotion == ConfigurableJointMotion.Locked &&
+                        joint.angularXMotion == ConfigurableJointMotion.Locked && joint.angularYMotion == ConfigurableJointMotion.Locked &&
+                        joint.angularZMotion == ConfigurableJointMotion.Locked, level.Id + ": slider must have one constrained travel axis.");
+                    Require(joint.xDrive.positionSpring == 0 && joint.xDrive.positionDamper == 0 &&
+                        joint.linearLimitSpring.spring == 0 && joint.linearLimitSpring.damper == 0,
+                        level.Id + ": gravity slider must not be motor or spring driven.");
+                }
                 ValidateSpawn(level, catalog.BallProfile.Radius);
             }
             Debug.Log("GRAVITY BOX CONTENT VALID: " + catalog.Levels.Length + " unique levels, spawn clearance and references checked.");
