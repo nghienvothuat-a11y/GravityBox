@@ -29,8 +29,13 @@ namespace GravityBox.Editor
                 foreach (SignalDoor door in level.Prefab.GetComponentsInChildren<SignalDoor>(true))
                     Require(door.Blocker != null && channels.Contains(door.Channel), level.Id + ": door missing blocker or plate channel.");
                 var outlet = level.Prefab.Exit;
-                Require(outlet.ApertureHalfSize.x > catalog.BallProfile.Radius + 0.05f &&
-                    outlet.ApertureHalfSize.y > catalog.BallProfile.Radius + 0.05f, level.Id + ": aperture too narrow for ball.");
+                Require(outlet.ApertureRadius > catalog.BallProfile.Radius + 0.05f, level.Id + ": aperture too narrow for ball.");
+                Require(Mathf.Abs(outlet.WallHalfDepth - 0.09f) < 0.0001f, level.Id + ": exit must be flush with the 0.18 m shell.");
+                foreach (var renderer in outlet.GetComponentsInChildren<MeshRenderer>())
+                {
+                    if (renderer.GetComponentInParent<SignalDoor>() != null) continue;
+                    Require(renderer.GetComponent<Collider>() == null, level.Id + ": light inlay must not obstruct the ball.");
+                }
                 Vector3 escaped = outlet.transform.position + outlet.transform.forward * (outlet.WallHalfDepth + catalog.BallProfile.Radius + 0.03f);
                 Require(!level.Prefab.IsOutside(escaped), level.Id + ": escape threshold must precede failure bounds.");
                 string required = level.Prefab.Exit.RequiredChannel;

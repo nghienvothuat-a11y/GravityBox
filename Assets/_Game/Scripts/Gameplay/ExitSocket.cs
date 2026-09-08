@@ -8,8 +8,8 @@ namespace GravityBox.Gameplay
     // Local +Z points out of the box. Geometry and this contract share the same aperture.
     public sealed class ExitSocket : MonoBehaviour, IResettable
     {
-        public Vector2 ApertureHalfSize = new Vector2(0.72f, 0.72f);
-        [Min(0.01f)] public float WallHalfDepth = 0.30f;
+        [Min(0.1f)] public float ApertureRadius = 0.78f;
+        [Min(0.01f)] public float WallHalfDepth = 0.09f;
         public string RequiredChannel;
         private BallController ball;
         private MechanismSignals signals;
@@ -62,9 +62,11 @@ namespace GravityBox.Gameplay
             Exited?.Invoke();
         }
 
-        private bool Fits(Vector3 point, float radius) =>
-            Mathf.Abs(point.x) <= ApertureHalfSize.x - radius + 0.015f &&
-            Mathf.Abs(point.y) <= ApertureHalfSize.y - radius + 0.015f;
+        private bool Fits(Vector3 point, float radius)
+        {
+            float clearance = Mathf.Max(0, ApertureRadius - radius + 0.015f);
+            return point.x * point.x + point.y * point.y <= clearance * clearance;
+        }
         private static Vector3 AtDepth(Vector3 a, Vector3 b, float z) => Vector3.LerpUnclamped(a, b, (z - a.z) / (b.z - a.z));
         private void FixedUpdate() => EvaluateTraversal();
     }

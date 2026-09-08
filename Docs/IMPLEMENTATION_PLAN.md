@@ -103,3 +103,5 @@ Build Android/iOS phụ thuộc module, SDK, signing và phần cứng. Giữ bu
 ## Thay đổi yêu cầu ngày 08/09/2026: bi phải thoát ra ngoài
 
 Yêu cầu trực tiếp của người dùng thay thế capture trong GDD gốc. Tiêu chí nghiệm thu: vỏ có lỗ thật, bi đi xuyên bằng Rigidbody, chưa thắng khi còn chồng mép cửa, chỉ thắng từ phía trong ra, không teleport/hút bi, và thấy chuyển động ngoài hộp trước khi đổi màn. Màn có prerequisite phải khóa cả vật lý lẫn điều kiện thắng. Reset phải xóa quá trình đi qua cửa và hủy chuyển màn đang chờ. Kiểm tra lại toàn bộ 16 đường giải sau khi sửa geometry.
+
+Phản hồi tiếp theo: cửa phải là lỗ tròn khoét phẳng trên thành hộp, viền sáng mảnh/dịu; không có collider nhô lên gây vướng khi lăn. Tiêu chí bổ sung: bi lăn chậm trên sàn tự rơi qua lỗ mà không cần leo gờ hoặc được thêm lực nâng; hình dạng va chạm và vùng thắng cùng dùng tiết diện tròn.

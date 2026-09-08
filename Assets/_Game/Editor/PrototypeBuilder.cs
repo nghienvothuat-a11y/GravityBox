@@ -19,7 +19,7 @@ namespace GravityBox.Editor
         public const string GamePath = "Assets/_Game";
         public const string CatalogPath = GamePath + "/ScriptableObjects/LevelCatalog.asset";
         public const string ScenePath = GamePath + "/Scenes/Gameplay.unity";
-        private static Material frame, shell, geometry, accent, hazard, steel, dark, blue, gold, trail;
+        private static Material frame, shell, geometry, accent, hazard, steel, dark, blue, gold, trail, exitRim;
         private static PhysicsMaterial earthContact, spaceContact;
         private static PhysicsMaterial currentContact;
         private static readonly string[] Names = {
@@ -147,6 +147,7 @@ namespace GravityBox.Editor
             dark = Mat("Graphite", new Color(0.07f, 0.12f, 0.15f), 0.2f, 0.4f);
             blue = Mat("Cyan marker", new Color(0.3f, 0.77f, 0.96f), 0.1f, 0.45f, false, true);
             gold = Mat("Mechanism amber", new Color(1f, 0.66f, 0.26f), 0.35f, 0.55f, false, true);
+            CreateExitRimMaterial();
             trail = Mat("Momentum trail", new Color(0.39f, 0.8f, 1f, 0.5f), 0, 0, true, true);
             earthContact = Contact("Earth contact", 0.20f, 0.10f);
             spaceContact = Contact("ZeroG contact", 0.01f, 0.95f);
@@ -276,16 +277,15 @@ namespace GravityBox.Editor
                     Vector3 normal = Vector3.zero; normal[axis] = sign;
                     if (Vector3.Dot(outlet.transform.forward, normal) > 0.99f)
                     {
-                        // Four separate solids leave a real square aperture through this face.
-                        Transform face = Node("Acrylic wall with opening", group, p).transform;
+                        Transform face = Node("Acrylic wall with circular cut", group, p).transform;
                         face.rotation = outlet.transform.rotation;
                         Vector3 center = face.InverseTransformPoint(outlet.transform.position);
-                        Vector2 half = outlet.ApertureHalfSize;
-                        const float extent = 3.05f;
-                        WallPanel(face, "Left of opening", -extent, center.x - half.x, -extent, extent);
-                        WallPanel(face, "Right of opening", center.x + half.x, extent, -extent, extent);
-                        WallPanel(face, "Below opening", center.x - half.x, center.x + half.x, -extent, center.y - half.y);
-                        WallPanel(face, "Above opening", center.x - half.x, center.x + half.x, center.y + half.y, extent);
+                        Mesh mesh = CircularExitGeometry.Wall(root.name + " cut wall", center, outlet.ApertureRadius, outlet.WallHalfDepth);
+                        GameObject wall = CircularExitGeometry.Visual("Flush cut surface", face, mesh, shell);
+                        var collider = wall.AddComponent<MeshCollider>();
+                        collider.sharedMesh = mesh;
+                        collider.convex = false; // Kinematic root, convex ball; preserve the actual hole.
+                        collider.sharedMaterial = currentContact;
                     }
                     else
                     {
@@ -316,11 +316,18 @@ namespace GravityBox.Editor
             Cube("Front edge inlay", platform.transform, new Vector3(0, 0.12f, -2.88f), new Vector3(width, 0.045f, 0.035f), blue, false);
         }
 
-        private static void WallPanel(Transform face, string name, float left, float right, float bottom, float top)
+        private static void CreateExitRimMaterial()
         {
-            GameObject panel = Cube(name, face, new Vector3((left + right) / 2, (bottom + top) / 2, 0),
-                new Vector3(right - left, top - bottom, 0.18f), shell);
-            panel.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+            string path = GamePath + "/Materials/Exit subtle rim.mat";
+            exitRim = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (exitRim == null)
+            {
+                exitRim = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+                AssetDatabase.CreateAsset(exitRim, path);
+            }
+            // Soft constant tint, no bloom, point light, emission multiplier or collision.
+            exitRim.SetColor("_BaseColor", new Color(0.33f, 0.52f, 0.39f, 1));
+            EditorUtility.SetDirty(exitRim);
         }
 
         private static ExitSocket Exit(Transform parent, Vector2 position, string required = "")
@@ -331,26 +338,19 @@ namespace GravityBox.Editor
             var go = Node("Exit aperture", parent, center);
             go.transform.localRotation = Quaternion.LookRotation(bottom ? Vector3.down : Vector3.right, Vector3.back);
             var socket = go.AddComponent<ExitSocket>(); socket.RequiredChannel = required;
-            float half = socket.ApertureHalfSize.x;
-            for (int sign = -1; sign <= 1; sign += 2)
-            {
-                Cube("Port side", go.transform, new Vector3(sign * (half + 0.05f), 0, 0), new Vector3(0.1f, half * 2 + 0.2f, 0.60f), dark);
-                Cube("Port sill", go.transform, new Vector3(0, sign * (half + 0.05f), 0), new Vector3(half * 2, 0.1f, 0.60f), dark);
-                foreach (float depth in new[] { -0.31f, 0.31f })
-                {
-                    Cube("Green outlet rim", go.transform, new Vector3(sign * (half + 0.05f), 0, depth), new Vector3(0.1f, half * 2 + 0.2f, 0.04f), accent, false);
-                    Cube("Green outlet rim", go.transform, new Vector3(0, sign * (half + 0.05f), depth), new Vector3(half * 2, 0.1f, 0.04f), accent, false);
-                }
-            }
+            float radius = socket.ApertureRadius;
+            CircularExitGeometry.Visual("Faint circular inlay", go.transform,
+                CircularExitGeometry.Rim(radius, socket.WallHalfDepth), exitRim);
             if (!string.IsNullOrEmpty(required))
             {
                 var shutter = Node("Exit safety shutter", go.transform, Vector3.zero);
                 var door = shutter.AddComponent<SignalDoor>(); door.Channel = required;
-                var blocker = shutter.AddComponent<BoxCollider>(); blocker.size = new Vector3(half * 2, half * 2, 0.12f);
+                var blocker = shutter.AddComponent<BoxCollider>(); blocker.size = new Vector3(radius * 2, radius * 2, 0.12f);
                 blocker.sharedMaterial = currentContact;
                 door.Blocker = blocker;
-                door.Visual = Cube("Amber exit shutter", shutter.transform, Vector3.zero, blocker.size, gold, false).transform;
-                door.OpenOffset = new Vector3(half * 2 + 0.15f, 0, 0);
+                door.Visual = CircularExitGeometry.Visual("Recessed amber shutter", shutter.transform,
+                    CircularExitGeometry.Shutter(radius, 0.06f), gold).transform;
+                door.OpenOffset = new Vector3(radius * 2 + 0.15f, 0, 0);
             }
             return socket;
         }
@@ -364,6 +364,7 @@ namespace GravityBox.Editor
             dark = AssetDatabase.LoadAssetAtPath<Material>(GamePath + "/Materials/Graphite.mat");
             gold = AssetDatabase.LoadAssetAtPath<Material>(GamePath + "/Materials/Mechanism amber.mat");
             steel = AssetDatabase.LoadAssetAtPath<Material>(GamePath + "/Materials/Ball polished steel.mat");
+            CreateExitRimMaterial();
             var catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(CatalogPath);
             foreach (LevelDefinition definition in catalog.Levels)
             {

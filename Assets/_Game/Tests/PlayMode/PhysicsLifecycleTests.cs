@@ -218,6 +218,33 @@ namespace GravityBox.Tests
         }
 
         [Test]
+        public void CircularExit_RejectsSquareCornersButAcceptsRadialClearance()
+        {
+            Load(10);
+            PlaceAtExit(new Vector3(0.45f, 0.45f, -0.7f), true);
+            PlaceAtExit(new Vector3(0.45f, 0.45f, 0.7f));
+            Assert.That(levels.Current.Exit.HasExited, Is.False, "Old square corners are solid wall now.");
+            levels.ResetLevel();
+            PlaceAtExit(new Vector3(0.35f, 0.35f, -0.7f), true);
+            PlaceAtExit(new Vector3(0.35f, 0.35f, 0.7f));
+            Assert.That(levels.Current.Exit.HasExited, Is.True);
+        }
+
+        [Test]
+        public void FlushExit_SlowRollingBallLeavesFloorWithoutClimbingALip()
+        {
+            Load(0);
+            var exit = levels.Current.Exit;
+            // Start on the actual inner floor beside the opening, not inside it.
+            float height = -exit.WallHalfDepth - levels.Ball.Profile.Radius - 0.003f;
+            PlaceAtExit(new Vector3(1.15f, 0, height), true);
+            levels.Ball.Body.linearVelocity = exit.transform.TransformDirection(Vector3.left * 1.2f);
+            Steps(120);
+            Assert.That(exit.HasExited, Is.True, "A gentle roll must fall through the cut without an upward impulse.");
+            Assert.That(levels.Ball.Body.isKinematic, Is.False);
+        }
+
+        [Test]
         public void EveryLevel_HasPhysicalApertureBallCanPassWithoutTeleporting()
         {
             for (int i = 0; i < 16; i++)

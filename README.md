@@ -70,14 +70,14 @@ Trong development player, **F12** lưu ảnh render gốc vào `Application.pers
 
 ## Ảnh từ bản chạy
 
-Chuỗi ảnh native từ cùng một lần chơi màn L11 với cửa vật lý mới:
+Chuỗi ảnh native từ cùng một lần chơi màn L11 với lỗ tròn khoét phẳng:
 
 | Bi trong hộp | Bi đang qua cửa, chưa thắng | Bi ngoài cửa, đã thắng |
 | --- | --- | --- |
-| ![Inside](Docs/Images/Exit-Inside.png) | ![Through aperture](Docs/Images/Exit-Through.png) | ![Escaped](Docs/Images/Exit-Escaped.png) |
+| ![Inside](Docs/Images/Exit-Round-Inside.png) | ![Through aperture](Docs/Images/Exit-Round-Through.png) | ![Escaped](Docs/Images/Exit-Round-Escaped.png) |
 
 ### Điều kiện thắng hiện tại
 
-Lăn bi xuyên qua cửa viền xanh trên vỏ hộp. Chỉ khi toàn bộ bi ra ngoài mới thắng; chạm vào cửa chưa đủ. Bi tiếp tục rơi/bay theo vận tốc thực, cảnh giữ 1,8 giây ở slow motion trước khi chuyển màn. Màn có switch dùng shutter hổ phách khóa cửa cho đến khi kích hoạt đúng channel.
+Lăn bi qua lỗ tròn khoét trực tiếp trên mặt hộp, với đường sáng xanh mảnh và dịu quanh mép. Mặt lăn phẳng, không có gờ cửa nhô lên. Chỉ khi toàn bộ bi ra ngoài mới thắng; chạm vào cửa chưa đủ. Bi tiếp tục rơi/bay theo vận tốc thực, cảnh giữ 1,8 giây ở slow motion trước khi chuyển màn. Màn có switch dùng shutter hổ phách khóa cửa cho đến khi kích hoạt đúng channel.
 
-Chi tiết hợp đồng geometry/detector và quyết định thay thế GDD cũ: [ADR 011](Docs/DECISIONS.md). Khi chỉnh kích thước cửa phải chỉnh cả các tấm vỏ/viền tương ứng, rồi chạy Validate Content và bộ test vật lý.
+Chi tiết hợp đồng geometry/detector và quyết định thay thế GDD cũ: [ADR 011–012](Docs/DECISIONS.md). Khi chỉnh kích thước cửa phải chỉnh cả các tấm vỏ/viền tương ứng, rồi chạy Validate Content và bộ test vật lý.

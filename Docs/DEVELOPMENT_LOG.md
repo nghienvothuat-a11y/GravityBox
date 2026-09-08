@@ -21,7 +21,7 @@ Workspace ban đầu `/Users/mrk/GravityBox` trống, chưa có Unity project ho
 
 ## Test suite
 
-7 Edit Mode + 22 Play Mode = **29 bài test**, đều pass sau khi cập nhật cửa thoát. Lượt Play Mode replay nghiêm ngặt cuối kết thúc 08/09/2026 lúc 04:24:51 UTC. Baseline trước thay đổi cửa có 26 bài test. Phần hình ảnh được kiểm tra thêm bằng build và ảnh native.
+7 Edit Mode + 24 Play Mode = **31 bài test**, đều pass sau khi cập nhật lỗ tròn phẳng. Lượt Play Mode đầy đủ kết thúc 08/09/2026 lúc 04:38:35 UTC. Baseline trước thay đổi cửa có 26 bài test. Phần hình ảnh được kiểm tra thêm bằng build và ảnh native.
 
 Edit Mode bao gồm reset registry deduplication, terminal transition, pause gate, gravity profiles, 24 canonical rotations, instance signal isolation và catalog integrity.
 
@@ -86,3 +86,14 @@ Không đo FPS/CPU/GPU p95/GC allocations trên Android/iPhone thật; chưa có
 
 - macOS và Android đã build lại thành công; APK khoảng 53 MB. Quan sát native L11 xác nhận đủ ba trạng thái: trong hộp, đang qua cửa (chưa thắng), ngoài cửa (BALL ESCAPED). Ảnh tại `Docs/Images/Exit-Inside.png`, `Exit-Through.png`, `Exit-Escaped.png`.
 - iOS Simulator ARM64: Xcode build succeeded, cài và khởi động bản mới trên iPhone 17 / iOS 26.5; native render xác nhận cửa thật và HUD mới (`Docs/Images/iOS-PhysicalExit.png`). Đây là kiểm tra khởi động/render, không phải nghiệm thu touch hoặc hiệu năng trên iPhone thật. Simulator được trả về trạng thái tắt sau kiểm tra.
+
+## Cập nhật lỗ tròn khoét phẳng — 08/09/2026
+
+- Bỏ toàn bộ gờ vuông cao 0,60 m. Lỗ tròn bán kính 0,78 m được cắt trực tiếp qua mặt vỏ dày 0,18 m; dùng cùng mesh cho render và va chạm. Ring phẳng rộng 0,018 m, không collider, màu xanh dịu.
+- Shutter tròn nằm chìm trong vỏ. Điều kiện thoát chuyển từ tiết diện vuông sang clearance tròn, đồng bộ mép ngoài thực; giữ nguyên động lượng và phần quan sát sau thắng.
+- **7/7 EditMode và 24/24 PlayMode passed**. Bài mới xác nhận bi lăn chậm 1,2 m/s trên sàn tự rơi qua lỗ, không cần nhảy/leo gờ; góc của cửa vuông cũ không còn là vùng thắng.
+- Tạo lại 16 route bằng xoay hộp từ spawn dưới hình học mới. Kết quả và thời gian ở SOLVABILITY/VERIFIED_ROUTES; không dùng fixture gần cửa để tính bằng chứng giải màn.
+
+- Sau tinh chỉnh độ rộng/offset riêng của nét sáng, replay nghiêm ngặt 16 route vẫn pass (kết thúc 2026-09-08 04:44:55Z). Geometry va chạm và logic gameplay không thay đổi trong bước tinh chỉnh nét sáng.
+- Đã xem native: bi trong hộp → qua lỗ tròn → ngoài hộp/đã thắng. Ảnh ở `Exit-Round-Inside/Through/Escaped.png`; ảnh `Exit-RoundFlush.png` là shutter tròn đang khóa ở L06. Nét sáng sau đó được tăng nhẹ từ 0,012 lên 0,018 m và dịch render 0,003 m để tránh đứt nét ở góc xiên; không thay collider.
+- macOS và Android đã build lại bản cuối; iOS Simulator export và Xcode ARM64 build succeeded. Kiểm tra native tương tác của thay đổi này thực hiện trên macOS; chưa chạy lại bản lỗ tròn trên simulator hoặc thiết bị mobile thật.

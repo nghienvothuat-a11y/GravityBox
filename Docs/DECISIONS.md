@@ -44,6 +44,8 @@ Trên simulator iOS 26.5 đã gặp lỗi Metal render attachment 1 sample so v�
 
 ## ADR 011 Chỉ thắng khi bi thoát thật khỏi hộp
 
+Điều kiện thắng và phần quan sát sau thắng vẫn áp dụng; hình học cửa vuông bên dưới đã được thay bằng cửa tròn phẳng theo ADR 012.
+
 Yêu cầu cập nhật của người dùng ngày 08/09/2026 có ưu tiên so với quy tắc capture trong GDD gốc. Bỏ trigger xuyên depth và teleport đến CapturePoint. Mỗi màn có một cửa vuông 1,44 × 1,44 trên mặt đáy hoặc mặt phải, nằm ở depth -1,15 và gần đích cũ. Vỏ tại mặt đó gồm bốn collider quanh cửa; viền có collider riêng, lòng cửa hoàn toàn rỗng. Dùng cửa vuông để hình hiển thị khớp chính xác với primitive collider.
 
 Local +Z của ExitSocket hướng ra ngoài; ApertureHalfSize và WallHalfDepth là hợp đồng giữa geometry với detector. Detector theo dõi đoạn chuyển động tương đối của tâm bi từ phía trong, qua tiết diện cửa, tới khi toàn bộ bán kính vượt mép ngoài thêm 0,02 m. Kiểm tra sweep tránh bỏ sót bước nhanh; chạm mép, đi từ ngoài vào, hoặc vượt mặt hộp ở vị trí khác đều không thắng. RequiredChannel còn khóa bằng shutter vật lý tái sử dụng SignalDoor.
@@ -51,3 +53,13 @@ Local +Z của ExitSocket hướng ra ngoài; ApertureHalfSize và WallHalfDepth
 Event Exited chỉ phát một lần. LevelManager khóa input xoay, giữ Rigidbody dynamic và vận tốc thực; TimeScale 0,35 trong 1,8 giây thực để quan sát thoát ra. Camera chỉ mở rộng sau khi thắng để giữ hộp và bi cùng khung. Chuyển màn dùng unscaled deadline; reset hủy deadline, trả tốc độ bình thường và khởi tạo lại mẫu vị trí sau khi reset ball/root. Chỉ ở màn cuối, sau khoảng quan sát, ball mới được giữ tại vị trí hiện tại để hiện màn tổng kết.
 
 Nâng cấp dùng menu Upgrade Physical Exits để thay vỏ và cửa, giữ nguyên platforms, spawn, cơ cấu khác và tuning. Test khả giải phải ghi lại với điều kiện thắng mới, sau đó replay nghiêm ngặt ở lần kiểm tra bình thường.
+
+## ADR 012 Lỗ tròn khoét phẳng, bỏ gờ cản đường lăn
+
+Theo phản hồi tiếp theo của người dùng, bỏ hoàn toàn Port side/Port sill và viền khối. Mặt vỏ chứa lỗ được bake thành một mesh kín có tiết diện tròn 64 đoạn, bán kính 0,78 m và chiều dày đúng 0,18 m của vỏ. MeshCollider dùng chính mesh hiển thị, giữ non-convex để không lấp mất lỗ; root vẫn kinematic và ball là SphereCollider. Unity cho phép concave MeshCollider trên body kinematic khi va chạm với collider convex: [Unity Mesh colliders](https://docs.unity3d.com/6000.3/Documentation/Manual/mesh-colliders-introduction.html).
+
+Mesh được tạo tại Editor và lưu thành asset, không dựng lại hoặc cook mỗi frame. Bổ sung góc của đường biên ngoài vào tập góc chia để mặt vuông không bị hở ở các góc khi lỗ lệch tâm. Năm mặt còn lại vẫn dùng BoxCollider. Cần profiling thiết bị thật khi chốt product; không suy diễn chi phí mesh từ simulator.
+
+Viền là vành phẳng rộng 0,018 m nằm sát hai bề mặt vỏ, lệch 0,003 m chỉ để tránh z-fighting. Material unlit màu xanh dịu (0,33; 0,52; 0,39), không bloom, đèn, emission boost hay collider. Không có vành dạng ống hoặc phần nâng mặt sàn. Shutter các màn có switch dùng đĩa tròn chìm trong độ dày vỏ.
+
+ExitSocket kiểm tra clearance theo bán kính tròn; WallHalfDepth giảm từ 0,30 xuống 0,09 để khớp mép thật của mặt cắt. Chưa thắng cho đến khi toàn bộ bi ra ngoài. Bổ sung regression test bi lăn chậm từ mặt sàn bên cạnh lỗ chỉ với gravity và vận tốc tiếp tuyến 1,2 m/s; test phải qua mà không thêm lực nâng. Test riêng loại vùng góc từng hợp lệ của cửa vuông.
