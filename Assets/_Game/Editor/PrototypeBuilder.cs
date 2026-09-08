@@ -24,12 +24,12 @@ namespace GravityBox.Editor
         private static PhysicsMaterial currentContact;
         private static readonly string[] Names = {
             "First principles", "Around the corner", "Small steps", "A little caution", "Carry the motion",
-            "Open sesame", "No turning back", "Spring theory", "Chain reaction", "Gravity graduate",
+            "Let it fall", "No turning back", "Spring theory", "Chain reaction", "Gravity graduate",
             "Weightless", "Equal and opposite", "A gentle push", "Moving the walls", "Permission to pass", "Orbital mechanics"
         };
         private static readonly string[] Hints = {
             "Tilt the shelf. Let gravity do the rest.", "A change of angle opens a new path.", "Right, then left. Take it one shelf at a time.",
-            "Stay above the coral hazard. Land near the exit.", "Build a little momentum before the climb.", "Touch the amber switch to open the matching door.",
+            "Stay above the coral hazard. Land near the exit.", "Build a little momentum before the climb.", "Turn the hole up. Let the lid fall, then tilt it aside.",
             "The striped gate lets you through in one direction.", "The amber spring gives you a lift. Catch the upper exit.", "Open the door, then find your way through the gate.",
             "Two shelves. One switch. Put it all together.", "No gravity here. Watch the ball keep moving.", "A slanted wall can turn motion into a new direction.",
             "Meet the spring. Follow the new trajectory.", "Move the corridor into the ball's path.", "Find the switch before crossing the chamber.",
@@ -376,10 +376,12 @@ namespace GravityBox.Editor
                     var level = contents.GetComponent<LevelRuntime>();
                     Vector3 previous = level.Exit.transform.localPosition;
                     string channel = level.Exit.RequiredChannel;
+                    bool hasLid = level.Exit.GetComponentInChildren<PhysicalProp>() != null;
                     Transform parent = level.Exit.transform.parent;
                     UnityEngine.Object.DestroyImmediate(level.Exit.gameObject);
                     UnityEngine.Object.DestroyImmediate(contents.transform.Find("GlassShell").gameObject);
                     level.Exit = Exit(parent, previous, channel);
+                    if (hasLid) LooseLid(level.Exit);
                     BuildShell(contents.transform, level.Exit);
                     PrefabUtility.SaveAsPrefabAsset(contents, path);
                 }
@@ -391,6 +393,57 @@ namespace GravityBox.Editor
             UnityEngine.Object.DestroyImmediate(library);
             catalog.CompletionDelay = 1.8f;
             EditorUtility.SetDirty(catalog);
+            AssetDatabase.SaveAssets();
+            ContentValidator.Validate();
+        }
+
+        private static PhysicalProp LooseLid(ExitSocket outlet)
+        {
+            var go = Node("Loose gravity lid", outlet.transform, Vector3.zero);
+            var body = go.AddComponent<Rigidbody>();
+            body.mass = 2;
+            body.useGravity = false;
+            body.interpolation = RigidbodyInterpolation.Interpolate;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            var prop = go.AddComponent<PhysicalProp>();
+            PhysicsMaterial contact = Contact("Loose lid contact", 0.28f, 0.02f);
+            // A loose disc rests on the INNER skin; there is no plug that can wedge in the hole.
+            GameObject cover = CircularExitGeometry.Visual("Loose cover", go.transform,
+                CircularExitGeometry.Disc("Loose lid cover", outlet.ApertureRadius + 0.05f, 0.045f), gold);
+            cover.transform.localPosition = new Vector3(0, 0, -outlet.WallHalfDepth - 0.045f - 0.012f);
+            var collider = cover.AddComponent<MeshCollider>();
+            collider.sharedMesh = cover.GetComponent<MeshFilter>().sharedMesh;
+            collider.convex = true;
+            collider.sharedMaterial = contact;
+            cover.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.On;
+            return prop;
+        }
+
+        [MenuItem("Gravity Box/Upgrade Level 6 to Physical Lid")]
+        public static void UpgradeLevel6PhysicalLid()
+        {
+            gold = AssetDatabase.LoadAssetAtPath<Material>(GamePath + "/Materials/Mechanism amber.mat");
+            dark = AssetDatabase.LoadAssetAtPath<Material>(GamePath + "/Materials/Graphite.mat");
+            var catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(CatalogPath);
+            LevelDefinition definition = catalog.Levels[5];
+            string path = AssetDatabase.GetAssetPath(definition.Prefab);
+            GameObject contents = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                var level = contents.GetComponent<LevelRuntime>();
+                foreach (PressurePlate plate in contents.GetComponentsInChildren<PressurePlate>()) UnityEngine.Object.DestroyImmediate(plate.gameObject);
+                foreach (SignalDoor door in contents.GetComponentsInChildren<SignalDoor>()) UnityEngine.Object.DestroyImmediate(door.gameObject);
+                foreach (PhysicalProp old in contents.GetComponentsInChildren<PhysicalProp>()) UnityEngine.Object.DestroyImmediate(old.gameObject);
+                level.Exit.RequiredChannel = "";
+                PhysicalProp lid = LooseLid(level.Exit);
+                PrefabUtility.SaveAsPrefabAsset(lid.gameObject, GamePath + "/Prefabs/Mechanisms/LooseLid.prefab");
+                PrefabUtility.SaveAsPrefabAsset(contents, path);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(contents); }
+            definition.DisplayName = Names[5];
+            definition.TeachingHint = Hints[5];
+            definition.DesignerSolution = "Invert the box so the opening faces upward. Gravity withdraws the loose inner lid. Tilt again to guide the ball through the clear hole; displaced lid remains physical.";
+            EditorUtility.SetDirty(definition);
             AssetDatabase.SaveAssets();
             ContentValidator.Validate();
         }
@@ -473,7 +526,7 @@ namespace GravityBox.Editor
                 case 4:
                     Shelf(geo, -1.9f, 1.05f, 1.75f); Shelf(geo, 0.25f, -0.5f, 3.9f, 20); break;
                 case 5:
-                    Shelf(geo, -1.65f, 0.2f, 2.4f); Plate(mech, new Vector2(-2.1f, -2.45f)); Door(mech, 0.7f, 0, 5.8f); required = "gate-a"; break;
+                    Shelf(geo, -1.65f, 0.2f, 2.4f); break;
                 case 6:
                     Shelf(geo, -1.3f, -0.5f, 3.0f); Gate(mech, 0.55f, 0, 5.8f); break;
                 case 7:
@@ -510,6 +563,7 @@ namespace GravityBox.Editor
             }
             root.BallSpawn = Node("BallSpawn", go.transform, new Vector3(spawn.x, spawn.y, -1.15f)).transform;
             root.Exit = Exit(mech, exit, required);
+            if (index == 5) LooseLid(root.Exit);
             BuildShell(go.transform, root.Exit);
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, $"{GamePath}/Prefabs/Levels/L{index + 1:00}.prefab");
             UnityEngine.Object.DestroyImmediate(go);
@@ -523,6 +577,8 @@ namespace GravityBox.Editor
             var components = new Component[] { Plate(group.transform, Vector2.zero), Door(group.transform, 0, 0, 3), Gate(group.transform, 0, 0, 3),
                 Pad(group.transform, Vector2.zero, Vector3.up, 6), Exit(group.transform, Vector2.zero) };
             foreach (Component component in components) PrefabUtility.SaveAsPrefabAsset(component.gameObject, GamePath + "/Prefabs/Mechanisms/" + component.GetType().Name + ".prefab");
+            PhysicalProp lid = LooseLid(group.GetComponentInChildren<ExitSocket>());
+            PrefabUtility.SaveAsPrefabAsset(lid.gameObject, GamePath + "/Prefabs/Mechanisms/LooseLid.prefab");
             UnityEngine.Object.DestroyImmediate(group);
         }
 

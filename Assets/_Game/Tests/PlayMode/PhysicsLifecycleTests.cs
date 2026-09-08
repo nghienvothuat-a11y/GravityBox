@@ -19,12 +19,20 @@ namespace GravityBox.Tests
         private EnvironmentForceSystem forces;
         private GameObject services;
         private SimulationMode previousMode;
+        private float previousFixedDelta;
+        private float previousMaximumDelta;
         private const float Dt = 1f / 60;
 
         [SetUp]
         public void Setup()
         {
             previousMode = UnityEngine.Physics.simulationMode;
+            previousFixedDelta = Time.fixedDeltaTime;
+            previousMaximumDelta = Time.maximumDeltaTime;
+            // MoveRotation/contact prediction must use the same clock as Physics.Simulate.
+            // Do not depend on an earlier scene/input test having run GameBootstrap.Awake.
+            Time.fixedDeltaTime = Dt;
+            Time.maximumDeltaTime = 0.1f;
             UnityEngine.Physics.simulationMode = SimulationMode.Script;
             UnityEngine.Physics.gravity = Vector3.zero;
             services = new GameObject("Test services");
@@ -43,6 +51,8 @@ namespace GravityBox.Tests
             if (root != null) Object.DestroyImmediate(root);
             if (ball != null) Object.DestroyImmediate(ball);
             UnityEngine.Physics.simulationMode = previousMode;
+            Time.fixedDeltaTime = previousFixedDelta;
+            Time.maximumDeltaTime = previousMaximumDelta;
             Time.timeScale = 1;
         }
 
@@ -109,7 +119,7 @@ namespace GravityBox.Tests
         [Test]
         public void Reset100Times_RestoresBallRootSignalsAndDoorWithoutAccumulation()
         {
-            Load(5);
+            Load(8);
             Vector3 initialPosition = levels.Ball.Body.position;
             int registryCount = levels.Current.Resets.Count;
             PressurePlate plate = levels.Current.Plates[0];
@@ -251,6 +261,8 @@ namespace GravityBox.Tests
             {
                 Load(i);
                 foreach (var plate in levels.Current.Plates) plate.SetActive(true);
+                // Isolate the aperture here. Actual lid release is verified separately and in solve routes.
+                foreach (var prop in levels.Current.Props) prop.Body.position = new Vector3(20, 0, 0);
                 LaunchThroughExit();
                 Assert.That(levels.Current.Exit.HasExited, Is.True, levels.Definition.Id);
                 Assert.That(levels.Ball.Body.isKinematic, Is.False, levels.Definition.Id);
@@ -262,7 +274,7 @@ namespace GravityBox.Tests
         [Test]
         public void PlateDoorPrerequisite_BlocksPhysicalExitUntilSwitchIsPressed()
         {
-            Load(5);
+            Load(8);
             Assert.That(levels.Current.Exit.IsUnlocked, Is.False);
             LaunchThroughExit();
             Assert.That(levels.Current.Exit.HasExited, Is.False);
@@ -274,6 +286,125 @@ namespace GravityBox.Tests
             Assert.That(levels.Current.Exit.IsUnlocked, Is.True);
             LaunchThroughExit();
             Assert.That(levels.Current.Exit.HasExited, Is.True);
+        }
+
+        [Test]
+        public void LooseLid_RestsOnInnerSeatAndBlocksBallWithoutSignalLogic()
+        {
+            Load(5);
+            Assert.That(levels.Current.Plates, Is.Empty);
+            Assert.That(levels.Current.GetComponentsInChildren<SignalDoor>(), Is.Empty);
+            Assert.That(levels.Current.Exit.RequiredChannel, Is.Empty);
+            Assert.That(levels.Current.Exit.IsUnlocked, Is.True, "Only solid contact closes this hole.");
+            var lid = levels.Current.Props[0];
+            Assert.That(lid.Body.isKinematic, Is.False);
+            Assert.That(lid.transform.parent, Is.Null);
+            levels.Ball.Capture(levels.Ball.Body.position);
+            Steps(180);
+            Vector3 seated = levels.Current.Exit.transform.InverseTransformPoint(lid.Body.position);
+            Assert.That(Mathf.Abs(seated.z), Is.LessThan(0.06f));
+            Assert.That(new Vector2(seated.x, seated.y).magnitude, Is.LessThan(0.06f));
+            levels.ResetLevel();
+            LaunchThroughExit();
+            Assert.That(levels.Current.Exit.HasExited, Is.False);
+            Assert.That(levels.Current.Exit.transform.InverseTransformPoint(levels.Ball.Body.position).z, Is.LessThan(-levels.Current.Exit.WallHalfDepth));
+        }
+
+        [Test]
+        public void LooseLid_FallsIntoBoxWhenOpeningFacesUpWithoutAnUnlockEvent()
+        {
+            Load(5);
+            levels.Ball.Capture(levels.Ball.Body.position);
+            PhysicalProp lid = levels.Current.Props[0];
+            levels.Current.Rotation.SetTargetOrientation(Quaternion.Euler(0, 0, 180));
+            Steps(180);
+            Assert.That(Vector3.Dot(levels.Current.Exit.transform.forward, Vector3.up), Is.GreaterThan(0.98f));
+            Assert.That(levels.Current.Exit.transform.InverseTransformPoint(lid.Body.position).z, Is.LessThan(-0.5f));
+            Assert.That(lid.Body.isKinematic, Is.False);
+            Assert.That(levels.Current.IsOutside(lid.Body.position), Is.False, "The loose lid must collide with the opposite wall.");
+            Assert.That(lid.GetComponentsInChildren<Collider>()[0].enabled, Is.True, "Fallen lid remains physical.");
+            Assert.That(levels.Session.State, Is.EqualTo(SessionState.Active), "A fallen lid alone does not win the level.");
+        }
+
+        [Test]
+        public void LooseLid_RemainsInsideDuringRepeatedLargeRotations()
+        {
+            Load(5);
+            levels.Ball.Capture(levels.Ball.Body.position);
+            PhysicalProp lid = levels.Current.Props[0];
+            foreach (float angle in new[] { 180f, -25f, 90f, -90f, 135f, -135f, 0f })
+            {
+                levels.Current.Rotation.SetTargetOrientation(Quaternion.Euler(0, 0, angle));
+                for (int tick = 0; tick < 210; tick++)
+                {
+                    Steps(1);
+                    Assert.That(levels.Current.IsOutside(lid.Body.position), Is.False, "A solid lid must not tunnel through a wall.");
+                }
+            }
+        }
+
+        [Test]
+        public void FreeProp_ReceivesEarthGravityOnceAndDoesNotInheritBoxRotation()
+        {
+            Load(5);
+            levels.Ball.Capture(levels.Ball.Body.position);
+            PhysicalProp lid = levels.Current.Props[0];
+            lid.Body.position = new Vector3(0, 1.5f, 0);
+            lid.Body.linearVelocity = Vector3.zero;
+            lid.Body.angularVelocity = Vector3.zero;
+            Quaternion initial = lid.Body.rotation;
+            forces.Register(lid);
+            forces.Register(lid);
+            Assert.That(forces.TargetCount, Is.EqualTo(2));
+            levels.Current.Rotation.SetTargetOrientation(Quaternion.Euler(0, 0, 50));
+            UnityEngine.Physics.SyncTransforms(); Steps(6);
+            Assert.That(lid.Body.linearVelocity.y, Is.InRange(-1.0f, -0.95f));
+            Assert.That(Mathf.Abs(lid.Body.linearVelocity.x) + Mathf.Abs(lid.Body.linearVelocity.z), Is.LessThan(0.001f));
+            Assert.That(Quaternion.Angle(initial, lid.Body.rotation), Is.LessThan(0.001f));
+        }
+
+        [Test]
+        public void FreeProp_UsesZeroGProfileWithoutInventingAReleaseForce()
+        {
+            Load(5);
+            levels.Ball.Capture(levels.Ball.Body.position);
+            PhysicalProp lid = levels.Current.Props[0];
+            forces.Configure(levels.Ball, levels.Catalog.Levels[10].Environment);
+            forces.Register(lid);
+            lid.Body.position = new Vector3(0, 1.5f, 0);
+            Vector3 velocity = new Vector3(0.1f, 0.12f, 0.08f);
+            lid.Body.linearVelocity = velocity;
+            UnityEngine.Physics.SyncTransforms(); Steps(6);
+            Assert.That(Vector3.Distance(lid.Body.linearVelocity, velocity), Is.LessThan(0.001f));
+        }
+
+        [Test]
+        public void LooseLid_Reset100TimesRestoresBothBodiesAndUnloadRemovesForceTarget()
+        {
+            Load(5);
+            PhysicalProp lid = levels.Current.Props[0];
+            Vector3 start = lid.Body.position;
+            Quaternion rotation = lid.Body.rotation;
+            int registryCount = levels.Current.Resets.Count;
+            for (int i = 0; i < 100; i++)
+            {
+                lid.Body.position = Vector3.one * 8;
+                lid.Body.rotation = Quaternion.Euler(i, i * 2, 90);
+                lid.Body.linearVelocity = Vector3.one * 5;
+                lid.Body.angularVelocity = Vector3.one * 3;
+                levels.Current.GetComponent<Rigidbody>().rotation = Quaternion.Euler(0, 0, i);
+                levels.ResetLevel();
+                Assert.That(Vector3.Distance(lid.Body.position, start), Is.LessThan(0.0001f));
+                Assert.That(Quaternion.Angle(lid.Body.rotation, rotation), Is.LessThan(0.001f));
+                Assert.That(lid.Body.linearVelocity, Is.EqualTo(Vector3.zero));
+                Assert.That(lid.Body.angularVelocity, Is.EqualTo(Vector3.zero));
+                Assert.That(forces.TargetCount, Is.EqualTo(2));
+                Assert.That(levels.Current.Resets.Count, Is.EqualTo(registryCount));
+            }
+            GameObject oldLid = lid.gameObject;
+            Load(0);
+            Assert.That(forces.TargetCount, Is.EqualTo(1));
+            Assert.That(oldLid.activeSelf, Is.False);
         }
 
         [Test]
@@ -344,7 +475,7 @@ namespace GravityBox.Tests
         }
 
         [System.Serializable]
-        public sealed class RouteStep { public float z; public int ticks; }
+        public sealed class RouteStep { public float z; public bool aimAtExit; public int ticks; }
         [System.Serializable]
         public sealed class Route { public string id; public List<RouteStep> steps = new List<RouteStep>(); }
         [System.Serializable]
@@ -371,7 +502,31 @@ namespace GravityBox.Tests
                 Load(index);
                 var gates = levels.Current.GetComponentsInChildren<OneWayGate>();
                 Route solved = null;
-                if (previous != null)
+                if (record && index == 5)
+                {
+                    // Let both bodies settle, lift the opening, and park the loose lid
+                    // on another wall before returning toward the exit.
+                    foreach (float parkAngle in new[] { 90f, -90f, 55f, -55f, 135f, -135f })
+                    {
+                        foreach (int settleTicks in new[] { 240, 360 })
+                        {
+                            var simpleLidRoute = new Route { id = levels.Definition.Id };
+                            simpleLidRoute.steps.Add(new RouteStep { z = 0, ticks = 120 });
+                            simpleLidRoute.steps.Add(new RouteStep { z = 180, ticks = 240 });
+                            simpleLidRoute.steps.Add(new RouteStep { z = parkAngle, ticks = settleTicks });
+                            simpleLidRoute.steps.Add(new RouteStep { aimAtExit = true, ticks = 1200 });
+                            bool repeatable = true;
+                            for (int repeat = 0; repeat < 3; repeat++)
+                            {
+                                Load(index);
+                                if (!TryRoute(simpleLidRoute, gates, out _)) { repeatable = false; break; }
+                            }
+                            if (repeatable) { solved = simpleLidRoute; break; }
+                        }
+                        if (solved != null) break;
+                    }
+                }
+                if (solved == null && previous != null)
                 {
                     Route recorded = previous.routes.Find(x => x.id == levels.Definition.Id);
                     if (recorded != null && TryRoute(recorded, gates, out Route replayed)) solved = replayed;
@@ -398,6 +553,9 @@ namespace GravityBox.Tests
                 }
                 if (solved != null)
                 {
+                    // The final hold is a bounded input budget, not a promise of bitwise
+                    // identical contact timing across PhysX runs. Intermediate holds stay exact.
+                    if (record) solved.steps[solved.steps.Count - 1].ticks += 60;
                     proof.routes.Add(solved);
                     Debug.Log($"SOLVE PROOF {levels.Definition.Id}: {solved.steps.Count} rotation segments");
                 }
@@ -414,10 +572,26 @@ namespace GravityBox.Tests
             foreach (RouteStep segment in route.steps)
             {
                 levels.Current.Rotation.SetTargetOrientation(Quaternion.Euler(0, 0, segment.z));
-                var actual = new RouteStep { z = segment.z, ticks = 0 };
+                var actual = new RouteStep { z = segment.z, aimAtExit = segment.aimAtExit, ticks = 0 };
                 proof.steps.Add(actual);
+                Vector3 previousBall = levels.Current.transform.InverseTransformPoint(levels.Ball.Body.position);
                 for (int tick = 0; tick < segment.ticks; tick++)
                 {
+                    if (segment.aimAtExit)
+                    {
+                        // Test-only player policy: observe the ball and tilt on BOTH axes.
+                        // A free lid can deflect the ball in depth, which a Z-only route cannot correct.
+                        // This changes rotation intent only; it never moves either free body or adds force.
+                        Transform box = levels.Current.transform;
+                        Vector3 ball = box.InverseTransformPoint(levels.Ball.Body.position);
+                        Vector3 velocity = (ball - previousBall) / Dt;
+                        previousBall = ball;
+                        Vector3 outward = box.InverseTransformDirection(levels.Current.Exit.transform.forward);
+                        Vector3 error = box.InverseTransformPoint(levels.Current.Exit.transform.position) - ball;
+                        Vector3 tangent = Vector3.ProjectOnPlane(error * 2f - velocity * 2f, outward);
+                        Vector3 gravityDirection = outward * 9.81f + Vector3.ClampMagnitude(tangent, 3f);
+                        levels.Current.Rotation.SetTargetOrientation(Quaternion.FromToRotation(gravityDirection, Vector3.down));
+                    }
                     levels.Current.Rotation.Step(Dt);
                     foreach (OneWayGate gate in gates) gate.Step();
                     forces.Step();
@@ -428,6 +602,8 @@ namespace GravityBox.Tests
                     if (levels.Session.State == SessionState.Failed || levels.Current.IsOutside(levels.Ball.Body.position)) return false;
                 }
             }
+            if (route.id == "gb-06")
+                Debug.Log($"LID ROUTE HELD: ball {levels.Current.transform.InverseTransformPoint(levels.Ball.Body.position)}, lid {levels.Current.transform.InverseTransformPoint(levels.Current.Props[0].Body.position)}");
             return false;
         }
     }

@@ -49,7 +49,7 @@ namespace GravityBox.Gameplay
             Ball.name = "Ball (world space)";
             Ball.Configure(catalog.BallProfile, Current.transform.TransformDirection(level.InitialLocalVelocity), level.Environment.IsZeroGravity);
             forces.Configure(Ball, level.Environment);
-            Current.Initialize(Ball, catalog.Rotation, level.RotationMode);
+            Current.Initialize(Ball, catalog.Rotation, level.RotationMode, forces);
             Current.Exit.Exited += Complete;
             foreach (KillVolume hazard in Current.Hazards) hazard.Hit += Fail;
             ResetCount = 0;
@@ -140,6 +140,7 @@ namespace GravityBox.Gameplay
             {
                 Current.Exit.Exited -= Complete;
                 foreach (KillVolume hazard in Current.Hazards) hazard.Hit -= Fail;
+                Current.ReleaseProps();
                 Current.gameObject.SetActive(false);
                 Destroy(Current.gameObject);
                 Current = null;

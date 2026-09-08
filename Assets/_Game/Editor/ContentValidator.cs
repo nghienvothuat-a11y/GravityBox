@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using GravityBox.Gameplay;
+using GravityBox.Simulation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -31,15 +32,22 @@ namespace GravityBox.Editor
                 var outlet = level.Prefab.Exit;
                 Require(outlet.ApertureRadius > catalog.BallProfile.Radius + 0.05f, level.Id + ": aperture too narrow for ball.");
                 Require(Mathf.Abs(outlet.WallHalfDepth - 0.09f) < 0.0001f, level.Id + ": exit must be flush with the 0.18 m shell.");
-                foreach (var renderer in outlet.GetComponentsInChildren<MeshRenderer>())
+                foreach (var renderer in outlet.GetComponentsInChildren<MeshRenderer>(true))
                 {
-                    if (renderer.GetComponentInParent<SignalDoor>() != null) continue;
-                    Require(renderer.GetComponent<Collider>() == null, level.Id + ": light inlay must not obstruct the ball.");
+                    if (renderer.GetComponentInParent<SignalDoor>(true) != null || renderer.GetComponentInParent<PhysicalProp>(true) != null) continue;
+                    Require(renderer.GetComponent<Collider>() == null, level.Id + ": light inlay must not obstruct the ball: " + renderer.name + ".");
                 }
                 Vector3 escaped = outlet.transform.position + outlet.transform.forward * (outlet.WallHalfDepth + catalog.BallProfile.Radius + 0.03f);
                 Require(!level.Prefab.IsOutside(escaped), level.Id + ": escape threshold must precede failure bounds.");
                 string required = level.Prefab.Exit.RequiredChannel;
                 Require(string.IsNullOrEmpty(required) || channels.Contains(required), level.Id + ": exit requires an unknown channel.");
+                foreach (PhysicalProp prop in level.Prefab.GetComponentsInChildren<PhysicalProp>(true))
+                {
+                    Require(!prop.Body.isKinematic && prop.Body.mass > 0, level.Id + ": prop must be a free body with mass.");
+                    Require(prop.transform.lossyScale == Vector3.one, level.Id + ": physical prop scale must be one.");
+                    foreach (MeshCollider collider in prop.GetComponentsInChildren<MeshCollider>(true))
+                        Require(collider.convex && collider.sharedMesh != null, level.Id + ": free prop requires convex collision meshes.");
+                }
                 ValidateSpawn(level, catalog.BallProfile.Radius);
             }
             Debug.Log("GRAVITY BOX CONTENT VALID: " + catalog.Levels.Length + " unique levels, spawn clearance and references checked.");
@@ -63,7 +71,7 @@ namespace GravityBox.Editor
                     bool overlap = UnityEngine.Physics.ComputePenetration(sphere, spawn, Quaternion.identity, solid,
                         solid.transform.position, solid.transform.rotation, out _, out float depth);
                     Require(!overlap || depth < 0.005f, definition.Id + ": spawn overlaps " + solid.name);
-                    if (solid.GetComponentInParent<SignalDoor>() != null) continue;
+                    if (solid.GetComponentInParent<SignalDoor>(true) != null || solid.GetComponentInParent<PhysicalProp>(true) != null) continue;
                     for (int sample = 0; sample <= 6; sample++)
                     {
                         Vector3 point = level.Exit.transform.TransformPoint(new Vector3(0, 0, Mathf.Lerp(-0.3f, 0.3f, sample / 6f)));

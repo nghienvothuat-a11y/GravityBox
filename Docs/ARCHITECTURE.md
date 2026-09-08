@@ -26,14 +26,15 @@ Mỗi khối là một asmdef. Foundation không tham chiếu UnityEngine. Simul
 | --- | --- | --- | --- |
 | GameBootstrap | Gameplay scene | Phiên chơi | Cấu hình runtime và kết nối các lớp |
 | LevelManager | Bootstrap | Phiên chơi | Load, reset, advance, state và counters |
-| EnvironmentForceSystem | Bootstrap | Phiên chơi | Áp force providers cho target hiện tại |
+| EnvironmentForceSystem | Bootstrap | Phiên chơi | Áp force providers cho danh sách body của màn, đăng ký/hủy tường minh |
 | LevelRuntime | LevelManager | Một lần load | Root, registry, signal bus, cơ cấu |
 | BallController | LevelManager | Một lần load | Rigidbody state, capture, collision feedback |
+| PhysicalProp | LevelRuntime | Một lần load | Body tự do world-space, reset pose/vận tốc; không animation điều khiển |
 | LevelDefinition/Catalog/Profile | Asset database/build | Read-only runtime | Nội dung và tuning |
 | GameHud/Input/Feedback | Bootstrap | Phiên chơi | Input intent và biểu diễn |
 | LocalPlaytestRecorder | Bootstrap | Phiên chơi | CSV local theo event |
 
-Ball được instantiate cạnh LevelRoot trong world hierarchy. Nó không phải con của root: parent transform sẽ tạo gia tốc/đổi vận tốc giả trong zero-G. Khi load màn mới, vô hiệu hóa object cũ ngay trước Destroy cuối frame để không có hai bộ collider hoạt động đồng thời. ForceSystem xóa target cũ trước khi gắn target mới.
+Ball được instantiate cạnh LevelRoot trong world hierarchy. Nó không phải con của root: parent transform sẽ tạo gia tốc/đổi vận tốc giả trong zero-G. Khi load màn mới, vô hiệu hóa object cũ ngay trước Destroy cuối frame để không có hai bộ collider hoạt động đồng thời. ForceSystem xóa các target cũ trước khi gắn màn mới. PhysicalProp cũng tách khỏi LevelRoot khi load, được giữ trong LevelRuntime.Props để reset/release; nắp không kế thừa transform khi xoay hộp.
 
 ## Đường đi input và vật lý
 
@@ -85,7 +86,7 @@ TryComplete/TryFail chỉ chuyển từ Active. ExitSocket theo dõi chuyển đ
 2. Xóa signal state theo scope màn.
 3. Khôi phục root pose và xóa rotation backlog.
 4. Khôi phục plate, door, gate, pad, exit theo registry; bao gồm IgnoreCollision/cooldown/exit traversal state.
-5. Khôi phục world pose, launch velocity và angular velocity của ball; clear trail và wake.
+5. Khôi phục world pose/vận tốc của các props, sau đó ball với launch velocity; clear trail và wake.
 6. Physics.SyncTransforms; Exit.BeginTracking lấy lại mẫu từ pose đã reset; session chuyển Active.
 
 InitialLocalVelocity của zero-G là chủ ý thiết kế, vì vậy reset màn có launch velocity phải khôi phục vận tốc ấy, không ép zero. CaptureInitialState chỉ chạy khi đăng ký một lần lúc load. Reset không capture lại trạng thái đã bị biến đổi. PhysX không hứa deterministic bit-for-bit giữa nền tảng; test dùng sai số cho tích phân, còn trạng thái reset được kiểm tra tường minh.
@@ -103,7 +104,7 @@ Nguồn tạo baseline là Editor/PrototypeBuilder; prefab và ScriptableObject 
 | Nhu cầu tương lai | Điểm mở rộng | Khi nào thực hiện |
 | --- | --- | --- |
 | Magnetic/wind/buoyancy | IForceProvider + localized target query | Sau GO gate và test riêng cho lực |
-| Multiple balls | Target registry ở Simulation + goal policy ở Gameplay | Khi design yêu cầu; input vẫn chỉ xoay root |
+| Multiple balls | Tái dùng force registry; mở rộng ball ownership và goal policy ở Gameplay | Khi design yêu cầu; input vẫn chỉ xoay root |
 | Material behavior | Profile dữ liệu cho physical/interaction coefficients | Trước force phụ thuộc vật liệu |
 | Save migration | IProgressStore, schema version, atomic replacement | Khi có persistence người dùng |
 | Remote analytics | IPlaytestSink/adapter có consent và queue | Khi xác định dữ liệu, privacy và vận hành |

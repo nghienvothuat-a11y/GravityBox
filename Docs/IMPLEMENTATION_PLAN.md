@@ -55,7 +55,7 @@ Chi tiết: [ARCHITECTURE.md](ARCHITECTURE.md) và [DECISIONS.md](DECISIONS.md).
 | 03 | Small steps | Shelf sequencing | Rơi xuống đúng khe và phục hồi được |
 | 04 | A little caution | Hazard | Nguy hiểm nổi bật, fail giải thích được |
 | 05 | Carry the motion | Momentum + ramp | Biết lấy đà rồi đổi hướng |
-| 06 | Open sesame | Plate mở door | Tín hiệu và trạng thái door nhìn thấy được |
+| 06 | Let it fall | Nắp tự do rơi theo trọng lực | Đưa lỗ lên trên để nắp rời mặt tựa; nắp vẫn va chạm sau khi rơi |
 | 07 | No turning back | One-way | Đi xuôi, không xuyên gate theo chiều ngược |
 | 08 | Spring theory | Bumper/impulse | Impulse là nguồn lực được đánh dấu rõ |
 | 09 | Chain reaction | Plate + ramp + gate | Thứ tự kích hoạt có ý nghĩa |
@@ -94,9 +94,9 @@ Layout khởi tạo là nội dung thử nghiệm cần tuning với người ch
 
 ## Rủi ro cần xử lý trước khi gọi là sản phẩm
 
-Rủi ro lớn nhất là xoay compound body gây contact bùng lực. Biện pháp hiện tại là giới hạn angular speed/backlog, continuous collision cho bóng, thành đủ dày và cap depenetration; nếu test thiết bị vẫn thất bại, prototype nhánh logical gravity rồi so sánh feel và tính đúng quán tính zero-G trước khi đổi kiến trúc.
+Rủi ro lớn nhất là xoay compound body gây contact bùng lực. Biện pháp hiện tại là giới hạn angular speed/backlog, continuous collision cho bóng, speculative collision cho nắp, thành đủ dày và cap depenetration. Nếu test thiết bị thất bại, đo contact, timestep, hình dạng collider và solver để sửa nguyên nhân; giữ trọng lực thế giới và quán tính của các body tự do.
 
-16 level prefab không chứng minh 16 puzzle đã cân bằng. Cần lưu solve route có input/timing và đánh dấu từng màn đã kiểm chứng, rồi playtest tránh lối giải random spin. Màn có plate cần exit prerequisite để không bỏ qua trình tự bằng cách quay hộp.
+16 level prefab không chứng minh 16 puzzle đã cân bằng. Cần lưu solve route có input/timing và đánh dấu từng màn đã kiểm chứng, rồi playtest để người chơi hiểu nguyên nhân của chuyển động. Với nội dung mới, hình học vật cản quyết định đường đi; chấp nhận lời giải khác nếu đúng vật lý. Exit prerequisite trong các màn plate cũ là cơ chế kế thừa cần chuyển đổi, không phải quy tắc cho màn mới.
 
 Build Android/iOS phụ thuộc module, SDK, signing và phần cứng. Giữ build script tái lập được; báo rõ build nào đã compile, build nào đã cài/chạy, và phép đo nào chưa thực hiện.
 
@@ -105,3 +105,7 @@ Build Android/iOS phụ thuộc module, SDK, signing và phần cứng. Giữ bu
 Yêu cầu trực tiếp của người dùng thay thế capture trong GDD gốc. Tiêu chí nghiệm thu: vỏ có lỗ thật, bi đi xuyên bằng Rigidbody, chưa thắng khi còn chồng mép cửa, chỉ thắng từ phía trong ra, không teleport/hút bi, và thấy chuyển động ngoài hộp trước khi đổi màn. Màn có prerequisite phải khóa cả vật lý lẫn điều kiện thắng. Reset phải xóa quá trình đi qua cửa và hủy chuyển màn đang chờ. Kiểm tra lại toàn bộ 16 đường giải sau khi sửa geometry.
 
 Phản hồi tiếp theo: cửa phải là lỗ tròn khoét phẳng trên thành hộp, viền sáng mảnh/dịu; không có collider nhô lên gây vướng khi lăn. Tiêu chí bổ sung: bi lăn chậm trên sàn tự rơi qua lỗ mà không cần leo gờ hoặc được thêm lực nâng; hình dạng va chạm và vùng thắng cùng dùng tiết diện tròn.
+
+## Định hướng vật lý sau phản hồi màn 6
+
+Ưu tiên nguyên nhân vật lý nhìn thấy được, hình học/contact, khối lượng, ma sát, quán tính và trọng lực thế giới. [PHYSICS_DESIGN_PRINCIPLES.md](PHYSICS_DESIGN_PRINCIPLES.md) là chuẩn cho cơ chế mới, có ưu tiên so với các công tắc/tween quy ước của baseline GDD. L06 được chuyển trước thành nắp tự do; các tín hiệu, one-way gate và impulse pad cũ cần rà soát theo bảng chuyển đổi trong tài liệu đó, từng cơ chế kèm route/reset/performance validation.

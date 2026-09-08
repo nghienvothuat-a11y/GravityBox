@@ -12,12 +12,21 @@ namespace GravityBox.Gameplay
         public float BoundsHalfExtent = 3.7f;
         public readonly MechanismSignals Signals = new MechanismSignals();
         public readonly ResetRegistry Resets = new ResetRegistry();
+        private EnvironmentForceSystem forces;
+        public PhysicalProp[] Props { get; private set; } = System.Array.Empty<PhysicalProp>();
         public PressurePlate[] Plates { get; private set; }
         public ImpulsePad[] Pads { get; private set; }
         public KillVolume[] Hazards { get; private set; }
 
-        public void Initialize(BallController ball, RotationSettings settings, RotationMode mode)
+        public void Initialize(BallController ball, RotationSettings settings, RotationMode mode, EnvironmentForceSystem forceSystem)
         {
+            forces = forceSystem;
+            Props = GetComponentsInChildren<PhysicalProp>(true);
+            foreach (PhysicalProp prop in Props)
+            {
+                prop.Initialize();
+                forces.Register(prop);
+            }
             Rotation.Configure(settings, mode);
             Resets.Register(Rotation);
             Plates = GetComponentsInChildren<PressurePlate>(true);
@@ -32,6 +41,7 @@ namespace GravityBox.Gameplay
             // Explicit hierarchy order; no global FindObjectsOfType or singleton registry.
             foreach (MonoBehaviour component in GetComponentsInChildren<MonoBehaviour>(true))
                 if (component is IResettable resettable && component != Rotation) Resets.Register(resettable);
+            foreach (PhysicalProp prop in Props) Resets.Register(prop);
             Resets.Register(ball);
         }
 
@@ -42,6 +52,20 @@ namespace GravityBox.Gameplay
             UnityEngine.Physics.SyncTransforms();
             Exit.BeginTracking();
         }
+
+        public void ReleaseProps()
+        {
+            foreach (PhysicalProp prop in Props)
+            {
+                if (prop == null) continue;
+                if (forces != null) forces.Unregister(prop);
+                prop.gameObject.SetActive(false);
+                Destroy(prop.gameObject);
+            }
+            Props = System.Array.Empty<PhysicalProp>();
+        }
+
+        private void OnDestroy() => ReleaseProps();
 
         public bool IsOutside(Vector3 worldPosition)
         {

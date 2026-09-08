@@ -63,3 +63,13 @@ Mesh được tạo tại Editor và lưu thành asset, không dựng lại ho�
 Viền là vành phẳng rộng 0,018 m nằm sát hai bề mặt vỏ, lệch 0,003 m chỉ để tránh z-fighting. Material unlit màu xanh dịu (0,33; 0,52; 0,39), không bloom, đèn, emission boost hay collider. Không có vành dạng ống hoặc phần nâng mặt sàn. Shutter các màn có switch dùng đĩa tròn chìm trong độ dày vỏ.
 
 ExitSocket kiểm tra clearance theo bán kính tròn; WallHalfDepth giảm từ 0,30 xuống 0,09 để khớp mép thật của mặt cắt. Chưa thắng cho đến khi toàn bộ bi ra ngoài. Bổ sung regression test bi lăn chậm từ mặt sàn bên cạnh lỗ chỉ với gravity và vận tốc tiếp tuyến 1,2 m/s; test phải qua mà không thêm lực nâng. Test riêng loại vùng góc từng hợp lệ của cửa vuông.
+
+## ADR 013 Vật thể tự do và nắp rơi bằng trọng lực
+
+Phản hồi của người dùng thay thế cơ chế công tắc ở L06. Xem [Triết lý thiết kế vật lý](PHYSICS_DESIGN_PRINCIPLES.md). Màn này bỏ Plate/SignalDoor/RequiredChannel; dùng đĩa tròn rời tựa phía trong. Nắp rời lỗ vì lực và contact, không kiểm tra orientation để quyết định mở. Đĩa nắp là một convex MeshCollider trên body tự do; sàn có lỗ vẫn là mesh non-convex trên root kinematic.
+
+EnvironmentForceSystem chuyển từ một target sang danh sách đăng ký theo scope màn. IPhysicsAffectable chỉ yêu cầu Rigidbody, không buộc props phụ thuộc BallPhysicsProfile. Ball giữ profile riêng; prop dùng khối lượng/shape/material trong prefab và cùng EnvironmentProfile để nhận gia tốc. PhysicalProp chỉ quản lý world-space initialization/reset, không có Update/FixedUpdate điều khiển chuyển động.
+
+LevelRuntime giữ danh sách Props trước khi tách khỏi LevelRoot, đăng ký force/reset một lần. Reset root trước các body; ReleaseProps vô hiệu hóa object và hủy đăng ký trước Destroy để load liên tiếp không tạo va chạm/lực ma. Việc tách khỏi hierarchy là thao tác khởi tạo, không phải thời điểm nắp rơi. Nắp luôn dynamic, không có trạng thái unlock hoặc animation mở.
+
+Các cơ cấu tín hiệu ở màn cũ khác chưa được chuyển đổi trong thay đổi L06; được đánh dấu trong kế hoạch chuyển nội dung. Không tuyên bố toàn bộ 16 màn đã tuân thủ triết lý mới.

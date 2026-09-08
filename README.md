@@ -12,6 +12,8 @@ Kéo chuột trái hoặc một ngón tay trong vùng hộp để xoay. Thả đ
 
 ## Tài liệu
 
+- [Triết lý thiết kế: vật lý và cơ chế nắp rơi](Docs/PHYSICS_DESIGN_PRINCIPLES.md)
+
 - [Kế hoạch chi tiết và các cổng nghiệm thu](Docs/IMPLEMENTATION_PLAN.md)
 - [Kiến trúc, lifecycle và sơ đồ phụ thuộc](Docs/ARCHITECTURE.md)
 - [Quyết định kỹ thuật và tradeoff](Docs/DECISIONS.md)
@@ -42,7 +44,7 @@ Tools/                     CLI build và verification
 
 Sửa sensitivity, smoothing, tốc độ xoay và assisted snap trong `ScriptableObjects/Physics/Rotation.asset`. Sửa gravity, damping, velocity caps trong `ScriptableObjects/Environments`. Bóng và collision profile ở `ScriptableObjects/Physics/Ball.asset`.
 
-Duplicate prefab level và LevelDefinition, gán prefab/profile, stable ID duy nhất rồi thêm vào LevelCatalog. Cơ cấu cùng channel sẽ nối trong scope của màn; exit có RequiredChannel nếu phải chạm plate trước. BallSpawn phải nằm trong hộp, cách mọi solid collider ít nhất bán kính ball. Giữ scale root = 1 và không parent ball runtime vào root.
+Duplicate prefab level và LevelDefinition, gán prefab/profile, stable ID duy nhất rồi thêm vào LevelCatalog. Cơ chế mới tuân theo [triết lý vật lý](Docs/PHYSICS_DESIGN_PRINCIPLES.md): vật thể/contact/khớp trực tiếp quyết định đường đi; có thể dùng prefab LooseLid và PhysicalProp làm điểm bắt đầu. Channel và RequiredChannel chỉ còn phục vụ các màn tín hiệu kế thừa. BallSpawn phải nằm trong hộp, cách mọi solid collider ít nhất bán kính ball. Giữ scale root = 1; ball và props tự do không nằm dưới root khi mô phỏng.
 
 Menu **Generate Prototype Baseline** tái tạo asset baseline, có thể ghi đè chỉnh sửa trên các file baseline. Dùng Git/variant hoặc tạo asset riêng trước khi chạy lại. Project đã có sẵn prefab/scene nên không cần generate để chơi.
 
@@ -81,3 +83,7 @@ Chuỗi ảnh native từ cùng một lần chơi màn L11 với lỗ tròn kho�
 Lăn bi qua lỗ tròn khoét trực tiếp trên mặt hộp, với đường sáng xanh mảnh và dịu quanh mép. Mặt lăn phẳng, không có gờ cửa nhô lên. Chỉ khi toàn bộ bi ra ngoài mới thắng; chạm vào cửa chưa đủ. Bi tiếp tục rơi/bay theo vận tốc thực, cảnh giữ 1,8 giây ở slow motion trước khi chuyển màn. Màn có switch dùng shutter hổ phách khóa cửa cho đến khi kích hoạt đúng channel.
 
 Chi tiết hợp đồng geometry/detector và quyết định thay thế GDD cũ: [ADR 011–012](Docs/DECISIONS.md). Khi chỉnh kích thước cửa phải chỉnh cả các tấm vỏ/viền tương ứng, rồi chạy Validate Content và bộ test vật lý.
+
+### Level 6: nắp rơi theo trọng lực
+
+Xoay để lỗ lên phía trên: nắp ở mặt trong sẽ rơi xuống trong hộp, để lỗ thông thoáng. Nghiêng để nắp dời sang bên, rồi đưa bi qua lỗ. Nắp vẫn là vật thể có khối lượng/va chạm và có thể bị đẩy hoặc rơi lại gần cửa. Màn này đã bỏ công tắc và cửa trượt theo tín hiệu; các màn cũ còn cơ chế tín hiệu đang được ghi riêng trong kế hoạch chuyển đổi.

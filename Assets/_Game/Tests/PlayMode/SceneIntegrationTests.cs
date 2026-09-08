@@ -26,6 +26,8 @@ namespace GravityBox.Tests
             {
                 Assert.That(levels.Index, Is.EqualTo(i));
                 foreach (var plate in levels.Current.Plates) plate.SetActive(true);
+                // This fixture tests scene transitions; full physics-only routes cover puzzle solving.
+                foreach (var prop in levels.Current.Props) prop.Body.position = new Vector3(20, 0, 0);
                 var outlet = levels.Current.Exit;
                 levels.Ball.Body.position = outlet.transform.TransformPoint(new Vector3(0, 0, -0.7f));
                 levels.Ball.Body.linearVelocity = outlet.transform.forward * 6;

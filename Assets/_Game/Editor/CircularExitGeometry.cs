@@ -66,7 +66,9 @@ namespace GravityBox.Editor
             return builder.Save("Circular light inlay");
         }
 
-        public static Mesh Shutter(float radius, float halfDepth)
+        public static Mesh Shutter(float radius, float halfDepth) => Disc("Recessed circular shutter", radius, halfDepth);
+
+        public static Mesh Disc(string name, float radius, float halfDepth)
         {
             var builder = new Surface();
             for (int i = 0; i < Segments; i++)
@@ -76,7 +78,7 @@ namespace GravityBox.Editor
                 builder.Triangle(new Vector3(0, 0, -halfDepth), Point(b, -halfDepth), Point(a, -halfDepth));
                 builder.Quad(Point(a, -halfDepth), Point(b, -halfDepth), Point(b, halfDepth), Point(a, halfDepth));
             }
-            return builder.Save("Recessed circular shutter");
+            return builder.Save(name);
         }
 
         public static GameObject Visual(string name, Transform parent, Mesh mesh, Material material)

@@ -21,7 +21,7 @@ Workspace ban đầu `/Users/mrk/GravityBox` trống, chưa có Unity project ho
 
 ## Test suite
 
-7 Edit Mode + 24 Play Mode = **31 bài test**, đều pass sau khi cập nhật lỗ tròn phẳng. Lượt Play Mode đầy đủ kết thúc 08/09/2026 lúc 04:38:35 UTC. Baseline trước thay đổi cửa có 26 bài test. Phần hình ảnh được kiểm tra thêm bằng build và ảnh native.
+7 Edit Mode + 30 Play Mode = **37 bài test**, đều pass sau khi cập nhật nắp vật lý. Lượt đầy đủ với replay nghiêm ngặt kết thúc 08/09/2026 lúc 05:59:20 UTC. Baseline trước thay đổi cửa có 26 bài test; bản lỗ tròn có 31. Phần hình ảnh được kiểm tra thêm bằng build và ảnh native.
 
 Edit Mode bao gồm reset registry deduplication, terminal transition, pause gate, gravity profiles, 24 canonical rotations, instance signal isolation và catalog integrity.
 
@@ -46,7 +46,7 @@ Các phép reset kiểm tra state khôi phục, không tuyên bố bitwise deter
 
 **macOS:** development player build thành công, chạy native trên Apple M5. Đã xem L01/L03/L14, level selector đủ 16 màn, reset keyboard và UI, pause/diagnostics, lưu ảnh bằng F12. Chuột/touch được kiểm tra end-to-end bằng Input System events; macro kéo của công cụ điều khiển desktop không cho một cử chỉ kéo liên tục đáng tin cậy, nên không dùng macro đó để tuyên bố feel đã đạt.
 
-**Android:** APK development ARM64/IL2CPP được tạo tại `Builds/Android/GravityBox.apk`, khoảng 53 MB ở bản cuối. ADB không có thiết bị kết nối; SDK không có system image emulator. Chưa cài/chạy hoặc profile Android thật.
+**Android:** APK development ARM64/IL2CPP được tạo tại `Builds/Android/GravityBox.apk`, khoảng 73 MB ở bản cuối. ADB không có thiết bị kết nối; SDK không có system image emulator. Chưa cài/chạy hoặc profile Android thật.
 
 **iOS:** Xcode build ARM64 thành công và đã cài/chạy trên iPhone 17 Simulator với iOS 26.5. Đã kiểm tra bố cục portrait/safe area và chạm nút Reset. Export simulator tắt MSAA để tránh mismatch attachment 1/4 samples của Metal; asset baseline được phục hồi về MSAA 4 sau export. Không còn lỗi render attachment ở bản đã sửa. URP còn một warning fallback shadow depth 16-bit từ package trên simulator, không chặn gameplay. Chưa có iPhone thật hoặc signing được xác minh. Script tái lập: `Tools/run-ios-simulator.sh`.
 
@@ -73,7 +73,7 @@ Không đo FPS/CPU/GPU p95/GC allocations trên Android/iPhone thật; chưa có
 1. Chơi touch trên một Android tầm trung và một iPhone thật, profile 15–20 phút ở 30/60 FPS và thao tác nhanh.
 2. Ghi route từ thao tác người chơi, làm rõ L06/L10/L14 và giảm khả năng giải do quay ngẫu nhiên; thu phản hồi zero-G trước khi thêm lực mới.
 3. Tuning tiếng động/impact; haptics, sensitivity settings, localization/accessibility chưa triển khai đầy đủ.
-4. Xác nhận quyết định physical-root hoặc thử nhánh logical gravity nếu có contact instability trên thiết bị.
+4. Đo contact/CCD của ball và props trên thiết bị; chỉnh hình học, timestep và solver khi có bằng chứng, giữ trọng lực thế giới.
 5. Qua GO gate mới triển khai save schema, loading bất đồng bộ nếu cần, material profiles và Phase 2. Kế hoạch chi tiết ở [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
 ## Cập nhật cửa thoát thật — 08/09/2026
@@ -97,3 +97,16 @@ Không đo FPS/CPU/GPU p95/GC allocations trên Android/iPhone thật; chưa có
 - Sau tinh chỉnh độ rộng/offset riêng của nét sáng, replay nghiêm ngặt 16 route vẫn pass (kết thúc 2026-09-08 04:44:55Z). Geometry va chạm và logic gameplay không thay đổi trong bước tinh chỉnh nét sáng.
 - Đã xem native: bi trong hộp → qua lỗ tròn → ngoài hộp/đã thắng. Ảnh ở `Exit-Round-Inside/Through/Escaped.png`; ảnh `Exit-RoundFlush.png` là shutter tròn đang khóa ở L06. Nét sáng sau đó được tăng nhẹ từ 0,012 lên 0,018 m và dịch render 0,003 m để tránh đứt nét ở góc xiên; không thay collider.
 - macOS và Android đã build lại bản cuối; iOS Simulator export và Xcode ARM64 build succeeded. Kiểm tra native tương tác của thay đổi này thực hiện trên macOS; chưa chạy lại bản lỗ tròn trên simulator hoặc thiết bị mobile thật.
+
+## Nắp tự do và thiết kế dựa trên vật lý — 08/09/2026
+
+- L06 đổi thành **Let it fall**, bỏ plate, cửa tín hiệu và khóa exit. Nắp là một đĩa tròn rời tựa phía trong, một Rigidbody 2 kg với một collider lồi. Khi lỗ lên trên, nắp rơi vào hộp theo gia tốc Trái Đất; sau đó vẫn va chạm và có thể bịt lại lỗ nếu rơi về đúng vị trí.
+- PhysicalProp tách khỏi root từ lúc load, đăng ký vào hệ lực chung với ball, lưu/khôi phục pose và vận tốc, được thu hồi khi đổi màn. Không có điều kiện góc, tween, lực kéo nắp hay tắt collider khi mở.
+- Nắp dùng ContinuousSpeculative; kiểm tra resting, blocked ball, gravity/zero-G, không kế thừa phép xoay của hộp, nhiều vòng xoay mạnh, 100 reset và unload.
+- Cập nhật triết lý thiết kế, ADR, kiến trúc và kế hoạch authoring. Các signal door/one-way/pad cũ ngoài L06 được ghi rõ là nội dung kế thừa cần rà soát, chưa chuyển đổi hàng loạt.
+- Phát hiện route lật lên rồi trả ngay có thể khiến nắp tự rơi về bịt lỗ. Giữ nguyên hành vi vật lý này; hướng dẫn thêm bước nghiêng nắp sang bên. Route được kiểm tra từ spawn, chỉ xoay hộp, không di chuyển bi hoặc nắp bằng test harness.
+- **7/7 EditMode và 30/30 PlayMode passed** ở lượt replay nghiêm ngặt, kết thúc 05:59:20 UTC. L06 có chương trình giữ nguyên ban đầu → 180° → 90° → nghiêng hai trục theo vị trí bi, mô phỏng cả bi và nắp. Policy kiểm thử được thử qua ba lần tải màn mới trước khi lưu; chỉ gửi rotation intent, không có trong player. Ngân sách input và giới hạn bằng chứng ở SOLVABILITY.md.
+- Replay riêng bài khả giải cũng **passed** lúc 05:58:14 UTC. Kiểm tra toàn bộ và chạy riêng đều dùng fixed timestep 1/60 s; TimeManager asset được đồng bộ với GameBootstrap. Fixture lưu/phục hồi timing, không phụ thuộc bài test khác đã mở Gameplay.
+- Nắp có thể đẩy bi lệch theo chiều sâu nên lời giải một trục không đủ làm regression cho L06. Đổi phần kết thúc bằng policy quan sát vị trí bi và nghiêng hộp trên hai trục. Quy tắc, thời hạn và giới hạn bằng chứng được khai báo trong SOLVABILITY/VERIFIED_ROUTES; không biến policy kiểm thử thành hỗ trợ tự lái trong game.
+- Log từ player macOS đang chạy ghi nhận L06 hoàn thành lúc 05:49:33 UTC, **22,316 giây / 11 lượt kéo / 0 reset**. Dữ liệu trích ở `Docs/Verification/Native-Level06.csv`. Đây là một lượt chơi thành công, không thay thế playtest nhiều người hoặc nghiệm thu thiết bị mobile.
+- macOS player, Android ARM64 APK và iOS Simulator export đã build lại thành công. Xcode ARM64 simulator **BUILD SUCCEEDED**. Bản nắp vật lý được chơi trên macOS; chưa chạy lại bản cuối trên simulator hoặc thiết bị Android/iPhone thật.
