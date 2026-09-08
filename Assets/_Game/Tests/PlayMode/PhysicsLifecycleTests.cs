@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.Collections;
+using System.Collections.Generic;
 using GravityBox.Gameplay;
 using GravityBox.Simulation;
 using NUnit.Framework;
@@ -250,50 +251,123 @@ namespace GravityBox.Tests
         [Test]
         public void EveryBox_HasUnbrokenSideWallsAroundItsActualFootprint()
         {
-            // Sweep above the fixed cube, below the lid. A finite probe avoids
-            // ambiguous zero-width rays exactly on adjacent mesh triangle edges.
+            // Approach each edge from the playable side; concave shapes and an
+            // annulus do not necessarily contain the root origin.
             for (int index = 0; index < levels.Catalog.Levels.Length; index++)
             {
                 Load(index);
-                Vector3 origin = levels.Current.transform.TransformPoint(new Vector3(0, 0.036f, 0));
-                for (int sample = 0; sample < 48; sample++)
+                foreach (Vector2[] contour in Contours(levels.Current))
                 {
-                    float angle = sample * Mathf.PI * 2 / 48;
-                    Vector3 direction = levels.Current.transform.TransformDirection(new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)));
-                    float nearest = float.PositiveInfinity;
-                    Vector3 surface = Vector3.zero;
-                    foreach (RaycastHit hit in UnityEngine.Physics.SphereCastAll(origin, Radius * 0.05f, direction, 0.3f, ~0, QueryTriggerInteraction.Ignore))
-                        if (hit.collider.transform.IsChildOf(levels.Current.transform) && hit.distance < nearest)
-                        {
-                            nearest = hit.distance;
-                            surface = levels.Current.transform.InverseTransformPoint(hit.point);
-                        }
-                    Assert.That(nearest, Is.InRange(0.065f, 0.24f), levels.Definition.Id + " has a missing side wall at direction " + sample);
-                    AssertFootprint(new Vector2(surface.x, surface.z), levels.Definition.Shape);
+                    bool hole = contour != levels.Current.Footprint;
+                    float orientation = Mathf.Sign(SignedArea(contour)) * (hole ? -1 : 1);
+                    for (int edgeIndex = 0; edgeIndex < contour.Length; edgeIndex++)
+                    {
+                        Vector2 a = contour[edgeIndex], b = contour[(edgeIndex + 1) % contour.Length];
+                        Vector2 edge = b - a;
+                        Vector2 intoDomain = new Vector2(-edge.y, edge.x).normalized * orientation;
+                        Vector2 point = (a + b) * 0.5f;
+                        Vector2 start = point + intoDomain * 0.006f;
+                        Assert.That(InDomain(start, levels.Current), Is.True, levels.Definition.Id + " has insufficient wall-side clearance.");
+                        Vector3 origin = levels.Current.transform.TransformPoint(new Vector3(start.x, 0.036f, start.y));
+                        Vector3 direction = levels.Current.transform.TransformDirection(new Vector3(-intoDomain.x, 0, -intoDomain.y));
+                        float nearest = float.PositiveInfinity;
+                        Vector3 surface = Vector3.zero;
+                        foreach (RaycastHit hit in UnityEngine.Physics.SphereCastAll(origin, Radius * 0.05f, direction, 0.012f, ~0, QueryTriggerInteraction.Ignore))
+                            if (hit.collider.transform.IsChildOf(levels.Current.transform) && hit.distance < nearest)
+                            {
+                                nearest = hit.distance;
+                                surface = levels.Current.transform.InverseTransformPoint(hit.point);
+                            }
+                        Assert.That(nearest, Is.InRange(0.004f, 0.007f), levels.Definition.Id + " missing contour edge " + edgeIndex);
+                        Assert.That(DistanceToSegment(new Vector2(surface.x, surface.z), a, b), Is.LessThan(0.001f));
+                    }
                 }
             }
         }
 
-        private static void AssertFootprint(Vector2 point, ContainerShape shape)
+        [Test]
+        public void EveryBox_FloorAndCoverFollowConcavitiesAndLeaveVoidRegionsEmpty()
         {
-            if (shape == ContainerShape.Circle)
-                Assert.That(point.magnitude, Is.EqualTo(0.17f).Within(0.001f));
-            else if (shape == ContainerShape.Square)
-                Assert.That(Mathf.Max(Mathf.Abs(point.x), Mathf.Abs(point.y)), Is.EqualTo(0.16f).Within(0.001f));
-            else
+            for (int index = 0; index < levels.Catalog.Levels.Length; index++)
             {
-                Vector2[] vertices = { new Vector2(-0.17f, -0.09815f), new Vector2(0.17f, -0.09815f), new Vector2(0, 0.19630f) };
-                float nearestEdge = float.PositiveInfinity;
-                for (int i = 0; i < vertices.Length; i++)
+                Load(index);
+                Collider floor = levels.Current.transform.Find("Floor with circular cut").GetComponent<Collider>();
+                Collider cover = levels.Current.transform.Find("Clear top cover").GetComponent<Collider>();
+                Assert.That(floor, Is.Not.Null);
+                Assert.That(cover, Is.Not.Null);
+                Vector3 outlet = levels.Current.transform.InverseTransformPoint(levels.Current.Exit.transform.position);
+                float bound = levels.Current.BoundsHalfExtent;
+                int supported = 0, empty = 0;
+                for (float x = -bound + 0.011f; x < bound; x += Radius * 1.5f)
+                for (float z = -bound + 0.007f; z < bound; z += Radius * 1.5f)
                 {
-                    Vector2 edge = vertices[(i + 1) % vertices.Length] - vertices[i];
-                    Vector2 outward = new Vector2(edge.y, -edge.x).normalized;
-                    float distance = Vector2.Dot(point - vertices[i], outward);
-                    Assert.That(distance, Is.LessThan(0.001f), "Triangle wall must stay on its authored outline.");
-                    nearestEdge = Mathf.Min(nearestEdge, Mathf.Abs(distance));
+                    Vector2 point = new Vector2(x, z);
+                    if (DistanceToBoundary(point, levels.Current) < 0.003f) continue;
+                    bool domain = InDomain(point, levels.Current);
+                    float apertureDistance = Vector2.Distance(point, new Vector2(outlet.x, outlet.z));
+                    bool nearRim = Mathf.Abs(apertureDistance - levels.Current.Exit.ApertureRadius) < 0.002f;
+                    Vector3 origin = levels.Current.transform.TransformPoint(new Vector3(x, 0, z));
+                    bool floorHit = floor.Raycast(new Ray(origin, -levels.Current.transform.up), out _, 0.1f);
+                    bool coverHit = cover.Raycast(new Ray(origin, levels.Current.transform.up), out _, 0.1f);
+                    Assert.That(coverHit, Is.EqualTo(domain), levels.Definition.Id + " cover at " + point);
+                    if (!nearRim)
+                        Assert.That(floorHit, Is.EqualTo(domain && apertureDistance > levels.Current.Exit.ApertureRadius), levels.Definition.Id + " floor at " + point);
+                    if (domain) supported++; else empty++;
                 }
-                Assert.That(nearestEdge, Is.LessThan(0.001f));
+                Assert.That(supported, Is.GreaterThan(20));
+                Assert.That(empty, Is.GreaterThan(20));
             }
+        }
+
+        private static IEnumerable<Vector2[]> Contours(LevelRuntime level)
+        {
+            yield return level.Footprint;
+            foreach (var hole in level.FootprintVoids) yield return hole.Points;
+        }
+
+        private static bool InDomain(Vector2 point, LevelRuntime level)
+        {
+            if (!InPolygon(point, level.Footprint)) return false;
+            foreach (var hole in level.FootprintVoids) if (InPolygon(point, hole.Points)) return false;
+            return true;
+        }
+
+        private static bool InPolygon(Vector2 point, Vector2[] polygon)
+        {
+            bool inside = false;
+            for (int i = 0, j = polygon.Length - 1; i < polygon.Length; j = i++)
+            {
+                Vector2 a = polygon[i], b = polygon[j];
+                if ((a.y > point.y) != (b.y > point.y) && point.x < (b.x - a.x) * (point.y - a.y) / (b.y - a.y) + a.x)
+                    inside = !inside;
+            }
+            return inside;
+        }
+
+        private static float SignedArea(Vector2[] polygon)
+        {
+            float area = 0;
+            for (int i = 0; i < polygon.Length; i++)
+            {
+                Vector2 a = polygon[i], b = polygon[(i + 1) % polygon.Length];
+                area += a.x * b.y - b.x * a.y;
+            }
+            return area * 0.5f;
+        }
+
+        private static float DistanceToSegment(Vector2 point, Vector2 a, Vector2 b)
+        {
+            float t = Mathf.Clamp01(Vector2.Dot(point - a, b - a) / (b - a).sqrMagnitude);
+            return Vector2.Distance(point, Vector2.Lerp(a, b, t));
+        }
+
+        private static float DistanceToBoundary(Vector2 point, LevelRuntime level)
+        {
+            float distance = float.PositiveInfinity;
+            foreach (Vector2[] contour in Contours(level))
+                for (int i = 0; i < contour.Length; i++)
+                    distance = Mathf.Min(distance, DistanceToSegment(point, contour[i], contour[(i + 1) % contour.Length]));
+            return distance;
         }
 
         [Test]
@@ -348,6 +422,98 @@ namespace GravityBox.Tests
                     }
                     if (levels.Current.Exit.HasExited) break;
                 }
+            }
+        }
+
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(6)]
+        [TestCase(7)]
+        public void NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly(int index)
+        {
+            Load(index);
+            Vector2[] route = PassabilityRoute(index);
+            Vector3 outlet = levels.Current.transform.InverseTransformPoint(levels.Current.Exit.transform.position);
+            float height = outlet.y + levels.Current.Exit.WallHalfDepth + Radius + 0.001f;
+            // This fixture tests a controlled passage, not the player's solution.
+            // It sets one initial state, then only changes box rotation intent.
+            for (int segment = 1; segment < route.Length; segment++)
+            {
+                Vector2 a = route[segment - 1], b = route[segment];
+                int samples = Mathf.CeilToInt(Vector2.Distance(a, b) / (Radius * 0.5f));
+                for (int sample = 0; sample <= samples; sample++)
+                {
+                    Vector2 point = Vector2.Lerp(a, b, sample / (float)samples);
+                    Assert.That(InDomain(point, levels.Current), Is.True, "Route must stay on the actual floor domain.");
+                    Assert.That(DistanceToBoundary(point, levels.Current), Is.GreaterThan(Radius + 0.001f), "The whole sphere needs passage clearance.");
+                }
+                Vector3 start = levels.Current.transform.TransformPoint(new Vector3(a.x, height, a.y));
+                Vector3 end = levels.Current.transform.TransformPoint(new Vector3(b.x, height, b.y));
+                foreach (RaycastHit hit in UnityEngine.Physics.SphereCastAll(start, Radius, (end - start).normalized, Vector3.Distance(start, end), ~0, QueryTriggerInteraction.Ignore))
+                    Assert.That(hit.collider.transform.IsChildOf(levels.Current.transform), Is.False, "Passage is obstructed by " + hit.collider.name);
+            }
+            levels.Ball.Body.position = levels.Current.transform.TransformPoint(new Vector3(route[0].x, height, route[0].y));
+            levels.Ball.Body.linearVelocity = levels.Ball.Body.angularVelocity = Vector3.zero;
+            UnityEngine.Physics.SyncTransforms();
+            levels.Current.Exit.BeginTracking();
+            Rigidbody box = levels.Current.GetComponent<Rigidbody>();
+            for (int waypoint = 1; waypoint < route.Length; waypoint++)
+            {
+                bool reached = false;
+                float closest = float.PositiveInfinity;
+                int elapsedTicks = 0;
+                for (int tick = 0; tick < 1200; tick++)
+                {
+                    Transform root = levels.Current.transform;
+                    Vector3 local = root.InverseTransformPoint(levels.Ball.Body.position);
+                    Vector3 relativeVelocity = root.InverseTransformDirection(levels.Ball.Body.linearVelocity - box.GetPointVelocity(levels.Ball.Body.position));
+                    Vector2 error = route[waypoint] - new Vector2(local.x, local.z);
+                    Vector2 velocity = new Vector2(relativeVelocity.x, relativeVelocity.z);
+                    closest = Mathf.Min(closest, error.magnitude);
+                    // A slow tilt policy leaves time for the bounded hand controller
+                    // to brake and reverse before the ball reaches a bend.
+                    Vector2 acceleration = Vector2.ClampMagnitude(error * 8f - velocity * 5f, 1f);
+                    Vector3 desiredLocalGravity = new Vector3(acceleration.x, -9.81f, acceleration.y);
+                    levels.Current.Rotation.SetTargetOrientation(Quaternion.FromToRotation(desiredLocalGravity, Vector3.down));
+                    Steps(1);
+                    elapsedTicks = tick + 1;
+                    if (levels.Current.Exit.HasExited)
+                    {
+                        Assert.That(waypoint, Is.EqualTo(route.Length - 1), "Must traverse every authored bend before exiting.");
+                        reached = true;
+                        break;
+                    }
+                    Assert.That(levels.Current.IsOutside(levels.Ball.Body.position), Is.False, "Ball escaped through a wall along the passage.");
+                    if (error.magnitude < Radius * 1.1f && velocity.magnitude < 0.16f)
+                    {
+                        reached = true;
+                        break;
+                    }
+                }
+                Vector3 finalLocal = levels.Current.transform.InverseTransformPoint(levels.Ball.Body.position);
+                TestContext.WriteLine($"PASSAGE {levels.Definition.Id}, waypoint {waypoint}: reached={reached}, {elapsedTicks * Dt:F3} s, closest distance {closest:F5} m, final local {finalLocal:F5}.");
+                Assert.That(reached, Is.True, levels.Definition.Id + " cannot reach passage waypoint " + waypoint + "; local " + finalLocal.ToString("F5") + "; closest distance " + closest.ToString("F5"));
+            }
+        }
+
+        private static Vector2[] PassabilityRoute(int index)
+        {
+            switch (index)
+            {
+                case 3: return new[] { new Vector2(-0.155f, 0.155f), new Vector2(-0.155f, -0.15f), new Vector2(0.185f, -0.155f) };
+                case 4: return new[] { new Vector2(-0.165f, 0.155f), new Vector2(-0.165f, -0.15f), new Vector2(0.165f, -0.15f), new Vector2(0.165f, 0.155f) };
+                case 5:
+                    var arc = new Vector2[5];
+                    for (int i = 0; i < arc.Length; i++)
+                    {
+                        float angle = (180f - i * 45f) * Mathf.Deg2Rad;
+                        arc[i] = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 0.1825f;
+                    }
+                    return arc;
+                case 6: return new[] { new Vector2(-0.225f, 0), Vector2.zero, new Vector2(0.235f, 0) };
+                case 7: return new[] { new Vector2(-0.115f, -0.14f), Vector2.zero, new Vector2(0, 0.207f) };
+                default: throw new System.ArgumentOutOfRangeException(nameof(index));
             }
         }
 

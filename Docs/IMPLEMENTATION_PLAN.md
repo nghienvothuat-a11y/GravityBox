@@ -1,6 +1,6 @@
-# Kế hoạch prototype: ba hộp, một viên bi thép
+# Kế hoạch prototype: tám hộp, một viên bi thép
 
-Yêu cầu mới của người dùng đặt cảm giác chuyển động của bi lên trên số lượng màn và độ phức tạp puzzle. Phạm vi đang áp dụng là ba hộp tròn, vuông, tam giác; trong hộp vuông có một khối lập phương cố định. Kế hoạch 16 màn và cơ chế nắp rơi đã chuyển thành [tài liệu lịch sử](Archive/README.md).
+Phạm vi hiện tại giữ ba hộp tròn/vuông/tam giác và bổ sung năm hình chữ L, chữ U, vành khuyên, quả tạ, ngôi sao theo yêu cầu người dùng. Hộp vuông tiếp tục có một khối lập phương cố định. Mô hình bi thép và trọng lực không đổi; phần mở rộng kiểm chứng cách hình học khác nhau làm đổi đường lăn. Kế hoạch 16 màn và cơ chế nắp rơi ở [tài liệu lịch sử](Archive/README.md).
 
 ## Mục tiêu nghiệm thu
 
@@ -13,8 +13,8 @@ Chỉ tăng mass không đạt mục tiêu này: trọng lực tạo cùng gia t
 | Giai đoạn | Đầu ra | Cổng xác nhận |
 | --- | --- | --- |
 | 1. Mô hình vật lý | Bi thép đường kính 30 mm/111 g, hộp bàn nhỏ, 9,81 m/s², 120 Hz | Freefall, quán tính, dốc lăn, tổn hao năng lượng qua contact |
-| 2. Ba hộp | Thành tròn/vuông/tam giác thật; cube cố định; lỗ thoát phẳng | Spawn không chồng, vỏ kín, cube tạo xung/nảy, lỗ thông |
-| 3. Đọc chuyển động | Vật liệu bi, camera, âm thanh lăn/va chạm, HUD ba bàn | Nhìn được quay/tăng tốc; âm thanh phản ánh va chạm thực |
+| 2. Tám hộp | Ba hình cơ bản và năm hình lõm/lõi rỗng; cube cố định; lỗ thoát phẳng | Spawn không chồng, sàn/nắp đúng contour, vỏ kín, lối đi đủ cả bán kính bi |
+| 3. Đọc chuyển động | Vật liệu bi, camera, âm thanh lăn/va chạm, HUD tám bàn | Nhìn được quay/tăng tốc; chọn được mọi hình trên màn hình nhỏ |
 | 4. Lặp thí nghiệm | Reset, pause, chọn hộp, quan sát sau thoát ở thời gian thực | 100 reset mỗi bàn, không giữ state cũ, không auto advance |
 | 5. Thử cảm giác | Quan sát trực tiếp các tình huống dưới đây | Người dùng xác nhận cảm giác bi có sức nặng và có thể dự đoán |
 
@@ -23,12 +23,14 @@ Chỉ tăng mass không đạt mục tiêu này: trọng lực tạo cùng gia t
 1. Hộp tròn: nghiêng một góc nhỏ, giữ; quan sát bi tăng tốc và lăn dọc thành cong. Trả ngang rồi đảo nghiêng để đánh giá quán tính.
 2. Hộp vuông: cho bi chạm cube trực diện ở tốc độ nhỏ và lớn; lặp với va chạm xiên. So sánh hướng nảy, độ cao nảy, spin và âm thanh.
 3. Hộp tam giác: đưa bi vào một góc, giữ để bi ổn định, rồi nghiêng theo cạnh khác. Kiểm tra tiếp xúc hai mặt không rung hoặc phóng bi bất thường.
-4. Trong mỗi hộp: reset và lặp lại thao tác; đưa bi ra khỏi lỗ thật. Sau khi thoát, tốc độ mô phỏng không đổi và bàn không tự chuyển.
+4. Chữ L/U: đưa bi qua các góc, đổi hướng nghiêng trước khi bi chạm thành để đánh giá quán tính.
+5. Vành khuyên: lăn quanh lõi rỗng; quả tạ: đưa bi qua cổ giữa; ngôi sao: chuyển từ cánh qua vùng giữa sang cánh khác.
+6. Trong mỗi hộp: reset và lặp lại thao tác; đưa bi ra khỏi lỗ thật. Sau khi thoát, tốc độ mô phỏng không đổi và bàn không tự chuyển.
 
 Ghi cảm nhận nhẹ/nặng, trơn/dính, nảy quá mức/thiếu phản hồi, khả năng thấy spin và điều khiển góc nhỏ. Mỗi vòng chỉ thay một nhóm thông số, lưu profile/commit để so sánh. Test tự động bảo vệ vật lý và lifecycle; việc đạt cảm giác cần được xác nhận bằng chơi trực tiếp.
 
 ## Sau prototype
 
-Chưa đưa thêm màn, zero-G, switch, door, pad, hazard hoặc nắp rơi vào catalog. Sau khi người dùng chốt cảm giác, dùng cùng mô hình để thiết kế puzzle mới, rồi mới cân nhắc onboarding, tiến trình, save, hiệu năng thiết bị thật và nội dung thương mại.
+Phạm vi hiện tại dừng ở tám hình đã yêu cầu. Zero-G, switch, door, pad, hazard hoặc nắp rơi tiếp tục nằm ngoài catalog. Các mở rộng sau cần dùng cùng mô hình vật lý đã chốt trước khi bổ sung onboarding, tiến trình, save, hiệu năng thiết bị thật và nội dung thương mại.
 
 Kết quả từng lượt test/build/chạy được ghi tại [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md); không suy diễn việc chạy trên thiết bị từ một lần build thành công.

@@ -114,6 +114,69 @@ namespace GravityBox.Tests
         }
 
         [UnityTest]
+        public IEnumerator ShapeSelector_ShowsEveryNameAndHintAndLoadsTheLastBoxWithoutRotating()
+        {
+            mouse = InputSystem.AddDevice<Mouse>();
+            GameHud hud = Object.FindFirstObjectByType<GameHud>();
+            Button open = null;
+            foreach (Button button in Object.FindObjectsByType<Button>(FindObjectsSortMode.None))
+                if (button.name == "Experiments") open = button;
+            Assert.That(open, Is.Not.Null);
+            yield return Click(open);
+            Assert.That(hud.ModalOpen, Is.True);
+            Assert.That(bootstrap.Levels.Session.State, Is.EqualTo(GravityBox.Foundation.SessionState.Paused));
+            ScrollRect scroll = hud.GetComponentInChildren<ScrollRect>();
+            Assert.That(scroll, Is.Not.Null);
+            Assert.That(scroll.viewport.GetComponent<RectMask2D>(), Is.Not.Null);
+            Canvas.ForceUpdateCanvases();
+            Assert.That(scroll.content.childCount, Is.EqualTo(bootstrap.Levels.Catalog.Levels.Length));
+            foreach (var definition in bootstrap.Levels.Catalog.Levels)
+            {
+                Transform card = scroll.content.Find("Select " + definition.Id);
+                Assert.That(card.GetComponent<Button>(), Is.Not.Null, definition.DisplayName);
+                Text name = card.Find("Name " + definition.Id).GetComponent<Text>();
+                Text description = card.Find("Hint " + definition.Id).GetComponent<Text>();
+                Assert.That(name.text, Is.EqualTo(definition.DisplayName));
+                Assert.That(description.text, Is.EqualTo(definition.TeachingHint));
+                Assert.That(description.preferredHeight, Is.LessThanOrEqualTo(description.rectTransform.rect.height + 1),
+                    definition.DisplayName + " teaching hint must fit its card.");
+            }
+
+            Vector2 dragStart = RectTransformUtility.WorldToScreenPoint(null, scroll.viewport.TransformPoint(scroll.viewport.rect.center));
+            SendMouse(dragStart, false); yield return null;
+            SendMouse(dragStart, true); yield return null;
+            SendMouse(dragStart + Vector2.up * Screen.height * 0.1f, true); yield return null;
+            SendMouse(dragStart + Vector2.up * Screen.height * 0.1f, false); yield return null;
+            Assert.That(bootstrap.Levels.DragCount, Is.Zero, "Swiping the selector must not turn the physical box.");
+
+            scroll.StopMovement();
+            scroll.verticalNormalizedPosition = 0;
+            Canvas.ForceUpdateCanvases();
+            yield return null;
+            int last = bootstrap.Levels.Catalog.Levels.Length - 1;
+            Button lastCard = scroll.content.Find("Select " + bootstrap.Levels.Catalog.Levels[last].Id).GetComponent<Button>();
+            var lastRect = (RectTransform)lastCard.transform;
+            Vector2 lastCenter = RectTransformUtility.WorldToScreenPoint(null, lastRect.TransformPoint(lastRect.rect.center));
+            Assert.That(RectTransformUtility.RectangleContainsScreenPoint(scroll.viewport, lastCenter), Is.True,
+                "The last shape remains reachable inside the clipped viewport.");
+            yield return Click(lastCard);
+            Assert.That(bootstrap.Levels.Index, Is.EqualTo(last));
+            Assert.That(hud.ModalOpen, Is.False);
+            Assert.That(bootstrap.Levels.Session.State, Is.EqualTo(GravityBox.Foundation.SessionState.Active));
+            Assert.That(bootstrap.Levels.DragCount, Is.Zero);
+            Assert.That(Quaternion.Angle(Quaternion.identity, bootstrap.Levels.Current.Rotation.Orientation), Is.LessThan(0.1f));
+        }
+
+        private IEnumerator Click(Button button)
+        {
+            var rect = (RectTransform)button.transform;
+            Vector2 point = RectTransformUtility.WorldToScreenPoint(null, rect.TransformPoint(rect.rect.center));
+            SendMouse(point, false); yield return null;
+            SendMouse(point, true); yield return null;
+            SendMouse(point, false); yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator Touch_DragsTheBoxWithOneFinger()
         {
             touchscreen = InputSystem.AddDevice<Touchscreen>();

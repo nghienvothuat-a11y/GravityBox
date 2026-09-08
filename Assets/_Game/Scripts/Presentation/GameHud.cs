@@ -65,14 +65,14 @@ namespace GravityBox.Presentation
 
             var bottom = Rect("Controls", safe, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 346), new Vector2(0, 346));
             bottom.pivot = new Vector2(0.5f, 1);
-            progress = Label("Progress", bottom, "01 / 03", 23, Muted, 60, 0, 300, 36);
+            progress = Label("Progress", bottom, "", 23, Muted, 60, 0, 300, 36);
             stats = Label("Speed", bottom, "0.00 m/s", 23, Ink, -340, 0, 280, 36, true, TextAnchor.MiddleRight);
             Line("Controls rule", bottom, 60, 49, -60, new Color(0.15f, 0.22f, 0.26f));
             hint = Label("Teaching hint", bottom, "Tilt gently. Watch the ball gather speed.", 27, Ink, 60, 67, 960, 80);
-            Button("Reset", bottom, "RESET", 60, 167, 290, 100, Accent, new Color(0.05f, 0.10f, 0.10f), () => levels.ResetLevel());
-            Button("Next experiment", bottom, "NEXT BOX", 372, 167, 290, 100, Surface, Ink, () => levels.Load((levels.Index + 1) % levels.Catalog.Levels.Length));
-            Button("Experiments", bottom, "SHAPES", 684, 167, 210, 100, Surface, Ink, ToggleLevels);
-            pauseLabel = Button("Pause", bottom, "II", 916, 167, 104, 100, Surface, Ink, () => levels.TogglePause());
+            Button("Reset", bottom, "RESET", 60, 167, 290, 124, Accent, new Color(0.05f, 0.10f, 0.10f), () => levels.ResetLevel());
+            Button("Next experiment", bottom, "NEXT BOX", 372, 167, 290, 124, Surface, Ink, () => levels.Load((levels.Index + 1) % levels.Catalog.Levels.Length));
+            Button("Experiments", bottom, "SHAPES", 684, 167, 188, 124, Surface, Ink, ToggleLevels);
+            pauseLabel = Button("Pause", bottom, "II", 894, 167, 126, 124, Surface, Ink, () => levels.TogglePause());
             Label("Input hint", bottom, "DRAG TO TILT     /     RELEASE TO OBSERVE", 19, Muted, 60, 295, 960, 34, false, TextAnchor.MiddleCenter);
 
             BuildLevelModal();
@@ -83,19 +83,67 @@ namespace GravityBox.Presentation
 
         private void BuildLevelModal()
         {
-            float height = 306 + levels.Catalog.Levels.Length * 178;
-            levelModal = Panel("Experiment selector", safe, new Color(0.037f, 0.065f, 0.086f, 0.99f), 38, 407, 1004, height).gameObject;
-            levelModal.GetComponent<Image>().raycastTarget = true;
-            Label("Selector title", levelModal.transform, "Choose a box", 43, Ink, 40, 36, 860, 80);
-            Label("Selector caption", levelModal.transform, "Same steel ball. Three box shapes.", 24, Muted, 42, 122, 900, 46);
+            RectTransform panel = Panel("Experiment selector", safe, new Color(0.037f, 0.065f, 0.086f, 0.99f), 0, 0, 0, 0);
+            panel.anchorMin = Vector2.zero;
+            panel.anchorMax = Vector2.one;
+            panel.offsetMin = new Vector2(38, 54);
+            panel.offsetMax = new Vector2(-38, -174);
+            levelModal = panel.gameObject;
+            panel.GetComponent<Image>().raycastTarget = true;
+            Label("Selector title", panel, "Choose a box", 43, Ink, 40, 30, 860, 80);
+            Label("Selector caption", panel, $"{levels.Catalog.Levels.Length} BOX SHAPES   /   SAME STEEL BALL", 24, Muted, 42, 116, 920, 46);
+
+            // The first eight shapes fit as two columns on portrait phones. A
+            // clipped scroll area keeps later additions and shorter windows usable.
+            RectTransform viewport = Rect("Shape viewport", panel, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            viewport.offsetMin = new Vector2(38, 168);
+            viewport.offsetMax = new Vector2(-38, -188);
+            Image scrollSurface = viewport.gameObject.AddComponent<Image>();
+            scrollSurface.color = Color.clear;
+            viewport.gameObject.AddComponent<RectMask2D>();
+            var scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            scroll.viewport = viewport;
+            scroll.horizontal = false;
+            scroll.vertical = true;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 48;
+            const float cardHeight = 290, gap = 20;
+            int rows = (levels.Catalog.Levels.Length + 1) / 2;
+            RectTransform content = Rect("Shape cards", viewport, new Vector2(0, 1), Vector2.one,
+                Vector2.zero, new Vector2(0, rows * cardHeight + Mathf.Max(0, rows - 1) * gap));
+            content.pivot = new Vector2(0.5f, 1);
+            scroll.content = content;
             for (int i = 0; i < levels.Catalog.Levels.Length; i++)
             {
                 int index = i;
                 LevelDefinition definition = levels.Catalog.Levels[i];
-                Button("Select " + definition.Id, levelModal.transform, $"{i + 1:00}   /   {definition.DisplayName}", 42, 196 + i * 178,
-                    920, 142, Surface, Ink, () => { levelModal.SetActive(false); levels.Load(index); }, 34);
+                int column = i % 2;
+                float top = i / 2 * (cardHeight + gap);
+                RectTransform card = Panel("Select " + definition.Id, content, Surface, 0, 0, 0, 0);
+                card.anchorMin = new Vector2(column * 0.5f, 1);
+                card.anchorMax = new Vector2((column + 1) * 0.5f, 1);
+                card.offsetMin = new Vector2(column == 0 ? 0 : gap * 0.5f, -top - cardHeight);
+                card.offsetMax = new Vector2(column == 0 ? -gap * 0.5f : 0, -top);
+                ConfigureButton(card, () => { levelModal.SetActive(false); levels.Load(index); });
+                Label("Number " + definition.Id, card, $"{i + 1:00}", 23, Accent, 24, 17, 100, 34);
+                Text name = Label("Name " + definition.Id, card, definition.DisplayName, 34, Ink, 24, 55, 0, 52);
+                name.rectTransform.anchorMax = Vector2.one;
+                name.rectTransform.sizeDelta = new Vector2(-48, 52);
+                Text description = Label("Hint " + definition.Id, card, definition.TeachingHint, 26, Muted, 24, 118, 0, 150);
+                description.alignment = TextAnchor.UpperLeft;
+                description.rectTransform.anchorMax = Vector2.one;
+                description.rectTransform.sizeDelta = new Vector2(-48, 150);
             }
-            Button("Close selector", levelModal.transform, "BACK TO BOX", 42, height - 112, 920, 72, Accent, Surface, ToggleLevels);
+            Text close = Button("Close selector", panel, "BACK TO BOX", 38, 0, 0, 124, Accent, Surface, ToggleLevels);
+            var closeRect = (RectTransform)close.transform.parent;
+            closeRect.anchorMin = Vector2.zero;
+            closeRect.anchorMax = Vector2.right;
+            closeRect.offsetMin = new Vector2(38, 22);
+            closeRect.offsetMax = new Vector2(-38, 146);
+            close.rectTransform.anchorMin = Vector2.zero;
+            close.rectTransform.anchorMax = Vector2.one;
+            close.rectTransform.offsetMin = new Vector2(12, 8);
+            close.rectTransform.offsetMax = new Vector2(-12, -8);
             levelModal.SetActive(false);
         }
 
@@ -105,7 +153,7 @@ namespace GravityBox.Presentation
             panel.GetComponent<Image>().raycastTarget = true;
             Label("Heading", panel, heading, 41, Ink, 40, 70, 880, 80, false, TextAnchor.MiddleCenter);
             Label("Caption", panel, caption, 26, Muted, 40, 170, 880, 60, false, TextAnchor.MiddleCenter);
-            Button("Action", panel, action, 120, 294, 720, 104, Accent, Surface, callback);
+            Button("Action", panel, action, 120, 294, 720, 124, Accent, Surface, callback);
             panel.gameObject.SetActive(false);
             return panel.gameObject;
         }
@@ -230,6 +278,12 @@ namespace GravityBox.Presentation
         private Text Button(string name, Transform parent, string value, float x, float y, float w, float h, Color color, Color textColor, Action click, int size = 26)
         {
             RectTransform r = Panel(name, parent, color, x, y, w, h);
+            ConfigureButton(r, click);
+            return Label(name + " label", r, value, size, textColor, 12, 8, w - 24, h - 16, false, TextAnchor.MiddleCenter);
+        }
+
+        private static void ConfigureButton(RectTransform r, Action click)
+        {
             r.GetComponent<Image>().raycastTarget = true;
             var button = r.gameObject.AddComponent<Button>();
             button.targetGraphic = r.GetComponent<Image>();
@@ -238,7 +292,6 @@ namespace GravityBox.Presentation
             colors.pressedColor = new Color(0.65f, 0.8f, 0.78f);
             button.colors = colors;
             button.onClick.AddListener(() => click());
-            return Label(name + " label", r, value, size, textColor, 12, 8, w - 24, h - 16, false, TextAnchor.MiddleCenter);
         }
 
         private void Line(string name, Transform parent, float left, float top, float right, Color color)

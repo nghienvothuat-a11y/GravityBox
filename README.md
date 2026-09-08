@@ -1,8 +1,8 @@
 # Gravity Box — Steel Ball Lab
 
-Prototype Unity tập trung vào cảm giác một viên bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog đang chơi chỉ có ba hộp: **tròn, vuông và tam giác**. Hộp vuông có một khối lập phương cố định để kiểm tra va chạm trực diện và va chạm xiên.
+Prototype Unity tập trung vào cảm giác một viên bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **tám hộp**: tròn, vuông, tam giác, chữ L, chữ U, vành khuyên, quả tạ và ngôi sao. Hộp vuông có một khối lập phương cố định để kiểm tra va chạm trực diện và va chạm xiên.
 
-Bi có đường kính 30 mm, khối lượng khoảng 111 g; hộp rộng khoảng 34 cm, sâu 9 cm. Một đơn vị Unity là một mét. Trọng lực thế giới 9,81 m/s² và mô phỏng 120 Hz được giữ nhất quán; cảm giác nặng đến từ tỷ lệ, quán tính quay, contact, tổn hao năng lượng và âm thanh tương ứng với va chạm.
+Bi có đường kính 30 mm, khối lượng khoảng 111 g; hộp rộng khoảng 34–66 cm tùy hình, sâu 9 cm. Một đơn vị Unity là một mét. Trọng lực thế giới 9,81 m/s² và mô phỏng 120 Hz được giữ nhất quán; cảm giác nặng đến từ tỷ lệ, quán tính quay, contact, tổn hao năng lượng và âm thanh tương ứng với va chạm.
 
 ## Chạy và quan sát
 
@@ -24,14 +24,15 @@ Lỗ thoát vẫn là lỗ tròn xuyên mặt hộp, với viền sáng mảnh k
 - [Phạm vi kiểm chứng](Docs/SOLVABILITY.md)
 - [Quyết định kỹ thuật](Docs/DECISIONS.md)
 - [Nhật ký và kết quả xác minh](Docs/DEVELOPMENT_LOG.md)
+- [Ảnh native của năm hình mới](Docs/Images/WeirdBoxes/README.md)
 
-Yêu cầu ba hộp thay thế phạm vi 16 màn trước đây. Asset các màn cũ được giữ để tham khảo nhưng không nằm trong catalog đang chơi. [Tài liệu lịch sử](Docs/Archive/README.md) và [GDD gốc đã trích xuất](Docs/GDD_REFERENCE.md) không phải danh sách tính năng cần đưa trở lại prototype này.
+Ba hộp cơ bản đã được bổ sung năm hình dạng khác thường theo yêu cầu người dùng. Mỗi hình có sàn, nắp và thành đúng đường biên thật; khoảng khuyết của chữ L/U, lõi rỗng của vành khuyên và cổ hẹp của quả tạ ảnh hưởng trực tiếp tới đường lăn. Asset của catalog 16 màn cũ vẫn được giữ ngoài catalog đang chơi. [Tài liệu lịch sử](Docs/Archive/README.md) và [GDD gốc đã trích xuất](Docs/GDD_REFERENCE.md) không phải danh sách tính năng cần đưa trở lại prototype này.
 
 ## Cấu trúc và tuning
 
 `Scripts/Foundation` giữ session/reset; `Simulation` giữ Rigidbody, lực, rolling contact và rotation; `Gameplay` quản lý catalog, load/reset/exit; `Presentation` nhận input và thể hiện hình/âm thanh; `App` kết nối các lớp. Editor tạo prefab/mesh và kiểm tra nội dung trước build. Scene duy nhất tải một thí nghiệm tại một thời điểm.
 
-Profile đang dùng nằm trong `Assets/_Game/PhysicsLab/Profiles`: `Solid steel.asset`, `Earth.asset` và `Hand rotation.asset`. Prefab/mesh của ba hộp nằm trong `PhysicsLab/Prefabs` và `PhysicsLab/Meshes`; `ScriptableObjects/LevelCatalog.asset` tham chiếu đúng ba level mới. Khi đổi kích thước bi phải đổi mass/inertia/contact offset và kiểm tra clearance theo cùng đơn vị. Không tăng riêng mass hoặc giảm gravity để tạo cảm giác nặng.
+Profile đang dùng nằm trong `Assets/_Game/PhysicsLab/Profiles`: `Solid steel.asset`, `Earth.asset` và `Hand rotation.asset`. Prefab/mesh của tám hộp nằm trong `PhysicsLab/Prefabs` và `PhysicsLab/Meshes`; `ScriptableObjects/LevelCatalog.asset` tham chiếu đúng tám level. Khi đổi kích thước bi phải đổi mass/inertia/contact offset và kiểm tra clearance theo cùng đơn vị. Không tăng riêng mass hoặc giảm gravity để tạo cảm giác nặng.
 
 Prefab và profile đã có sẵn; không cần chạy generator để chơi. Generator tạo lại nội dung đã author, nên lưu thay đổi bằng Git hoặc prefab variant trước khi regenerate.
 
@@ -47,6 +48,6 @@ bash Tools/build.sh iOS
 bash Tools/build.sh iOS-Simulator
 ```
 
-Có thể đặt `UNITY_EDITOR` tới executable đúng phiên bản. XML/log vào `Artifacts/`, build vào `Builds/`; hai thư mục này không commit. Validator kiểm tra catalog, prefab, scale, spawn và aperture; tests kiểm tra luật chuyển động, contact và lifecycle. Đường giải 16 màn cũ không còn là cổng nghiệm thu của ba hộp.
+Có thể đặt `UNITY_EDITOR` tới executable đúng phiên bản. XML/log vào `Artifacts/`, build vào `Builds/`; hai thư mục này không commit. Validator kiểm tra catalog, prefab, scale, spawn và aperture; tests kiểm tra luật chuyển động, contact, đường biên/lõi rỗng, độ rộng lối đi và lifecycle. Đường giải 16 màn cũ không còn là cổng nghiệm thu của physics lab.
 
 Android cần module và SDK/NDK/JDK tương ứng. iOS export cần module iOS; compile/cài cần Xcode và signing phù hợp. `bash Tools/run-ios-simulator.sh` export, compile và cài lên simulator đang boot trên Apple Silicon; có thể truyền UDID làm tham số đầu. Telemetry chỉ lưu CSV local. Trạng thái build/chạy thực tế được ghi riêng trong nhật ký; tests không tự chứng minh cảm giác chơi đã đạt.

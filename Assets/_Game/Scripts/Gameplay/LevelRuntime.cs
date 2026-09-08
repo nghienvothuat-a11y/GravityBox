@@ -4,12 +4,22 @@ using UnityEngine;
 
 namespace GravityBox.Gameplay
 {
+    [System.Serializable]
+    public sealed class Vector2Contour
+    {
+        public Vector2[] Points = System.Array.Empty<Vector2>();
+    }
+
     public sealed class LevelRuntime : MonoBehaviour
     {
         public Transform BallSpawn;
         public ExitSocket Exit;
         public BoxRotationController Rotation;
         public float BoundsHalfExtent = 3.7f;
+        [Tooltip("Authored XZ footprint, counter-clockwise. Collision remains defined by the baked shell meshes.")]
+        public Vector2[] Footprint = System.Array.Empty<Vector2>();
+        [Tooltip("Open regions inside the footprint, clockwise; separate from the small ball exit.")]
+        public Vector2Contour[] FootprintVoids = System.Array.Empty<Vector2Contour>();
         public readonly MechanismSignals Signals = new MechanismSignals();
         public readonly ResetRegistry Resets = new ResetRegistry();
         private EnvironmentForceSystem forces;

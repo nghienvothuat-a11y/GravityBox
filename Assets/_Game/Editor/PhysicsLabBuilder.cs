@@ -51,21 +51,19 @@ namespace GravityBox.Editor
                 AssetDatabase.CreateAsset(catalog, PrototypeBuilder.CatalogPath);
             }
             catalog.BallProfile = physics; catalog.Rotation = rotation; catalog.BallPrefab = BuildBall(physics);
-            catalog.Levels = new LevelDefinition[3];
-            string[] titles = { "Circular box", "Square box", "Triangular box" };
-            string[] hints = { "Tilt gently. Feel the ball accelerate and follow the curved wall.",
-                "Roll into the fixed cube. Compare a gentle touch with a faster impact.",
-                "Follow the angled walls. Watch each contact redirect the ball." };
-            for (int i = 0; i < 3; i++)
+            PhysicsLabLayout[] layouts = PhysicsLabLayouts.All();
+            catalog.Levels = new LevelDefinition[layouts.Length];
+            for (int i = 0; i < layouts.Length; i++)
             {
-                var level = Asset<LevelDefinition>($"Levels/{(ContainerShape)i}.asset");
-                level.Id = "steel-lab-" + ((ContainerShape)i).ToString().ToLowerInvariant();
-                level.Shape = (ContainerShape)i; level.DisplayIndex = i + 1; level.DisplayName = titles[i];
-                level.TeachingHint = hints[i]; level.Environment = environment;
+                PhysicsLabLayout layout = layouts[i];
+                var level = Asset<LevelDefinition>($"Levels/{layout.Shape}.asset");
+                level.Id = "steel-lab-" + layout.Shape.ToString().ToLowerInvariant();
+                level.Shape = layout.Shape; level.DisplayIndex = i + 1; level.DisplayName = layout.Title;
+                level.TeachingHint = layout.Hint; level.Environment = environment;
                 level.RotationMode = RotationMode.Free; level.InitialLocalVelocity = Vector3.zero;
                 level.Tutorial = false; level.ParSeconds = 0;
                 level.DesignerSolution = "Explore rolling, acceleration and impacts. Tilt the ball through the flush circular opening to observe a complete physical escape. Reset or choose another shape manually.";
-                level.Prefab = BuildContainer(level.Shape);
+                level.Prefab = BuildContainer(layout);
                 catalog.Levels[i] = level;
                 EditorUtility.SetDirty(level);
             }
@@ -73,7 +71,7 @@ namespace GravityBox.Editor
             BuildScene(catalog);
             AssetDatabase.SaveAssets(); AssetDatabase.Refresh();
             ContentValidator.Validate();
-            Debug.Log("STEEL BALL LAB: generated three physical containers, 30 mm solid steel ball, Earth gravity, 120 Hz simulation.");
+            Debug.Log($"STEEL BALL LAB: generated {layouts.Length} physical containers, 30 mm solid steel ball, Earth gravity, 120 Hz simulation.");
         }
 
         private static T Asset<T>(string relative) where T : ScriptableObject
@@ -152,34 +150,30 @@ namespace GravityBox.Editor
             Object.DestroyImmediate(root); return saved.GetComponent<BallController>();
         }
 
-        private static LevelRuntime BuildContainer(ContainerShape shape)
+        private static LevelRuntime BuildContainer(PhysicsLabLayout layout)
         {
-            Vector2[] outline;
-            Vector2 exit, spawn;
-            if (shape == ContainerShape.Circle)
-            {
-                outline = new Vector2[96];
-                for (int i = 0; i < outline.Length; i++) outline[i] = new Vector2(Mathf.Cos(i * Mathf.PI * 2 / outline.Length), Mathf.Sin(i * Mathf.PI * 2 / outline.Length)) * 0.17f;
-                exit = new Vector2(0.095f, -0.09f); spawn = new Vector2(-0.06f, 0.015f);
-            }
-            else if (shape == ContainerShape.Square)
-            {
-                outline = new[] { new Vector2(-0.16f, -0.16f), new Vector2(0.16f, -0.16f), new Vector2(0.16f, 0.16f), new Vector2(-0.16f, 0.16f) };
-                exit = new Vector2(0.105f, -0.105f); spawn = new Vector2(-0.1f, 0);
-            }
-            else
-            {
-                outline = new[] { new Vector2(-0.17f, -0.09815f), new Vector2(0.17f, -0.09815f), new Vector2(0, 0.19630f) };
-                exit = new Vector2(0.07f, -0.05f); spawn = new Vector2(-0.05f, -0.025f);
-            }
+            ContainerShape shape = layout.Shape;
+            Vector2[] outline = layout.Outline;
+            Vector2 exit = layout.Exit, spawn = layout.Spawn;
             var root = new GameObject(shape + " box", typeof(Rigidbody), typeof(BoxRotationController), typeof(LevelRuntime));
             root.GetComponent<Rigidbody>().isKinematic = true; root.GetComponent<Rigidbody>().useGravity = false;
-            var level = root.GetComponent<LevelRuntime>(); level.Rotation = root.GetComponent<BoxRotationController>(); level.BoundsHalfExtent = 0.25f;
-            MeshObject("Floor with circular cut", root.transform, PhysicsLabGeometry.Panel(shape + " floor", outline, -Depth / 2, Thickness / 2, exit, Aperture), floor, true);
+            var level = root.GetComponent<LevelRuntime>(); level.Rotation = root.GetComponent<BoxRotationController>();
+            level.BoundsHalfExtent = layout.BoundsHalfExtent;
+            level.Footprint = outline;
+            level.FootprintVoids = new Vector2Contour[layout.Voids.Length];
+            for (int i = 0; i < layout.Voids.Length; i++) level.FootprintVoids[i] = new Vector2Contour { Points = layout.Voids[i] };
+            MeshObject("Floor with circular cut", root.transform, PhysicsLabGeometry.Panel(shape + " floor", outline, -Depth / 2, Thickness / 2, exit, Aperture, layout.Voids), floor, true);
             MeshObject("Clear side walls", root.transform, PhysicsLabGeometry.Border(shape + " walls", outline, Thickness, -Depth / 2, Depth / 2), glass, true);
-            MeshObject("Clear top cover", root.transform, PhysicsLabGeometry.Panel(shape + " cover", outline, Depth / 2, Thickness / 2, Vector2.zero), glass, true);
+            MeshObject("Clear top cover", root.transform, PhysicsLabGeometry.Panel(shape + " cover", outline, Depth / 2, Thickness / 2, Vector2.zero, 0, layout.Voids), glass, true);
             MeshObject("Lower machined edge", root.transform, PhysicsLabGeometry.Border(shape + " lower edge", outline, Thickness + 0.001f, -Depth / 2 - Thickness / 2, -Depth / 2 + 0.001f), frame, false);
             MeshObject("Upper machined edge", root.transform, PhysicsLabGeometry.Border(shape + " upper edge", outline, Thickness + 0.001f, Depth / 2 - 0.001f, Depth / 2 + Thickness / 2), frame, false);
+            for (int i = 0; i < layout.Voids.Length; i++)
+            {
+                Vector2[] boundary = layout.Voids[i];
+                MeshObject("Inner clear wall " + i, root.transform, PhysicsLabGeometry.Border(shape + " inner wall " + i, boundary, Thickness, -Depth / 2, Depth / 2), glass, true);
+                MeshObject("Inner lower edge " + i, root.transform, PhysicsLabGeometry.Border(shape + " inner lower edge " + i, boundary, Thickness + .001f, -Depth / 2 - Thickness / 2, -Depth / 2 + .001f), frame, false);
+                MeshObject("Inner upper edge " + i, root.transform, PhysicsLabGeometry.Border(shape + " inner upper edge " + i, boundary, Thickness + .001f, Depth / 2 - .001f, Depth / 2 + Thickness / 2), frame, false);
+            }
             if (shape == ContainerShape.Square)
             {
                 var cube = GameObject.CreatePrimitive(PrimitiveType.Cube); cube.name = "Fixed cube";

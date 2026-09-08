@@ -99,11 +99,11 @@ namespace GravityBox.Tests
         }
 
         [Test]
-        public void Catalog_ContainsOnlyThreeEarthGravityExperiments()
+        public void Catalog_ContainsEightDistinctEarthGravityExperiments()
         {
             var catalog = Catalog(); var ids = new HashSet<string>();
             var shapes = new HashSet<ContainerShape>();
-            Assert.That(catalog.Levels.Length, Is.EqualTo(3));
+            Assert.That(catalog.Levels.Length, Is.EqualTo(8));
             Assert.That(catalog.BallPrefab, Is.Not.Null);
             Assert.That(catalog.Rotation, Is.Not.Null);
             for (int i = 0; i < catalog.Levels.Length; i++)
@@ -116,6 +116,9 @@ namespace GravityBox.Tests
                 Assert.That(level.Prefab, Is.Not.Null);
                 Assert.That(level.Prefab.Exit, Is.Not.Null);
                 Assert.That(level.Prefab.BallSpawn, Is.Not.Null);
+                Assert.That(level.Prefab.Footprint, Has.Length.GreaterThanOrEqualTo(3));
+                Assert.That(level.Prefab.FootprintVoids, Is.Not.Null);
+                Assert.That(level.Prefab.FootprintVoids.Length, Is.EqualTo(level.Shape == ContainerShape.Annulus ? 1 : 0));
                 Assert.That(level.Environment.IsZeroGravity, Is.False);
                 Assert.That(level.Prefab.GetComponentsInChildren<PressurePlate>(true), Is.Empty);
                 Assert.That(level.Prefab.GetComponentsInChildren<SignalDoor>(true), Is.Empty);
@@ -127,7 +130,8 @@ namespace GravityBox.Tests
                 Assert.That(level.TeachingHint, Is.Not.Empty);
                 Assert.That(level.DesignerSolution, Is.Not.Empty);
             }
-            CollectionAssert.AreEquivalent(new[] { ContainerShape.Circle, ContainerShape.Square, ContainerShape.Triangle }, shapes);
+            CollectionAssert.AreEquivalent(new[] { ContainerShape.Circle, ContainerShape.Square, ContainerShape.Triangle,
+                ContainerShape.LShape, ContainerShape.UShape, ContainerShape.Annulus, ContainerShape.Dumbbell, ContainerShape.Star }, shapes);
         }
 
         [Test]

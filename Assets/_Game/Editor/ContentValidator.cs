@@ -25,6 +25,7 @@ namespace GravityBox.Editor
                 Require(level.Environment != null && level.Prefab != null, level.Id + ": missing profile/prefab.");
                 Require(level.Prefab.Exit != null && level.Prefab.BallSpawn != null && level.Prefab.Rotation != null, level.Id + ": missing scene contract.");
                 Require(level.Prefab.transform.localScale == Vector3.one, level.Id + ": root scale must be one.");
+                ValidateFootprint(level, catalog.BallProfile.Radius);
                 var channels = new HashSet<string>();
                 foreach (PressurePlate plate in level.Prefab.GetComponentsInChildren<PressurePlate>(true)) channels.Add(plate.Channel);
                 foreach (SignalDoor door in level.Prefab.GetComponentsInChildren<SignalDoor>(true))
@@ -83,6 +84,55 @@ namespace GravityBox.Editor
                 }
             }
             finally { EditorSceneManager.ClosePreviewScene(preview); }
+        }
+
+        private static void ValidateFootprint(LevelDefinition definition, float radius)
+        {
+            LevelRuntime level = definition.Prefab;
+            Require(level.Footprint != null && level.Footprint.Length >= 3, definition.Id + ": missing authored footprint.");
+            foreach (Vector2 point in level.Footprint)
+                Require(!float.IsNaN(point.x) && !float.IsNaN(point.y) && point.magnitude + radius < level.BoundsHalfExtent,
+                    definition.Id + ": footprint exceeds framing/failure bounds.");
+            Vector3 spawn = level.transform.InverseTransformPoint(level.BallSpawn.position);
+            Vector3 exit = level.transform.InverseTransformPoint(level.Exit.transform.position);
+            ValidateInterior(new Vector2(spawn.x, spawn.z), radius, "spawn");
+            ValidateInterior(new Vector2(exit.x, exit.z), level.Exit.ApertureRadius, "exit");
+
+            void ValidateInterior(Vector2 point, float clearance, string label)
+            {
+                Require(InPolygon(point, level.Footprint) && EdgeDistance(point, level.Footprint) > clearance,
+                    definition.Id + ": " + label + " does not fit inside the outer contour.");
+                foreach (Vector2Contour hole in level.FootprintVoids)
+                {
+                    Require(hole.Points != null && hole.Points.Length >= 3, definition.Id + ": invalid interior void.");
+                    Require(!InPolygon(point, hole.Points) && EdgeDistance(point, hole.Points) > clearance,
+                        definition.Id + ": " + label + " overlaps an interior void.");
+                }
+            }
+        }
+
+        private static bool InPolygon(Vector2 point, Vector2[] polygon)
+        {
+            bool inside = false;
+            for (int i = 0, j = polygon.Length - 1; i < polygon.Length; j = i++)
+            {
+                Vector2 a = polygon[i], b = polygon[j];
+                if ((a.y > point.y) != (b.y > point.y) && point.x < (b.x - a.x) * (point.y - a.y) / (b.y - a.y) + a.x)
+                    inside = !inside;
+            }
+            return inside;
+        }
+
+        private static float EdgeDistance(Vector2 point, Vector2[] polygon)
+        {
+            float distance = float.PositiveInfinity;
+            for (int i = 0; i < polygon.Length; i++)
+            {
+                Vector2 a = polygon[i], edge = polygon[(i + 1) % polygon.Length] - a;
+                float t = Mathf.Clamp01(Vector2.Dot(point - a, edge) / Mathf.Max(edge.sqrMagnitude, 1e-12f));
+                distance = Mathf.Min(distance, Vector2.Distance(point, a + t * edge));
+            }
+            return distance;
         }
 
         private static void Require(bool condition, string message)

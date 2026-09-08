@@ -1,6 +1,16 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** ADR 014 bên dưới thay thế số lượng màn, scale, clock và cách chuyển bàn của các ADR trước. Các đoạn mô tả 16 màn, zero-G, nắp rơi, slow motion và tự chuyển màn là lịch sử, không phải hành vi của catalog ba hộp đang chơi.
+**Phạm vi hiện tại:** ADR 015 mở rộng ba hộp của ADR 014 thành tám hộp và giữ nguyên mô hình bi thép. Các đoạn mô tả 16 màn, zero-G, nắp rơi, slow motion và tự chuyển màn là lịch sử.
+
+## ADR 015 Năm hình mới dùng polygon lõm và lõi rỗng thật
+
+Theo yêu cầu người dùng, giữ ba hình cơ bản và thêm chữ L, chữ U, vành khuyên, quả tạ, ngôi sao. Chỉ mở rộng nội dung hình học; ball mass/radius/inertia, gravity, rolling resistance, restitution, clock 120 Hz và điều khiển hộp dùng chung profile.
+
+Mỗi LevelRuntime lưu Footprint ngoài và FootprintVoids để authoring, validation và framing có cùng nguồn hình học. Sàn/nắp được triangulate theo miền polygon có thể lõm/có lõi rỗng; không dùng convex hull hoặc quạt tam giác từ origin. Renderer và MeshCollider chia sẻ mesh đã bake. Contour trong vành khuyên có thành riêng, phần giữa hoàn toàn trống.
+
+Chữ L/U kiểm tra đổi hướng ở góc lõm; vành khuyên có biên trong/ngoài; quả tạ có hai buồng nối bằng cổ rộng 0,10 m; ngôi sao nối các cánh qua vùng giữa. Lối đi phải đủ toàn bộ cầu đường kính 0,03 m với clearance. Test dữ liệu, floor/void và sweep được bổ sung bằng fixture chỉ xoay hộp để đưa bi qua waypoint thật; không thêm logic hỗ trợ trong player.
+
+Catalog và bộ chọn bàn có đúng tám lựa chọn, Next quay vòng. Camera/bounds theo kích thước footprint để không cắt mất hộp mới. Bộ mở rộng đã qua 52 tests; bằng chứng 40 tests của mốc ba hộp được giữ riêng trong Archive để đối chiếu.
 
 ## ADR 014 Prototype bi thép với ba hình học
 

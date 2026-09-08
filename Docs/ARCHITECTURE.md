@@ -1,6 +1,6 @@
 # Kiến trúc Gravity Box
 
-Prototype hiện tại tải ba thí nghiệm hình học dùng chung một mô hình bi thép. Bi chuyển động trong world space; hộp là vật thể kinematic nhận ý định xoay từ người chơi. PhysX giải quyết va chạm giữa chúng. Không có đường điều khiển input trực tiếp tới vị trí hoặc vận tốc của bi.
+Prototype hiện tại tải tám thí nghiệm hình học dùng chung một mô hình bi thép. Bi chuyển động trong world space; hộp là vật thể kinematic nhận ý định xoay từ người chơi. PhysX giải quyết va chạm giữa chúng. Không có đường điều khiển input trực tiếp tới vị trí hoặc vận tốc của bi.
 
 ## Phụ thuộc
 
@@ -34,7 +34,7 @@ Các lớp được cô lập bằng asmdef. Foundation không tham chiếu Unit
 | Catalog / profile | Asset / read-only runtime | Hình dạng, vật liệu, kích thước và thông số chung |
 | HUD / camera / audio | Bootstrap / phiên chạy | Thể hiện trạng thái vật lý và nhận thao tác |
 
-Ball không nằm dưới transform của hộp. Khi đổi hộp, manager xóa force targets và vô hiệu hóa root/ball cũ trước Destroy cuối frame, tránh collider của hai bàn cùng hoạt động. Cơ sở PhysicalProp và các cơ cấu cũ vẫn còn để tham khảo; không có instance của chúng trong ba bàn hiện tại.
+Ball không nằm dưới transform của hộp. Khi đổi hộp, manager xóa force targets và vô hiệu hóa root/ball cũ trước Destroy cuối frame, tránh collider của hai bàn cùng hoạt động. Cơ sở PhysicalProp và các cơ cấu cũ vẫn còn để tham khảo; không có instance của chúng trong tám bàn hiện tại.
 
 ## Clock, scale và contact
 
@@ -46,15 +46,17 @@ Mô phỏng dùng 1/120 s. Contact offset, bounce threshold, solver và giới h
 
 ## Hình học và cửa thoát
 
-LevelDefinition khai báo `ContainerShape`: Circle, Square, Triangle. Hình dạng quyết định biên thành hộp thực. Hộp vuông có collider **Fixed cube**, cạnh 0,064 m, thuộc compound body kinematic của hộp; nó không nhận xung từ ball để di chuyển tương đối với hộp.
+LevelDefinition khai báo `ContainerShape`: Circle, Square, Triangle, LShape, UShape, Annulus, Dumbbell, Star. `LevelRuntime.Footprint` lưu contour ngoài CCW trên mặt XZ; `FootprintVoids` chứa các contour lõi rỗng, mỗi phần tử có `Points`. Vành khuyên có một contour trong, các hình khác có thể lõm nhưng không có lõi rỗng khép kín.
+
+Editor triangulate sàn/nắp theo miền polygon thật; không dựng quạt từ origin cho polygon lõm hoặc chứa lỗ. Thành vỏ đi theo cả contour ngoài lẫn contour trong. Cùng mesh được dùng cho hiển thị/collision. Collider **Fixed cube**, cạnh 0,064 m, thuộc compound kinematic của hộp vuông và không di chuyển tương đối với hộp.
 
 Cửa giữ quy ước local +Z hướng ra ngoài, bán kính 0,023 m và wall half-depth 0,003 m. Renderer/collider dùng cùng hình học mặt cắt. Ring chỉ có renderer, không collider. ExitSocket kiểm tra sweep từ phía trong qua bán kính tròn và đợi toàn bộ cầu vượt mặt ngoài. Sai số clearance/completion tính theo bán kính bi; không giữ các dung sai vài centimet từ prototype cũ.
 
-Bounds của LevelRuntime là hàng rào kiểm tra lỗi sau vùng vỏ và ngưỡng thoát, không phải collider. Kiểm thử hình học kiểm tra collider thật quanh chu vi, spawn clearance, lỗ thật và sự giữ bi khi hộp nghiêng.
+Bounds của LevelRuntime là hàng rào kiểm tra lỗi sau vùng vỏ và ngưỡng thoát, không phải collider. Kích thước bounds/framing tăng theo contour của từng hộp. Kiểm thử hình học tiếp cận từng cạnh từ phía có thể chơi, kiểm tra sàn/nắp bên trong và khoảng trống bên ngoài polygon, sau đó sweep toàn bộ cầu và nghiêng bi qua các góc/cổ nối. Không giả định origin luôn nằm trong hộp: origin của vành khuyên nằm trong vùng rỗng.
 
 ## Session và reset
 
-Active có thể chuyển Paused, Completing khi bi thoát, hoặc Failed nếu phát hiện lọt ra ngoài sai đường. Completing giữ time scale 1; manager không tự chuyển bàn theo timer. Next được người chơi gọi và quay vòng ba hộp. Reset có thể gọi từ trạng thái đang chơi hoặc đã thoát để lặp cùng điều kiện.
+Active có thể chuyển Paused, Completing khi bi thoát, hoặc Failed nếu phát hiện lọt ra ngoài sai đường. Completing giữ time scale 1; manager không tự chuyển bàn theo timer. Next được người chơi gọi và quay vòng tám hộp. Reset có thể gọi từ trạng thái đang chơi hoặc đã thoát để lặp cùng điều kiện.
 
 Reset khôi phục root pose trước, xóa input backlog, khôi phục exit/traversal state, rồi khôi phục world pose, vận tốc và contact state của bi. Cuối cùng SyncTransforms và BeginTracking lấy mẫu mới. Registry chỉ capture trạng thái ban đầu một lần; reset không ghi đè trạng thái chuẩn bằng kết quả thử trước đó.
 

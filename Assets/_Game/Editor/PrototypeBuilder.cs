@@ -36,7 +36,7 @@ namespace GravityBox.Editor
             "Plan the contacts. Every wall can change the journey."
         };
 
-        [MenuItem("Gravity Box/Generate Three Physics Boxes")]
+        [MenuItem("Gravity Box/Generate Physics Boxes")]
         public static void Generate() => PhysicsLabBuilder.Generate();
 
         // Preserved as historical authoring code; active builds use the three-box catalog.

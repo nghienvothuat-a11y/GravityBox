@@ -293,6 +293,11 @@ namespace GravityBox.Tests
         [TestCase(0)]
         [TestCase(1)]
         [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(6)]
+        [TestCase(7)]
         public void ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(int index)
         {
             LevelRuntime level = LoadShippedContainer(index);
