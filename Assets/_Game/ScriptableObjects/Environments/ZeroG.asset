@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df699e29fe6ab49c4ae3b3c4f2f9402b, type: 3}
+  m_Name: ZeroG
+  m_EditorClassIdentifier: GravityBox.Simulation::GravityBox.Simulation.EnvironmentProfile
+  Id: zero-g
+  DisplayName: ZERO-G
+  GravityScale: 0
+  WorldGravityDirection: {x: 0, y: -1, z: 0}
+  LinearDamping: 0
+  AngularDamping: 0
+  MaxLinearSpeed: 12
+  MaxAngularSpeed: 35
+  Accent: {r: 0.42, g: 0.8, b: 1, a: 1}
+  Background: {r: 0.035, g: 0.035, b: 0.09, a: 1}

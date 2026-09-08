@@ -1,0 +1,122 @@
+using System.Collections.Generic;
+using GravityBox.Foundation;
+using GravityBox.Gameplay;
+using GravityBox.Simulation;
+using NUnit.Framework;
+using UnityEditor;
+using UnityEngine;
+using SessionState = GravityBox.Foundation.SessionState;
+
+namespace GravityBox.Tests
+{
+    public sealed class DesignContractTests
+    {
+        private sealed class ResetProbe : IResettable
+        {
+            public int Captures, Resets;
+            public void CaptureInitialState() => Captures++;
+            public void ResetState() => Resets++;
+        }
+
+        [Test]
+        public void Registry_DeduplicatesAndCapturesOnlyOnce()
+        {
+            var registry = new ResetRegistry(); var item = new ResetProbe();
+            registry.Register(item); registry.Register(item);
+            for (int i = 0; i < 100; i++) registry.RestoreAll();
+            Assert.That(registry.Count, Is.EqualTo(1));
+            Assert.That(item.Captures, Is.EqualTo(1));
+            Assert.That(item.Resets, Is.EqualTo(100));
+            registry.Clear(); registry.RestoreAll();
+            Assert.That(item.Resets, Is.EqualTo(100));
+        }
+
+        [Test]
+        public void TerminalState_FiresExactlyOnceUntilReset()
+        {
+            var session = new GameSession(); int completions = 0;
+            session.Changed += state => { if (state == SessionState.Completing) completions++; };
+            Assert.That(session.TryComplete(), Is.False);
+            session.Activate();
+            Assert.That(session.TryComplete(), Is.True);
+            Assert.That(session.TryComplete(), Is.False);
+            Assert.That(session.TryFail(), Is.False);
+            Assert.That(completions, Is.EqualTo(1));
+            session.Activate();
+            Assert.That(session.TryComplete(), Is.True);
+            Assert.That(completions, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void PausedSession_RejectsCompletionAndFailure()
+        {
+            var session = new GameSession(); session.Activate(); session.TogglePause();
+            Assert.That(session.State, Is.EqualTo(SessionState.Paused));
+            Assert.That(session.TryComplete(), Is.False);
+            Assert.That(session.TryFail(), Is.False);
+            session.TogglePause(); Assert.That(session.State, Is.EqualTo(SessionState.Active));
+        }
+
+        [Test]
+        public void Profiles_ResolveWorldAcceleration()
+        {
+            var catalog = Catalog();
+            Assert.That(catalog.Levels[0].Environment.Acceleration, Is.EqualTo(Vector3.down * 9.81f));
+            Assert.That(catalog.Levels[10].Environment.Acceleration, Is.EqualTo(Vector3.zero));
+            Assert.That(catalog.Levels[10].Environment.LinearDamping, Is.Zero);
+        }
+
+        [Test]
+        public void Snapping_UsesAll24DistinctCubeOrientations()
+        {
+            var orientations = new List<Quaternion>();
+            Vector3[] axes = { Vector3.up, Vector3.down, Vector3.left, Vector3.right, Vector3.forward, Vector3.back };
+            foreach (Vector3 forward in axes)
+                foreach (Vector3 up in axes)
+                {
+                    if (Mathf.Abs(Vector3.Dot(forward, up)) > 0.1f) continue;
+                    Quaternion expected = Quaternion.LookRotation(forward, up);
+                    Quaternion near = Quaternion.AngleAxis(4, Vector3.one.normalized) * expected;
+                    Quaternion snapped = BoxRotationController.NearestCanonical(near);
+                    Assert.That(Quaternion.Angle(expected, snapped), Is.LessThan(0.05f));
+                    foreach (Quaternion other in orientations) Assert.That(Quaternion.Angle(other, snapped), Is.GreaterThan(1));
+                    orientations.Add(snapped);
+                }
+            Assert.That(orientations.Count, Is.EqualTo(24));
+        }
+
+        [Test]
+        public void SignalBus_IsScopedToEachLevel()
+        {
+            var a = new MechanismSignals(); var b = new MechanismSignals(); int count = 0;
+            a.Changed += (_, __) => count++;
+            a.Set("gate-a", true); a.Set("gate-a", true);
+            Assert.That(b.Read("gate-a"), Is.False);
+            Assert.That(count, Is.EqualTo(1));
+            a.Clear(); Assert.That(a.Read("gate-a"), Is.False);
+        }
+
+        [Test]
+        public void Catalog_Has16UniquePlayableDefinitionsWith10EarthAnd6ZeroG()
+        {
+            var catalog = Catalog(); var ids = new HashSet<string>();
+            Assert.That(catalog.Levels.Length, Is.EqualTo(16));
+            Assert.That(catalog.BallPrefab, Is.Not.Null);
+            Assert.That(catalog.Rotation, Is.Not.Null);
+            for (int i = 0; i < catalog.Levels.Length; i++)
+            {
+                LevelDefinition level = catalog.Levels[i];
+                Assert.That(ids.Add(level.Id), Is.True, "Duplicate level id");
+                Assert.That(level.DisplayIndex, Is.EqualTo(i + 1));
+                Assert.That(level.Prefab, Is.Not.Null);
+                Assert.That(level.Prefab.Exit, Is.Not.Null);
+                Assert.That(level.Prefab.BallSpawn, Is.Not.Null);
+                Assert.That(level.Environment.IsZeroGravity, Is.EqualTo(i >= 10));
+                Assert.That(level.TeachingHint, Is.Not.Empty);
+                Assert.That(level.DesignerSolution, Is.Not.Empty);
+            }
+        }
+
+        private static LevelCatalog Catalog() => AssetDatabase.LoadAssetAtPath<LevelCatalog>("Assets/_Game/ScriptableObjects/LevelCatalog.asset");
+    }
+}

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="19" result="Passed" total="19" passed="19" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-08 04:08:03Z" end-time="2026-09-08 04:08:21Z" duration="18.6007045">
+  <test-suite type="TestSuite" id="1029" name="Gravity Box" fullname="Gravity Box" runstate="Runnable" testcasecount="19" result="Passed" start-time="2026-09-08 04:08:03Z" end-time="2026-09-08 04:08:21Z" duration="18.600705" total="19" passed="19" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1023" name="GravityBox.Tests.PlayMode.dll" fullname="/Users/mrk/GravityBox/Library/ScriptAssemblies/GravityBox.Tests.PlayMode.dll" runstate="Runnable" testcasecount="19" result="Passed" start-time="2026-09-08 04:08:03Z" end-time="2026-09-08 04:08:21Z" duration="18.592770" total="19" passed="19" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="14127" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1024" name="GravityBox" fullname="GravityBox" runstate="Runnable" testcasecount="19" result="Passed" start-time="2026-09-08 04:08:03Z" end-time="2026-09-08 04:08:21Z" duration="18.592339" total="19" passed="19" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1025" name="Tests" fullname="GravityBox.Tests" runstate="Runnable" testcasecount="19" result="Passed" start-time="2026-09-08 04:08:03Z" end-time="2026-09-08 04:08:21Z" duration="18.592160" total="19" passed="19" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1001" name="InputIntegrationTests" fullname="GravityBox.Tests.InputIntegrationTests" classname="GravityBox.Tests.InputIntegrationTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-09-08 04:08:03Z" end-time="2026-09-08 04:08:05Z" duration="2.383104" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1002" name="Mouse_DragAndResetButtonWorkWithoutRotatingThroughUI" fullname="GravityBox.Tests.InputIntegrationTests.Mouse_DragAndResetButtonWorkWithoutRotatingThroughUI" methodname="Mouse_DragAndResetButtonWorkWithoutRotatingThroughUI" classname="GravityBox.Tests.InputIntegrationTests" runstate="Runnable" seed="814483092" result="Passed" start-time="2026-09-08 04:08:03Z" end-time="2026-09-08 04:08:04Z" duration="0.980044" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1003" name="Mouse_DragCompletedBetweenFramesIsNotLost" fullname="GravityBox.Tests.InputIntegrationTests.Mouse_DragCompletedBetweenFramesIsNotLost" methodname="Mouse_DragCompletedBetweenFramesIsNotLost" classname="GravityBox.Tests.InputIntegrationTests" runstate="Runnable" seed="1557031404" result="Passed" start-time="2026-09-08 04:08:04Z" end-time="2026-09-08 04:08:04Z" duration="0.423314" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1004" name="Touch_DragsTheBoxWithOneFinger" fullname="GravityBox.Tests.InputIntegrationTests.Touch_DragsTheBoxWithOneFinger" methodname="Touch_DragsTheBoxWithOneFinger" classname="GravityBox.Tests.InputIntegrationTests" runstate="Runnable" seed="940936449" result="Passed" start-time="2026-09-08 04:08:04Z" end-time="2026-09-08 04:08:05Z" duration="0.534575" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1005" name="Touch_ReleasePositionContributesFinalMotion" fullname="GravityBox.Tests.InputIntegrationTests.Touch_ReleasePositionContributesFinalMotion" methodname="Touch_ReleasePositionContributesFinalMotion" classname="GravityBox.Tests.InputIntegrationTests" runstate="Runnable" seed="1525434014" result="Passed" start-time="2026-09-08 04:08:05Z" end-time="2026-09-08 04:08:05Z" duration="0.433825" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1006" name="PhysicsLifecycleTests" fullname="GravityBox.Tests.PhysicsLifecycleTests" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" testcasecount="14" result="Passed" start-time="2026-09-08 04:08:05Z" end-time="2026-09-08 04:08:08Z" duration="2.435580" total="14" passed="14" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1020" name="All16Levels_HaveReproduciblePhysicsOnlySolveRoutes" fullname="GravityBox.Tests.PhysicsLifecycleTests.All16Levels_HaveReproduciblePhysicsOnlySolveRoutes" methodname="All16Levels_HaveReproduciblePhysicsOnlySolveRoutes" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1827808428" result="Passed" start-time="2026-09-08 04:08:05Z" end-time="2026-09-08 04:08:07Z" duration="1.319801" asserts="0">
+              <properties>
+                <property name="Category" value="Content" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SOLVE PROOF gb-01: 1 rotation segments
+SOLVE PROOF gb-02: 3 rotation segments
+SOLVE PROOF gb-03: 3 rotation segments
+SOLVE PROOF gb-04: 1 rotation segments
+SOLVE PROOF gb-05: 1 rotation segments
+SOLVE PROOF gb-06: 8 rotation segments
+SOLVE PROOF gb-07: 1 rotation segments
+SOLVE PROOF gb-08: 3 rotation segments
+SOLVE PROOF gb-09: 2 rotation segments
+SOLVE PROOF gb-10: 5 rotation segments
+SOLVE PROOF gb-11: 1 rotation segments
+SOLVE PROOF gb-12: 4 rotation segments
+SOLVE PROOF gb-13: 3 rotation segments
+SOLVE PROOF gb-14: 7 rotation segments
+SOLVE PROOF gb-15: 2 rotation segments
+SOLVE PROOF gb-16: 1 rotation segments
+]]></output>
+            </test-case>
+            <test-case id="1017" name="Bumper_AppliesAnAuthoredImpulseAndResetsCooldown" fullname="GravityBox.Tests.PhysicsLifecycleTests.Bumper_AppliesAnAuthoredImpulseAndResetsCooldown" methodname="Bumper_AppliesAnAuthoredImpulseAndResetsCooldown" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1345507856" result="Passed" start-time="2026-09-08 04:08:07Z" end-time="2026-09-08 04:08:07Z" duration="0.002877" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1018" name="EveryLevel_LoadsCorrectPrefabEnvironmentAndResets" fullname="GravityBox.Tests.PhysicsLifecycleTests.EveryLevel_LoadsCorrectPrefabEnvironmentAndResets" methodname="EveryLevel_LoadsCorrectPrefabEnvironmentAndResets" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="945292509" result="Passed" start-time="2026-09-08 04:08:07Z" end-time="2026-09-08 04:08:07Z" duration="0.037105" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1013" name="ExitTrigger_CapturesExactlyOnceAndLocksInput" fullname="GravityBox.Tests.PhysicsLifecycleTests.ExitTrigger_CapturesExactlyOnceAndLocksInput" methodname="ExitTrigger_CapturesExactlyOnceAndLocksInput" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="807611108" result="Passed" start-time="2026-09-08 04:08:07Z" end-time="2026-09-08 04:08:07Z" duration="0.001808" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1007" name="Gravity_AcceleratesAnUnobstructedBallDownward" fullname="GravityBox.Tests.PhysicsLifecycleTests.Gravity_AcceleratesAnUnobstructedBallDownward" methodname="Gravity_AcceleratesAnUnobstructedBallDownward" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1625148598" result="Passed" start-time="2026-09-08 04:08:07Z" end-time="2026-09-08 04:08:07Z" duration="0.002497" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1015" name="KillVolume_FailsAndResetReturnsToActive" fullname="GravityBox.Tests.PhysicsLifecycleTests.KillVolume_FailsAndResetReturnsToActive" methodname="KillVolume_FailsAndResetReturnsToActive" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="485215159" result="Passed" start-time="2026-09-08 04:08:07Z" end-time="2026-09-08 04:08:07Z" duration="0.002700" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1016" name="OneWayGate_PermitsForwardAndBlocksReturnAndResetsIgnorePair" fullname="GravityBox.Tests.PhysicsLifecycleTests.OneWayGate_PermitsForwardAndBlocksReturnAndResetsIgnorePair" methodname="OneWayGate_PermitsForwardAndBlocksReturnAndResetsIgnorePair" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="820621929" result="Passed" start-time="2026-09-08 04:08:07Z" end-time="2026-09-08 04:08:07Z" duration="0.002423" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1014" name="PlateDoorPrerequisite_PreventsBypassingSequence" fullname="GravityBox.Tests.PhysicsLifecycleTests.PlateDoorPrerequisite_PreventsBypassingSequence" methodname="PlateDoorPrerequisite_PreventsBypassingSequence" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="2134531338" result="Passed" start-time="2026-09-08 04:08:07Z" end-time="2026-09-08 04:08:07Z" duration="0.002594" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1012" name="Reset_RestoresZeroGLaunchVelocity" fullname="GravityBox.Tests.PhysicsLifecycleTests.Reset_RestoresZeroGLaunchVelocity" methodname="Reset_RestoresZeroGLaunchVelocity" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="642230420" result="Passed" start-time="2026-09-08 04:08:07Z" end-time="2026-09-08 04:08:07Z" duration="0.003082" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1011" name="Reset100Times_RestoresBallRootSignalsAndDoorWithoutAccumulation" fullname="GravityBox.Tests.PhysicsLifecycleTests.Reset100Times_RestoresBallRootSignalsAndDoorWithoutAccumulation" methodname="Reset100Times_RestoresBallRootSignalsAndDoorWithoutAccumulation" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1260579224" result="Passed" start-time="2026-09-08 04:08:07Z" end-time="2026-09-08 04:08:07Z" duration="0.006067" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1019" name="ResetDuringCompletion_CancelsPendingAdvance" fullname="GravityBox.Tests.PhysicsLifecycleTests.ResetDuringCompletion_CancelsPendingAdvance" methodname="ResetDuringCompletion_CancelsPendingAdvance" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1999821104" result="Passed" start-time="2026-09-08 04:08:07Z" end-time="2026-09-08 04:08:08Z" duration="1.008669" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1010" name="Rotation_RespectsAngularSpeedLimit" fullname="GravityBox.Tests.PhysicsLifecycleTests.Rotation_RespectsAngularSpeedLimit" methodname="Rotation_RespectsAngularSpeedLimit" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1173868738" result="Passed" start-time="2026-09-08 04:08:08Z" end-time="2026-09-08 04:08:08Z" duration="0.002487" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1008" name="ZeroG_RetainsMomentumThrough120Steps" fullname="GravityBox.Tests.PhysicsLifecycleTests.ZeroG_RetainsMomentumThrough120Steps" methodname="ZeroG_RetainsMomentumThrough120Steps" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="2116041020" result="Passed" start-time="2026-09-08 04:08:08Z" end-time="2026-09-08 04:08:08Z" duration="0.024192" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1009" name="ZeroG_RotatingRootDoesNotRotateUntouchedBallVelocity" fullname="GravityBox.Tests.PhysicsLifecycleTests.ZeroG_RotatingRootDoesNotRotateUntouchedBallVelocity" methodname="ZeroG_RotatingRootDoesNotRotateUntouchedBallVelocity" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1729010732" result="Passed" start-time="2026-09-08 04:08:08Z" end-time="2026-09-08 04:08:08Z" duration="0.015793" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1021" name="SceneIntegrationTests" fullname="GravityBox.Tests.SceneIntegrationTests" classname="GravityBox.Tests.SceneIntegrationTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-09-08 04:08:08Z" end-time="2026-09-08 04:08:21Z" duration="13.772067" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1022" name="GameplayScene_BootstrapsAndAdvancesToZeroGAndFinishes" fullname="GravityBox.Tests.SceneIntegrationTests.GameplayScene_BootstrapsAndAdvancesToZeroGAndFinishes" methodname="GameplayScene_BootstrapsAndAdvancesToZeroGAndFinishes" classname="GravityBox.Tests.SceneIntegrationTests" runstate="Runnable" seed="2087357002" result="Passed" start-time="2026-09-08 04:08:08Z" end-time="2026-09-08 04:08:21Z" duration="13.770805" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: /Users/mrk/Library/Application Support/Gravity Box Lab/Gravity Box/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
