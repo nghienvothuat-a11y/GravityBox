@@ -9,10 +9,10 @@ namespace GravityBox.Simulation
         public string DisplayName = "GRAVITY";
         [Min(0)] public float GravityScale = 1f;
         public Vector3 WorldGravityDirection = Vector3.down;
-        [Min(0)] public float LinearDamping = 0.035f;
-        [Min(0)] public float AngularDamping = 0.04f;
-        [Min(1)] public float MaxLinearSpeed = 12f;
-        [Min(1)] public float MaxAngularSpeed = 35f;
+        [Min(0)] public float LinearDamping;
+        [Min(0)] public float AngularDamping;
+        [Min(1)] public float MaxLinearSpeed = 6f;
+        [Min(1)] public float MaxAngularSpeed = 400f;
         public Color Accent = new Color(0.65f, 0.94f, 0.55f);
         public Color Background = new Color(0.037f, 0.061f, 0.08f);
         public bool IsZeroGravity => GravityScale <= 0.0001f;

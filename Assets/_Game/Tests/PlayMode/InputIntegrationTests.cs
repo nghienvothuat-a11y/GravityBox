@@ -91,6 +91,29 @@ namespace GravityBox.Tests
         }
 
         [UnityTest]
+        public IEnumerator Mouse_CursorRestoredAfterReleasePreservesCompletedDrag()
+        {
+            mouse = InputSystem.AddDevice<Mouse>();
+            Vector2 start = new Vector2(Screen.width * 0.35f, Screen.height * 0.45f);
+            Vector2 end = start + new Vector2(Screen.width * 0.2f, 0);
+            // A fast native gesture can release and restore the cursor before the
+            // next rendered frame. Keep the complete event ordering in one update.
+            SendMouse(start, false);
+            SendMouse(start, true);
+            SendMouse(end, true);
+            SendMouse(end, false);
+            SendMouse(start, false);
+            InputSystem.Update();
+            Assert.That(mouse.position.ReadValue(), Is.EqualTo(start));
+            yield return new WaitForSeconds(0.25f);
+            float expectedDistance = Vector2.Distance(start, end) / Mathf.Max(1, Mathf.Min(Screen.width, Screen.height));
+            Assert.That(bootstrap.Levels.DragCount, Is.EqualTo(1));
+            Assert.That(bootstrap.Levels.DragDistance, Is.EqualTo(expectedDistance).Within(0.001f),
+                "The release contributes its endpoint; the later hover movement contributes no drag.");
+            Assert.That(Quaternion.Angle(Quaternion.identity, bootstrap.Levels.Current.Rotation.Orientation), Is.GreaterThan(5));
+        }
+
+        [UnityTest]
         public IEnumerator Touch_DragsTheBoxWithOneFinger()
         {
             touchscreen = InputSystem.AddDevice<Touchscreen>();

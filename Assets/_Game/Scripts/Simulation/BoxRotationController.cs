@@ -15,9 +15,11 @@ namespace GravityBox.Simulation
         private Quaternion initial;
         private bool dragging;
         private bool snapPending;
+        private Vector3 angularVelocityDegrees;
         public bool InputEnabled { get; set; } = true;
         public RotationMode Mode { get; set; }
         public Quaternion Orientation => body.rotation;
+        public Vector3 CommandedAngularVelocity => angularVelocityDegrees;
         public event Action Snapped;
 
         public void Configure(RotationSettings config, RotationMode mode)
@@ -30,6 +32,7 @@ namespace GravityBox.Simulation
             settings = config;
             Mode = mode;
             desired = body.rotation;
+            angularVelocityDegrees = Vector3.zero;
         }
 
         public void BeginDrag()
@@ -70,9 +73,25 @@ namespace GravityBox.Simulation
 
         public void Step(float dt)
         {
-            if (body == null || settings == null || !InputEnabled) return;
-            Quaternion smoothed = Quaternion.Slerp(body.rotation, desired, 1f - Mathf.Exp(-dt / settings.SmoothingSeconds));
-            body.MoveRotation(Quaternion.RotateTowards(body.rotation, smoothed, settings.MaxDegreesPerSecond * dt));
+            if (body == null || settings == null || !InputEnabled || dt <= 0) return;
+            Quaternion error = desired * Quaternion.Inverse(body.rotation);
+            error.ToAngleAxis(out float angle, out Vector3 axis);
+            if (angle > 180) { angle = 360 - angle; axis = -axis; }
+            if (angle < 0.0001f || axis.sqrMagnitude < 0.001f) axis = Vector3.zero;
+            float accelerationLimit = Mathf.Max(1, settings.MaxDegreesPerSecondSquared);
+            float brakingSpeed = Mathf.Sqrt(2 * accelerationLimit * angle);
+            float speed = Mathf.Min(settings.MaxDegreesPerSecond, brakingSpeed,
+                angle / Mathf.Max(settings.SmoothingSeconds, dt));
+            Vector3 targetVelocity = axis.normalized * speed;
+            angularVelocityDegrees = Vector3.MoveTowards(angularVelocityDegrees, targetVelocity, accelerationLimit * dt);
+            float step = angularVelocityDegrees.magnitude * dt;
+            if (step >= angle && Vector3.Dot(angularVelocityDegrees.normalized, axis) > 0.999f)
+            {
+                body.MoveRotation(desired);
+                angularVelocityDegrees = Vector3.zero;
+            }
+            else if (step > 0)
+                body.MoveRotation(Quaternion.AngleAxis(step, angularVelocityDegrees.normalized) * body.rotation);
             if (snapPending && Quaternion.Angle(body.rotation, desired) < 0.2f)
             {
                 snapPending = false;
@@ -87,6 +106,7 @@ namespace GravityBox.Simulation
             desired = initial;
             dragging = false;
             snapPending = false;
+            angularVelocityDegrees = Vector3.zero;
             InputEnabled = true;
         }
 

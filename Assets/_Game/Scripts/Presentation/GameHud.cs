@@ -19,11 +19,8 @@ namespace GravityBox.Presentation
         private LevelManager levels;
         private RectTransform safe;
         private Rect lastSafe;
-        private Text title, number, environment, hint, state, progress, stats, dragHint, pauseLabel, debugText;
-        private Image environmentDot, progressFill;
-        private GameObject levelModal, pauseOverlay, debugPanel, finishOverlay;
-        private RectTransform finger;
-        private bool touched;
+        private Text title, number, environment, hint, state, progress, stats, pauseLabel, debugText;
+        private GameObject levelModal, pauseOverlay, debugPanel;
         private float nextRefresh;
         public bool ModalOpen => levelModal != null && levelModal.activeSelf;
 
@@ -57,57 +54,48 @@ namespace GravityBox.Presentation
             }
 
             Label("Brand", safe, "G R A V I T Y  /  B O X", 30, Ink, 60, 52, 760, 45);
-            Label("Edition", safe, "PHYSICS LAB   /   01", 19, Muted, 60, 104, 760, 30);
+            Label("Edition", safe, "STEEL BALL   /   PHYSICS STUDY", 19, Muted, 60, 104, 760, 30);
             Label("Prototype", safe, "PROTOTYPE", 19, Muted, -275, 57, 215, 34, true, TextAnchor.MiddleRight);
             Line("Header rule", safe, 60, 155, -60, new Color(0.2f, 0.29f, 0.33f));
-            number = Label("Level number", safe, "01", 88, Ink, 55, 194, 180, 108);
-            Label("Level label", safe, "EXPERIMENT", 20, Muted, 62, 307, 220, 30);
-            var badge = Panel("Environment pill", safe, Surface, -390, 213, 330, 68, true);
-            environmentDot = Panel("Signal", badge, Accent, 24, 26, 12, 12).GetComponent<Image>();
-            environment = Label("Environment", badge, "GRAVITY", 24, Accent, 53, 12, 250, 43);
-            title = Label("Puzzle name", safe, "First principles", 51, Ink, 60, 361, 940, 76);
-            state = Label("Status", safe, "ROLL THROUGH THE GREEN OPENING.", 21, Muted, 62, 446, 945, 40);
+            number = Label("Level number", safe, "01", 64, Muted, 58, 191, 130, 82);
+            title = Label("Container name", safe, "Circle", 57, Ink, 204, 191, 804, 82);
+            environment = Label("Ball specification", safe, "STEEL · 111 g · Ø 30 mm", 22, Muted, 62, 296, 650, 38);
+            Label("Environment", safe, "EARTH GRAVITY", 20, Muted, -365, 296, 305, 38, true, TextAnchor.MiddleRight);
+            state = Label("Status", safe, "ROLL THROUGH THE GREEN OPENING.", 21, Muted, 62, 354, 945, 40);
 
-            var bottom = Rect("Controls", safe, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 410), new Vector2(0, 410));
+            var bottom = Rect("Controls", safe, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 346), new Vector2(0, 346));
             bottom.pivot = new Vector2(0.5f, 1);
-            progress = Label("Progress", bottom, "01 / 16", 23, Muted, 60, 0, 300, 36);
-            stats = Label("Attempts", bottom, "0 RESETS", 21, Muted, -340, 0, 280, 36, true, TextAnchor.MiddleRight);
-            var track = Panel("Progress track", bottom, new Color(0.15f, 0.22f, 0.26f), 60, 54, 960, 3);
-            progressFill = Panel("Progress fill", track, Accent, 0, 0, 60, 3).GetComponent<Image>();
-            hint = Label("Teaching hint", bottom, "Tilt the ramp. Let gravity do the rest.", 27, Ink, 60, 83, 930, 84);
-            Button("Reset", bottom, "RESET", 60, 190, 440, 100, Accent, new Color(0.05f, 0.10f, 0.10f), () => levels.ResetLevel());
-            Button("Experiments", bottom, "LEVELS", 522, 190, 254, 100, Surface, Ink, ToggleLevels);
-            pauseLabel = Button("Pause", bottom, "II", 798, 190, 222, 100, Surface, Ink, () => levels.TogglePause());
-            dragHint = Label("Input hint", bottom, "DRAG TO ROTATE     /     RELEASE TO OBSERVE", 19, Muted, 60, 324, 960, 34, false, TextAnchor.MiddleCenter);
-            finger = Panel("Ghost finger", safe, new Color(0.86f, 0.97f, 0.87f, 0.4f), 0, 0, 20, 20);
-            finger.anchorMin = finger.anchorMax = new Vector2(0.5f, 0.37f);
-            finger.pivot = Vector2.one * 0.5f;
+            progress = Label("Progress", bottom, "01 / 03", 23, Muted, 60, 0, 300, 36);
+            stats = Label("Speed", bottom, "0.00 m/s", 23, Ink, -340, 0, 280, 36, true, TextAnchor.MiddleRight);
+            Line("Controls rule", bottom, 60, 49, -60, new Color(0.15f, 0.22f, 0.26f));
+            hint = Label("Teaching hint", bottom, "Tilt gently. Watch the ball gather speed.", 27, Ink, 60, 67, 960, 80);
+            Button("Reset", bottom, "RESET", 60, 167, 290, 100, Accent, new Color(0.05f, 0.10f, 0.10f), () => levels.ResetLevel());
+            Button("Next experiment", bottom, "NEXT BOX", 372, 167, 290, 100, Surface, Ink, () => levels.Load((levels.Index + 1) % levels.Catalog.Levels.Length));
+            Button("Experiments", bottom, "SHAPES", 684, 167, 210, 100, Surface, Ink, ToggleLevels);
+            pauseLabel = Button("Pause", bottom, "II", 916, 167, 104, 100, Surface, Ink, () => levels.TogglePause());
+            Label("Input hint", bottom, "DRAG TO TILT     /     RELEASE TO OBSERVE", 19, Muted, 60, 295, 960, 34, false, TextAnchor.MiddleCenter);
 
             BuildLevelModal();
             pauseOverlay = Overlay("Pause overlay", "TAKE A BREATH", "The experiment will wait.", "RESUME", () => levels.TogglePause());
-            finishOverlay = Overlay("Finish overlay", "EXPERIMENTS COMPLETE", "16 small worlds. One simple rule.", "PLAY AGAIN", () => levels.Load(0));
             BuildDiagnostics();
             ApplySafeArea();
         }
 
         private void BuildLevelModal()
         {
-            levelModal = Panel("Experiment selector", safe, new Color(0.037f, 0.065f, 0.086f, 0.99f), 38, 174, 1004, 1320).gameObject;
+            float height = 306 + levels.Catalog.Levels.Length * 178;
+            levelModal = Panel("Experiment selector", safe, new Color(0.037f, 0.065f, 0.086f, 0.99f), 38, 407, 1004, height).gameObject;
             levelModal.GetComponent<Image>().raycastTarget = true;
-            Label("Selector title", levelModal.transform, "Choose an experiment", 43, Ink, 40, 40, 860, 80);
-            Label("Chapter 1", levelModal.transform, "01—10   /   GRAVITY", 23, Accent, 42, 140, 860, 48);
+            Label("Selector title", levelModal.transform, "Choose a box", 43, Ink, 40, 36, 860, 80);
+            Label("Selector caption", levelModal.transform, "Same steel ball. Three box shapes.", 24, Muted, 42, 122, 900, 46);
             for (int i = 0; i < levels.Catalog.Levels.Length; i++)
             {
                 int index = i;
                 LevelDefinition definition = levels.Catalog.Levels[i];
-                int row = i < 10 ? i / 3 : (i - 10) / 3;
-                int col = i < 10 ? i % 3 : (i - 10) % 3;
-                float top = i < 10 ? 207 + row * 142 : 847 + row * 142;
-                Button("Select " + definition.Id, levelModal.transform, $"{i + 1:00}\n{definition.DisplayName}", 42 + col * 306, top,
-                    286, 118, Surface, Ink, () => { levelModal.SetActive(false); levels.Load(index); }, 24);
+                Button("Select " + definition.Id, levelModal.transform, $"{i + 1:00}   /   {definition.DisplayName}", 42, 196 + i * 178,
+                    920, 142, Surface, Ink, () => { levelModal.SetActive(false); levels.Load(index); }, 34);
             }
-            Label("Chapter 2", levelModal.transform, "11—16   /   ZERO-G", 23, new Color(0.43f, 0.82f, 1), 42, 784, 860, 40);
-            Button("Close selector", levelModal.transform, "BACK TO BOX", 42, 1138, 900, 92, Accent, Surface, ToggleLevels);
+            Button("Close selector", levelModal.transform, "BACK TO BOX", 42, height - 112, 920, 72, Accent, Surface, ToggleLevels);
             levelModal.SetActive(false);
         }
 
@@ -142,11 +130,12 @@ namespace GravityBox.Presentation
         }
 
         public void ToggleDiagnostics() { if (Debug.isDebugBuild) debugPanel.SetActive(!debugPanel.activeSelf); }
-        public void NotifyDrag() { touched = true; finger.gameObject.SetActive(false); }
+        // Retained for the input adapter; this study needs no animated gesture cue.
+        public void NotifyDrag() { }
         public bool BlocksRotation(Vector2 position)
         {
             float normalized = (position.y - Screen.safeArea.yMin) / Mathf.Max(1, Screen.safeArea.height);
-            return ModalOpen || normalized < 0.23f || normalized > 0.76f || (debugPanel.activeSelf && normalized > 0.52f);
+            return ModalOpen || normalized < 0.19f || normalized > 0.80f || (debugPanel.activeSelf && normalized > 0.52f);
         }
 
         private void ToggleLevels()
@@ -162,27 +151,20 @@ namespace GravityBox.Presentation
         {
             number.text = definition.DisplayIndex.ToString("00");
             title.text = definition.DisplayName;
-            environment.text = definition.Environment.DisplayName;
-            environment.color = environmentDot.color = definition.Environment.Accent;
+            environment.text = $"STEEL · {levels.Ball.Body.mass * 1000:0} g · Ø {levels.Ball.Profile.Radius * 2000:0} mm";
             hint.text = definition.TeachingHint;
             progress.text = $"{definition.DisplayIndex:00} / {levels.Catalog.Levels.Length:00}";
-            progressFill.color = definition.Environment.Accent;
-            progressFill.rectTransform.sizeDelta = new Vector2(960f * definition.DisplayIndex / levels.Catalog.Levels.Length, 3);
-            touched = !definition.Tutorial;
-            finger.gameObject.SetActive(!touched);
-            finishOverlay.SetActive(false);
         }
 
         private void OnStateChanged(SessionState session)
         {
-            state.text = session == SessionState.Completing ? "BALL ESCAPED. WELL PLAYED."
+            state.text = session == SessionState.Completing ? "BALL OUTSIDE. RESET OR CHOOSE THE NEXT BOX."
                 : session == SessionState.Failed ? "TRY A DIFFERENT ANGLE. RESETTING…"
                 : session == SessionState.Paused ? "SIMULATION PAUSED"
-                : session == SessionState.Finished ? "ALL EXPERIMENTS COMPLETE"
+                : session == SessionState.Finished ? "CHOOSE A BOX TO CONTINUE."
                 : "ROLL THROUGH THE GREEN OPENING.";
             state.color = session == SessionState.Completing ? Accent : Muted;
             pauseOverlay.SetActive(session == SessionState.Paused && !ModalOpen);
-            finishOverlay.SetActive(session == SessionState.Finished);
             pauseLabel.text = session == SessionState.Paused ? ">" : "II";
         }
 
@@ -190,14 +172,9 @@ namespace GravityBox.Presentation
         {
             if (levels == null) return;
             if (Screen.safeArea != lastSafe) ApplySafeArea();
-            if (!touched && finger.gameObject.activeSelf)
-            {
-                float phase = Time.unscaledTime * 1.5f;
-                finger.anchoredPosition = new Vector2(Mathf.Sin(phase) * 110, Mathf.Cos(phase) * 16);
-            }
             if (Time.unscaledTime < nextRefresh) return;
             nextRefresh = Time.unscaledTime + 0.25f;
-            stats.text = $"{levels.ResetCount} RESETS";
+            if (levels.Ball != null) stats.text = $"{levels.Ball.Body.linearVelocity.magnitude:0.00} m/s";
             if (debugPanel.activeSelf && levels.Ball != null)
             {
                 Rigidbody rb = levels.Ball.Body;
@@ -206,8 +183,9 @@ namespace GravityBox.Presentation
                     + $"ω {rb.angularVelocity:F2}   sleeping {rb.IsSleeping()}\n"
                     + $"root {levels.Current.Rotation.Orientation.eulerAngles:F1}\n"
                     + $"fixed {Time.fixedDeltaTime:F4}s  ·  {Time.timeScale:F2}x  ·  resets {levels.ResetCount}\n"
-                    + $"pointer {UnityEngine.InputSystem.Mouse.current?.position.ReadValue()} / {Screen.width}x{Screen.height} · drags {levels.DragCount}";
-                Debug.DrawRay(levels.Ball.transform.position, levels.Definition.Environment.Acceleration * 0.15f, Color.green, 0.26f);
+                    + $"contact {levels.Ball.ContactLoad:F2} N · slip {levels.Ball.ContactSlipSpeed:F3} m/s · drags {levels.DragCount}";
+                Debug.DrawRay(levels.Ball.transform.position,
+                    levels.Definition.Environment.Acceleration.normalized * levels.Current.BoundsHalfExtent * 0.5f, Color.green, 0.26f);
             }
         }
 

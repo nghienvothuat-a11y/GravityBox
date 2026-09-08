@@ -17,7 +17,7 @@ namespace GravityBox.Presentation
         private Vector2 previous;
         private InputAction mousePress;
         private bool queuedPress, queuedRelease;
-        private Vector2 pressPosition;
+        private Vector2 pressPosition, releasePosition;
 
         public void Initialize(LevelManager manager, Camera camera, GameHud overlay)
         {
@@ -44,15 +44,16 @@ namespace GravityBox.Presentation
 
         private void OnMousePressed(InputAction.CallbackContext context)
         {
-            if (Mouse.current == null) return;
+            if (!(context.control?.device is Mouse mouse)) return;
             queuedPress = true;
-            pressPosition = Mouse.current.position.ReadValue();
+            pressPosition = mouse.position.ReadValue();
         }
 
         private void OnMouseReleased(InputAction.CallbackContext context)
         {
-            if (Mouse.current == null) return;
+            if (!(context.control?.device is Mouse mouse)) return;
             queuedRelease = true;
+            releasePosition = mouse.position.ReadValue();
         }
 
         private void Update()
@@ -104,7 +105,9 @@ namespace GravityBox.Presentation
             // between rendered frames, and polling isPressed alone would drop it.
             if (queuedPress && !hud.BlocksRotation(pressPosition)) Begin(pressPosition);
             queuedPress = false;
-            if (mouse.leftButton.isPressed || queuedRelease) Move(position);
+            // A cursor warp after release belongs to hover, not to the completed drag.
+            if (queuedRelease) Move(releasePosition);
+            else if (mouse.leftButton.isPressed) Move(position);
             if (queuedRelease) End();
         }
 

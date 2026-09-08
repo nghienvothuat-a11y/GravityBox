@@ -30,14 +30,14 @@ namespace GravityBox.Editor
                 foreach (SignalDoor door in level.Prefab.GetComponentsInChildren<SignalDoor>(true))
                     Require(door.Blocker != null && channels.Contains(door.Channel), level.Id + ": door missing blocker or plate channel.");
                 var outlet = level.Prefab.Exit;
-                Require(outlet.ApertureRadius > catalog.BallProfile.Radius + 0.05f, level.Id + ": aperture too narrow for ball.");
-                Require(Mathf.Abs(outlet.WallHalfDepth - 0.09f) < 0.0001f, level.Id + ": exit must be flush with the 0.18 m shell.");
+                Require(outlet.ApertureRadius > catalog.BallProfile.Radius * 1.1f, level.Id + ": aperture too narrow for ball.");
+                Require(outlet.WallHalfDepth > 0 && outlet.WallHalfDepth < catalog.BallProfile.Radius, level.Id + ": invalid aperture wall thickness.");
                 foreach (var renderer in outlet.GetComponentsInChildren<MeshRenderer>(true))
                 {
                     if (renderer.GetComponentInParent<SignalDoor>(true) != null || renderer.GetComponentInParent<PhysicalProp>(true) != null) continue;
                     Require(renderer.GetComponent<Collider>() == null, level.Id + ": light inlay must not obstruct the ball: " + renderer.name + ".");
                 }
-                Vector3 escaped = outlet.transform.position + outlet.transform.forward * (outlet.WallHalfDepth + catalog.BallProfile.Radius + 0.03f);
+                Vector3 escaped = outlet.transform.position + outlet.transform.forward * (outlet.WallHalfDepth + catalog.BallProfile.Radius * 1.05f);
                 Require(!level.Prefab.IsOutside(escaped), level.Id + ": escape threshold must precede failure bounds.");
                 string required = level.Prefab.Exit.RequiredChannel;
                 Require(string.IsNullOrEmpty(required) || channels.Contains(required), level.Id + ": exit requires an unknown channel.");
@@ -70,14 +70,15 @@ namespace GravityBox.Editor
                     if (solid.isTrigger || !solid.enabled) continue;
                     bool overlap = UnityEngine.Physics.ComputePenetration(sphere, spawn, Quaternion.identity, solid,
                         solid.transform.position, solid.transform.rotation, out _, out float depth);
-                    Require(!overlap || depth < 0.005f, definition.Id + ": spawn overlaps " + solid.name);
+                    Require(!overlap || depth < radius * 0.01f, definition.Id + ": spawn overlaps " + solid.name);
                     if (solid.GetComponentInParent<SignalDoor>(true) != null || solid.GetComponentInParent<PhysicalProp>(true) != null) continue;
                     for (int sample = 0; sample <= 6; sample++)
                     {
-                        Vector3 point = level.Exit.transform.TransformPoint(new Vector3(0, 0, Mathf.Lerp(-0.3f, 0.3f, sample / 6f)));
+                        float reach = radius * 1.1f + level.Exit.WallHalfDepth;
+                        Vector3 point = level.Exit.transform.TransformPoint(new Vector3(0, 0, Mathf.Lerp(-reach, reach, sample / 6f)));
                         bool blocked = UnityEngine.Physics.ComputePenetration(sphere, point, Quaternion.identity, solid,
                             solid.transform.position, solid.transform.rotation, out _, out float obstruction);
-                        Require(!blocked || obstruction < 0.005f, definition.Id + ": aperture obstructed by " + solid.name);
+                        Require(!blocked || obstruction < radius * 0.01f, definition.Id + ": aperture obstructed by " + solid.name);
                     }
                 }
             }

@@ -61,9 +61,11 @@ namespace GravityBox.Tests
         public void Profiles_ResolveWorldAcceleration()
         {
             var catalog = Catalog();
-            Assert.That(catalog.Levels[0].Environment.Acceleration, Is.EqualTo(Vector3.down * 9.81f));
-            Assert.That(catalog.Levels[10].Environment.Acceleration, Is.EqualTo(Vector3.zero));
-            Assert.That(catalog.Levels[10].Environment.LinearDamping, Is.Zero);
+            foreach (LevelDefinition level in catalog.Levels)
+            {
+                Assert.That(level.Environment.Acceleration, Is.EqualTo(Vector3.down * 9.81f));
+                Assert.That(level.InitialLocalVelocity, Is.EqualTo(Vector3.zero));
+            }
         }
 
         [Test]
@@ -97,24 +99,45 @@ namespace GravityBox.Tests
         }
 
         [Test]
-        public void Catalog_Has16UniquePlayableDefinitionsWith10EarthAnd6ZeroG()
+        public void Catalog_ContainsOnlyThreeEarthGravityExperiments()
         {
             var catalog = Catalog(); var ids = new HashSet<string>();
-            Assert.That(catalog.Levels.Length, Is.EqualTo(16));
+            var shapes = new HashSet<ContainerShape>();
+            Assert.That(catalog.Levels.Length, Is.EqualTo(3));
             Assert.That(catalog.BallPrefab, Is.Not.Null);
             Assert.That(catalog.Rotation, Is.Not.Null);
             for (int i = 0; i < catalog.Levels.Length; i++)
             {
                 LevelDefinition level = catalog.Levels[i];
                 Assert.That(ids.Add(level.Id), Is.True, "Duplicate level id");
+                Assert.That(shapes.Add(level.Shape), Is.True, "Each experiment needs a distinct container shape.");
+                Assert.That(level.RotationMode, Is.EqualTo(RotationMode.Free));
                 Assert.That(level.DisplayIndex, Is.EqualTo(i + 1));
                 Assert.That(level.Prefab, Is.Not.Null);
                 Assert.That(level.Prefab.Exit, Is.Not.Null);
                 Assert.That(level.Prefab.BallSpawn, Is.Not.Null);
-                Assert.That(level.Environment.IsZeroGravity, Is.EqualTo(i >= 10));
+                Assert.That(level.Environment.IsZeroGravity, Is.False);
+                Assert.That(level.Prefab.GetComponentsInChildren<PressurePlate>(true), Is.Empty);
+                Assert.That(level.Prefab.GetComponentsInChildren<SignalDoor>(true), Is.Empty);
+                Assert.That(level.Prefab.GetComponentsInChildren<OneWayGate>(true), Is.Empty);
+                Assert.That(level.Prefab.GetComponentsInChildren<ImpulsePad>(true), Is.Empty);
+                Assert.That(level.Prefab.GetComponentsInChildren<KillVolume>(true), Is.Empty);
+                Assert.That(level.Prefab.GetComponentsInChildren<PhysicalProp>(true), Is.Empty);
+                Assert.That(level.Prefab.Exit.RequiredChannel, Is.Null.Or.Empty);
                 Assert.That(level.TeachingHint, Is.Not.Empty);
                 Assert.That(level.DesignerSolution, Is.Not.Empty);
             }
+            CollectionAssert.AreEquivalent(new[] { ContainerShape.Circle, ContainerShape.Square, ContainerShape.Triangle }, shapes);
+        }
+
+        [Test]
+        public void SharedBall_HasTabletopSteelSphereDimensionsAndDensity()
+        {
+            BallPhysicsProfile profile = Catalog().BallProfile;
+            Assert.That(profile.Radius, Is.EqualTo(0.015f).Within(0.00001f));
+            float volume = 4f / 3f * Mathf.PI * Mathf.Pow(profile.Radius, 3);
+            Assert.That(profile.Mass / volume, Is.InRange(7600f, 8100f), "Mass must match a solid steel sphere at the chosen scale.");
+            Assert.That(profile.ContactMaterial, Is.Not.Null);
         }
 
         private static LevelCatalog Catalog() => AssetDatabase.LoadAssetAtPath<LevelCatalog>("Assets/_Game/ScriptableObjects/LevelCatalog.asset");

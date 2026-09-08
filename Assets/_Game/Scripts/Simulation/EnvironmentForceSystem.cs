@@ -47,6 +47,12 @@ namespace GravityBox.Simulation
             rb.angularDamping = profile.AngularDamping;
             rb.maxLinearVelocity = profile.MaxLinearSpeed;
             rb.maxAngularVelocity = profile.MaxAngularSpeed;
+            if (body is BallController ball && ball.Profile != null)
+            {
+                // The angular guard must permit no-slip rolling at every permitted linear speed.
+                rb.maxAngularVelocity = Mathf.Max(profile.MaxAngularSpeed, ball.Profile.MinimumAngularSpeedLimit,
+                    profile.MaxLinearSpeed / ball.Profile.Radius);
+            }
         }
 
         public void Unregister(IPhysicsAffectable body) => targets.Remove(body);
@@ -77,8 +83,9 @@ namespace GravityBox.Simulation
                 for (int i = 0; i < providers.Count; i++) acceleration += providers[i].GetAcceleration(target, Environment);
                 // Every free body receives the same world acceleration, independent of mass and box pose.
                 if (acceleration.sqrMagnitude > 0) rb.AddForce(acceleration, ForceMode.Acceleration);
-                rb.linearVelocity = Vector3.ClampMagnitude(rb.linearVelocity, Environment.MaxLinearSpeed);
-                rb.angularVelocity = Vector3.ClampMagnitude(rb.angularVelocity, Environment.MaxAngularSpeed);
+                if (target is BallController ball) ball.StepContactResistance(Time.fixedDeltaTime);
+                // Native solver guards are configured on registration. Do not rewrite velocity each step:
+                // even assigning an unchanged velocity can wake a resting body and disturb its contacts.
             }
         }
     }

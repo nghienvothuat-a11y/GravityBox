@@ -8,8 +8,8 @@ namespace GravityBox.Gameplay
     // Local +Z points out of the box. Geometry and this contract share the same aperture.
     public sealed class ExitSocket : MonoBehaviour, IResettable
     {
-        [Min(0.1f)] public float ApertureRadius = 0.78f;
-        [Min(0.01f)] public float WallHalfDepth = 0.09f;
+        [Min(0.001f)] public float ApertureRadius = 0.023f;
+        [Min(0.0001f)] public float WallHalfDepth = 0.003f;
         public string RequiredChannel;
         private BallController ball;
         private MechanismSignals signals;
@@ -17,6 +17,8 @@ namespace GravityBox.Gameplay
         private bool traversing, clearing;
         public bool Accepting { get; set; } = true;
         public bool HasExited { get; private set; }
+        public float CompletionMargin => ball == null ? 0 : ball.Profile.Radius * 0.035f;
+        public float ClearanceTolerance => ball == null ? 0 : ball.Profile.Radius * 0.01f;
         public bool IsUnlocked => string.IsNullOrEmpty(RequiredChannel) || (signals != null && signals.Read(RequiredChannel));
         public event Action Exited;
 
@@ -56,7 +58,7 @@ namespace GravityBox.Gameplay
                 if (current.z > outer) { traversing = false; clearing = true; }
             }
             if (clearing && current.z < outer) { clearing = false; traversing = Fits(current, radius); }
-            if (!clearing || current.z < outer + radius + 0.02f) return;
+            if (!clearing || current.z < outer + radius + CompletionMargin) return;
             HasExited = true;
             // Keep the Rigidbody dynamic, at its actual position and velocity, for the escape payoff.
             Exited?.Invoke();
@@ -64,7 +66,7 @@ namespace GravityBox.Gameplay
 
         private bool Fits(Vector3 point, float radius)
         {
-            float clearance = Mathf.Max(0, ApertureRadius - radius + 0.015f);
+            float clearance = Mathf.Max(0, ApertureRadius - radius + ClearanceTolerance);
             return point.x * point.x + point.y * point.y <= clearance * clearance;
         }
         private static Vector3 AtDepth(Vector3 a, Vector3 b, float z) => Vector3.LerpUnclamped(a, b, (z - a.z) / (b.z - a.z));

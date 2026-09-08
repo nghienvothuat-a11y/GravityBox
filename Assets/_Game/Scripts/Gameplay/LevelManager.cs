@@ -84,7 +84,7 @@ namespace GravityBox.Gameplay
         {
             if (!Session.TryComplete()) return;
             GameplayEvent?.Invoke("level_complete");
-            transitionAt = Time.unscaledTime + catalog.CompletionDelay;
+            transitionAt = float.PositiveInfinity;
         }
 
         public void Fail()
@@ -97,14 +97,7 @@ namespace GravityBox.Gameplay
 
         public void Next()
         {
-            if (Index + 1 < catalog.Levels.Length) Load(Index + 1);
-            else
-            {
-                transitionAt = float.PositiveInfinity;
-                Ball.Capture(Ball.Body.position);
-                Session.Finish();
-                GameplayEvent?.Invoke("catalog_complete");
-            }
+            Load((Index + 1) % catalog.Levels.Length);
         }
 
         public void TogglePause() => Session.TogglePause();
@@ -130,7 +123,7 @@ namespace GravityBox.Gameplay
                 Current.Rotation.InputEnabled = state == SessionState.Active;
                 Current.Exit.Accepting = state == SessionState.Active;
             }
-            Time.timeScale = state == SessionState.Paused ? 0 : state == SessionState.Completing ? 0.35f : 1;
+            Time.timeScale = state == SessionState.Paused ? 0 : 1;
         }
 
         private void CleanupLevel()

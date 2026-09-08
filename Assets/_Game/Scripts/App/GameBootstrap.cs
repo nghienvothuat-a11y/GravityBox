@@ -18,9 +18,7 @@ namespace GravityBox.App
         private void Awake()
         {
             Application.targetFrameRate = 60;
-            Time.fixedDeltaTime = 1f / 60f;
-            Time.maximumDeltaTime = 0.1f;
-            UnityEngine.Physics.gravity = Vector3.zero;
+            PhysicsTiming.Apply();
             var forces = new GameObject("Environment Force System").AddComponent<EnvironmentForceSystem>();
             forces.transform.SetParent(transform, false);
             Levels = new GameObject("Level Manager").AddComponent<LevelManager>();

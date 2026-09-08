@@ -36,8 +36,11 @@ namespace GravityBox.Editor
             "Plan the contacts. Every wall can change the journey."
         };
 
-        [MenuItem("Gravity Box/Generate Prototype Baseline")]
-        public static void Generate()
+        [MenuItem("Gravity Box/Generate Three Physics Boxes")]
+        public static void Generate() => PhysicsLabBuilder.Generate();
+
+        // Preserved as historical authoring code; active builds use the three-box catalog.
+        private static void GenerateLegacy()
         {
             string[] folders = { "Scenes", "Materials", "Audio", "Prefabs/Ball", "Prefabs/Levels", "Prefabs/Mechanisms", "ScriptableObjects/Environments", "ScriptableObjects/Physics", "ScriptableObjects/Levels", "Settings" };
             foreach (string folder in folders) Directory.CreateDirectory(GamePath + "/" + folder);
@@ -82,7 +85,7 @@ namespace GravityBox.Editor
             Debug.Log("GRAVITY BOX: generated 16 level prefabs, profiles, mechanism library and Gameplay scene.");
         }
 
-        private static void ConfigureProject()
+        internal static void ConfigureProject()
         {
             PlayerSettings.companyName = "Gravity Box Lab";
             PlayerSettings.productName = "Gravity Box";
@@ -104,9 +107,7 @@ namespace GravityBox.Editor
             var serialized = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset")[0]);
             SerializedProperty input = serialized.FindProperty("activeInputHandler");
             if (input != null) { input.intValue = 1; serialized.ApplyModifiedPropertiesWithoutUndo(); }
-            Time.fixedDeltaTime = 1f / 60f;
-            Time.maximumDeltaTime = 0.1f;
-            UnityEngine.Physics.gravity = Vector3.zero;
+            PhysicsTiming.Apply();
             QualitySettings.vSyncCount = 0;
             QualitySettings.antiAliasing = 0;
             var pipeline = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(GamePath + "/Settings/MobileURP.asset");
@@ -120,7 +121,10 @@ namespace GravityBox.Editor
             pipeline.msaaSampleCount = 4;
             pipeline.renderScale = 1;
             pipeline.supportsHDR = false;
-            pipeline.shadowDistance = 45;
+            pipeline.shadowDistance = 3;
+            var pipelineSettings = new SerializedObject(pipeline);
+            pipelineSettings.FindProperty("m_SoftShadowsSupported").boolValue = true;
+            pipelineSettings.ApplyModifiedPropertiesWithoutUndo();
             GraphicsSettings.defaultRenderPipeline = pipeline;
             QualitySettings.renderPipeline = pipeline;
             EditorUtility.SetDirty(pipeline);
@@ -236,7 +240,6 @@ namespace GravityBox.Editor
             return prefab.GetComponent<BallController>();
         }
 
-        [MenuItem("Gravity Box/Refresh Ball Readability")]
         public static void AddBallReadability()
         {
             string materialPath = GamePath + "/Materials/Ball occlusion.mat";
@@ -355,7 +358,6 @@ namespace GravityBox.Editor
             return socket;
         }
 
-        [MenuItem("Gravity Box/Upgrade Physical Exits")]
         public static void UpgradePhysicalExits()
         {
             frame = AssetDatabase.LoadAssetAtPath<Material>(GamePath + "/Materials/Titanium frame.mat");
@@ -419,7 +421,6 @@ namespace GravityBox.Editor
             return prop;
         }
 
-        [MenuItem("Gravity Box/Upgrade Level 6 to Physical Lid")]
         public static void UpgradeLevel6PhysicalLid()
         {
             gold = AssetDatabase.LoadAssetAtPath<Material>(GamePath + "/Materials/Mechanism amber.mat");

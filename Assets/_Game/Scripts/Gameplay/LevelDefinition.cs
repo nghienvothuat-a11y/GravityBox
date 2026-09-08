@@ -4,12 +4,15 @@ using UnityEngine;
 
 namespace GravityBox.Gameplay
 {
+    public enum ContainerShape { Circle, Square, Triangle }
+
     [CreateAssetMenu(menuName = "Gravity Box/Level Definition")]
     public sealed class LevelDefinition : ScriptableObject
     {
         public string Id;
         public int DisplayIndex;
         public string DisplayName;
+        public ContainerShape Shape;
         [TextArea] public string TeachingHint;
         public EnvironmentProfile Environment;
         public LevelRuntime Prefab;

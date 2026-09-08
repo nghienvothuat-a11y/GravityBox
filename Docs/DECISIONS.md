@@ -1,5 +1,19 @@
 # Các quyết định kiến trúc
 
+**Phạm vi hiện tại:** ADR 014 bên dưới thay thế số lượng màn, scale, clock và cách chuyển bàn của các ADR trước. Các đoạn mô tả 16 màn, zero-G, nắp rơi, slow motion và tự chuyển màn là lịch sử, không phải hành vi của catalog ba hộp đang chơi.
+
+## ADR 014 Prototype bi thép với ba hình học
+
+Người dùng xác định chuyển động của bi thép là yếu tố cốt lõi cần nghiệm thu trước khi phát triển puzzle. Catalog chỉ gồm Circle, Square và Triangle; Square có một cube cố định. Asset cũ được giữ ngoài catalog. Không mở rộng nội dung khi chưa xác nhận cảm giác lăn, gia tốc và va chạm.
+
+Chọn scale bàn nhỏ: ball radius 0,015 m và mass khoảng 0,111 kg, khớp thép đặc khoảng 7.850 kg/m³; hộp rộng khoảng 0,34 m và sâu 0,09 m. Một Unity unit bằng một mét. Tăng mass riêng lẻ không thay đổi gia tốc rơi dưới trọng lực, nên việc tạo cảm giác nặng phải đồng bộ scale, inertia, contact, restitution, rolling resistance và feedback.
+
+Clock vật lý chuyển từ 60 lên 120 Hz, gravity vẫn 9,81 m/s² trong world space. Bi độc lập với transform root; cube cố định thuộc compound kinematic của hộp. Input chỉ tạo chuyển động hộp có giới hạn, không lái ball. Contact offset, ngưỡng bounce, solver và angular velocity được đặt theo kích thước bi nhỏ và kiểm tra bằng dốc/va chạm có điều kiện đầu xác định.
+
+Cửa tròn phẳng tiếp tục là lỗ thật, R=0,023 m và wall half-depth=0,003 m. Sai số traversal tỷ lệ với radius thay cho dung sai 0,015/0,02 m của scale cũ. Escape giữ body dynamic và time scale 1; bỏ tự advance để người chơi tự quan sát rồi reset/chuyển bàn. Next quay vòng ba thí nghiệm.
+
+Acceptance chuyển từ replay 16 lời giải sang định lượng luật chuyển động, collider của ba hình, va chạm cube, reset/input và chơi thử cảm giác. Kết quả test không tự chứng minh cảm giác đã đạt; phải ghi riêng việc đã chơi và phản hồi người dùng. Kiến trúc module hiện tại được giữ, tránh xây thêm hệ thống product trước khi mô hình vật lý được chốt.
+
 ## ADR 001 Unity 6.3 LTS và URP
 
 Chọn 6000.3.19f1 có sẵn trên máy và URP 17.3.0. Unity xác định dòng 6000.3 là LTS trong tài liệu API. Cố định versions và packages-lock.json; không tự nâng giữa các phép so sánh vật lý. URP tránh phải chuyển toàn bộ vật liệu khi tiến tới mobile product; không thêm post-processing hoặc shader nặng ở prototype.
