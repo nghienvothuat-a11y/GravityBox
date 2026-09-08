@@ -1,14 +1,16 @@
 # Bằng chứng kiểm thử
 
-Kết quả chạy toàn bộ catalog chín bàn ngày 08/09/2026, Unity 6000.3.19f1:
+Kết quả toàn bộ catalog 11 bàn ngày 08/09/2026, Unity 6000.3.19f1:
 
-- [EditMode.xml](EditMode.xml): **8/8 passed**, kết thúc 15:07:44 UTC.
-- [PlayMode.xml](PlayMode.xml): **49/49 passed**, chạy từ 15:07:51 đến 15:08:14 UTC. Bao gồm cả chín prefab, physics/containment/exit/reset, bộ chọn cuộn tới màn 09 và bốn bài kiểm tra thanh trượt/puzzle mới.
+- [EditMode.xml](EditMode.xml): **8/8 passed**, kết thúc 15:40:05 UTC.
+- [PlayMode.xml](PlayMode.xml): **58/58 passed**, từ 15:40:18 tới 15:40:47 UTC.
 
-Tổng **57 tests**, không failure hoặc skipped. Đường giải màn 09 bắt đầu từ spawn và chỉ gửi ý định xoay hộp; bi đi vào hốc, thanh trượt mở theo gravity, bi qua cửa và toàn bộ bán kính ra khỏi lỗ. Không dịch chuyển bi/thanh chặn bằng test harness trong đường giải này. Policy giải tự động chỉ nằm trong test, không có trong player.
+Tổng **66 tests**, không failure hoặc skipped. Lượt tập trung vào hai mê cung cũng **6/6 passed**, từ 15:39:19 tới 15:39:20 UTC.
 
-Ray giữ dưới sàn trong bản thử đã làm passage thất bại với bi lăn chậm. Bản được kiểm chứng ở trên chỉ có hai ray phía nắp và sàn cửa phẳng; giữ nguyên policy, thông số bi và điều kiện qua test.
+Màn 10 có bằng chứng từ spawn qua cả hai cửa trượt ngược hướng rồi ra lỗ thật. Màn 11 có bằng chứng đi qua mê cung cả ba tầng, rơi liên tục qua hai lỗ chuyển tầng và thoát qua lỗ cuối. Các đường giải chỉ gửi ý định xoay hộp qua controller chuẩn; không đặt lại vị trí/vận tốc bi, không thêm lực điều khiển riêng và không teleport giữa tầng.
 
-Kết quả build/native review được ghi riêng trong [nhật ký](../DEVELOPMENT_LOG.md). Kiểm tra tự động chưa phải kết luận về độ khó hoặc cảm giác chơi.
+Các fixture riêng kiểm tra cửa đóng kín cả chiều sâu, gravity mở/đóng ngược hướng, 100 reset và thu hồi đủ force targets; sàn tầng chắn bi ngoài lỗ, chuyển tầng chưa phải chiến thắng. Layer view và thao tác chọn màn 11/đổi overview được kiểm tra không sửa vị trí, vận tốc hoặc collider.
 
-Các mốc [tám hộp](../Archive/Verification/EightBoxes/README.md), [ba hộp](../Archive/Verification/ThreeBoxes/README.md) và [16 màn/L06](../Archive/Verification/README.md) được giữ riêng trong Archive.
+Build và native QA được ghi riêng trong [nhật ký](../DEVELOPMENT_LOG.md). Các test không đo độ khó đối với người chơi hay xác nhận trải nghiệm đã cân bằng.
+
+Mốc [chín bàn](../Archive/Verification/NineLevels/README.md), [tám hộp](../Archive/Verification/EightBoxes/README.md), [ba hộp](../Archive/Verification/ThreeBoxes/README.md) và [16 màn/L06](../Archive/Verification/README.md) được giữ riêng trong Archive.

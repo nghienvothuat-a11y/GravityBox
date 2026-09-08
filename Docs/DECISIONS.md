@@ -1,6 +1,16 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** ADR 016 thêm puzzle vật lý bàn 09 vào tám hộp của ADR 015 và giữ nguyên mô hình bi thép. Các đoạn mô tả 16 màn, zero-G, nắp rơi, slow motion và tự chuyển màn là lịch sử.
+**Phạm vi hiện tại:** ADR 017 thêm mê cung 10–11 vào chín bàn của ADR 016 và giữ nguyên mô hình bi thép. Các đoạn mô tả 16 màn, zero-G, nắp rơi, slow motion và tự chuyển màn là lịch sử.
+
+## ADR 017 Hai cửa ngược hướng và mê cung ba tầng thật
+
+Bàn 10 **Opposite ways** dùng hai bản của thanh trượt bàn 09, đặt ở hai vách ngăn liên tiếp. Cửa A trượt theo local +Z của hộp, cửa B được xoay 180° quanh Y để trượt theo −Z. Hai hốc giữ bi và hành lang đổi hướng tạo chuỗi thao tác vật lý; không thêm trạng thái unlock, motor hoặc logic cửa phụ thuộc cửa trước. Có ba force targets: bi và hai thanh chặn. Reset/cleanup dùng registry hiện có.
+
+Bàn 11 **Three dimensions** tăng khoảng cách tâm sàn ngoài–nắp lên 0,27 m và có ba sàn tại Y=+0,045; −0,045; −0,135 m, mỗi tầng một mê cung 4 × 4 có nhánh cụt. Hai lỗ chuyển tầng R=0,038 m đặt lệch nhau; lỗ ra cuối giữ R=0,023 m. Bi tự rơi qua sàn theo gravity; runtime không đổi pose hoặc vận tốc khi chuyển tầng. Vách từng tầng cao đủ khoảng trống giữa hai sàn, ngăn đi xuyên hoặc vượt qua đường phân cách chỉ bằng một phần bán kính.
+
+LevelRuntime công khai InteriorDepth để authoring, kiểm tra vỏ và framing không giả định mọi hộp sâu 9 cm. LayeredMaze lưu metadata của các sàn/lỗ/route và đọc tầng từ vị trí bi. MazeLayerView chỉ đổi vật liệu để đọc tầng hiện tại hoặc tổng thể; mọi collider hoạt động đồng thời. Bằng chứng gồm route từ spawn tới thoát chỉ xoay hộp, liên tục qua cả ba tầng, cộng fixture sàn/lỗ và kiểm tra chế độ xem không đổi physics. Độ khó và khả năng nhìn đường trên thiết bị thật vẫn cần đánh giá trực tiếp; không suy diễn từ route tự động.
+
+Xem [bố trí và cách kiểm chứng hai mê cung](LEVEL10_11_MAZES.md).
 
 ## ADR 016 Thanh trượt trọng lực và hốc giữ bi
 

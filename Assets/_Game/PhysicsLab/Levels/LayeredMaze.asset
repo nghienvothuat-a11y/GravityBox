@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e965f9168c2046c28c59aa4b83cc1ec, type: 3}
+  m_Name: LayeredMaze
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDefinition
+  Id: steel-lab-layeredmaze
+  DisplayIndex: 11
+  DisplayName: Three dimensions
+  Shape: 10
+  TeachingHint: Follow each floor to its transfer opening. The round exit is on the
+    lowest floor.
+  Environment: {fileID: 11400000, guid: 82e0ce24addfe4fc89b8bbd0db998aea, type: 2}
+  Prefab: {fileID: 6011215956511619992, guid: ee9677a2b9d224250902574375512e22, type: 3}
+  RotationMode: 1
+  InitialLocalVelocity: {x: 0, y: 0, z: 0}
+  ParSeconds: 0
+  Tutorial: 0
+  DesignerSolution: Navigate the upper maze to its transfer opening, fall onto the
+    middle floor under gravity, cross its different maze to the second opening, then
+    follow the lowest maze to the flush circular exit. No teleport, lift animation
+    or scripted layer transition.

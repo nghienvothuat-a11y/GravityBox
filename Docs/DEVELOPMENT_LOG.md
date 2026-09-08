@@ -1,5 +1,14 @@
 # Nhật ký phát triển Gravity Box
 
+## Mê cung bàn 10–11 — 08/09/2026
+
+- Bàn 10 **Opposite ways**: ba khoang, vách ngang xen kẽ, hai hốc giữ và hai cửa trượt có hướng mở đối nhau. Tái sử dụng cửa trượt thụ động từ bàn 09, cho phép khai báo vị trí và góc đặt; cả hai body nhận cùng gravity thế giới, không motor hoặc unlock signal.
+- Bàn 11 **Three dimensions**: hộp sâu 0,27 m với ba mê cung 4×4 riêng biệt. Sàn ở Y=+0,045/−0,045/−0,135 m, hai lỗ chuyển tầng thật đặt lệch nhau và lỗ thoát tròn ở tầng thấp nhất. Tất cả vách chạm sàn/nắp của tầng; đổi tầng là chuyển động Rigidbody liên tục.
+- `InteriorDepth` và chiều cao spawn được author theo bàn. Metadata tầng cung cấp hình học/renderer/đường kiểm chứng; lớp hiển thị đọc vị trí bi và làm mờ tầng khác, có nút xem tổng thể. Việc đổi vật liệu không sửa collider, pose hoặc vận tốc.
+- Generate/ContentValidator đạt 11 bàn. Lượt tập trung hai mê cung **6/6 passed** lúc 15:39:19–20 UTC. Toàn bộ **8/8 EditMode + 58/58 PlayMode = 66/66 passed**, không failure/skipped; kết thúc 15:40:05 và 15:40:47 UTC. [XML và phạm vi kiểm chứng](Verification/README.md).
+- Cả hai đường giải từ spawn tới lỗ cuối đều chỉ gửi rotation intent qua controller chuẩn, dùng chung policy P8/D5/cap 1 m/s². Bài tầng còn theo dõi vị trí mỗi bước để phát hiện teleport. Các fixture đặt điều kiện đầu để đo lỗ/cửa riêng không được tính là lời giải.
+- macOS và Android ARM64 đã build thành công; APK 59.202.143 bytes (khoảng 56,46 MiB). Native macOS đã mở bộ chọn 11 bàn, chọn 10 và quan sát bố cục/hai cửa, gồm trạng thái A đã mở / B đóng. Giữ nguyên lượt chơi 10 của người dùng; đã render riêng cả ba tầng và chế độ tổng thể của 11 với prefab/camera/layer view thật. Tầng hiện tại và bi đọc được khi các tầng khác mờ đi. Đây là fixture đặt bi để xem hình, không phải lượt giải native. [Ảnh và phạm vi quan sát](Images/Mazes/README.md). Chưa chạy APK trên Android thật hoặc xuất lại iOS.
+
 ## Bàn 09 — Leave it behind — 08/09/2026
 
 Thêm một puzzle sau tám hộp thử hình học. Vách chia hai khoang, một thanh chặn trượt do gravity và hốc giữ bi tạo chuỗi suy luận: giữ bi bằng thành hốc, để thanh chặn rời cửa, rồi nghiêng bi qua khoang phải tới lỗ thoát.
@@ -7,7 +16,7 @@ Thêm một puzzle sau tám hộp thử hình học. Vách chia hai khoang, mộ
 - Bi dùng nguyên profile thép; thanh chặn PhysicalProp 0,18 kg, kích thước 0,026 × 0,080 × 0,076 m, hành trình +Z 0,12 m. Joint một trục không motor/drive/spring/projection; collider luôn bật và không phát unlock signal.
 - Chuyển catalog/scene suites sang chín bàn, force registry theo số body thật. Bổ sung test cửa đóng ở toàn bộ chiều sâu, va chạm thật, gravity mở/đóng, 100 reset root/prop, thu hồi force target và route chỉ xoay từ spawn tới thoát thật.
 - Lượt test với ray giữ sát sàn phát hiện mép nhô khoảng 1 mm cản bi đang lăn nhẹ dù thanh chặn đã mở. Đã bỏ hai ray dưới và giữ hai ray gắn phía nắp, để sàn qua cửa phẳng. Đây là sửa hình học từ lỗi passage thật, không nới ngưỡng test hoặc thêm lực đẩy bi.
-- Generate và ContentValidator đã qua cho chín bàn. **8/8 EditMode + 49/49 PlayMode = 57 tests passed**, không failure/skipped; EditMode kết thúc 15:07:44 UTC, PlayMode từ 15:07:51 tới 15:08:14 UTC. [XML và phạm vi bằng chứng](Verification/README.md). Đường giải từ spawn tới thoát thật chỉ dùng rotation intent, giữ nguyên policy sau sửa ray.
+- Generate và ContentValidator đã qua cho chín bàn. **8/8 EditMode + 49/49 PlayMode = 57 tests passed**, không failure/skipped; EditMode kết thúc 15:07:44 UTC, PlayMode từ 15:07:51 tới 15:08:14 UTC. [XML mốc chín bàn](Archive/Verification/NineLevels/README.md). Đường giải từ spawn tới thoát thật chỉ dùng rotation intent, giữ nguyên policy sau sửa ray.
 - **Build/native:** macOS player và Android ARM64 APK đã build thành công; APK 59.194.461 bytes (56,45 MiB). Native macOS đã kiểm tra bộ chọn cuộn tới 09, bố cục, kéo xoay hộp/bi lăn, thanh chặn trượt mở theo gravity và reset trả root/bi/thanh chặn về đầu. [Ảnh cửa đóng/mở](Images/Level09/README.md). Native QA chưa hoàn thành một lượt giải từ spawn; bằng chứng lời giải đầy đủ ở fixture rotation-only. Chưa chạy APK trên Android thật hoặc xuất lại iOS.
 - Một số thao tác kéo tự động native bị gộp sự kiện: callback nhấn/thả đều nhận tọa độ cuối và delta 0. Log tạm xác nhận các sự kiện có đủ đầu/cuối làm hộp xoay đúng; không sửa gameplay để đoán dữ liệu đã mất. Đã bỏ toàn bộ log input tạm khỏi source bàn giao.
 

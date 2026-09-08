@@ -165,6 +165,24 @@ namespace GravityBox.Tests
             Assert.That(bootstrap.Levels.Session.State, Is.EqualTo(GravityBox.Foundation.SessionState.Active));
             Assert.That(bootstrap.Levels.DragCount, Is.Zero);
             Assert.That(Quaternion.Angle(Quaternion.identity, bootstrap.Levels.Current.Rotation.Orientation), Is.LessThan(0.1f));
+
+            MazeLayerView layerView = bootstrap.Levels.Current.GetComponent<MazeLayerView>();
+            Assert.That(layerView, Is.Not.Null, "The last maze must expose its physical deck view.");
+            Assert.That(layerView.LayerCount, Is.EqualTo(3));
+            Assert.That(layerView.Overview, Is.False);
+            Button layerButton = null;
+            foreach (Button button in Object.FindObjectsByType<Button>(FindObjectsSortMode.None))
+                if (button.name == "Status") layerButton = button;
+            Assert.That(layerButton, Is.Not.Null);
+            Assert.That(layerButton.interactable, Is.True);
+            yield return Click(layerButton);
+            Assert.That(layerView.Overview, Is.True);
+            foreach (Collider collider in bootstrap.Levels.Current.GetComponentsInChildren<Collider>())
+                Assert.That(collider.enabled, Is.True, "Overview must preserve every physical surface.");
+            Assert.That(bootstrap.Levels.Ball.Body.isKinematic, Is.False);
+            Assert.That(bootstrap.Levels.DragCount, Is.Zero);
+            yield return Click(layerButton);
+            Assert.That(layerView.Overview, Is.False);
         }
 
         private IEnumerator Click(Button button)

@@ -11,6 +11,12 @@ namespace GravityBox.Editor
 
         public static PhysicalProp Build(Transform boxRoot, Material visualMaterial, PhysicsMaterial contactMaterial)
         {
+            return Build(boxRoot, visualMaterial, contactMaterial, Vector3.zero, Quaternion.identity);
+        }
+
+        public static PhysicalProp Build(Transform boxRoot, Material visualMaterial, PhysicsMaterial contactMaterial,
+            Vector3 closedPosition, Quaternion closedRotation)
+        {
             if (boxRoot == null) throw new ArgumentNullException(nameof(boxRoot));
             Rigidbody box = boxRoot.GetComponent<Rigidbody>();
             if (box == null || !box.isKinematic) throw new ArgumentException("The slider housing must belong to the rotating kinematic box.", nameof(boxRoot));
@@ -19,8 +25,9 @@ namespace GravityBox.Editor
 
             var root = new GameObject("Gravity sliding gate", typeof(Rigidbody), typeof(BoxCollider), typeof(PhysicalProp));
             root.transform.SetParent(boxRoot, false);
-            root.transform.localPosition = Vector3.zero;
-            root.transform.localRotation = Quaternion.identity;
+            root.transform.localPosition = closedPosition;
+            root.transform.localRotation = closedRotation;
+            Vector3 slideAxisInBox = (closedRotation * Vector3.forward).normalized;
             Rigidbody body = root.GetComponent<Rigidbody>();
             body.mass = 0.18f;
             body.isKinematic = false;
@@ -50,7 +57,7 @@ namespace GravityBox.Editor
             joint.connectedBody = box;
             joint.anchor = Vector3.zero;
             // Linear limits are symmetric. Placing the fixed anchor at half travel produces [0, Stroke].
-            joint.connectedAnchor = Vector3.forward * (Stroke * 0.5f);
+            joint.connectedAnchor = closedPosition + slideAxisInBox * (Stroke * 0.5f);
             joint.axis = Vector3.forward;
             joint.secondaryAxis = Vector3.up;
             joint.xMotion = ConfigurableJointMotion.Limited;
@@ -68,7 +75,7 @@ namespace GravityBox.Editor
 
             GravitySliderGuide guide = root.AddComponent<GravitySliderGuide>();
             // The full doorway spans local Z [-.040, .040]. Its upper edge must clear the gate's lower edge.
-            guide.Configure(joint, Vector3.zero, Vector3.forward, Stroke, GateSize.z * 0.5f + 0.040f);
+            guide.Configure(joint, closedPosition, slideAxisInBox, Stroke, GateSize.z * 0.5f + 0.040f);
             return root.GetComponent<PhysicalProp>();
         }
     }

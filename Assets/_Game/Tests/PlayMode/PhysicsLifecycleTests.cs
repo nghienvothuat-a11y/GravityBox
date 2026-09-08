@@ -13,7 +13,7 @@ namespace GravityBox.Tests
 {
     // These tests exercise the shipped geometry and lifecycle. The separate
     // SteelBallPhysicsTests fixture measures material, acceleration and rolling laws.
-    public sealed class PhysicsLifecycleTests
+    public sealed partial class PhysicsLifecycleTests
     {
         private LevelManager levels;
         private EnvironmentForceSystem forces;
@@ -270,7 +270,7 @@ namespace GravityBox.Tests
                         Vector2 point = (a + b) * 0.5f;
                         Vector2 start = point + intoDomain * 0.006f;
                         Assert.That(InDomain(start, levels.Current), Is.True, levels.Definition.Id + " has insufficient wall-side clearance.");
-                        Vector3 origin = levels.Current.transform.TransformPoint(new Vector3(start.x, 0.036f, start.y));
+                        Vector3 origin = levels.Current.transform.TransformPoint(new Vector3(start.x, levels.Current.InteriorDepth * 0.5f - 0.009f, start.y));
                         Vector3 direction = levels.Current.transform.TransformDirection(new Vector3(-intoDomain.x, 0, -intoDomain.y));
                         float nearest = float.PositiveInfinity;
                         Vector3 surface = Vector3.zero;
@@ -310,8 +310,8 @@ namespace GravityBox.Tests
                     float apertureDistance = Vector2.Distance(point, new Vector2(outlet.x, outlet.z));
                     bool nearRim = Mathf.Abs(apertureDistance - levels.Current.Exit.ApertureRadius) < 0.002f;
                     Vector3 origin = levels.Current.transform.TransformPoint(new Vector3(x, 0, z));
-                    bool floorHit = floor.Raycast(new Ray(origin, -levels.Current.transform.up), out _, 0.1f);
-                    bool coverHit = cover.Raycast(new Ray(origin, levels.Current.transform.up), out _, 0.1f);
+                    bool floorHit = floor.Raycast(new Ray(origin, -levels.Current.transform.up), out _, levels.Current.InteriorDepth + 0.01f);
+                    bool coverHit = cover.Raycast(new Ray(origin, levels.Current.transform.up), out _, levels.Current.InteriorDepth + 0.01f);
                     Assert.That(coverHit, Is.EqualTo(domain), levels.Definition.Id + " cover at " + point);
                     if (!nearRim)
                         Assert.That(floorHit, Is.EqualTo(domain && apertureDistance > levels.Current.Exit.ApertureRadius), levels.Definition.Id + " floor at " + point);

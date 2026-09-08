@@ -25,6 +25,8 @@ namespace GravityBox.Editor
                 Require(level.Environment != null && level.Prefab != null, level.Id + ": missing profile/prefab.");
                 Require(level.Prefab.Exit != null && level.Prefab.BallSpawn != null && level.Prefab.Rotation != null, level.Id + ": missing scene contract.");
                 Require(level.Prefab.transform.localScale == Vector3.one, level.Id + ": root scale must be one.");
+                Require(level.Prefab.InteriorDepth > catalog.BallProfile.Radius * 2 + .006f,
+                    level.Id + ": shell depth must contain the complete ball.");
                 ValidateFootprint(level, catalog.BallProfile.Radius);
                 var channels = new HashSet<string>();
                 foreach (PressurePlate plate in level.Prefab.GetComponentsInChildren<PressurePlate>(true)) channels.Add(plate.Channel);
@@ -61,6 +63,19 @@ namespace GravityBox.Editor
                     Require(joint.xDrive.positionSpring == 0 && joint.xDrive.positionDamper == 0 &&
                         joint.linearLimitSpring.spring == 0 && joint.linearLimitSpring.damper == 0,
                         level.Id + ": gravity slider must not be motor or spring driven.");
+                }
+                LayeredMaze layered = level.Prefab.GetComponent<LayeredMaze>();
+                if (layered != null)
+                {
+                    Require(layered.Decks != null && layered.Decks.Length >= 2, level.Id + ": layered maze requires multiple decks.");
+                    Require(layered.TransferPorts != null && layered.TransferPorts.Length == layered.Decks.Length - 1,
+                        level.Id + ": each internal deck needs a real transfer opening.");
+                    for (int i = 0; i < layered.Decks.Length; i++)
+                    {
+                        Require(layered.Decks[i].FloorCollider != null, level.Id + ": a deck is missing its physical floor.");
+                        if (i > 0) Require(layered.Decks[i - 1].FloorHeight - layered.Decks[i].FloorHeight > catalog.BallProfile.Radius * 2 + .006f,
+                            level.Id + ": decks must be ordered from top to bottom with clearance for the sphere.");
+                    }
                 }
                 ValidateSpawn(level, catalog.BallProfile.Radius);
             }

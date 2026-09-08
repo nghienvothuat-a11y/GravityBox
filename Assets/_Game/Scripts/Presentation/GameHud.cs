@@ -25,6 +25,9 @@ namespace GravityBox.Presentation
         private Text selectorCaption;
         private ScrollRect selectorScroll;
         private GravitySliderGuide gravitySlider;
+        private GravitySliderGuide[] gravitySliders = Array.Empty<GravitySliderGuide>();
+        private MazeLayerView layerView;
+        private Button layerViewButton;
         private GameObject levelModal, pauseOverlay, debugPanel;
         private float nextRefresh;
         public bool ModalOpen => levelModal != null && levelModal.activeSelf;
@@ -67,6 +70,15 @@ namespace GravityBox.Presentation
             environment = Label("Ball specification", safe, "STEEL · 111 g · Ø 30 mm", 22, Muted, 62, 296, 650, 38);
             Label("Environment", safe, "EARTH GRAVITY", 20, Muted, -365, 296, 305, 38, true, TextAnchor.MiddleRight);
             state = Label("Status", safe, "ROLL THROUGH THE GREEN OPENING.", 21, Muted, 62, 354, 945, 40);
+            layerViewButton = state.gameObject.AddComponent<Button>();
+            layerViewButton.targetGraphic = state;
+            layerViewButton.transition = Selectable.Transition.None;
+            layerViewButton.onClick.AddListener(() =>
+            {
+                if (layerView == null) return;
+                layerView.SetOverview(!layerView.Overview);
+                RefreshStatusText(levels.Session.State);
+            });
 
             var bottom = Rect("Controls", safe, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 346), new Vector2(0, 346));
             bottom.pivot = new Vector2(0.5f, 1);
@@ -188,6 +200,7 @@ namespace GravityBox.Presentation
         public void NotifyDrag() { }
         public bool BlocksRotation(Vector2 position)
         {
+            if (layerView != null && RectTransformUtility.RectangleContainsScreenPoint(state.rectTransform, position)) return true;
             float normalized = (position.y - Screen.safeArea.yMin) / Mathf.Max(1, Screen.safeArea.height);
             return ModalOpen || normalized < 0.19f || normalized > 0.80f || (debugPanel.activeSelf && normalized > 0.52f);
         }
@@ -209,12 +222,25 @@ namespace GravityBox.Presentation
         private void OnLoaded(LevelDefinition definition)
         {
             gravitySlider = null;
+            var sliders = new System.Collections.Generic.List<GravitySliderGuide>();
             // Props live outside the rotating hierarchy after initialization.
             foreach (PhysicalProp prop in levels.Current.Props)
             {
-                gravitySlider = prop.GetComponent<GravitySliderGuide>();
-                if (gravitySlider != null) break;
+                var slider = prop.GetComponent<GravitySliderGuide>();
+                if (slider != null) sliders.Add(slider);
             }
+            gravitySliders = sliders.ToArray();
+            if (gravitySliders.Length > 0) gravitySlider = gravitySliders[0];
+            layerView = null;
+            var layered = levels.Current.GetComponent<LayeredMaze>();
+            if (layered != null)
+            {
+                layerView = levels.Current.gameObject.AddComponent<MazeLayerView>();
+                layerView.Initialize(layered, levels.Ball);
+            }
+            layerViewButton.interactable = layered != null;
+            state.raycastTarget = layered != null;
+            state.rectTransform.sizeDelta = new Vector2(945, layered != null ? 124 : 40);
             number.text = definition.DisplayIndex.ToString("00");
             title.text = definition.DisplayName;
             environment.text = $"STEEL · {levels.Ball.Body.mass * 1000:0} g · Ø {levels.Ball.Profile.Radius * 2000:0} mm";
@@ -232,6 +258,19 @@ namespace GravityBox.Presentation
 
         private void RefreshStatusText(SessionState session)
         {
+            if (session == SessionState.Active && layerView != null)
+            {
+                state.text = layerView.Overview ? "ALL FLOORS · TAP TO FOLLOW THE BALL"
+                    : $"FLOOR {layerView.LayerCount - layerView.ActiveLayer} / {layerView.LayerCount} · TAP TO VIEW ALL FLOORS";
+                state.color = Accent;
+                return;
+            }
+            if (session == SessionState.Active && gravitySliders.Length > 1)
+            {
+                state.text = $"A: {SliderState(gravitySliders[0])}   /   B: {SliderState(gravitySliders[1])}";
+                state.color = Amber;
+                return;
+            }
             if (session == SessionState.Active && gravitySlider != null)
             {
                 // Read actual joint displacement and relative speed. These labels
@@ -252,6 +291,13 @@ namespace GravityBox.Presentation
             state.color = session == SessionState.Completing ? Accent : Muted;
         }
 
+        private static string SliderState(GravitySliderGuide slider)
+        {
+            if (slider.IsPassageClear) return "CLEAR";
+            if (Mathf.Abs(slider.TravelSpeed) > .001f) return "MOVING";
+            return slider.Displacement <= .002f ? "CLOSED" : "PARTLY OPEN";
+        }
+
         private void RefreshSelectorCaption()
         {
             bool overflow = selectorScroll.content.rect.height > selectorScroll.viewport.rect.height + 1;
@@ -265,7 +311,7 @@ namespace GravityBox.Presentation
             if (Screen.safeArea != lastSafe) ApplySafeArea();
             if (Time.unscaledTime < nextRefresh) return;
             nextRefresh = Time.unscaledTime + 0.25f;
-            if (gravitySlider != null && levels.Session.State == SessionState.Active) RefreshStatusText(SessionState.Active);
+            if ((gravitySlider != null || layerView != null) && levels.Session.State == SessionState.Active) RefreshStatusText(SessionState.Active);
             if (ModalOpen) RefreshSelectorCaption();
             if (levels.Ball != null) stats.text = $"{levels.Ball.Body.linearVelocity.magnitude:0.00} m/s";
             if (debugPanel.activeSelf && levels.Ball != null)

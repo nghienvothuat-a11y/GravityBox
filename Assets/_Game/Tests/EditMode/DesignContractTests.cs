@@ -99,11 +99,11 @@ namespace GravityBox.Tests
         }
 
         [Test]
-        public void Catalog_ContainsEightShapeExperimentsAndOneGravityPuzzle()
+        public void Catalog_ContainsEightShapeExperimentsAndThreePhysicsPuzzles()
         {
             var catalog = Catalog(); var ids = new HashSet<string>();
             var shapes = new HashSet<ContainerShape>();
-            Assert.That(catalog.Levels.Length, Is.EqualTo(9));
+            Assert.That(catalog.Levels.Length, Is.EqualTo(11));
             Assert.That(catalog.BallPrefab, Is.Not.Null);
             Assert.That(catalog.Rotation, Is.Not.Null);
             for (int i = 0; i < catalog.Levels.Length; i++)
@@ -126,13 +126,15 @@ namespace GravityBox.Tests
                 Assert.That(level.Prefab.GetComponentsInChildren<ImpulsePad>(true), Is.Empty);
                 Assert.That(level.Prefab.GetComponentsInChildren<KillVolume>(true), Is.Empty);
                 Assert.That(level.Prefab.GetComponentsInChildren<PhysicalProp>(true).Length,
-                    Is.EqualTo(level.Shape == ContainerShape.GravityLock ? 1 : 0));
+                    Is.EqualTo(level.Shape == ContainerShape.GravityLock ? 1 : level.Shape == ContainerShape.MechanicalMaze ? 2 : 0));
+                Assert.That(level.Prefab.InteriorDepth, Is.EqualTo(level.Shape == ContainerShape.LayeredMaze ? 0.27f : 0.09f).Within(0.0001f));
                 Assert.That(level.Prefab.Exit.RequiredChannel, Is.Null.Or.Empty);
                 Assert.That(level.TeachingHint, Is.Not.Empty);
                 Assert.That(level.DesignerSolution, Is.Not.Empty);
             }
             CollectionAssert.AreEquivalent(new[] { ContainerShape.Circle, ContainerShape.Square, ContainerShape.Triangle,
-                ContainerShape.LShape, ContainerShape.UShape, ContainerShape.Annulus, ContainerShape.Dumbbell, ContainerShape.Star, ContainerShape.GravityLock }, shapes);
+                ContainerShape.LShape, ContainerShape.UShape, ContainerShape.Annulus, ContainerShape.Dumbbell, ContainerShape.Star,
+                ContainerShape.GravityLock, ContainerShape.MechanicalMaze, ContainerShape.LayeredMaze }, shapes);
         }
 
         [Test]

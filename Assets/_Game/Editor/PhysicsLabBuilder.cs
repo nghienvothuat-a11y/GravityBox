@@ -16,8 +16,8 @@ namespace GravityBox.Editor
     {
         public const string Folder = "Assets/_Game/PhysicsLab";
         private const float Radius = 0.015f, Depth = 0.09f, Thickness = 0.006f, Aperture = 0.023f;
-        private static Material floor, glass, frame, steel, obstacle, rim;
-        private static PhysicsMaterial contact;
+        private static Material floor, glass, frame, steel, obstacle, rim, amber, marking;
+        private static PhysicsMaterial contact, sliderContact;
 
         public static void Generate()
         {
@@ -26,6 +26,7 @@ namespace GravityBox.Editor
             AssetDatabase.Refresh();
             PrototypeBuilder.ConfigureProject();
             CreateMaterials();
+            CreatePuzzleMaterials();
             var environment = Asset<EnvironmentProfile>("Profiles/Earth.asset");
             environment.Id = "steel-lab-earth"; environment.DisplayName = "EARTH GRAVITY";
             environment.GravityScale = 1; environment.WorldGravityDirection = Vector3.down;
@@ -65,6 +66,7 @@ namespace GravityBox.Editor
                 level.DesignerSolution = "Explore rolling, acceleration and impacts. Tilt the ball through the flush circular opening to observe a complete physical escape. Reset or choose another shape manually.";
                 if (layout.Shape == ContainerShape.GravityLock)
                     level.DesignerSolution = "From spawn, roll down the left chamber and around the south end of the holding recess. Roll right, then north beneath its back wall. Keep the ball against this wall while northward gravity slides the amber block into its rail housing. Tilt mainly right, retaining a little northward slope, to cross the open passage. Guide the ball to the circular exit in the right chamber. All motion comes from gravity, contacts and a passive slider joint; the recess sends no signal.";
+                if (!string.IsNullOrEmpty(layout.Solution)) level.DesignerSolution = layout.Solution;
                 level.Prefab = BuildContainer(layout);
                 catalog.Levels[i] = level;
                 EditorUtility.SetDirty(level);
@@ -119,6 +121,24 @@ namespace GravityBox.Editor
             steel.SetTexture("_BaseMap", texture); EditorUtility.SetDirty(steel); EditorUtility.SetDirty(rim);
         }
 
+        private static void CreatePuzzleMaterials()
+        {
+            amber = Material("Amber gravity slider", new Color(.79f, .43f, .12f), .62f, .42f);
+            string path = Folder + "/Materials/Slider on metal.physicMaterial";
+            sliderContact = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(path);
+            if (sliderContact == null)
+            {
+                sliderContact = new PhysicsMaterial("Slider on metal");
+                AssetDatabase.CreateAsset(sliderContact, path);
+            }
+            sliderContact.staticFriction = .20f; sliderContact.dynamicFriction = .14f;
+            sliderContact.bounciness = .06f;
+            sliderContact.frictionCombine = PhysicsMaterialCombine.Average;
+            sliderContact.bounceCombine = PhysicsMaterialCombine.Minimum;
+            EditorUtility.SetDirty(sliderContact);
+            marking = Material("Recess floor marking", new Color(.30f, .54f, .60f), .25f, .35f);
+        }
+
         private static Material Material(string name, Color color, float metallic, float smoothness, bool transparent = false)
         {
             string path = Folder + "/Materials/" + name + ".mat";
@@ -154,6 +174,7 @@ namespace GravityBox.Editor
 
         private static LevelRuntime BuildContainer(PhysicsLabLayout layout)
         {
+            float depth = layout.Depth;
             ContainerShape shape = layout.Shape;
             Vector2[] outline = layout.Outline;
             Vector2 exit = layout.Exit, spawn = layout.Spawn;
@@ -161,35 +182,38 @@ namespace GravityBox.Editor
             root.GetComponent<Rigidbody>().isKinematic = true; root.GetComponent<Rigidbody>().useGravity = false;
             var level = root.GetComponent<LevelRuntime>(); level.Rotation = root.GetComponent<BoxRotationController>();
             level.BoundsHalfExtent = layout.BoundsHalfExtent;
+            level.InteriorDepth = depth;
             level.Footprint = outline;
             level.FootprintVoids = new Vector2Contour[layout.Voids.Length];
             for (int i = 0; i < layout.Voids.Length; i++) level.FootprintVoids[i] = new Vector2Contour { Points = layout.Voids[i] };
-            MeshObject("Floor with circular cut", root.transform, PhysicsLabGeometry.Panel(shape + " floor", outline, -Depth / 2, Thickness / 2, exit, Aperture, layout.Voids), floor, true);
-            MeshObject("Clear side walls", root.transform, PhysicsLabGeometry.Border(shape + " walls", outline, Thickness, -Depth / 2, Depth / 2), glass, true);
-            MeshObject("Clear top cover", root.transform, PhysicsLabGeometry.Panel(shape + " cover", outline, Depth / 2, Thickness / 2, Vector2.zero, 0, layout.Voids), glass, true);
-            MeshObject("Lower machined edge", root.transform, PhysicsLabGeometry.Border(shape + " lower edge", outline, Thickness + 0.001f, -Depth / 2 - Thickness / 2, -Depth / 2 + 0.001f), frame, false);
-            MeshObject("Upper machined edge", root.transform, PhysicsLabGeometry.Border(shape + " upper edge", outline, Thickness + 0.001f, Depth / 2 - 0.001f, Depth / 2 + Thickness / 2), frame, false);
+            MeshObject("Floor with circular cut", root.transform, PhysicsLabGeometry.Panel(shape + " floor", outline, -depth / 2, Thickness / 2, exit, Aperture, layout.Voids), floor, true);
+            MeshObject("Clear side walls", root.transform, PhysicsLabGeometry.Border(shape + " walls", outline, Thickness, -depth / 2, depth / 2), glass, true);
+            MeshObject("Clear top cover", root.transform, PhysicsLabGeometry.Panel(shape + " cover", outline, depth / 2, Thickness / 2, Vector2.zero, 0, layout.Voids), glass, true);
+            MeshObject("Lower machined edge", root.transform, PhysicsLabGeometry.Border(shape + " lower edge", outline, Thickness + 0.001f, -depth / 2 - Thickness / 2, -depth / 2 + 0.001f), frame, false);
+            MeshObject("Upper machined edge", root.transform, PhysicsLabGeometry.Border(shape + " upper edge", outline, Thickness + 0.001f, depth / 2 - 0.001f, depth / 2 + Thickness / 2), frame, false);
             for (int i = 0; i < layout.Voids.Length; i++)
             {
                 Vector2[] boundary = layout.Voids[i];
-                MeshObject("Inner clear wall " + i, root.transform, PhysicsLabGeometry.Border(shape + " inner wall " + i, boundary, Thickness, -Depth / 2, Depth / 2), glass, true);
-                MeshObject("Inner lower edge " + i, root.transform, PhysicsLabGeometry.Border(shape + " inner lower edge " + i, boundary, Thickness + .001f, -Depth / 2 - Thickness / 2, -Depth / 2 + .001f), frame, false);
-                MeshObject("Inner upper edge " + i, root.transform, PhysicsLabGeometry.Border(shape + " inner upper edge " + i, boundary, Thickness + .001f, Depth / 2 - .001f, Depth / 2 + Thickness / 2), frame, false);
+                MeshObject("Inner clear wall " + i, root.transform, PhysicsLabGeometry.Border(shape + " inner wall " + i, boundary, Thickness, -depth / 2, depth / 2), glass, true);
+                MeshObject("Inner lower edge " + i, root.transform, PhysicsLabGeometry.Border(shape + " inner lower edge " + i, boundary, Thickness + .001f, -depth / 2 - Thickness / 2, -depth / 2 + .001f), frame, false);
+                MeshObject("Inner upper edge " + i, root.transform, PhysicsLabGeometry.Border(shape + " inner upper edge " + i, boundary, Thickness + .001f, depth / 2 - .001f, depth / 2 + Thickness / 2), frame, false);
             }
             if (shape == ContainerShape.Square)
             {
                 var cube = GameObject.CreatePrimitive(PrimitiveType.Cube); cube.name = "Fixed cube";
                 cube.transform.SetParent(root.transform, false); cube.transform.localScale = Vector3.one * 0.064f;
-                cube.transform.localPosition = new Vector3(0, -Depth / 2 + Thickness / 2 + 0.032f, 0);
+                cube.transform.localPosition = new Vector3(0, -depth / 2 + Thickness / 2 + 0.032f, 0);
                 cube.GetComponent<Renderer>().sharedMaterial = obstacle;
                 cube.GetComponent<Collider>().sharedMaterial = contact; cube.GetComponent<Collider>().contactOffset = 0.0005f;
             }
             if (shape == ContainerShape.GravityLock) BuildGravityPuzzle(root.transform);
+            if (shape == ContainerShape.MechanicalMaze) MechanicalMazeBuilder.Build(root.transform, glass, frame, floor, amber, marking, contact, sliderContact);
+            if (shape == ContainerShape.LayeredMaze) LayeredMazeBuilder.Build(root.transform, glass, frame, floor, marking, contact);
             var spawnObject = new GameObject("BallSpawn"); spawnObject.transform.SetParent(root.transform, false);
-            spawnObject.transform.localPosition = new Vector3(spawn.x, -Depth / 2 + Thickness / 2 + Radius + 0.003f, spawn.y);
+            spawnObject.transform.localPosition = new Vector3(spawn.x, layout.SpawnY ?? (-depth / 2 + Thickness / 2 + Radius + 0.003f), spawn.y);
             level.BallSpawn = spawnObject.transform;
             var outlet = new GameObject("Flush round exit", typeof(ExitSocket)); outlet.transform.SetParent(root.transform, false);
-            outlet.transform.localPosition = new Vector3(exit.x, -Depth / 2, exit.y);
+            outlet.transform.localPosition = new Vector3(exit.x, -depth / 2, exit.y);
             outlet.transform.localRotation = Quaternion.LookRotation(Vector3.down, Vector3.forward);
             level.Exit = outlet.GetComponent<ExitSocket>(); level.Exit.ApertureRadius = Aperture; level.Exit.WallHalfDepth = Thickness / 2;
             MeshObject("Subtle light inlay", outlet.transform, PhysicsLabGeometry.Inlay(Aperture, Thickness / 2), rim, false);
@@ -208,19 +232,6 @@ namespace GravityBox.Editor
             PuzzleWall("Holding recess back wall", -.136f, -.036f, .030f, .042f);
             PuzzleWall("Holding recess side wall", -.148f, -.136f, -.065f, .042f);
 
-            Material amber = Material("Amber gravity slider", new Color(.79f, .43f, .12f), .62f, .42f);
-            string path = Folder + "/Materials/Slider on metal.physicMaterial";
-            var sliderContact = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(path);
-            if (sliderContact == null)
-            {
-                sliderContact = new PhysicsMaterial("Slider on metal");
-                AssetDatabase.CreateAsset(sliderContact, path);
-            }
-            sliderContact.staticFriction = .20f; sliderContact.dynamicFriction = .14f;
-            sliderContact.bounciness = .06f;
-            sliderContact.frictionCombine = PhysicsMaterialCombine.Average;
-            sliderContact.bounceCombine = PhysicsMaterialCombine.Minimum;
-            EditorUtility.SetDirty(sliderContact);
             GravitySliderAuthoring.Build(parent, amber, sliderContact);
 
             // Cover-mounted runners engage the carriage throughout its stroke,
@@ -237,7 +248,6 @@ namespace GravityBox.Editor
             }
 
             // Quiet floor markings describe the real holding space and travel direction.
-            Material marking = Material("Recess floor marking", new Color(.30f, .54f, .60f), .25f, .35f);
             Mark("Recess left inlay", new Vector3(-.114f, -.0418f, -.024f), new Vector3(.0015f, .0002f, .057f), marking);
             Mark("Recess back inlay", new Vector3(-.085f, -.0418f, .004f), new Vector3(.058f, .0002f, .0015f), marking);
             for (int i = 0; i < 3; i++)

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e965f9168c2046c28c59aa4b83cc1ec, type: 3}
+  m_Name: MechanicalMaze
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDefinition
+  Id: steel-lab-mechanicalmaze
+  DisplayIndex: 10
+  DisplayName: Opposite ways
+  Shape: 9
+  TeachingHint: Find a holding recess. The two sliders open in opposite directions.
+  Environment: {fileID: 11400000, guid: 82e0ce24addfe4fc89b8bbd0db998aea, type: 2}
+  Prefab: {fileID: 4497772698900041176, guid: 69f4b8ad743cd4feb9eb41f438a04b92, type: 3}
+  RotationMode: 1
+  InitialLocalVelocity: {x: 0, y: 0, z: 0}
+  ParSeconds: 0
+  Tutorial: 0
+  DesignerSolution: Cross the zigzag west maze into the first holding recess. Tilt
+    north to retract slider A, then cross to the central maze. Reach the second holding
+    recess and tilt south to retract slider B. Cross into the east maze, navigate
+    its alternating turns and roll completely through the circular exit. Both sliders
+    remain dynamic and can reclose under reversed gravity.
