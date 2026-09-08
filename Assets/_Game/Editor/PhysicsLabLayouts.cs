@@ -56,6 +56,12 @@ namespace GravityBox.Editor
                     Outline = new[] { V(-.30f,-.25f), V(.30f,-.25f), V(.30f,.25f), V(-.30f,.25f) },
                     Spawn = V(-.23f,-.18f), SpawnY = .066f, Exit = V(.23f,.18f), Depth = .27f, BoundsHalfExtent = .47f,
                     Solution = "Navigate the upper maze to its transfer opening, fall onto the middle floor under gravity, cross its different maze to the second opening, then follow the lowest maze to the flush circular exit. No teleport, lift animation or scripted layer transition."
+                },
+                new PhysicsLabLayout
+                {
+                    Shape = ContainerShape.SphereMaze, Title = "Lost in glass",
+                    Hint = "Roll, fall and rebound between the small glass planks. Find your way to the green exit.",
+                    Solution = "Tilt the ball off its starting plank and explore the open volume between the separate glass boards. A board can catch or redirect the ball, and the ball may freely leave any edge. Change the sphere orientation to approach the offset exit baffles from another direction, then let the complete steel ball escape through the round shell opening. Alternative physical routes are valid; no board sequence, captive corridor or scripted transfer is enforced."
                 }
             };
         }

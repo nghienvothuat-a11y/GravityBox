@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e965f9168c2046c28c59aa4b83cc1ec, type: 3}
+  m_Name: SphereMaze
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDefinition
+  Id: steel-lab-spheremaze
+  DisplayIndex: 12
+  DisplayName: Lost in glass
+  Shape: 11
+  TeachingHint: Roll, fall and rebound between the small glass planks. Find your
+    way to the green exit.
+  Environment: {fileID: 11400000, guid: 82e0ce24addfe4fc89b8bbd0db998aea, type: 2}
+  Prefab: {fileID: 1798800232480395504, guid: 0c9fa90a57fb0411685732707e9433e5, type: 3}
+  RotationMode: 1
+  InitialLocalVelocity: {x: 0, y: 0, z: 0}
+  ParSeconds: 0
+  Tutorial: 0
+  DesignerSolution: Tilt the ball off its starting plank and explore the open volume
+    between the separate glass boards. A board can catch or redirect the ball, and
+    the ball may freely leave any edge. Change the sphere orientation to approach
+    the offset exit baffles from another direction, then let the complete steel ball
+    escape through the round shell opening. Alternative physical routes are valid;
+    no board sequence, captive corridor or scripted transfer is enforced.

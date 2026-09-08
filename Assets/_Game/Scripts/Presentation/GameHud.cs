@@ -27,6 +27,7 @@ namespace GravityBox.Presentation
         private GravitySliderGuide gravitySlider;
         private GravitySliderGuide[] gravitySliders = Array.Empty<GravitySliderGuide>();
         private MazeLayerView layerView;
+        private bool spatialMaze;
         private Button layerViewButton;
         private GameObject levelModal, pauseOverlay, debugPanel;
         private float nextRefresh;
@@ -232,6 +233,7 @@ namespace GravityBox.Presentation
             gravitySliders = sliders.ToArray();
             if (gravitySliders.Length > 0) gravitySlider = gravitySliders[0];
             layerView = null;
+            spatialMaze = definition.Shape == ContainerShape.SphereMaze;
             var layered = levels.Current.GetComponent<LayeredMaze>();
             if (layered != null)
             {
@@ -258,6 +260,12 @@ namespace GravityBox.Presentation
 
         private void RefreshStatusText(SessionState session)
         {
+            if (session == SessionState.Active && spatialMaze)
+            {
+                state.text = "ROLL · FALL · REBOUND · FIND THE GREEN EXIT.";
+                state.color = Accent;
+                return;
+            }
             if (session == SessionState.Active && layerView != null)
             {
                 state.text = layerView.Overview ? "ALL FLOORS · TAP TO FOLLOW THE BALL"

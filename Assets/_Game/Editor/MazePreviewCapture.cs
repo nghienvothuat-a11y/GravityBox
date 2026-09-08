@@ -14,7 +14,7 @@ using UnityEngine.SceneManagement;
 namespace GravityBox.Editor
 {
     /// <summary>
-    /// Repeatable rendering fixtures for the layered maze. Run in a separate Unity
+    /// Repeatable rendering fixtures for the layered and spherical mazes. Run in a separate Unity
     /// Editor process with graphics enabled; this never enters Play Mode or saves a scene.
     /// </summary>
     public static class MazePreviewCapture
@@ -27,6 +27,7 @@ namespace GravityBox.Editor
             public string File, Mode;
             public int Layer;
             public Vector3 BallLocalPosition;
+            public Vector3 BoxEuler;
             public bool Overview;
         }
 
@@ -41,10 +42,15 @@ namespace GravityBox.Editor
         }
 
         [MenuItem("Gravity Box/Capture Layered Maze Render Fixtures")]
-        public static void Capture()
+        public static void Capture() => CaptureLevel(10);
+
+        [MenuItem("Gravity Box/Capture Sphere Maze Render Fixtures")]
+        public static void CaptureSphere() => CaptureLevel(11);
+
+        private static void CaptureLevel(int index)
         {
             int exitCode = 0;
-            try { CaptureFixtures(); }
+            try { CaptureFixtures(index); }
             catch (Exception exception)
             {
                 exitCode = 1;
@@ -53,7 +59,7 @@ namespace GravityBox.Editor
             if (Application.isBatchMode) EditorApplication.Exit(exitCode);
         }
 
-        private static void CaptureFixtures()
+        private static void CaptureFixtures(int index)
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 throw new InvalidOperationException("Render fixtures run in Edit Mode, independently of the playable application.");
@@ -76,8 +82,10 @@ namespace GravityBox.Editor
             {
                 Scene scene = EditorSceneManager.OpenScene(PrototypeBuilder.ScenePath, OpenSceneMode.Single);
                 var catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(PrototypeBuilder.CatalogPath);
-                if (catalog == null || catalog.Levels.Length <= 10 || catalog.Levels[10].Shape != ContainerShape.LayeredMaze)
-                    throw new InvalidOperationException("Generate the catalog containing level 11, the layered maze, before capturing it.");
+                bool spatial = index == 11;
+                ContainerShape shape = spatial ? ContainerShape.SphereMaze : ContainerShape.LayeredMaze;
+                if (catalog == null || catalog.Levels.Length <= index || catalog.Levels[index].Shape != shape)
+                    throw new InvalidOperationException("Generate the requested maze before capturing it: " + shape);
                 foreach (GameObject root in scene.GetRootGameObjects())
                 {
                     var bootstrap = root.GetComponent<GameBootstrap>();
@@ -85,15 +93,15 @@ namespace GravityBox.Editor
                 }
                 if (camera == null) throw new InvalidOperationException("The Gameplay scene does not contain its configured camera.");
                 camera.enabled = false;
-                LevelDefinition definition = catalog.Levels[10];
+                LevelDefinition definition = catalog.Levels[index];
                 level = ((GameObject)PrefabUtility.InstantiatePrefab(definition.Prefab.gameObject, scene)).GetComponent<LevelRuntime>();
                 ball = ((GameObject)PrefabUtility.InstantiatePrefab(catalog.BallPrefab.gameObject, scene)).GetComponent<BallController>();
-                level.name = "Layer 11 rendering fixture";
+                level.name = definition.DisplayName + " rendering fixture";
                 ball.name = "Steel ball rendering fixture (not simulated)";
                 ball.Configure(catalog.BallProfile, Vector3.zero, false);
                 ball.Body.isKinematic = true;
                 var maze = level.GetComponent<LayeredMaze>();
-                if (maze == null || maze.Decks.Length != 3)
+                if (!spatial && (maze == null || maze.Decks.Length != 3))
                     throw new InvalidOperationException("The rendering fixture expects the three authored maze decks.");
 
                 target = new RenderTexture(Width, Height, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB)
@@ -109,41 +117,59 @@ namespace GravityBox.Editor
                 camera.backgroundColor = definition.Environment.Background;
                 Reframe(camera, level.BoundsHalfExtent * 1.05f);
                 PlaceBall(0);
-                layerView = level.gameObject.AddComponent<MazeLayerView>();
-                layerView.Initialize(maze, ball);
+                if (!spatial)
+                {
+                    layerView = level.gameObject.AddComponent<MazeLayerView>();
+                    layerView.Initialize(maze, ball);
+                }
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Artifacts");
                 Directory.CreateDirectory(output);
-                string[] files = { "Layer11Top.png", "Layer11Middle.png", "Layer11Bottom.png", "Layer11Overview.png" };
+                string[] files = spatial
+                    ? new[] { "Sphere12Front.png", "Sphere12Turned.png", "Sphere12Back.png", "Sphere12Exit.png" }
+                    : new[] { "Layer11Top.png", "Layer11Middle.png", "Layer11Bottom.png", "Layer11Overview.png" };
                 var snapshots = new Snapshot[4];
-                for (int layer = 0; layer < 3; layer++)
+                for (int layer = 0; layer < (spatial ? 4 : 3); layer++)
                 {
+                    if (spatial)
+                    {
+                        Vector3[] angles = { Vector3.zero, new Vector3(50, 65, 25), new Vector3(15, 180, -35), new Vector3(155, 15, 0) };
+                        level.transform.rotation = Quaternion.Euler(angles[layer]);
+                    }
                     PlaceBall(layer);
-                    layerView.SetOverview(false);
-                    layerView.Refresh();
-                    if (layerView.ActiveLayer != layer)
-                        throw new InvalidOperationException("The actual layer view did not select the requested rendering fixture deck.");
+                    if (!spatial)
+                    {
+                        layerView.SetOverview(false);
+                        layerView.Refresh();
+                        if (layerView.ActiveLayer != layer)
+                            throw new InvalidOperationException("The actual layer view did not select the requested rendering fixture deck.");
+                    }
                     Render(camera, target, Path.Combine(output, files[layer]));
-                    snapshots[layer] = Record(files[layer], layer, false);
+                    snapshots[layer] = Record(files[layer], spatial ? -1 : layer, false);
                 }
-                PlaceBall(0);
-                layerView.Refresh();
-                layerView.SetOverview(true);
-                Render(camera, target, Path.Combine(output, files[3]));
-                snapshots[3] = Record(files[3], 0, true);
+                if (!spatial)
+                {
+                    PlaceBall(0);
+                    layerView.Refresh();
+                    layerView.SetOverview(true);
+                    Render(camera, target, Path.Combine(output, files[3]));
+                    snapshots[3] = Record(files[3], 0, true);
+                }
                 var manifest = new Manifest
                 {
                     CapturedUtc = DateTime.UtcNow.ToString("O"), Scene = PrototypeBuilder.ScenePath,
                     Level = definition.Id, Width = Width, Height = Height,
                     CameraPosition = camera.transform.position, CameraEuler = camera.transform.eulerAngles,
-                    Images = snapshots
+                    Images = snapshots,
+                    Purpose = spatial ? "Rendering fixtures only. Sphere orientation and ball spawn pose are placed explicitly; no physics simulation or route verification is performed."
+                        : "Rendering fixtures only. The ball is placed at authored deck entries; no physics simulation or route verification is performed."
                 };
-                File.WriteAllText(Path.Combine(output, "Layer11RenderFixtures.json"), JsonUtility.ToJson(manifest, true));
-                Debug.Log("LAYER 11 RENDER FIXTURES: captured top, middle, bottom focus and overview at 796x1494. "
+                File.WriteAllText(Path.Combine(output, spatial ? "Sphere12RenderFixtures.json" : "Layer11RenderFixtures.json"), JsonUtility.ToJson(manifest, true));
+                Debug.Log(definition.DisplayName + " RENDER FIXTURES: captured four views at 796x1494. "
                     + "Each ball pose is an explicitly placed visual fixture, not evidence of a physics solve. No scene assets saved.");
 
                 void PlaceBall(int layer)
                 {
-                    Vector3 local = maze.Decks[layer].RouteLocalPoints[0];
+                    Vector3 local = spatial ? level.transform.InverseTransformPoint(level.BallSpawn.position) : maze.Decks[layer].RouteLocalPoints[0];
                     Vector3 world = level.transform.TransformPoint(local);
                     ball.transform.SetPositionAndRotation(world, Quaternion.identity);
                     ball.Body.position = world;
@@ -152,8 +178,8 @@ namespace GravityBox.Editor
 
                 Snapshot Record(string file, int layer, bool overview) => new Snapshot
                 {
-                    File = file, Mode = overview ? "Overview" : "Focused deck", Layer = layer,
-                    BallLocalPosition = level.transform.InverseTransformPoint(ball.Body.position), Overview = overview
+                    File = file, Mode = spatial ? "Sphere orientation" : overview ? "Overview" : "Focused deck", Layer = layer,
+                    BallLocalPosition = level.transform.InverseTransformPoint(ball.Body.position), BoxEuler = level.transform.eulerAngles, Overview = overview
                 };
             }
             finally

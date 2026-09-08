@@ -16,7 +16,7 @@ namespace GravityBox.Gameplay
         public ExitSocket Exit;
         public BoxRotationController Rotation;
         public float BoundsHalfExtent = 3.7f;
-        [Min(.04f), Tooltip("Distance between outer floor/cover centres, in metres.")]
+        [Min(.04f), Tooltip("Enclosure depth in metres: floor/cover centre spacing for boxes, outer diameter for a sphere.")]
         public float InteriorDepth = .09f;
         [Tooltip("Authored XZ footprint, counter-clockwise. Collision remains defined by the baked shell meshes.")]
         public Vector2[] Footprint = System.Array.Empty<Vector2>();

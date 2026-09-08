@@ -258,6 +258,12 @@ namespace GravityBox.Tests
             for (int index = 0; index < levels.Catalog.Levels.Length; index++)
             {
                 Load(index);
+                SpatialMaze sphere = levels.Current.GetComponent<SpatialMaze>();
+                if (sphere != null)
+                {
+                    AssertSpatialShellCoverage(sphere);
+                    continue;
+                }
                 foreach (Vector2[] contour in Contours(levels.Current))
                 {
                     bool hole = contour != levels.Current.Footprint;
@@ -294,6 +300,12 @@ namespace GravityBox.Tests
             for (int index = 0; index < levels.Catalog.Levels.Length; index++)
             {
                 Load(index);
+                SpatialMaze sphere = levels.Current.GetComponent<SpatialMaze>();
+                if (sphere != null)
+                {
+                    AssertSpatialShellSection(sphere);
+                    continue;
+                }
                 Collider floor = levels.Current.transform.Find("Floor with circular cut").GetComponent<Collider>();
                 Collider cover = levels.Current.transform.Find("Clear top cover").GetComponent<Collider>();
                 Assert.That(floor, Is.Not.Null);

@@ -174,6 +174,14 @@ namespace GravityBox.Editor
 
         private static LevelRuntime BuildContainer(PhysicsLabLayout layout)
         {
+            if (layout.Shape == ContainerShape.SphereMaze)
+            {
+                LevelRuntime sphere = SphereMazeBuilder.Build(glass, frame, rim, contact);
+                string spherePath = Folder + "/Prefabs/" + layout.Shape + " box.prefab";
+                GameObject prefab = PrefabUtility.SaveAsPrefabAsset(sphere.gameObject, spherePath);
+                Object.DestroyImmediate(sphere.gameObject);
+                return prefab.GetComponent<LevelRuntime>();
+            }
             float depth = layout.Depth;
             ContainerShape shape = layout.Shape;
             Vector2[] outline = layout.Outline;

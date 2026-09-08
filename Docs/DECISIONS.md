@@ -1,6 +1,16 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** ADR 017 thêm mê cung 10–11 vào chín bàn của ADR 016 và giữ nguyên mô hình bi thép. Các đoạn mô tả 16 màn, zero-G, nắp rơi, slow motion và tự chuyển màn là lịch sử.
+**Phạm vi hiện tại:** ADR 018 thêm mê cung cầu 12 vào 11 bàn của ADR 017 và giữ nguyên mô hình bi thép. Các đoạn mô tả 16 màn, zero-G, nắp rơi, slow motion và tự chuyển màn là lịch sử.
+
+## ADR 018 Các thanh rời và khoảng rơi tự do trong cầu thủy tinh
+
+Bàn 12 dùng 32 thanh kính nhỏ, cố định và tách rời trong một vỏ cầu trong suốt. Người chơi có thể lăn trên thanh, rơi qua khoảng không, chạm thanh khác hoặc thành cầu. Không dùng các tấm vách lớn chia phòng, hành lang kín hoặc lỗ chuyển tiếp. Lỗ tròn duy nhất là cửa thoát trên vỏ. Nhiều đường đi và cách bỏ qua thanh bằng động lượng đều hợp lệ.
+
+Bán kính trong cầu 0,36 m, vỏ dày 0,006 m; các thanh chủ yếu dày 0,004 m. Bố trí gồm thanh xuất phát, thanh đón đầu tiên, 24 thanh phân bố theo seed authoring, 4 thanh gần vỏ và 2 thanh lệch gần cửa. Mỗi thanh là một BoxCollider thuộc root kinematic. Bi vẫn dynamic trong world space, gravity vẫn 9,81 m/s²; không có lực hỗ trợ đáp xuống hoặc logic chuyển bi giữa các thanh.
+
+SpatialMaze lưu metadata vỏ/thanh/seed, không lưu graph phòng hoặc lời giải để điều khiển player. Kiểm thử dành riêng đo khoảng rơi tự do và gia tốc, contact khi đáp, một route vật lý hợp lệ và reset/unload. Các kiểm tra vỏ cong và điều kiện toàn bộ bi thoát vẫn áp dụng. Độ khó cần được đánh giá riêng bằng chơi thực tế, vì bố trí mở cho phép nhiều đường và không bắt buộc chạm mọi vật cản.
+
+Xem [thiết kế và kiểm chứng bàn 12](LEVEL12_SPATIAL_MAZE.md).
 
 ## ADR 017 Hai cửa ngược hướng và mê cung ba tầng thật
 

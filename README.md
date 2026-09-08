@@ -1,12 +1,14 @@
 # Gravity Box — Steel Ball Lab
 
-Prototype Unity tập trung vào cảm giác một viên bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **11 bàn**: tám hộp thử hình học (tròn, vuông, tam giác, chữ L, chữ U, vành khuyên, quả tạ, ngôi sao), puzzle **09 — Leave it behind**, **10 — Opposite ways** với hai thanh trượt ngược hướng và **11 — Three dimensions** với ba tầng vật lý. Hộp vuông có một khối lập phương cố định để kiểm tra va chạm trực diện và va chạm xiên.
+Prototype Unity tập trung vào cảm giác một viên bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **12 bàn**: tám hộp thử hình học (tròn, vuông, tam giác, chữ L, chữ U, vành khuyên, quả tạ, ngôi sao), puzzle **09 — Leave it behind**, **10 — Opposite ways** với hai thanh trượt ngược hướng, **11 — Three dimensions** với ba tầng vật lý và **12 — Lost in glass** với mê cung không gian trong khối cầu thủy tinh. Hộp vuông có một khối lập phương cố định để kiểm tra va chạm trực diện và va chạm xiên.
 
 Ở bàn 09, một thanh chặn có khối lượng trượt trên ray theo trọng lực. Đưa bi vào hốc giữ, nghiêng để thanh chặn rời cửa trong khi thành hốc giữ bi lại, rồi chuyển hướng nghiêng để bi đi qua khoang bên phải và ra lỗ. Thanh chặn luôn là vật thể va chạm; không có công tắc hoặc tín hiệu mở khóa. Xem [thiết kế bàn 09](Docs/LEVEL09_LEAVE_IT_BEHIND.md).
 
 Bàn 10 kết hợp các hành lang đổi hướng với hai cửa trượt được mở bởi hai chiều nghiêng đối nhau. Bàn 11 có mê cung riêng trên từng tầng; bi phải lăn tới các lỗ chuyển tầng lệch nhau rồi rơi xuống theo trọng lực, cuối cùng ra lỗ tròn ở đáy. Xem [thiết kế hai mê cung](Docs/LEVEL10_11_MAZES.md).
 
-Bi có đường kính 30 mm, khối lượng khoảng 111 g; hộp rộng khoảng 34–72 cm tùy hình, sâu 9 cm ở bàn 01–10 và 27 cm ở bàn 11. Một đơn vị Unity là một mét. Trọng lực thế giới 9,81 m/s² và mô phỏng 120 Hz được giữ nhất quán; cảm giác nặng đến từ tỷ lệ, quán tính quay, contact, tổn hao năng lượng và âm thanh tương ứng với va chạm.
+Bàn 12 đặt 32 thanh kính nhỏ, tách rời và có nhiều hướng trong cùng một khối cầu. Bi lăn trên thanh, rơi tự do qua khoảng không và va vào thanh khác hoặc thành cầu. Có thể tìm nhiều đường để tới lỗ tròn trên vỏ; không có tầng hoặc hành lang giữ bi. Xem [thiết kế mê cung trong khối cầu](Docs/LEVEL12_SPATIAL_MAZE.md).
+
+Bi có đường kính 30 mm, khối lượng khoảng 111 g; hộp rộng khoảng 34–72 cm tùy hình, sâu 9 cm ở bàn 01–10 và 27 cm ở bàn 11; cầu ở bàn 12 có đường kính ngoài 73,2 cm. Một đơn vị Unity là một mét. Trọng lực thế giới 9,81 m/s² và mô phỏng 120 Hz được giữ nhất quán; cảm giác nặng đến từ tỷ lệ, quán tính quay, contact, tổn hao năng lượng và âm thanh tương ứng với va chạm.
 
 ## Chạy và quan sát
 
@@ -31,6 +33,7 @@ Lỗ thoát vẫn là lỗ tròn xuyên mặt hộp, với viền sáng mảnh k
 - [Ảnh native của năm hình mới](Docs/Images/WeirdBoxes/README.md)
 - [Màn 09: trạng thái cửa đóng/mở](Docs/Images/Level09/README.md)
 - [Bàn 10–11: cửa ngược hướng và mê cung ba tầng](Docs/LEVEL10_11_MAZES.md)
+- [Bàn 12: mê cung không gian trong cầu thủy tinh](Docs/LEVEL12_SPATIAL_MAZE.md)
 
 Ba hộp cơ bản đã được bổ sung năm hình dạng khác thường theo yêu cầu người dùng. Mỗi hình có sàn, nắp và thành đúng đường biên thật; khoảng khuyết của chữ L/U, lõi rỗng của vành khuyên và cổ hẹp của quả tạ ảnh hưởng trực tiếp tới đường lăn. Asset của catalog 16 màn cũ vẫn được giữ ngoài catalog đang chơi. [Tài liệu lịch sử](Docs/Archive/README.md) và [GDD gốc đã trích xuất](Docs/GDD_REFERENCE.md) không phải danh sách tính năng cần đưa trở lại prototype này.
 
@@ -38,7 +41,7 @@ Ba hộp cơ bản đã được bổ sung năm hình dạng khác thường the
 
 `Scripts/Foundation` giữ session/reset; `Simulation` giữ Rigidbody, lực, rolling contact và rotation; `Gameplay` quản lý catalog, load/reset/exit; `Presentation` nhận input và thể hiện hình/âm thanh; `App` kết nối các lớp. Editor tạo prefab/mesh và kiểm tra nội dung trước build. Scene duy nhất tải một thí nghiệm tại một thời điểm.
 
-Profile đang dùng nằm trong `Assets/_Game/PhysicsLab/Profiles`: `Solid steel.asset`, `Earth.asset` và `Hand rotation.asset`. Prefab/mesh nằm trong `PhysicsLab/Prefabs` và `PhysicsLab/Meshes`; `ScriptableObjects/LevelCatalog.asset` tham chiếu đúng 11 level. Khi đổi kích thước bi phải đổi mass/inertia/contact offset và kiểm tra clearance theo cùng đơn vị. Không tăng riêng mass hoặc giảm gravity để tạo cảm giác nặng.
+Profile đang dùng nằm trong `Assets/_Game/PhysicsLab/Profiles`: `Solid steel.asset`, `Earth.asset` và `Hand rotation.asset`. Prefab/mesh nằm trong `PhysicsLab/Prefabs` và `PhysicsLab/Meshes`; `ScriptableObjects/LevelCatalog.asset` tham chiếu đúng 12 level. Khi đổi kích thước bi phải đổi mass/inertia/contact offset và kiểm tra clearance theo cùng đơn vị. Không tăng riêng mass hoặc giảm gravity để tạo cảm giác nặng.
 
 Prefab và profile đã có sẵn; không cần chạy generator để chơi. Generator tạo lại nội dung đã author, nên lưu thay đổi bằng Git hoặc prefab variant trước khi regenerate.
 

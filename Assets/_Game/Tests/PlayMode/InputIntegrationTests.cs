@@ -166,8 +166,24 @@ namespace GravityBox.Tests
             Assert.That(bootstrap.Levels.DragCount, Is.Zero);
             Assert.That(Quaternion.Angle(Quaternion.identity, bootstrap.Levels.Current.Rotation.Orientation), Is.LessThan(0.1f));
 
+            // Keep the layered view regression independent of the last catalog entry.
+            // Select it through the same clipped selector instead of loading it directly.
+            yield return Click(open);
+            scroll = hud.GetComponentInChildren<ScrollRect>();
+            scroll.StopMovement();
+            scroll.verticalNormalizedPosition = 0;
+            Canvas.ForceUpdateCanvases();
+            yield return null;
+            GravityBox.Gameplay.LevelDefinition layered = null;
+            foreach (var definition in bootstrap.Levels.Catalog.Levels)
+                if (definition.Shape == GravityBox.Gameplay.ContainerShape.LayeredMaze) layered = definition;
+            Assert.That(layered, Is.Not.Null);
+            Button layeredCard = scroll.content.Find("Select " + layered.Id).GetComponent<Button>();
+            yield return Click(layeredCard);
+            Assert.That(bootstrap.Levels.Definition.Shape, Is.EqualTo(GravityBox.Gameplay.ContainerShape.LayeredMaze));
+            Assert.That(bootstrap.Levels.DragCount, Is.Zero);
             MazeLayerView layerView = bootstrap.Levels.Current.GetComponent<MazeLayerView>();
-            Assert.That(layerView, Is.Not.Null, "The last maze must expose its physical deck view.");
+            Assert.That(layerView, Is.Not.Null, "The layered maze must expose its physical deck view.");
             Assert.That(layerView.LayerCount, Is.EqualTo(3));
             Assert.That(layerView.Overview, Is.False);
             Button layerButton = null;

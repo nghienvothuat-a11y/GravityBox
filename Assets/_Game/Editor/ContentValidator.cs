@@ -27,6 +27,7 @@ namespace GravityBox.Editor
                 Require(level.Prefab.transform.localScale == Vector3.one, level.Id + ": root scale must be one.");
                 Require(level.Prefab.InteriorDepth > catalog.BallProfile.Radius * 2 + .006f,
                     level.Id + ": shell depth must contain the complete ball.");
+                ValidateSpatialMaze(level, catalog.BallProfile.Radius);
                 ValidateFootprint(level, catalog.BallProfile.Radius);
                 var channels = new HashSet<string>();
                 foreach (PressurePlate plate in level.Prefab.GetComponentsInChildren<PressurePlate>(true)) channels.Add(plate.Channel);
@@ -117,6 +118,8 @@ namespace GravityBox.Editor
         private static void ValidateFootprint(LevelDefinition definition, float radius)
         {
             LevelRuntime level = definition.Prefab;
+            // A sphere is defined by its radial shell, not an extruded XZ contour.
+            if (level.GetComponent<SpatialMaze>() != null) return;
             Require(level.Footprint != null && level.Footprint.Length >= 3, definition.Id + ": missing authored footprint.");
             foreach (Vector2 point in level.Footprint)
                 Require(!float.IsNaN(point.x) && !float.IsNaN(point.y) && point.magnitude + radius < level.BoundsHalfExtent,
@@ -137,6 +140,49 @@ namespace GravityBox.Editor
                         definition.Id + ": " + label + " overlaps an interior void.");
                 }
             }
+        }
+
+        private static void ValidateSpatialMaze(LevelDefinition definition, float radius)
+        {
+            SpatialMaze maze = definition.Prefab.GetComponent<SpatialMaze>();
+            if (definition.Shape != ContainerShape.SphereMaze)
+            {
+                Require(maze == null, definition.Id + ": spatial metadata requires a spherical container.");
+                return;
+            }
+            Require(maze != null && maze.ShellCollider != null && maze.ShellCollider.sharedMesh != null,
+                definition.Id + ": spherical maze requires its real hollow shell.");
+            Require(!maze.ShellCollider.convex && maze.InnerRadius > radius * 4 && maze.ShellThickness > 0,
+                definition.Id + ": invalid spherical shell.");
+            Require(maze.InnerRadius + maze.ShellThickness + radius < definition.Prefab.BoundsHalfExtent,
+                definition.Id + ": spherical shell exceeds framing/failure bounds.");
+            Require(maze.Planks != null && maze.Planks.Length > 0 && maze.SpawnPlank != null && maze.CatchPlank != null,
+                definition.Id + ": free plank layout requires its supports.");
+            var unique = new HashSet<BoxCollider>();
+            foreach (BoxCollider plank in maze.Planks)
+            {
+                Require(plank != null && plank.enabled && !plank.isTrigger && unique.Add(plank),
+                    definition.Id + ": plank colliders must be enabled, solid and unique.");
+                Vector3 half = plank.size * .5f;
+                for (int x = -1; x <= 1; x += 2)
+                for (int y = -1; y <= 1; y += 2)
+                for (int z = -1; z <= 1; z += 2)
+                {
+                    Vector3 point = plank.transform.TransformPoint(plank.center + Vector3.Scale(half, new Vector3(x, y, z)));
+                    Require(definition.Prefab.transform.InverseTransformPoint(point).magnitude < maze.InnerRadius,
+                        definition.Id + ": a plank extends through the glass shell: " + plank.name);
+                }
+            }
+            for (int i = 0; i < maze.Planks.Length; i++)
+            for (int j = i + 1; j < maze.Planks.Length; j++)
+            {
+                BoxCollider first = maze.Planks[i], second = maze.Planks[j];
+                bool overlap = UnityEngine.Physics.ComputePenetration(first, first.transform.position, first.transform.rotation,
+                    second, second.transform.position, second.transform.rotation, out _, out float depth);
+                Require(!overlap || depth < .00001f, definition.Id + ": independent planks overlap: " + first.name + " / " + second.name);
+            }
+            Vector3 spawn = definition.Prefab.transform.InverseTransformPoint(definition.Prefab.BallSpawn.position);
+            Require(spawn.magnitude + radius < maze.InnerRadius, definition.Id + ": spawn does not fit inside the sphere.");
         }
 
         private static bool InPolygon(Vector2 point, Vector2[] polygon)

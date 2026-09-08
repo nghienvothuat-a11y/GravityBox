@@ -99,11 +99,11 @@ namespace GravityBox.Tests
         }
 
         [Test]
-        public void Catalog_ContainsEightShapeExperimentsAndThreePhysicsPuzzles()
+        public void Catalog_ContainsEightShapeExperimentsAndFourPhysicsPuzzles()
         {
             var catalog = Catalog(); var ids = new HashSet<string>();
             var shapes = new HashSet<ContainerShape>();
-            Assert.That(catalog.Levels.Length, Is.EqualTo(11));
+            Assert.That(catalog.Levels.Length, Is.EqualTo(12));
             Assert.That(catalog.BallPrefab, Is.Not.Null);
             Assert.That(catalog.Rotation, Is.Not.Null);
             for (int i = 0; i < catalog.Levels.Length; i++)
@@ -127,14 +127,22 @@ namespace GravityBox.Tests
                 Assert.That(level.Prefab.GetComponentsInChildren<KillVolume>(true), Is.Empty);
                 Assert.That(level.Prefab.GetComponentsInChildren<PhysicalProp>(true).Length,
                     Is.EqualTo(level.Shape == ContainerShape.GravityLock ? 1 : level.Shape == ContainerShape.MechanicalMaze ? 2 : 0));
-                Assert.That(level.Prefab.InteriorDepth, Is.EqualTo(level.Shape == ContainerShape.LayeredMaze ? 0.27f : 0.09f).Within(0.0001f));
+                if (level.Shape == ContainerShape.SphereMaze)
+                {
+                    SpatialMaze sphere = level.Prefab.GetComponent<SpatialMaze>();
+                    Assert.That(sphere, Is.Not.Null);
+                    Assert.That(sphere.ShellCollider, Is.Not.Null);
+                    Assert.That(level.Prefab.InteriorDepth, Is.EqualTo(2 * (sphere.InnerRadius + sphere.ShellThickness)).Within(0.0001f));
+                    Assert.That(sphere.Planks, Has.Length.EqualTo(32));
+                }
+                else Assert.That(level.Prefab.InteriorDepth, Is.EqualTo(level.Shape == ContainerShape.LayeredMaze ? 0.27f : 0.09f).Within(0.0001f));
                 Assert.That(level.Prefab.Exit.RequiredChannel, Is.Null.Or.Empty);
                 Assert.That(level.TeachingHint, Is.Not.Empty);
                 Assert.That(level.DesignerSolution, Is.Not.Empty);
             }
             CollectionAssert.AreEquivalent(new[] { ContainerShape.Circle, ContainerShape.Square, ContainerShape.Triangle,
                 ContainerShape.LShape, ContainerShape.UShape, ContainerShape.Annulus, ContainerShape.Dumbbell, ContainerShape.Star,
-                ContainerShape.GravityLock, ContainerShape.MechanicalMaze, ContainerShape.LayeredMaze }, shapes);
+                ContainerShape.GravityLock, ContainerShape.MechanicalMaze, ContainerShape.LayeredMaze, ContainerShape.SphereMaze }, shapes);
         }
 
         [Test]
