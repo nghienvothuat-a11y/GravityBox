@@ -11,14 +11,14 @@ namespace GravityBox.Editor
     public static class SphereMazeBuilder
     {
         public const float InnerRadius = .36f, Thickness = .006f, ExitRadius = .023f;
-        private const int Seed = 12, PlankCount = 32;
-
-        private sealed class PlankPose
+        private const float Spacing = .174f, HalfWidth = .025f, PlankWidth = .010f, PlankThickness = .003f;
+        private const float JointOverlap = .001f, RibbonOverlap = .0008f, MaximumRibbonLength = .045f;
+        private static readonly int[] Route =
         {
-            public Vector3 Centre, Size;
-            public Quaternion Rotation;
-            public float BoundingRadius => Size.magnitude * .5f;
-        }
+            20, 11, 2, 5, 8, 17, 14, 23, 26, 25, 22, 21,
+            24, 15, 16, 7, 6, 3, 12, 9, 0, 1, 4, 13, 10, 27
+        };
+        private static readonly int[,] Branches = { { 18, 21 }, { 19, 10 } };
 
         // Return an unsaved root so the shared catalog builder owns prefab persistence.
         public static LevelRuntime Build(Material glass, Material frame, Material rim, PhysicsMaterial contact)
@@ -29,8 +29,7 @@ namespace GravityBox.Editor
             Rigidbody body = root.GetComponent<Rigidbody>(); body.isKinematic = true; body.useGravity = false;
             LevelRuntime level = root.GetComponent<LevelRuntime>();
             level.Rotation = root.GetComponent<BoxRotationController>();
-            level.BoundsHalfExtent = .43f;
-            level.InteriorDepth = 2 * (InnerRadius + Thickness);
+            level.BoundsHalfExtent = .43f; level.InteriorDepth = 2 * (InnerRadius + Thickness);
             level.Footprint = new Vector2[96];
             for (int i = 0; i < level.Footprint.Length; i++)
             {
@@ -39,45 +38,60 @@ namespace GravityBox.Editor
             }
             SpatialMaze maze = root.GetComponent<SpatialMaze>();
             maze.InnerRadius = InnerRadius; maze.ShellThickness = Thickness;
-            maze.AuthoringSeed = Seed; maze.SpawnPlankIndex = 0; maze.CatchPlankIndex = 1;
-            maze.Planks = new BoxCollider[PlankCount];
+            maze.ClearWidth = 2 * HalfWidth; maze.PlankWidth = PlankWidth; maze.PlankThickness = PlankThickness;
+            maze.SightGap = HalfWidth - PlankWidth; maze.SpawnNode = Route[0]; maze.ExitNode = 27;
+            maze.MainPath = (int[])Route.Clone(); maze.NodesLocal = new Vector3[28];
+            for (int node = 0; node < 27; node++) maze.NodesLocal[node] = Centre(node);
+            float innerCut = Mathf.Sqrt(InnerRadius * InnerRadius - ExitRadius * ExitRadius);
+            float outerRadius = InnerRadius + Thickness;
+            float outerCut = Mathf.Sqrt(outerRadius * outerRadius - ExitRadius * ExitRadius);
+            maze.NodesLocal[27] = Vector3.down * (outerCut + .035f);
+
             Material shellGlass = Transparent("SphereMaze clear spherical glass", glass, new Color(.66f, .83f, .88f, .022f), true);
-            Material plankGlass = Transparent("SphereMaze separate glass planks", glass, new Color(.48f, .76f, .83f, .18f), false);
-            Material edgeInlay = Transparent("SphereMaze quiet plank edges", glass, new Color(.52f, .79f, .86f, .30f), false);
+            Material plankGlass = Transparent("SphereMaze assembled glass ribbons", glass, new Color(.48f, .76f, .83f, .055f), false);
+            Material edgeInlay = Transparent("SphereMaze assembled ribbon edges", glass, new Color(.52f, .79f, .86f, .18f), false);
             Material exitInlay = Transparent("SphereMaze faint exit inlay", glass, new Color(.45f, .72f, .49f, .55f), false);
             exitInlay.EnableKeyword("_EMISSION"); exitInlay.SetColor("_EmissionColor", new Color(.018f, .035f, .02f));
             EditorUtility.SetDirty(exitInlay);
             maze.ShellCollider = MeshObject("Continuous glass sphere with round cut", root.transform,
                 SphereMazeGeometry.Shell(InnerRadius, Thickness, ExitRadius), shellGlass, contact).GetComponent<MeshCollider>();
-
-            PlankPose[] layout = Layout();
-            var poses = new List<Matrix4x4>(); var sizes = new List<Vector3>();
-            var field = new GameObject("Separate glass planks"); field.transform.SetParent(root.transform, false);
-            for (int i = 0; i < PlankCount; i++)
+            var field = new GameObject("Assembled glass ribbon maze"); field.transform.SetParent(root.transform, false);
+            HashSet<int> graph = Graph();
+            var edges = new List<SpatialMazeEdge>(); var planks = new List<SpatialMazePlank>();
+            var edgePoses = new List<Matrix4x4>(); var edgeSizes = new List<Vector3>();
+            maze.JunctionColliders = new MeshCollider[27];
+            for (int node = 0; node < 27; node++)
             {
-                PlankPose pose = layout[i];
-                var plank = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                plank.name = i == 0 ? "Starting plank" : i == 1 ? "First catch plank"
-                    : i < 26 ? "Free plank " + i.ToString("00") : i < 30 ? "Radial deflector " + (i - 25) : "Exit baffle " + (i - 29);
-                plank.transform.SetParent(field.transform, false);
-                plank.transform.localPosition = pose.Centre; plank.transform.localRotation = pose.Rotation;
-                plank.transform.localScale = pose.Size;
-                Renderer renderer = plank.GetComponent<Renderer>(); renderer.sharedMaterial = plankGlass;
-                renderer.shadowCastingMode = ShadowCastingMode.Off; renderer.receiveShadows = false;
-                BoxCollider collider = plank.GetComponent<BoxCollider>();
-                collider.sharedMaterial = contact; collider.contactOffset = .0005f;
-                maze.Planks[i] = collider;
-                poses.Add(Matrix4x4.TRS(pose.Centre, pose.Rotation, Vector3.one)); sizes.Add(pose.Size);
+                Vector3 centre = Centre(node); var parts = new List<Bounds>();
+                for (int axis = 0; axis < 3; axis++)
+                    foreach (int sign in new[] { -1, 1 })
+                    {
+                        int coordinate = axis == 0 ? node % 3 : axis == 1 ? node / 3 % 3 : node / 9;
+                        int neighbour = node + sign * (axis == 0 ? 1 : axis == 1 ? 3 : 9);
+                        bool valid = coordinate + sign >= 0 && coordinate + sign < 3;
+                        bool open = valid && graph.Contains(Edge(node, neighbour));
+                        if (node == 10 && axis == 1 && sign == -1) open = true;
+                        if (!open)
+                        {
+                            // A real small flat cap supports the stationary steel ball.
+                            if (node == maze.SpawnNode && axis == 1 && sign == -1)
+                                parts.Add(new Bounds(centre + Vector3.down * (HalfWidth + PlankThickness * .5f),
+                                    new Vector3(.052f, PlankThickness, .052f)));
+                            else ClosedFace(parts, centre, axis, sign);
+                        }
+                        if (sign > 0 && valid && graph.Contains(Edge(node, neighbour)))
+                            AddCorridor(node, neighbour, axis);
+                    }
+                maze.JunctionColliders[node] = Section("SphereMaze assembled junction " + node.ToString("00"), parts);
             }
-            MeshObject("Subtle plank edge inlays", root.transform,
-                SphereMazeGeometry.PlankEdges("SphereMaze separate plank edge inlays", poses, sizes), edgeInlay, null);
+            AddCorridor(10, 27, 1);
+            maze.Edges = edges.ToArray(); maze.Planks = planks.ToArray();
+            MeshObject("Quiet ribbon edge inlays", root.transform,
+                SphereMazeGeometry.PlankEdges("SphereMaze assembled ribbon edge inlays", edgePoses, edgeSizes), edgeInlay, null);
 
             var spawn = new GameObject("BallSpawn"); spawn.transform.SetParent(root.transform, false);
-            spawn.transform.localPosition = layout[0].Centre + Vector3.up * (layout[0].Size.y * .5f + .015f + .003f);
+            spawn.transform.localPosition = Centre(maze.SpawnNode) + Vector3.up * (-HalfWidth + .015f + .003f);
             level.BallSpawn = spawn.transform;
-            float innerCut = Mathf.Sqrt(InnerRadius * InnerRadius - ExitRadius * ExitRadius);
-            float outerRadius = InnerRadius + Thickness;
-            float outerCut = Mathf.Sqrt(outerRadius * outerRadius - ExitRadius * ExitRadius);
             var exit = new GameObject("Flush round exit", typeof(ExitSocket)); exit.transform.SetParent(root.transform, false);
             exit.transform.localPosition = Vector3.down * ((innerCut + outerCut) * .5f);
             exit.transform.localRotation = Quaternion.LookRotation(Vector3.down, Vector3.forward);
@@ -87,69 +101,107 @@ namespace GravityBox.Editor
             GameObject exitVisual = MeshObject("Faint flush exit rim", exit.transform, ring, exitInlay, null);
             exitVisual.transform.localRotation = Quaternion.Euler(90, 0, 0);
             return level;
-        }
 
-        private static PlankPose[] Layout()
-        {
-            var layout = new PlankPose[PlankCount];
-            layout[0] = Pose(new Vector3(0, .215f, 0), new Vector3(.090f, .004f, .026f), Quaternion.identity);
-            layout[1] = Pose(new Vector3(0, .070f, .045f), new Vector3(.100f, .004f, .040f), Quaternion.identity);
-            Vector3[] radialDirections =
+            MeshCollider Section(string name, List<Bounds> parts)
             {
-                new Vector3(.85f, .18f, .50f), new Vector3(-.62f, .55f, .56f),
-                new Vector3(.15f, -.45f, -.88f), new Vector3(-.72f, -.55f, -.42f)
-            };
-            for (int i = 0; i < radialDirections.Length; i++)
-            {
-                Vector3 direction = radialDirections[i].normalized;
-                layout[26 + i] = Pose(direction * .305f, new Vector3(.085f, .0035f, .022f),
-                    Quaternion.FromToRotation(Vector3.right, direction) * Quaternion.AngleAxis(i * 37, Vector3.right));
-            }
-            layout[30] = Pose(new Vector3(0, -.240f, 0), new Vector3(.110f, .004f, .024f), Quaternion.identity);
-            layout[31] = Pose(new Vector3(.020f, -.294f, 0), new Vector3(.095f, .004f, .022f), Quaternion.Euler(0, 90, 15));
-            var random = new System.Random(Seed);
-            // Preserve an open first drop from the starting plank to the catch.
-            var firstDrop = new Bounds(new Vector3(0, .145f, .045f), new Vector3(.090f, .200f, .170f));
-            for (int index = 2; index < 26; index++)
-            {
-                for (int attempt = 0; attempt < 20000; attempt++)
+                Mesh mesh = SphereMazeGeometry.RibbonSection(name, parts);
+                MeshCollider collider = MeshObject(name, field.transform, mesh, plankGlass, contact).GetComponent<MeshCollider>();
+                foreach (Bounds part in parts)
                 {
-                    Vector3 centre = new Vector3(Range(-.29f, .29f), Range(-.29f, .29f), Range(-.29f, .29f));
-                    if (centre.magnitude > .29f) continue;
-                    Vector3 size = new Vector3(Range(.060f, .100f), Range(.003f, .004f), Range(.018f, .028f));
-                    var candidate = Pose(centre, size, Quaternion.Euler(Range(-80, 80), Range(0, 360), Range(-80, 80)));
-                    if ((firstDrop.ClosestPoint(centre) - centre).sqrMagnitude < candidate.BoundingRadius * candidate.BoundingRadius) continue;
-                    // Keep the last free approach around the one physical exit open.
-                    if (centre.y - candidate.BoundingRadius < -.305f && new Vector2(centre.x, centre.z).magnitude < candidate.BoundingRadius + .035f) continue;
-                    bool separate = true;
-                    foreach (PlankPose other in layout)
-                    {
-                        if (other == null) continue;
-                        float required = candidate.BoundingRadius + other.BoundingRadius + .020f;
-                        if ((candidate.Centre - other.Centre).sqrMagnitude < required * required) { separate = false; break; }
-                    }
-                    if (!separate) continue;
-                    layout[index] = candidate;
-                    break;
+                    planks.Add(new SpatialMazePlank { CentreLocal = part.center, Size = part.size,
+                        RotationLocal = Quaternion.identity, SectionCollider = collider });
+                    edgePoses.Add(Matrix4x4.TRS(part.center, Quaternion.identity, Vector3.one)); edgeSizes.Add(part.size);
                 }
-                if (layout[index] == null) throw new InvalidOperationException("Could not place a separate spherical maze plank for seed " + Seed + ".");
+                return collider;
             }
-            foreach (PlankPose plank in layout)
-                foreach (int x in new[] { -1, 1 })
-                    foreach (int y in new[] { -1, 1 })
-                        foreach (int z in new[] { -1, 1 })
-                        {
-                            Vector3 corner = plank.Centre + plank.Rotation * Vector3.Scale(plank.Size * .5f, new Vector3(x, y, z));
-                            if (corner.magnitude > InnerRadius - .004f)
-                                throw new InvalidOperationException("A free plank must remain clear of the spherical shell.");
-                        }
-            return layout;
 
-            float Range(float minimum, float maximum) => minimum + (float)random.NextDouble() * (maximum - minimum);
+            void AddCorridor(int a, int b, int axis)
+            {
+                Vector3 from = Centre(a), to = maze.NodesLocal[b];
+                Vector3 direction = (to - from).normalized;
+                Vector3 start = from + direction * (HalfWidth - JointOverlap);
+                Vector3 end;
+                if (b == maze.ExitNode)
+                {
+                    // Every slat enters the shell, but its outermost corner stays
+                    // at radius .363m. Nothing protrudes outside the glass skin.
+                    float crossRadiusSquared = Mathf.Pow(HalfWidth + PlankWidth * .5f, 2)
+                        + Mathf.Pow(HalfWidth + PlankThickness, 2);
+                    float depth = Mathf.Sqrt(Mathf.Pow(InnerRadius + Thickness * .5f, 2) - crossRadiusSquared);
+                    end = Vector3.down * depth;
+                }
+                else end = to - direction * (HalfWidth - JointOverlap);
+                var parts = new List<Bounds>(); SideRibbons(parts, start, end, axis);
+                string name = b == maze.ExitNode ? "SphereMaze assembled exit run"
+                    : "SphereMaze assembled run " + a.ToString("00") + "-" + b.ToString("00");
+                edges.Add(new SpatialMazeEdge { A = a, B = b, Axis = axis, Collider = Section(name, parts) });
+            }
         }
 
-        private static PlankPose Pose(Vector3 centre, Vector3 size, Quaternion rotation)
-            => new PlankPose { Centre = centre, Size = size, Rotation = rotation };
+        private static void SideRibbons(List<Bounds> parts, Vector3 from, Vector3 to, int travelAxis)
+        {
+            float length = Mathf.Abs(to[travelAxis] - from[travelAxis]);
+            int pieces = Mathf.CeilToInt(length / MaximumRibbonLength);
+            for (int piece = 0; piece < pieces; piece++)
+            {
+                float low = piece == 0 ? 0 : length * piece / pieces - RibbonOverlap * .5f;
+                float high = piece == pieces - 1 ? length : length * (piece + 1) / pieces + RibbonOverlap * .5f;
+                Vector3 centre = Vector3.Lerp(from, to, (low + high) * .5f / length);
+                for (int normalAxis = 0; normalAxis < 3; normalAxis++)
+                {
+                    if (normalAxis == travelAxis) continue;
+                    int crossAxis = 3 - normalAxis - travelAxis;
+                    foreach (int sign in new[] { -1, 1 })
+                        foreach (int strip in new[] { -1, 0, 1 })
+                        {
+                            Vector3 position = centre, size = Vector3.zero;
+                            position[normalAxis] += sign * (HalfWidth + PlankThickness * .5f);
+                            position[crossAxis] += strip * HalfWidth;
+                            size[normalAxis] = PlankThickness; size[crossAxis] = PlankWidth; size[travelAxis] = high - low;
+                            parts.Add(new Bounds(position, size));
+                        }
+                }
+            }
+        }
+
+        private static void ClosedFace(List<Bounds> parts, Vector3 centre, int normalAxis, int sign)
+        {
+            int widthAxis = (normalAxis + 1) % 3, lengthAxis = (normalAxis + 2) % 3;
+            foreach (int strip in new[] { -1, 0, 1 })
+            {
+                Vector3 position = centre, size = Vector3.zero;
+                position[normalAxis] += sign * (HalfWidth + PlankThickness * .5f);
+                position[widthAxis] += strip * HalfWidth;
+                size[normalAxis] = PlankThickness; size[widthAxis] = PlankWidth;
+                size[lengthAxis] = 2 * HalfWidth + PlankWidth;
+                parts.Add(new Bounds(position, size));
+            }
+        }
+
+        private static HashSet<int> Graph()
+        {
+            var graph = new HashSet<int>();
+            for (int i = 1; i < Route.Length - 1; i++) Add(Route[i - 1], Route[i]);
+            for (int i = 0; i < Branches.GetLength(0); i++) Add(Branches[i, 0], Branches[i, 1]);
+            var visited = new HashSet<int> { 0 }; var queue = new Queue<int>(); queue.Enqueue(0);
+            while (queue.Count > 0)
+            {
+                int a = queue.Dequeue();
+                for (int b = 0; b < 27; b++) if (graph.Contains(Edge(a, b)) && visited.Add(b)) queue.Enqueue(b);
+            }
+            if (graph.Count != 26 || visited.Count != 27)
+                throw new InvalidOperationException("The assembled maze must connect all 27 junctions without a shortcut loop.");
+            return graph;
+
+            void Add(int a, int b)
+            {
+                if (Mathf.Abs((Centre(a) - Centre(b)).magnitude - Spacing) > .00001f || !graph.Add(Edge(a, b)))
+                    throw new InvalidOperationException("An assembled maze connection must join two distinct adjacent junctions.");
+            }
+        }
+
+        private static Vector3 Centre(int node) => new Vector3(node % 3 - 1, node / 3 % 3 - 1, node / 9 - 1) * Spacing;
+        private static int Edge(int a, int b) => Mathf.Min(a, b) * 28 + Mathf.Max(a, b);
 
         private static GameObject MeshObject(string name, Transform parent, Mesh mesh, Material material, PhysicsMaterial contact)
         {

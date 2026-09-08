@@ -133,7 +133,10 @@ namespace GravityBox.Tests
                     Assert.That(sphere, Is.Not.Null);
                     Assert.That(sphere.ShellCollider, Is.Not.Null);
                     Assert.That(level.Prefab.InteriorDepth, Is.EqualTo(2 * (sphere.InnerRadius + sphere.ShellThickness)).Within(0.0001f));
-                    Assert.That(sphere.Planks, Has.Length.EqualTo(32));
+                    Assert.That(sphere.MainPath.Length, Is.GreaterThanOrEqualTo(26));
+                    Assert.That(sphere.Edges.Length, Is.EqualTo(sphere.NodesLocal.Length - 1));
+                    Assert.That(sphere.ClearWidth, Is.GreaterThan(catalog.BallProfile.Radius * 2));
+                    Assert.That(sphere.SightGap, Is.LessThan(catalog.BallProfile.Radius * 2));
                 }
                 else Assert.That(level.Prefab.InteriorDepth, Is.EqualTo(level.Shape == ContainerShape.LayeredMaze ? 0.27f : 0.09f).Within(0.0001f));
                 Assert.That(level.Prefab.Exit.RequiredChannel, Is.Null.Or.Empty);

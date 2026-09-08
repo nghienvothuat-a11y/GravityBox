@@ -262,7 +262,7 @@ namespace GravityBox.Presentation
         {
             if (session == SessionState.Active && spatialMaze)
             {
-                state.text = "ROLL · FALL · REBOUND · FIND THE GREEN EXIT.";
+                state.text = "FOLLOW THE MAZE · TURN TO FIND YOUR WAY.";
                 state.color = Accent;
                 return;
             }

@@ -32,7 +32,7 @@ Các lớp được cô lập bằng asmdef. Foundation không tham chiếu Unit
 | PhysicalProp | LevelRuntime / một lần load | Body thanh trượt độc lập, đăng ký lực, lưu/khôi phục pose/vận tốc, thu hồi khi đổi bàn |
 | GravitySliderGuide | PhysicalProp / một lần load | Đọc độ dịch chuyển/vận tốc theo ray; không điều khiển chuyển động hoặc gửi unlock |
 | LayeredMaze | LevelRuntime / một lần load | Metadata sàn, lỗ chuyển tầng và đường authoring; xác định tầng từ vị trí thật của bi |
-| SpatialMaze | LevelRuntime / một lần load | Metadata vỏ cầu, các thanh rời, thanh xuất phát/thanh đón và seed authoring; không điều khiển bi |
+| SpatialMaze | LevelRuntime / một lần load | Metadata vỏ cầu, nút/đoạn nối, tuyến kiểm chứng và descriptor ván ghép; không điều khiển bi |
 | MazeLayerView | HUD khởi tạo / một lần load | Làm mờ các tầng không hoạt động hoặc hiện tổng thể bằng vật liệu, giữ nguyên physics |
 | EnvironmentForceSystem | Bootstrap / phiên chạy | Áp gia tốc thế giới một lần cho mỗi body đã đăng ký |
 | BoxRotationController | LevelRuntime / một lần load | Đổi input intent thành chuyển động kinematic bị giới hạn |
@@ -77,13 +77,13 @@ LayeredMazeBuilder tạo ba sàn có tâm Y lần lượt +0,045; −0,045; −0
 
 `LayeredMaze.Decks` giữ floor height, collider, renderers và route authoring; `TransferPorts` chỉ đánh dấu vị trí hình học. `GetLayerIndex` đọc chiều cao bi trong hệ tọa độ hộp. MazeLayerView dùng metadata để đổi shared materials giữa bản gốc và bản mờ, phục hồi vật liệu khi thu hồi; không bật/tắt collider hoặc thay trạng thái Rigidbody. HUD cho xem toàn bộ tầng bằng một nút và chặn thao tác này khỏi input xoay hộp.
 
-## Các thanh kính rời trong cầu
+## Mê cung ván ghép trong cầu
 
-SphereMazeBuilder tạo 32 thanh kính nhỏ trong vỏ cầu bán kính trong 0,36 m, dày 0,006 m. Mỗi thanh có BoxCollider riêng, gắn cố định với root kinematic và cách những thanh khác bằng khoảng không. Vỏ dùng MeshCollider cong với một lỗ tròn duy nhất ở cực −Y local. Không có collider nối thành ống, đồ thị phòng kín hoặc lỗ chuyển tiếp trong các thanh.
+SphereMazeBuilder tạo một mạng nối ba chiều bên trong vỏ cầu R=0,36 m, dày 6 mm. Các đoạn có tiết diện trống 50 mm, ghép từ ván mỏng với khe nhìn 15 mm. Ngã rẽ đóng những phía không kết nối; hai nhánh cụt có đầu chặn thật. Khung nối vào lỗ thoát cuối, chặn đường vòng bên ngoài. Mỗi đoạn/ngã rẽ dùng một MeshCollider chứa đúng hình học các ván, gắn với root kinematic; không dùng collider kín phủ khe.
 
-SpatialMaze giữ `Planks`, `SpawnPlankIndex`, `CatchPlankIndex`, `AuthoringSeed` và metadata vỏ. Seed chỉ phục vụ Editor authoring; prefab chơi đã chứa các vị trí cố định. Footprint XZ là dữ liệu tương thích, còn validation vỏ dùng bán kính và collider cong. ExitSocket lấy chiều dày thực tại giao tuyến của hai mặt cầu với tiết diện tròn.
+SpatialMaze giữ `NodesLocal`, `Edges`, `MainPath`, `JunctionColliders`, `Planks` và kích thước. Descriptor ván chỉ phục vụ authoring/validation; tuyến chính chỉ phục vụ kiểm chứng. Runtime không đi theo graph để di chuyển bi. Footprint XZ là dữ liệu tương thích; vỏ cầu dùng bán kính và collider cong làm hợp đồng hình học.
 
-Input vẫn chỉ xoay root. Khi bi rời một thanh, nó chuyển động tự do trong world space tới contact tiếp theo; runtime không căn điểm đáp hoặc chuyển pose. Test chứng minh một cú rơi với gia tốc thế giới và một route từ spawn tới thoát bằng controller, không bắt buộc ghé mọi thanh. Xem [thiết kế bàn 12](LEVEL12_SPATIAL_MAZE.md).
+Input chỉ xoay root. Bi chuyển động trong world space, có thể rơi dọc một đoạn rồi chạm mặt đỡ tại ngã rẽ. Test kiểm tra các passage/cap bằng cả bán kính bi và replay tuyến 25 đoạn chỉ qua rotation intent; các phép đo không thay đổi model vật lý. Xem [thiết kế bàn 12](LEVEL12_SPATIAL_MAZE.md).
 
 ## Mở rộng sau khi cảm giác đạt
 

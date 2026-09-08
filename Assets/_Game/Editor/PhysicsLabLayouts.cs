@@ -60,8 +60,8 @@ namespace GravityBox.Editor
                 new PhysicsLabLayout
                 {
                     Shape = ContainerShape.SphereMaze, Title = "Lost in glass",
-                    Hint = "Roll, fall and rebound between the small glass planks. Find your way to the green exit.",
-                    Solution = "Tilt the ball off its starting plank and explore the open volume between the separate glass boards. A board can catch or redirect the ball, and the ball may freely leave any edge. Change the sphere orientation to approach the offset exit baffles from another direction, then let the complete steel ball escape through the round shell opening. Alternative physical routes are valid; no board sequence, captive corridor or scripted transfer is enforced."
+                    Hint = "Follow the connected glass maze. Turn at the junctions and find the route to the green exit.",
+                    Solution = "Start inside the connected plank framework and follow its physical passages through turns on all three axes. Rotate the sphere to change the supporting face, roll along a run or fall into the next junction. Two blind branches require returning the way the ball entered. Sight gaps between narrow planks are smaller than the ball, so the outer sphere cannot be used as a shortcut. The final passage meets the flush round opening in the shell; the complete steel ball must leave through it. Route metadata is used only for authoring and tests, never to move or steer the ball."
                 }
             };
         }

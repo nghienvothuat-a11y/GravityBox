@@ -156,30 +156,69 @@ namespace GravityBox.Editor
                 definition.Id + ": invalid spherical shell.");
             Require(maze.InnerRadius + maze.ShellThickness + radius < definition.Prefab.BoundsHalfExtent,
                 definition.Id + ": spherical shell exceeds framing/failure bounds.");
-            Require(maze.Planks != null && maze.Planks.Length > 0 && maze.SpawnPlank != null && maze.CatchPlank != null,
-                definition.Id + ": free plank layout requires its supports.");
-            var unique = new HashSet<BoxCollider>();
-            foreach (BoxCollider plank in maze.Planks)
+            Require(maze.ClearWidth > radius * 2 + .006f && maze.SightGap < radius * 2 - .004f,
+                definition.Id + ": the route must fit the ball while sight gaps retain it.");
+            Require(maze.NodesLocal != null && maze.NodesLocal.Length > 2 && maze.Edges != null &&
+                maze.Edges.Length == maze.NodesLocal.Length - 1, definition.Id + ": connected spatial maze must be a tree.");
+            Require(maze.SpawnNode >= 0 && maze.SpawnNode < maze.NodesLocal.Length &&
+                maze.ExitNode >= 0 && maze.ExitNode < maze.NodesLocal.Length && maze.SpawnNode != maze.ExitNode,
+                definition.Id + ": invalid maze endpoints.");
+            Require(maze.MainPath != null && maze.MainPath.Length > 2 && maze.MainPath[0] == maze.SpawnNode &&
+                maze.MainPath[maze.MainPath.Length - 1] == maze.ExitNode, definition.Id + ": invalid authored route endpoints.");
+            var sections = new HashSet<MeshCollider>();
+            var links = new HashSet<int>();
+            var neighbours = new List<int>[maze.NodesLocal.Length];
+            for (int n = 0; n < neighbours.Length; n++) neighbours[n] = new List<int>();
+            foreach (SpatialMazeEdge edge in maze.Edges)
             {
-                Require(plank != null && plank.enabled && !plank.isTrigger && unique.Add(plank),
-                    definition.Id + ": plank colliders must be enabled, solid and unique.");
-                Vector3 half = plank.size * .5f;
+                Require(edge.A >= 0 && edge.A < neighbours.Length && edge.B >= 0 && edge.B < neighbours.Length && edge.A != edge.B,
+                    definition.Id + ": invalid connected section.");
+                int key = Mathf.Min(edge.A, edge.B) * neighbours.Length + Mathf.Max(edge.A, edge.B);
+                Require(links.Add(key), definition.Id + ": duplicate connection.");
+                Vector3 delta = maze.NodesLocal[edge.B] - maze.NodesLocal[edge.A];
+                Require(edge.Axis >= 0 && edge.Axis <= 2 && Mathf.Abs(delta[edge.Axis]) > .01f &&
+                    Mathf.Abs(delta[(edge.Axis + 1) % 3]) < .00001f && Mathf.Abs(delta[(edge.Axis + 2) % 3]) < .00001f,
+                    definition.Id + ": sections must meet along their authored axis.");
+                neighbours[edge.A].Add(edge.B); neighbours[edge.B].Add(edge.A);
+                ValidateSection(edge.Collider);
+            }
+            Require(maze.JunctionColliders != null && maze.JunctionColliders.Length == maze.NodesLocal.Length - 1,
+                definition.Id + ": missing physical junctions.");
+            foreach (MeshCollider junction in maze.JunctionColliders) ValidateSection(junction);
+            var reached = new HashSet<int> { maze.SpawnNode };
+            var pending = new Queue<int>(); pending.Enqueue(maze.SpawnNode);
+            while (pending.Count > 0)
+                foreach (int neighbour in neighbours[pending.Dequeue()])
+                    if (reached.Add(neighbour)) pending.Enqueue(neighbour);
+            Require(reached.Count == neighbours.Length, definition.Id + ": disconnected maze branch.");
+            var pathNodes = new HashSet<int>();
+            for (int i = 0; i < maze.MainPath.Length; i++)
+            {
+                int node = maze.MainPath[i];
+                Require(node >= 0 && node < neighbours.Length && pathNodes.Add(node), definition.Id + ": invalid route node.");
+                if (i > 0) Require(neighbours[maze.MainPath[i - 1]].Contains(node), definition.Id + ": route crosses a closed junction.");
+            }
+            Require(maze.Planks != null && maze.Planks.Length > 0, definition.Id + ": missing physical plank geometry.");
+            foreach (SpatialMazePlank plank in maze.Planks)
+            {
+                Require(plank.SectionCollider != null && sections.Contains(plank.SectionCollider),
+                    definition.Id + ": plank does not belong to a physical section.");
+                Require(plank.Size.x > 0 && plank.Size.y > 0 && plank.Size.z > 0, definition.Id + ": invalid plank dimensions.");
+                // Small overlapping joins are intentional: connected planks form
+                // the maze boundary. The collision mesh uses these same boxes.
                 for (int x = -1; x <= 1; x += 2)
                 for (int y = -1; y <= 1; y += 2)
                 for (int z = -1; z <= 1; z += 2)
                 {
-                    Vector3 point = plank.transform.TransformPoint(plank.center + Vector3.Scale(half, new Vector3(x, y, z)));
-                    Require(definition.Prefab.transform.InverseTransformPoint(point).magnitude < maze.InnerRadius,
-                        definition.Id + ": a plank extends through the glass shell: " + plank.name);
+                    Vector3 point = plank.CentreLocal + plank.RotationLocal * Vector3.Scale(plank.Size * .5f, new Vector3(x, y, z));
+                    Require(point.magnitude <= maze.InnerRadius + maze.ShellThickness + .001f,
+                        definition.Id + ": a connected plank protrudes beyond the spherical shell.");
                 }
             }
-            for (int i = 0; i < maze.Planks.Length; i++)
-            for (int j = i + 1; j < maze.Planks.Length; j++)
+            void ValidateSection(MeshCollider collider)
             {
-                BoxCollider first = maze.Planks[i], second = maze.Planks[j];
-                bool overlap = UnityEngine.Physics.ComputePenetration(first, first.transform.position, first.transform.rotation,
-                    second, second.transform.position, second.transform.rotation, out _, out float depth);
-                Require(!overlap || depth < .00001f, definition.Id + ": independent planks overlap: " + first.name + " / " + second.name);
+                Require(collider != null && collider.enabled && !collider.isTrigger && !collider.convex && collider.sharedMesh != null && sections.Add(collider),
+                    definition.Id + ": missing or duplicate physical maze section.");
             }
             Vector3 spawn = definition.Prefab.transform.InverseTransformPoint(definition.Prefab.BallSpawn.position);
             Require(spawn.magnitude + radius < maze.InnerRadius, definition.Id + ": spawn does not fit inside the sphere.");

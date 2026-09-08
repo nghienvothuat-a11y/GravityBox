@@ -2,12 +2,37 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace GravityBox.Editor
 {
     internal static class SphereMazeGeometry
     {
         private const int LongitudeSegments = 96, LatitudeSegments = 64;
+
+        public static Mesh RibbonSection(string name, IList<Bounds> ribbons)
+        {
+            var vertices = new List<Vector3>(); var triangles = new List<int>();
+            foreach (Bounds ribbon in ribbons)
+                for (int axis = 0; axis < 3; axis++)
+                    foreach (int sign in new[] { -1, 1 })
+                    {
+                        int u = (axis + 1) % 3, v = (axis + 2) % 3;
+                        Vector3 normal = Vector3.zero; normal[axis] = sign;
+                        Vector3 middle = ribbon.center; middle[axis] += sign * ribbon.extents[axis];
+                        int n = vertices.Count;
+                        foreach (Vector2 corner in new[] { new Vector2(-1, -1), new Vector2(1, -1), new Vector2(1, 1), new Vector2(-1, 1) })
+                        {
+                            Vector3 point = middle;
+                            point[u] += corner.x * ribbon.extents[u]; point[v] += corner.y * ribbon.extents[v];
+                            vertices.Add(point);
+                        }
+                        bool forward = Vector3.Dot(Vector3.Cross(vertices[n + 1] - vertices[n], vertices[n + 2] - vertices[n]), normal) > 0;
+                        if (forward) triangles.AddRange(new[] { n, n + 1, n + 2, n, n + 2, n + 3 });
+                        else triangles.AddRange(new[] { n, n + 2, n + 1, n, n + 3, n + 2 });
+                    }
+            return Save(name, vertices, triangles);
+        }
 
         // Thin visual inlays follow the actual plank edges. They have no collider
         // and share one draw mesh, so they cannot fence off the open space.
@@ -16,19 +41,25 @@ namespace GravityBox.Editor
             const float width = .00035f;
             var vertices = new List<Vector3>(); var triangles = new List<int>();
             for (int plank = 0; plank < poses.Count; plank++)
-                for (int lengthAxis = 0; lengthAxis < 3; lengthAxis++)
+            {
+                int lengthAxis = 0, thicknessAxis = 0;
+                for (int axis = 1; axis < 3; axis++)
                 {
-                    int u = (lengthAxis + 1) % 3, v = (lengthAxis + 2) % 3;
-                    foreach (int us in new[] { -1, 1 })
-                        foreach (int vs in new[] { -1, 1 })
-                        {
-                            Vector3 size = Vector3.one * width, centre = Vector3.zero;
-                            size[lengthAxis] = sizes[plank][lengthAxis];
-                            centre[u] = us * (sizes[plank][u] - width) * .5f;
-                            centre[v] = vs * (sizes[plank][v] - width) * .5f;
-                            AddBox(poses[plank], centre, size);
-                        }
+                    if (sizes[plank][axis] > sizes[plank][lengthAxis]) lengthAxis = axis;
+                    if (sizes[plank][axis] < sizes[plank][thicknessAxis]) thicknessAxis = axis;
                 }
+                int crossAxis = 3 - lengthAxis - thicknessAxis;
+                // Two fine long-edge accents make each ribbon readable without
+                // drawing a bright wire cage around every short component.
+                foreach (int sign in new[] { -1, 1 })
+                {
+                    Vector3 size = Vector3.one * width, centre = Vector3.zero;
+                    size[lengthAxis] = sizes[plank][lengthAxis];
+                    centre[crossAxis] = sign * (sizes[plank][crossAxis] - width) * .5f;
+                    centre[thicknessAxis] = (sizes[plank][thicknessAxis] - width) * .5f;
+                    AddBox(poses[plank], centre, size);
+                }
+            }
             return Save(name, vertices, triangles);
 
             void AddBox(Matrix4x4 pose, Vector3 centre, Vector3 size)
@@ -144,7 +175,8 @@ namespace GravityBox.Editor
             string path = PhysicsLabBuilder.Folder + "/Meshes/" + name + ".asset";
             Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
             if (mesh == null) { mesh = new Mesh { name = name }; AssetDatabase.CreateAsset(mesh, path); }
-            mesh.Clear(); mesh.SetVertices(vertices); mesh.SetTriangles(triangles, 0);
+            mesh.Clear(); mesh.indexFormat = vertices.Count > 65535 ? IndexFormat.UInt32 : IndexFormat.UInt16;
+            mesh.SetVertices(vertices); mesh.SetTriangles(triangles, 0);
             if (normals == null) mesh.RecalculateNormals(); else mesh.SetNormals(normals);
             mesh.RecalculateBounds(); EditorUtility.SetDirty(mesh);
             return mesh;

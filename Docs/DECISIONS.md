@@ -1,8 +1,18 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** ADR 018 thêm mê cung cầu 12 vào 11 bàn của ADR 017 và giữ nguyên mô hình bi thép. Các đoạn mô tả 16 màn, zero-G, nắp rơi, slow motion và tự chuyển màn là lịch sử.
+**Phạm vi hiện tại:** ADR 019 thay bố cục bàn 12 của ADR 018 bằng mê cung ván ghép. Catalog vẫn có 12 bàn, cùng mô hình bi thép. Các mô tả 16 màn/zero-G và bố cục 32 ván rời bên dưới là lịch sử.
 
-## ADR 018 Các thanh rời và khoảng rơi tự do trong cầu thủy tinh
+## ADR 019 Ghép các ván thành mê cung nối ba chiều
+
+Phản hồi sau khi chơi yêu cầu các mảnh ván gắn kết thành mê cung thực sự. Bản 32 ván rải rác có đường thoát nhanh, vì vậy tăng số vật cản ngẫu nhiên không giải quyết được vấn đề. Chọn mạng đoạn nối hẹp trong cầu, với 25 đoạn trên tuyến chính, 21 lần đổi hướng và hai nhánh cụt. Những hướng không nối tại mỗi ngã rẽ có ván chặn thật.
+
+Mỗi mặt được ghép từ ván mỏng, để khe nhìn nhỏ hơn viên bi. Lối đi rộng 50 mm; khe nhìn 15 mm giữ bi 30 mm ở trong mạng đường đi. Các ngã rẽ/đoạn nối dùng MeshCollider theo đúng hình học ván, cùng root kinematic. Đoạn cuối nối với lỗ thật trên vỏ nên không thể rơi ra ngoài mạng rồi lăn sát cầu để đi tắt. Không thêm lực, collider vô hình hoặc khóa tiến độ.
+
+SpatialMaze lưu graph và descriptor để kiểm chứng; không có xử lý graph trong vòng mô phỏng. Kiểm tra geometry phải xác nhận không có đường tắt giữa các đoạn không nối và mọi đoạn cần thiết đều cho cả viên bi qua được; kiểm tra PlayMode bắt đầu từ spawn, chỉ gửi ý định xoay. Đánh giá độ khó vẫn cần lượt chơi thật; không dùng số nút hoặc thời gian chạy policy làm kết luận “siêu khó”.
+
+Xem [thiết kế hiện tại](LEVEL12_SPATIAL_MAZE.md) và [bằng chứng bản ván rời đã thay thế](Archive/Verification/SphereFreePlanks/README.md).
+
+## ADR 018 Các thanh rời và khoảng rơi tự do trong cầu thủy tinh — đã thay thế
 
 Bàn 12 dùng 32 thanh kính nhỏ, cố định và tách rời trong một vỏ cầu trong suốt. Người chơi có thể lăn trên thanh, rơi qua khoảng không, chạm thanh khác hoặc thành cầu. Không dùng các tấm vách lớn chia phòng, hành lang kín hoặc lỗ chuyển tiếp. Lỗ tròn duy nhất là cửa thoát trên vỏ. Nhiều đường đi và cách bỏ qua thanh bằng động lượng đều hợp lệ.
 

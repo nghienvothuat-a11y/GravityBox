@@ -1,22 +1,38 @@
-# Bằng chứng kiểm thử
+# Bằng chứng kiểm thử mê cung ván ghép
 
-Kết quả toàn bộ catalog 12 bàn với **bản ván kính rời của màn 12**, ngày 08/09/2026, Unity 6000.3.19f1:
+Bản hiện tại ghép các ván nhỏ thành mê cung liên tục thay cho 32 ván rải rác. Kết quả của bản cũ, gồm lượt native 16,305 giây, ở [Archive](../Archive/Verification/SphereFreePlanks/README.md).
 
-- [EditMode.xml](EditMode.xml): **8/8 passed**, kết thúc 16:38:06 UTC.
-- [PlayMode.xml](PlayMode.xml): **63/63 passed**, từ 16:38:19 tới 16:38:52 UTC.
+## Kiểm tra Unity của bố cục hiện tại
 
-Tổng **71 tests**, không failure hoặc skipped.
+Unity 6000.3.19f1, ngày 08/09/2026 theo UTC:
 
-Bốn test riêng của bàn 12 xác nhận 32 ván nhỏ cố định, khoảng không đủ cho bi, nhiều hướng mặt đỡ, rơi tự do rồi va chạm ván khác, một route từ spawn tới thoát thật và reset/unload. Các phép thử dùng prefab cuối cùng, với một MeshCollider vỏ cầu và 32 BoxCollider của ván; không có collider hành lang, vách khoang hoặc lỗ chuyển tiếp ẩn.
+- [EditMode.xml](EditMode.xml): **8/8 passed**, kết thúc 17:10:40 UTC.
+- [PlayMode.xml](PlayMode.xml): **63/63 passed**, từ 17:10:53 tới 17:11:26 UTC.
 
-Trong phép đo cú rơi đầu, bi có 0,117 giây không tiếp xúc, giảm cao 0,1192 m trước khi chạm ván đón. Gia tốc world giữa các bước bay sai khác dưới 0,05 m/s² so với `(0, −9.81, 0)`. Route hoàn chỉnh chạm hai ván, có khoảng bay dài nhất 0,333 giây rồi toàn bộ bi đi qua lỗ thoát. Fixture tăng ý định nghiêng dần, sau đó điều chỉnh góc cầu qua controller chuẩn; không viết pose/vận tốc bi, thêm lực lái riêng hoặc thay gravity. Các đường khác và việc bỏ qua ván vẫn hợp lệ; bài test không chứng minh mức “siêu khó” hay thứ tự 32 bước.
+Tổng **71/71**, không failure hoặc skipped. Bốn test riêng xác nhận graph 25 đoạn/21 khúc ngoặt và nhánh cụt, collider thật của mọi lối nối/mặt bịt/khe nhìn, một lượt giải từ spawn và reset/unload. Phép thử hình học dùng cả bán kính bi, gồm 648 sphere sweep ngang các khe của đoạn nối, các mặt mở/đóng tại ngã rẽ và 408 hướng radial của vỏ cầu.
 
-Các bài chung kiểm tra vỏ cầu bằng sphere cast ở 408 hướng, silhouette, lỗ thật, spawn, nằm yên với tải đỡ 0,95–1,05 mg, reset, containment, thoát và bộ chọn đủ 12 bàn. Test reset so pose Rigidbody với pose ban đầu đã lưu để tránh nhầm Transform nội suy với trạng thái vật lý; giữ dung sai và kiểm tra cả bước mô phỏng đầu tiên sau reset.
+Lượt giải đi qua đủ 25 đoạn chính, chủ động vào nhánh cụt `21 → 18` rồi quay lại `18 → 21` trước khi tiếp tục tới lỗ thoát. Tổng góc xoay đo được **1.598,7°**, khoảng bay tự do dài nhất **0,142 giây**. Chỉ gửi ý định xoay qua controller; không đặt lại vị trí/vận tốc bi, đổi gravity, sửa collider hoặc thêm lực lái. Bi giữ trạng thái dynamic, đi liên tục trong khung và chỉ phát thắng khi toàn bộ bi thoát qua cửa thật.
 
-Bàn 10 tiếp tục có bằng chứng từ spawn qua cả hai cửa trượt ngược hướng rồi ra lỗ thật. Bàn 11 có bằng chứng đi qua mê cung cả ba tầng, rơi liên tục qua hai lỗ chuyển tầng và thoát qua lỗ cuối. Layer view và thao tác chọn lại màn 11/đổi overview giữ nguyên các collider và Rigidbody.
+Fixture đọc frame Rigidbody thay vì Transform nội suy để đo/điều khiển chính xác, và tính một nút đã được ghé khi bi đi vào ngã rẽ thật; không yêu cầu bi dừng hẳn hoặc nằm trong tiết diện đã thu hẹp của một đoạn thẳng. Nếu quán tính đưa bi vào nhánh bên, policy kiểm thử xoay để quay về ngã rẽ trước khi tiếp tục. Policy này không có trong player. Đây là kiểm chứng khả giải và hồi phục vật lý, không phải số đo độ khó với người chơi.
 
-Phiên chơi native macOS sau khi mở bản mới ghi nhận một lượt hoàn thành màn 12 trong 16,305 giây, 5 lượt kéo, 0 reset: [CSV](Native-Level12.csv). Người dùng điều khiển trong lượt này; đây không phải replay do công cụ desktop thực hiện. Dữ liệu này không chứng minh mức “siêu khó”.
+Các bài chung giữ kiểm tra bi thép, nằm yên, va chạm cube, input, reset, retention/exit của cả 12 bàn; đường giải bàn 09–11 và chế độ xem tầng của 11 tiếp tục pass.
 
-Build và quan sát hình ảnh được ghi riêng trong [nhật ký](../DEVELOPMENT_LOG.md). Các test chứng minh đường đi và hợp đồng vật lý, chưa đo độ khó với người chơi hay xác nhận trải nghiệm đã cân bằng.
+## Hình học tĩnh
 
-Mốc [11 bàn](../Archive/Verification/ElevenLevels/README.md), [chín bàn](../Archive/Verification/NineLevels/README.md), [tám hộp](../Archive/Verification/EightBoxes/README.md), [ba hộp](../Archive/Verification/ThreeBoxes/README.md) và [16 màn/L06](../Archive/Verification/README.md) được giữ riêng trong Archive.
+- [Kiểm tra đường tắt](connected-sphere-topology-over-3mm.json): lưới 3 mm, nới không gian cho tâm bi bằng nửa đường chéo voxel (2,598 mm). Bán kính kiểm tra hiệu dụng 12,402 mm; không tìm được đường từ spawn ra khoảng trống sát vỏ. Khóa lần lượt mỗi đoạn của tuyến chính đều cắt đường tới vùng trước cửa: **25/25 đoạn cần thiết**.
+- [Kiểm tra độ rộng](connected-sphere-topology-under-3mm.json): tăng bán kính kiểm tra lên 17,598 mm và thu hẹp vỏ tương ứng; vẫn liên thông từ spawn tới trước cửa. Đây là kiểm tra có biên dự phòng cho bi thật R=15 mm.
+
+Dữ liệu lấy từ 1.309 hộp mỏng tạo 54 mesh section; mỗi báo cáo lưu SHA-256 của prefab, thời điểm và phạm vi. Công cụ [audit-sphere-topology.py](../../Tools/audit-sphere-topology.py) chỉ đọc prefab, dùng Python 3 và NumPy:
+
+```sh
+python3 Tools/audit-sphere-topology.py --mode over --cuts
+python3 Tools/audit-sphere-topology.py --mode under
+```
+
+Lưới chỉ xét geometry tĩnh từ các descriptor hộp. Mục tiêu là phía trong, trước lỗ cầu; không dùng kết quả này để xác nhận va chạm tốc độ cao, khả giải bằng input hoặc toàn bộ bi xuyên qua lỗ cuối. Những hành vi đó do PlayMode/native kiểm tra riêng. Độ khó đối với người chơi cũng cần lượt thử trực tiếp.
+
+## Build và kiểm tra player
+
+Sau bộ test cuối, macOS development player và Android ARM64/IL2CPP build đều thành công. APK thực tế 59,208,154 bytes (56.47 MiB). Chưa kiểm tra trên thiết bị Android hoặc build lại iOS.
+
+Player macOS mới đã khởi chạy và mở màn 12 lúc 17:14:48 UTC ngày 08/09/2026; quan sát trực tiếp khung mê cung ván ghép cùng HUD mới. Đây là kiểm tra hiển thị/khởi chạy, không chứng minh hoàn thành bằng tay hoặc độ khó khi chơi.

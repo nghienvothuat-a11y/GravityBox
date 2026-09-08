@@ -1,0 +1,264 @@
+{
+  "prefab": "/Users/mrk/GravityBox/Assets/_Game/PhysicsLab/Prefabs/SphereMaze box.prefab",
+  "prefab_sha256": "bacafedc2b564f612b60d793e17fb7e821f10a3bd1977d241bcb9279228cf9c3",
+  "audit_started_utc": "2026-09-08T16:58:04+00:00",
+  "step_m": 0.003,
+  "mode": "over",
+  "half_voxel_diagonal_m": 0.002598076211353316,
+  "effective_ball_radius_m": 0.012401923788646683,
+  "planks": 1309,
+  "sections": 54,
+  "graph_nodes": 28,
+  "edges": 27,
+  "main_nodes": [
+    20,
+    11,
+    2,
+    5,
+    8,
+    17,
+    14,
+    23,
+    26,
+    25,
+    22,
+    21,
+    24,
+    15,
+    16,
+    7,
+    6,
+    3,
+    12,
+    9,
+    0,
+    1,
+    4,
+    13,
+    10,
+    27
+  ],
+  "spawn": [
+    0.174,
+    -0.181,
+    0.174
+  ],
+  "goal": [
+    0.0,
+    -0.33799999999999997,
+    0.0
+  ],
+  "spawn_component_voxels_examined": 126762,
+  "outer_leak": false,
+  "goal_reachable": true,
+  "cuts_requested": true,
+  "expected_main_path_legs": 25,
+  "cuts": [
+    {
+      "edge": [
+        20,
+        11
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 2592
+    },
+    {
+      "edge": [
+        11,
+        2
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 7290
+    },
+    {
+      "edge": [
+        2,
+        5
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 11971
+    },
+    {
+      "edge": [
+        5,
+        8
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 16669
+    },
+    {
+      "edge": [
+        8,
+        17
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 21350
+    },
+    {
+      "edge": [
+        17,
+        14
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 26031
+    },
+    {
+      "edge": [
+        14,
+        23
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 30712
+    },
+    {
+      "edge": [
+        23,
+        26
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 35393
+    },
+    {
+      "edge": [
+        26,
+        25
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 40074
+    },
+    {
+      "edge": [
+        25,
+        22
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 44755
+    },
+    {
+      "edge": [
+        22,
+        21
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 49436
+    },
+    {
+      "edge": [
+        21,
+        24
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 58798
+    },
+    {
+      "edge": [
+        24,
+        15
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 63479
+    },
+    {
+      "edge": [
+        15,
+        16
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 68160
+    },
+    {
+      "edge": [
+        16,
+        7
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 72841
+    },
+    {
+      "edge": [
+        7,
+        6
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 77522
+    },
+    {
+      "edge": [
+        6,
+        3
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 82203
+    },
+    {
+      "edge": [
+        3,
+        12
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 86884
+    },
+    {
+      "edge": [
+        12,
+        9
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 91565
+    },
+    {
+      "edge": [
+        9,
+        0
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 96246
+    },
+    {
+      "edge": [
+        0,
+        1
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 100927
+    },
+    {
+      "edge": [
+        1,
+        4
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 105608
+    },
+    {
+      "edge": [
+        4,
+        13
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 110289
+    },
+    {
+      "edge": [
+        13,
+        10
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 114970
+    },
+    {
+      "edge": [
+        10,
+        27
+      ],
+      "exit_still_reachable": false,
+      "voxels_examined": 125061
+    }
+  ],
+  "component_max_radius_m": 0.3454171391231188,
+  "elapsed_seconds": 8.769294023513794,
+  "audit_finished_utc": "2026-09-08T16:58:13+00:00",
+  "scope": "Topology of the generated prefab's serialized OBB collision geometry to an interior exit-approach point. This does not simulate dynamic motion or final passage through the spherical bore, and does not establish hand-controller solvability or human difficulty.",
+  "checks_failed": [],
+  "passed": true
+}
