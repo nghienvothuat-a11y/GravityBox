@@ -165,15 +165,30 @@ namespace GravityBox.Editor
         [MenuItem("Gravity Box/Campaign/Build macOS")]
         public static void BuildMac()
         {
+            BuildCampaign(BuildTarget.StandaloneOSX, "Builds/macOS/Gravity Box.app");
+        }
+
+        [MenuItem("Gravity Box/Campaign/Build Android Development APK")]
+        public static void BuildAndroid()
+        {
+            PrototypeBuilder.ConfigureProject();
+            EditorUserBuildSettings.buildAppBundle = false;
+            AssetDatabase.SaveAssets();
+            const string path = "Builds/Android/GravityBox.apk";
+            BuildCampaign(BuildTarget.Android, path);
+            File.Copy(path, "Builds/Android/GravityBox-Campaign100.apk", true);
+        }
+
+        private static void BuildCampaign(BuildTarget target, string path)
+        {
             CampaignValidator.Validate();
-            const string path = "Builds/macOS/Gravity Box.app";
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                scenes = new[] { ScenePath }, target = BuildTarget.StandaloneOSX, locationPathName = path, options = BuildOptions.Development
+                scenes = new[] { ScenePath }, target = target, locationPathName = path, options = BuildOptions.Development
             });
             if (report.summary.result != BuildResult.Succeeded) throw new Exception("Campaign build failed: " + report.summary.result);
-            Debug.Log($"GRAVITY BOX CAMPAIGN BUILD SUCCESS: {report.summary.totalSize} bytes");
+            Debug.Log($"GRAVITY BOX CAMPAIGN BUILD SUCCESS: {target} {path} ({report.summary.totalSize} bytes)");
         }
     }
 }

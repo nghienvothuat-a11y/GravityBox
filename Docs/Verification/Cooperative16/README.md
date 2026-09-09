@@ -21,6 +21,6 @@ Fixture lỗ đổi góc trực tiếp đặt toàn bộ body đã tách hierarc
 
 Sáu [ảnh mô phỏng liên tục](../../Images/Level16/README.md) được chụp trong Play Mode lúc 04:19:55 UTC, có callback tiếp xúc thật. Mặt kính của nút giúp nhìn thấy bi đang giữ, cửa giữ collider khi di chuyển. Ảnh không phải lượt chơi tay; thời gian policy không đo độ khó với người chơi.
 
-[Thiết kế, kích thước và giới hạn cơ quan](../../LEVEL16_COOPERATIVE.md). Chỉ xuất macOS; không build APK mới.
+[Thiết kế, kích thước và giới hạn cơ quan](../../LEVEL16_COOPERATIVE.md). Ở mốc kiểm chứng này chỉ xuất macOS; cơ chế hai bi hiện có trong [APK Campaign 100](../Campaign100/Android/README.md).
 
 `bash Tools/build.sh macOS` thành công, player cập nhật **11:27:05 giờ Việt Nam / 04:27:05 UTC** tại `Builds/macOS/Gravity Box.app`. Đã mở bản mới, chọn bàn 16 qua selector, quan sát hai bi cyan/hổ phách, hướng dẫn và `OUT 0/2`, reset rồi lưu [ảnh native](../../Images/Level16/MacOSLevel16.png) qua F12 lúc **04:29:04 UTC**. Player.log của lượt khởi chạy đã đọc không có exception/error. Đây là kiểm tra khởi chạy/hiển thị/reset; chưa xác nhận lượt giải bằng thao tác tay trên player.

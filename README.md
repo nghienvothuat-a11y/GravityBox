@@ -2,6 +2,8 @@
 
 Prototype Unity có **100 màn campaign, 10 chương và 10 boss ở các mốc 10–100**, cùng **23 màn Physics Lab** để so sánh cơ chế. Màn khô giữ chung bi thép 30 mm / 111 g, trọng lực 9,81 m/s² và mô phỏng 120 Hz. Mọi bi phải đi qua lỗ thật mới thắng; assist 40 mm chỉ hỗ trợ đoạn thoát cuối.
 
+Bản test Android hiện tại là `Builds/Android/GravityBox-Campaign100.apk`: Development APK cho thiết bị **ARM64**, Android **8.0/API 26 trở lên**, chứa scene Campaign và đủ C001–C100. Chi tiết hash, manifest và phạm vi kiểm tra nằm tại [Campaign 100 Android](Docs/Verification/Campaign100/Android/README.md).
+
 Campaign dạy từng kỹ năng, xen màn nghỉ ở nhịp x4/x9, rồi kết hợp trong boss. Các chương lần lượt là nghiêng/phanh, cửa/cầu, không gian 3D, hai bi, cam nhớ, con lắc/bay–đón, nước, thủy ngân, hình học lạ và phối hợp tổng hợp. 55 màn do GPT-5.6 Sol triển khai; 35 màn khó và 10 boss do GPT-6 Astra triển khai theo phân công của người dùng.
 
 Có chọn chương/màn, đánh dấu boss và màn đã hoàn thành, lưu tiến độ bằng ID ổn định, chuyển sang Lab, zoom quan sát chủ động và xem lại chuyển động thực 15 giây cuối sau khi hoàn thành boss. Prototype cho phép chọn cả 100 màn để test; không bắt mở khóa tuần tự. Điểm độ khó là ngân sách thiết kế **chưa được hiệu chỉnh bằng playtest người thật**. [Thiết kế campaign](Docs/CHILL_CAMPAIGN_DESIGN.md), [ma trận 100 màn](Docs/CAMPAIGN_LEVEL_MATRIX.md), [kiến trúc triển khai và phạm vi kiểm chứng](Docs/CAMPAIGN_IMPLEMENTATION.md).
@@ -16,9 +18,9 @@ Màn 15 là hộp đầu sư tử bằng đồng và kính: bờm/tai là thành
 
 Cả campaign và 23 màn Lab có **hỗ trợ hút trong bán kính 4 cm quanh lỗ cuối**: căn từng bi rồi đẩy ra qua cửa thật, chỉ thắng khi đủ số bi đã thoát hoàn toàn. Các lỗ chuyển nội bộ không có lực hút. Đây là hỗ trợ gameplay theo yêu cầu, không thay mô hình vật lý ở phần còn lại. [Thiết kế](Docs/EXIT_ASSIST.md).
 
-Bàn 14 giữ luật chất lỏng đầy, không chảy qua cửa; dùng hình ảnh bạc nhìn xuyên có nhãn để thấy bi bên trong thủy ngân đục. Hỗ trợ thoát xử lý cả bi nổi đứng yên ở miệng lỗ. Sàn bàn 13/14 trong hơn khi lật về phía camera. [Thiết kế/giới hạn](Docs/LEVEL14_MERCURY.md). Bản mới xuất macOS; APK cũ chưa có campaign 100 màn.
+Bàn 14 giữ luật chất lỏng đầy, không chảy qua cửa; dùng hình ảnh bạc nhìn xuyên có nhãn để thấy bi bên trong thủy ngân đục. Hỗ trợ thoát xử lý cả bi nổi đứng yên ở miệng lỗ. Sàn bàn 13/14 trong hơn khi lật về phía camera. [Thiết kế/giới hạn](Docs/LEVEL14_MERCURY.md). Bản APK Campaign 100 hiện tại đã chứa chương thủy ngân C071–C080.
 
-Bản nước hiệu chỉnh bổ sung cản khi bi lăn sát thành và added mass; giữ nước 20°C và bi thép 111 g. Có benchmark giảm tốc, hội tụ 60/120/240 Hz và kiểm tra lỗ thật. [Công thức/giới hạn](Docs/LEVEL13_WATER.md), [kiểm chứng](Docs/Verification/Water13/README.md). Bản hiệu chỉnh chỉ xuất macOS; APK hiện có vẫn là bản nước trước đó.
+Bản nước hiệu chỉnh bổ sung cản khi bi lăn sát thành và added mass; giữ nước 20°C và bi thép 111 g. Có benchmark giảm tốc, hội tụ 60/120/240 Hz và kiểm tra lỗ thật. [Công thức/giới hạn](Docs/LEVEL13_WATER.md), [kiểm chứng](Docs/Verification/Water13/README.md). Bản APK Campaign 100 hiện tại đã chứa chương nước C061–C070 với mô hình hiệu chỉnh này.
 
 Ở bàn 09, một thanh chặn có khối lượng trượt trên ray theo trọng lực. Đưa bi vào hốc giữ, nghiêng để thanh chặn rời cửa trong khi thành hốc giữ bi lại, rồi chuyển hướng nghiêng để bi đi qua khoang bên phải và ra lỗ. Thanh chặn luôn là vật thể va chạm; không có công tắc hoặc tín hiệu mở khóa. Xem [thiết kế bàn 09](Docs/LEVEL09_LEAVE_IT_BEHIND.md).
 
@@ -52,6 +54,7 @@ Lỗ thoát vẫn là lỗ tròn xuyên mặt hộp, với viền sáng mảnh k
 - [Phạm vi kiểm chứng](Docs/SOLVABILITY.md)
 - [Quyết định kỹ thuật](Docs/DECISIONS.md)
 - [Nhật ký và kết quả xác minh](Docs/DEVELOPMENT_LOG.md)
+- [APK Android Campaign 100: cấu hình, hash và cách cài](Docs/Verification/Campaign100/Android/README.md)
 - [Ảnh native của năm hình mới](Docs/Images/WeirdBoxes/README.md)
 - [Màn 09: trạng thái cửa đóng/mở](Docs/Images/Level09/README.md)
 - [Bàn 10–11: cửa ngược hướng và mê cung ba tầng](Docs/LEVEL10_11_MAZES.md)
@@ -74,8 +77,9 @@ Prefab và profile đã có sẵn; không cần chạy generator để chơi. Ge
 ```bash
 bash Tools/verify.sh
 bash Tools/build.sh macOS
+bash Tools/build.sh Android
 ```
 
 Có thể đặt `UNITY_EDITOR` tới executable đúng phiên bản. XML/log vào `Artifacts/`, build vào `Builds/`; hai thư mục này không commit. Validator kiểm tra catalog, prefab, scale, spawn và aperture; tests kiểm tra luật chuyển động, contact, đường biên/lõi rỗng, độ rộng lối đi và lifecycle. Đường giải 16 màn cũ không còn là cổng nghiệm thu của physics lab.
 
-Các lệnh Android/iOS cũ vẫn build scene Lab, chưa chuyển sang campaign và không được chạy trong lượt triển khai này. Android cần module và SDK/NDK/JDK tương ứng. iOS export cần module iOS; compile/cài cần Xcode và signing phù hợp. `bash Tools/run-ios-simulator.sh` export, compile và cài lên simulator đang boot trên Apple Silicon; có thể truyền UDID làm tham số đầu. Telemetry chỉ lưu CSV local. Trạng thái build/chạy thực tế được ghi riêng trong nhật ký; tests không tự chứng minh cảm giác chơi đã đạt.
+Lệnh Android dùng `CampaignBuilder`, build `Campaign.unity`, IL2CPP/ARM64 và ghi cùng binary vào `Builds/Android/GravityBox.apk` cùng `Builds/Android/GravityBox-Campaign100.apk`. Cài bản test bằng `adb install -r Builds/Android/GravityBox-Campaign100.apk`; package ID là `com.gravityboxlab.prototype`. APK dùng debug signing và chưa phải gói phát hành store. iOS vẫn dùng pipeline cũ cho tới đợt tích hợp campaign riêng. Trạng thái build/chạy thực tế được ghi trong nhật ký; build thành công chưa thay thế playtest trên thiết bị thật.

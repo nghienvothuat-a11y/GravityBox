@@ -76,7 +76,7 @@ Không để các trục dễ bù trừ một lỗi nặng: màn D thấp nhưng
 
 Boss có ngân sách cao hơn màn thử thách trước đó khoảng 5–8 điểm D. So sánh với đỉnh trước boss, không với màn nghỉ ngay trước nó. Sau boss, giảm tải và dạy ý mới trong không gian an toàn. Tăng dần đỉnh theo chương, không yêu cầu mọi màn sau luôn khó hơn màn trước.
 
-Các target D trong [ma trận 100 màn](CAMPAIGN_LEVEL_MATRIX.md) là ngân sách authoring dự kiến. Chưa có prefab của các biến thể nên không được gọi đây là điểm đã tính từ hình học hoàn chỉnh. Không thêm việc thừa chỉ để đạt target; playtest có quyền hạ cả ngân sách và thứ tự. D của boss dự kiến là 22 → 34 → 43 → 54 → 60 → 65 → 68 → 72 → 75 → 80; đây là chỉ số thiết kế, không phải phần trăm khó hơn hay xác suất thất bại.
+Các target D trong [ma trận 100 màn](CAMPAIGN_LEVEL_MATRIX.md) là ngân sách authoring đã dùng để dựng prefab, không phải điểm khó đo từ người chơi. Hình học hoàn chỉnh cho phép audit clearance/route đại diện nhưng chưa biến D thành dữ liệu thực nghiệm. Không thêm việc thừa chỉ để đạt target; playtest có quyền hạ cả ngân sách và thứ tự. D của boss dự kiến là 22 → 34 → 43 → 54 → 60 → 65 → 68 → 72 → 75 → 80; đây là chỉ số thiết kế, không phải phần trăm khó hơn hay xác suất thất bại.
 
 ## 4. Cấu trúc 100 màn của bản đầu
 

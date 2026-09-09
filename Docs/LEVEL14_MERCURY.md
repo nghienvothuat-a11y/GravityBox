@@ -41,6 +41,6 @@ Hộp kích thước này tương ứng khoảng **113 kg thủy ngân**, trừ 
 
 ## Kiểm chứng
 
-Bản thủy ngân đầu có sáu test riêng: thuộc tính/profile và gia tốc nổi; tải nắp ổn định; giảm tốc so với nghiệm cản; trạng thái nổi một phần không thắng và thoát thật mới thắng; VFX/reset/đổi lại nước; đường giải từ spawn chỉ bằng xoay. [Kết quả](Verification/Mercury14/README.md), [ảnh](Images/Level14/README.md). Chỉ build macOS theo yêu cầu đang có; APK cũ chưa chứa màn 14.
+Bản thủy ngân đầu có sáu test riêng: thuộc tính/profile và gia tốc nổi; tải nắp ổn định; giảm tốc so với nghiệm cản; trạng thái nổi một phần không thắng và thoát thật mới thắng; VFX/reset/đổi lại nước; đường giải từ spawn chỉ bằng xoay. [Kết quả](Verification/Mercury14/README.md), [ảnh](Images/Level14/README.md). Mô hình hiện có trong Campaign Android tại C071–C080; [APK test và hash](Verification/Campaign100/Android/README.md).
 
 Kiểm chứng hiện tại có hút bi ở mọi màn: [ExitAssist](Verification/ExitAssist/README.md). Phép đo cân bằng nổi riêng tắt hỗ trợ để tiếp tục bảo vệ mô hình chất lỏng.

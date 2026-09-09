@@ -11,6 +11,8 @@ case "$PLATFORM" in
   *) printf '%s\n' 'Usage: Tools/build.sh [macOS|Android|iOS|iOS-Simulator]' >&2; exit 2 ;;
 esac
 BUILDER="GravityBox.Editor.PrototypeBuilder"
-if [[ "$PLATFORM" == "macOS" ]]; then BUILDER="GravityBox.Editor.CampaignBuilder"; fi
+if [[ "$PLATFORM" == "macOS" || "$PLATFORM" == "Android" ]]; then
+  BUILDER="GravityBox.Editor.CampaignBuilder"
+fi
 mkdir -p "$PROJECT_ROOT/Artifacts"
 "$UNITY_EDITOR" -batchmode -nographics -projectPath "$PROJECT_ROOT" -executeMethod "$BUILDER.$METHOD" -quit -logFile "$PROJECT_ROOT/Artifacts/build-$PLATFORM.log"

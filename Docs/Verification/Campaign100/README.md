@@ -1,6 +1,6 @@
 # Kiểm chứng campaign 100
 
-Unity 6000.3.19f1, macOS Apple Silicon. Không chạy APK trong đợt này. Tài liệu ghi bằng chứng kỹ thuật; không thay thế playtest độ khó/feeling/readability.
+Unity 6000.3.19f1, macOS Apple Silicon. Campaign đã build cho macOS và Android ARM64; [bằng chứng APK hiện tại](Android/README.md). Tài liệu ghi bằng chứng kỹ thuật; không thay thế playtest độ khó/feeling/readability.
 
 ## Phạm vi
 
@@ -35,4 +35,8 @@ Bản Mac đầu phát hiện lỗi native MaterialPropertyBlock được khởi
 
 ## Bản Mac
 
-Build thành công, 351.508.261 byte: [build-summary.json](build-summary.json). Native smoke test đã kiểm tra chọn chương1/5/10, boss50/100, zoom, xoay/reset, chuyển23mànLab và khôi phục màn100 sau đóng/mở. Player log cuối không có error/exception. [Ảnh và phạm vi UI](Mac/README.md). Đã xử lý thêm vệt mặt sàn do hai mặt transparent chồng nhau, và chữ nền bị xuyên qua modal. Bản chạy cuối đang ở C001. Không build APK mới.
+Build thành công, 351.508.261 byte: [build-summary.json](build-summary.json). Native smoke test đã kiểm tra chọn chương1/5/10, boss50/100, zoom, xoay/reset, chuyển23mànLab và khôi phục màn100 sau đóng/mở. Player log cuối không có error/exception. [Ảnh và phạm vi UI](Mac/README.md). Đã xử lý thêm vệt mặt sàn do hai mặt transparent chồng nhau, và chữ nền bị xuyên qua modal.
+
+## Bản Android
+
+Development APK Campaign 100 được build sau thay đổi tự chuyển màn/âm thanh. File 59.272.201 byte, ARM64, min API 26, target API 36; ZIP và chữ ký v2 hợp lệ. Build log xác nhận scene Campaign và dữ liệu đóng gói chứa catalog/ID C001–C100. Không có thiết bị ADB kết nối nên chưa smoke-test runtime trên Android thật. [Chi tiết và hướng dẫn cài](Android/README.md).

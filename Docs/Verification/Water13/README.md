@@ -35,6 +35,6 @@ Các kết quả xác nhận triển khai mô hình, hội tụ tích phân và 
 
 ## Build
 
-Theo yêu cầu mới, chỉ xuất macOS. APK hiện có vẫn là bản nước đầu (thông tin/hash trong [Baseline](Baseline/README.md)); không có APK hiệu chỉnh.
+Ở mốc kiểm chứng này chỉ xuất macOS; thông tin APK nước đầu được giữ tại [Baseline](Baseline/README.md). Bản phân phối hiện tại đã đưa mô hình hiệu chỉnh vào chương C061–C070 của [APK Campaign 100](../Campaign100/Android/README.md).
 
 `Tools/build.sh macOS` thành công, player cập nhật lúc **10:02:15 giờ Việt Nam** (03:02:15 UTC). Đường dẫn: `Builds/macOS/Gravity Box.app`. Đã khởi chạy native, chọn màn 13, reset và kiểm tra HUD/hiển thị; [ảnh F12](../../Images/Level13/Refined/Water13Native.png) lúc 03:03:12 UTC. Không phát hiện exception trong Player.log ở lượt kiểm tra này. Player được để mở tại màn 13 cho người dùng chơi thử; chưa xác nhận cảm giác bằng một lượt chơi tay.

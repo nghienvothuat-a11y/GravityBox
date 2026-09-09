@@ -1,6 +1,6 @@
-# Ma trận campaign 001–100 — kế hoạch thiết kế
+# Ma trận campaign 001–100 — thiết kế và triển khai
 
-**Trạng thái: đề xuất cho bản phát hành đầu có 100 màn, chưa triển khai vào game và chưa có dữ liệu playtest để chốt độ khó.** Bản prototype hiện có vẫn là Physics Lab với 23 màn. Số campaign không đổi ID, prefab hay thứ tự của Lab. “Nguồn Pxx” chỉ prototype làm nền; mọi biến thể và đường hồi phục trong bảng cần được dựng, kiểm chứng và thử với người chơi.
+**Trạng thái: toàn bộ C001–C100 đã được author vào Campaign riêng; chưa có dữ liệu playtest người thật để chốt độ khó.** Physics Lab với 23 màn vẫn được giữ để đối chứng. Số campaign không đổi ID, prefab hay thứ tự của Lab. “Nguồn Pxx” chỉ prototype làm nền; prefab biến thể và đường hồi phục đã được dựng theo ma trận, nhưng mức dễ/khó, readability và feeling vẫn cần được thử với người chơi.
 
 Campaign hướng tới cảm giác thư thái, tiến bộ đều và một boss mỗi 10 màn, từ **010 đến 100**. Mỗi chương có ít nhất hai màn thở ở vị trí **x4 và x9**, có thể đổi hình dạng hoặc thẩm mỹ nhưng không thêm hành động cần học. Mỗi màn giới thiệu tối đa một mechanic hoặc một hành động mới; boss không có mechanic mới. Không tự sinh 100 màn bằng việc đổi màu, thay hình vỏ hoặc chỉ thêm số lần lặp.
 

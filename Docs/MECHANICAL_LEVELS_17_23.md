@@ -26,4 +26,4 @@ Màn 19 dùng một trục lồng treo. Nhiều lồng/trục khác nhau là bi�
 
 PlayMode kiểm tra riêng cơ cấu và route. Fixture cơ cấu được phép đặt điều kiện ban đầu để đo tải, chặn và clearance; fixture route bắt đầu từ spawn và chỉ gửi rotation intent. Các fixture render chỉ là ảnh hình học ban đầu, không được coi là replay lời giải.
 
-Bản test cho người chơi là `Builds/macOS/Gravity Box.app`. Chọn **SHAPES**, kéo xuống màn 17–23; **R** reset, **P/Esc** pause. Mỗi lần reset trả cả bi, lò xo, cam và chốt về trạng thái gốc. APK không được build lại trong đợt này.
+Bản test desktop là `Builds/macOS/Gravity Box.app`; bản Android Campaign là `Builds/Android/GravityBox-Campaign100.apk`. Chọn **SHAPES**, kéo xuống màn 17–23; **R** reset, **P/Esc** pause trên desktop, dùng HUD trên touch. Mỗi lần reset trả cả bi, lò xo, cam và chốt về trạng thái gốc. [Thông tin APK](Verification/Campaign100/Android/README.md).
