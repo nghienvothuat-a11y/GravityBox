@@ -1,4 +1,6 @@
-# Kế hoạch prototype: tám hộp thử và bốn puzzle vật lý
+# Kế hoạch prototype: tám hộp thử, bốn puzzle và thí nghiệm nước
+
+Bổ sung bàn 13 theo yêu cầu: hộp vuông đầy nước, cùng bi/cube của bàn 02. Cổng nghiệm thu riêng gồm lực nổi, giảm tốc dưới lực cản, nghỉ ổn định, thoát nước qua lỗ, reset/unload, shader/render và APK để thử trên máy thật. [Chi tiết](LEVEL13_WATER.md).
 
 Phạm vi hiện tại có tám hộp thử hình học, bàn 09 **Leave it behind**, bàn 10 với mê cung và hai thanh trượt đối nhau, bàn 11 với mê cung ba tầng và lỗ chuyển tầng vật lý, bàn 12 với mê cung ván ghép ba chiều, nhánh cụt và khoảng rơi trong cầu thủy tinh. Hộp vuông tiếp tục có cube cố định. Mô hình bi thép và trọng lực dùng chung; cơ cấu mới phải mở đường bằng chuyển động thật. Kế hoạch 16 màn và cơ chế nắp rơi ở [tài liệu lịch sử](Archive/README.md).
 
@@ -14,7 +16,7 @@ Chỉ tăng mass không đạt mục tiêu này: trọng lực tạo cùng gia t
 | --- | --- | --- |
 | 1. Mô hình vật lý | Bi thép đường kính 30 mm/111 g, hộp bàn nhỏ, 9,81 m/s², 120 Hz | Freefall, quán tính, dốc lăn, tổn hao năng lượng qua contact |
 | 2. Tám hộp | Ba hình cơ bản và năm hình lõm/lõi rỗng; cube cố định; lỗ thoát phẳng | Spawn không chồng, sàn/nắp đúng contour, vỏ kín, lối đi đủ cả bán kính bi |
-| 3. Đọc chuyển động | Vật liệu bi, camera, âm thanh lăn/va chạm, HUD 12 bàn | Nhìn được quay/tăng tốc; chọn được mọi hình trên màn hình nhỏ |
+| 3. Đọc chuyển động | Vật liệu bi, camera, âm thanh lăn/va chạm, HUD 13 bàn | Nhìn được quay/tăng tốc; chọn được mọi hình trên màn hình nhỏ |
 | 4. Lặp thí nghiệm | Reset, pause, chọn hộp, quan sát sau thoát ở thời gian thực | 100 reset mỗi bàn, không giữ state cũ, không auto advance |
 | 5. Thử cảm giác | Quan sát trực tiếp các tình huống dưới đây | Người dùng xác nhận cảm giác bi có sức nặng và có thể dự đoán |
 | 6. Puzzle 09 | Hốc giữ bi, thanh chặn trên ray không motor, cửa xuyên vách và lỗ thoát | Cửa đóng ngăn cả bi; gravity mở/đóng thật; giải được bằng nghiêng; reset hai body |
@@ -39,6 +41,6 @@ Ghi cảm nhận nhẹ/nặng, trơn/dính, nảy quá mức/thiếu phản hồ
 
 ## Sau prototype
 
-Phạm vi hiện tại dừng ở 12 bàn đã yêu cầu. Các mê cung mới thêm khả năng đổi hướng/đọc không gian, nhưng cần thử trực tiếp để đánh giá độ khó và khả năng nhìn tầng trên màn hình nhỏ. Zero-G, switch, cửa theo tín hiệu, pad, hazard hoặc nắp rơi tiếp tục nằm ngoài catalog. Các mở rộng sau cần dùng cùng mô hình vật lý đã chốt trước khi bổ sung onboarding, tiến trình, save, hiệu năng thiết bị thật và nội dung thương mại.
+Phạm vi hiện tại dừng ở 13 bàn đã yêu cầu, gồm thí nghiệm nước. Các mê cung cần thử trực tiếp để đánh giá độ khó và khả năng nhìn tầng trên màn hình nhỏ; bàn 13 cần so sánh cảm giác nước với bàn 02. Zero-G, switch, cửa theo tín hiệu, pad, hazard hoặc nắp rơi tiếp tục nằm ngoài catalog. Các mở rộng sau cần dùng cùng mô hình vật lý đã chốt trước khi bổ sung onboarding, tiến trình, save, hiệu năng thiết bị thật và nội dung thương mại.
 
 Kết quả từng lượt test/build/chạy được ghi tại [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md); không suy diễn việc chạy trên thiết bị từ một lần build thành công.

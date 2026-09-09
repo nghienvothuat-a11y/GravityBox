@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e965f9168c2046c28c59aa4b83cc1ec, type: 3}
+  m_Name: WaterBox
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDefinition
+  Id: steel-lab-waterbox
+  DisplayIndex: 13
+  DisplayName: Steel under water
+  Shape: 12
+  TeachingHint: Tilt and let the steel ball sink. Watch its wake; compare the same
+    box on level 02.
+  Environment: {fileID: 11400000, guid: 82e0ce24addfe4fc89b8bbd0db998aea, type: 2}
+  Prefab: {fileID: 5834083331975432690, guid: 17de225448d304f9789cb99164ababb4, type: 3}
+  RotationMode: 1
+  InitialLocalVelocity: {x: 0, y: 0, z: 0}
+  ParSeconds: 0
+  Tutorial: 0
+  DesignerSolution: A completely water-filled version of the square experiment, including
+    its fixed cube. Tilt around the obstacle and towards the round exit. Buoyancy
+    and speed-dependent water drag act on the steel ball while submerged. Water is
+    retained by a level rule, while the ball can fully exit; there is no free water
+    surface or draining simulation.

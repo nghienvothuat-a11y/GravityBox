@@ -33,13 +33,15 @@ Các lớp được cô lập bằng asmdef. Foundation không tham chiếu Unit
 | GravitySliderGuide | PhysicalProp / một lần load | Đọc độ dịch chuyển/vận tốc theo ray; không điều khiển chuyển động hoặc gửi unlock |
 | LayeredMaze | LevelRuntime / một lần load | Metadata sàn, lỗ chuyển tầng và đường authoring; xác định tầng từ vị trí thật của bi |
 | SpatialMaze | LevelRuntime / một lần load | Metadata vỏ cầu, nút/đoạn nối, tuyến kiểm chứng và descriptor ván ghép; không điều khiển bi |
+| WaterVolume / WaterProfile | LevelRuntime / một lần load; asset read-only | Lực nổi, lực cản, phần ngập và dòng khối xấp xỉ ở bàn 13 |
+| WaterVisuals | HUD khởi tạo / một lần load | Mesh tracer, wake và shader nước; đọc simulation, không tạo lực |
 | MazeLayerView | HUD khởi tạo / một lần load | Làm mờ các tầng không hoạt động hoặc hiện tổng thể bằng vật liệu, giữ nguyên physics |
 | EnvironmentForceSystem | Bootstrap / phiên chạy | Áp gia tốc thế giới một lần cho mỗi body đã đăng ký |
 | BoxRotationController | LevelRuntime / một lần load | Đổi input intent thành chuyển động kinematic bị giới hạn |
 | Catalog / profile | Asset / read-only runtime | Hình dạng, vật liệu, kích thước và thông số chung |
 | HUD / camera / audio | Bootstrap / phiên chạy | Thể hiện trạng thái vật lý và nhận thao tác |
 
-Ball không nằm dưới transform của hộp. Khi đổi hộp, manager xóa force targets và vô hiệu hóa root/ball/props cũ trước Destroy cuối frame, tránh collider của hai bàn cùng hoạt động. Số force targets là `1 + Props.Length`: hai ở bàn 09, ba ở bàn 10, một ở tám hộp hình học và bàn 11–12. Các cơ cấu tín hiệu cũ vẫn nằm ngoài catalog.
+Ball không nằm dưới transform của hộp. Khi đổi hộp, manager xóa force targets/providers và vô hiệu hóa root/ball/props cũ trước Destroy cuối frame, tránh collider của hai bàn cùng hoạt động. Số force targets là `1 + Props.Length`: hai ở bàn 09, ba ở bàn 10, một ở tám hộp hình học và bàn 11–13. Nước là force provider, không tạo body nước riêng. Các cơ cấu tín hiệu cũ vẫn nằm ngoài catalog.
 
 ## Clock, scale và contact
 
@@ -51,7 +53,7 @@ Mô phỏng dùng 1/120 s. Contact offset, bounce threshold, solver và giới h
 
 ## Hình học và cửa thoát
 
-LevelDefinition khai báo `ContainerShape`: Circle, Square, Triangle, LShape, UShape, Annulus, Dumbbell, Star, GravityLock, MechanicalMaze, LayeredMaze và SphereMaze. `LevelRuntime.Footprint` lưu contour ngoài CCW trên mặt XZ; `FootprintVoids` chứa các contour lõi rỗng, mỗi phần tử có `Points`. Vành khuyên có một contour trong, các hình khác có thể lõm nhưng không có lõi rỗng khép kín.
+LevelDefinition khai báo `ContainerShape`: Circle, Square, Triangle, LShape, UShape, Annulus, Dumbbell, Star, GravityLock, MechanicalMaze, LayeredMaze, SphereMaze và WaterBox. `LevelRuntime.Footprint` lưu contour ngoài CCW trên mặt XZ; `FootprintVoids` chứa các contour lõi rỗng, mỗi phần tử có `Points`. Vành khuyên có một contour trong, các hình khác có thể lõm nhưng không có lõi rỗng khép kín.
 
 Editor triangulate sàn/nắp theo miền polygon thật; không dựng quạt từ origin cho polygon lõm hoặc chứa lỗ. Thành vỏ đi theo cả contour ngoài lẫn contour trong. Cùng mesh được dùng cho hiển thị/collision. Collider **Fixed cube**, cạnh 0,064 m, thuộc compound kinematic của hộp vuông và không di chuyển tương đối với hộp.
 
@@ -61,7 +63,7 @@ Bounds của LevelRuntime là hàng rào kiểm tra lỗi sau vùng vỏ và ng�
 
 ## Session và reset
 
-Active có thể chuyển Paused, Completing khi bi thoát, hoặc Failed nếu phát hiện lọt ra ngoài sai đường. Completing giữ time scale 1; manager không tự chuyển bàn theo timer. Next được người chơi gọi và quay vòng 12 bàn. Reset có thể gọi từ trạng thái đang chơi hoặc đã thoát để lặp cùng điều kiện.
+Active có thể chuyển Paused, Completing khi bi thoát, hoặc Failed nếu phát hiện lọt ra ngoài sai đường. Completing giữ time scale 1; manager không tự chuyển bàn theo timer. Next được người chơi gọi và quay vòng 13 bàn. Reset có thể gọi từ trạng thái đang chơi hoặc đã thoát để lặp cùng điều kiện.
 
 Reset khôi phục root pose trước, xóa input backlog, khôi phục exit/traversal state, rồi world pose/vận tốc của props và contact state của bi. Cuối cùng SyncTransforms và BeginTracking lấy mẫu mới. Registry chỉ capture trạng thái ban đầu một lần; reset không ghi đè trạng thái chuẩn bằng kết quả thử trước đó.
 
@@ -86,5 +88,7 @@ SpatialMaze giữ `NodesLocal`, `Edges`, `MainPath`, `JunctionColliders`, `Plank
 Input chỉ xoay root. Bi chuyển động trong world space, có thể rơi dọc một đoạn rồi chạm mặt đỡ tại ngã rẽ. Test kiểm tra các passage/cap bằng cả bán kính bi và replay tuyến 25 đoạn chỉ qua rotation intent; các phép đo không thay đổi model vật lý. Xem [thiết kế bàn 12](LEVEL12_SPATIAL_MAZE.md).
 
 ## Mở rộng sau khi cảm giác đạt
+
+Bàn 13 mở rộng hệ lực bằng `IForceStepProvider.PrepareStep(dt)` trước lượt cộng gia tốc. `WaterVolume` tính phần ngập, vận tốc nước và lực lên bi, áp mô-men nhớt qua Rigidbody; Earth gravity vẫn do provider chung quản lý. `LevelRuntime` chỉ phụ thuộc Simulation. HUD khởi tạo `WaterVisuals`, giống seam presentation của mê cung tầng; reset registry thu hồi trạng thái, `EnvironmentForceSystem.Clear` bỏ provider cũ khi đổi bàn. [Mô hình và giới hạn nước](LEVEL13_WATER.md).
 
 Giữ seam giữa simulation, level content và presentation để tinh chỉnh từng phần. Chỉ thêm bàn/cơ cấu sau khi cảm giác bi đạt qua thử trực tiếp. Force providers, PhysicalProp, save adapter hoặc loader async có thể được mở rộng khi có yêu cầu cụ thể; số lượng lớp không phải mục tiêu. Các rule tín hiệu/zero-G cũ không được coi là nền tảng cần bật lại.

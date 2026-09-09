@@ -179,6 +179,15 @@ namespace GravityBox.Tests
                 if (definition.Shape == GravityBox.Gameplay.ContainerShape.LayeredMaze) layered = definition;
             Assert.That(layered, Is.Not.Null);
             Button layeredCard = scroll.content.Find("Select " + layered.Id).GetComponent<Button>();
+            // With more rows, the layered card need not be visible at the bottom.
+            // Bring the actual card into the viewport before sending real mouse input.
+            var layeredRect = (RectTransform)layeredCard.transform;
+            float cardY = scroll.viewport.InverseTransformPoint(layeredRect.TransformPoint(layeredRect.rect.center)).y;
+            scroll.content.anchoredPosition += Vector2.up * (scroll.viewport.rect.center.y - cardY);
+            Canvas.ForceUpdateCanvases();
+            yield return null;
+            Vector2 layeredCenter = RectTransformUtility.WorldToScreenPoint(null, layeredRect.TransformPoint(layeredRect.rect.center));
+            Assert.That(RectTransformUtility.RectangleContainsScreenPoint(scroll.viewport, layeredCenter), Is.True);
             yield return Click(layeredCard);
             Assert.That(bootstrap.Levels.Definition.Shape, Is.EqualTo(GravityBox.Gameplay.ContainerShape.LayeredMaze));
             Assert.That(bootstrap.Levels.DragCount, Is.Zero);

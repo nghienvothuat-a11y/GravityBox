@@ -41,6 +41,12 @@ namespace GravityBox.Gameplay
             }
             Rotation.Configure(settings, mode);
             Resets.Register(Rotation);
+            WaterVolume water = GetComponent<WaterVolume>();
+            if (water != null)
+            {
+                water.Bind(ball, forces.Environment);
+                forces.AddProvider(water);
+            }
             Plates = GetComponentsInChildren<PressurePlate>(true);
             Pads = GetComponentsInChildren<ImpulsePad>(true);
             Hazards = GetComponentsInChildren<KillVolume>(true);

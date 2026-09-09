@@ -62,7 +62,10 @@ namespace GravityBox.Editor
                     Shape = ContainerShape.SphereMaze, Title = "Lost in glass",
                     Hint = "Follow the connected glass maze. Turn at the junctions and find the route to the green exit.",
                     Solution = "Start inside the connected plank framework and follow its physical passages through turns on all three axes. Rotate the sphere to change the supporting face, roll along a run or fall into the next junction. Two blind branches require returning the way the ball entered. Sight gaps between narrow planks are smaller than the ball, so the outer sphere cannot be used as a shortcut. The final passage meets the flush round opening in the shell; the complete steel ball must leave through it. Route metadata is used only for authoring and tests, never to move or steer the ball."
-                }
+                },
+                Layout(ContainerShape.WaterBox, "Steel under water", "Tilt and let the steel ball sink. Watch its wake; compare the same box on level 02.",
+                    new[] { V(-.16f,-.16f), V(.16f,-.16f), V(.16f,.16f), V(-.16f,.16f) }, V(-.1f,0), V(.105f,-.105f), .25f,
+                    solution: "A completely water-filled version of the square experiment, including its fixed cube. Tilt around the obstacle and towards the round exit. Buoyancy and speed-dependent water drag act on the steel ball while submerged. Water is retained by a level rule, while the ball can fully exit; there is no free water surface or draining simulation.")
             };
         }
 

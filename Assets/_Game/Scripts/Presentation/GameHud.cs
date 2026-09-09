@@ -222,6 +222,8 @@ namespace GravityBox.Presentation
 
         private void OnLoaded(LevelDefinition definition)
         {
+            var water = levels.Current.GetComponent<WaterVolume>();
+            if (water != null) levels.Current.GetComponent<WaterVisuals>()?.Initialize(water);
             gravitySlider = null;
             var sliders = new System.Collections.Generic.List<GravitySliderGuide>();
             // Props live outside the rotating hierarchy after initialization.
@@ -260,6 +262,12 @@ namespace GravityBox.Presentation
 
         private void RefreshStatusText(SessionState session)
         {
+            if (session == SessionState.Active && levels.Definition.Shape == ContainerShape.WaterBox)
+            {
+                state.text = "FULL OF WATER · STEEL STILL SINKS";
+                state.color = new Color(.48f, .83f, .92f);
+                return;
+            }
             if (session == SessionState.Active && spatialMaze)
             {
                 state.text = "FOLLOW THE MAZE · TURN TO FIND YOUR WAY.";

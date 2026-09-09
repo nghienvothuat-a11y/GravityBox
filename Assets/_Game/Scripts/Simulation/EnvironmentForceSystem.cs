@@ -13,6 +13,11 @@ namespace GravityBox.Simulation
         Vector3 GetAcceleration(IPhysicsAffectable target, EnvironmentProfile environment);
     }
 
+    public interface IForceStepProvider
+    {
+        void PrepareStep(float dt);
+    }
+
     public sealed class GravityForceProvider : IForceProvider
     {
         public Vector3 GetAcceleration(IPhysicsAffectable target, EnvironmentProfile environment)
@@ -74,6 +79,8 @@ namespace GravityBox.Simulation
         public void Step()
         {
             if (Environment == null) return;
+            for (int p = 0; p < providers.Count; p++)
+                if (providers[p] is IForceStepProvider stepped) stepped.PrepareStep(Time.fixedDeltaTime);
             for (int t = 0; t < targets.Count; t++)
             {
                 IPhysicsAffectable target = targets[t];

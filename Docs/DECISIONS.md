@@ -1,6 +1,14 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** ADR 019 thay bố cục bàn 12 của ADR 018 bằng mê cung ván ghép. Catalog vẫn có 12 bàn, cùng mô hình bi thép. Các mô tả 16 màn/zero-G và bố cục 32 ván rời bên dưới là lịch sử.
+**Phạm vi hiện tại:** ADR 020 thêm thí nghiệm nước ở bàn 13. ADR 019 giữ mê cung ván ghép ở bàn 12. Cùng mô hình bi thép; các mô tả 16 màn/zero-G và bố cục 32 ván rời bên dưới là lịch sử.
+
+## ADR 020 Hộp đầy nước để so sánh bi thép
+
+Bàn 13 dùng cùng hình học hộp vuông, cube, spawn và lỗ thoát như bàn 02. Nước có lực nổi theo thể tích bị chiếm và lực cản cầu theo Reynolds/vận tốc tương đối. Mật độ nước và độ nhớt được tách vào WaterProfile; không dùng giảm gravity hay damping toàn cục để giả cảm giác nước.
+
+WaterVolume đăng ký với EnvironmentForceSystem trong một lần load. Provider chuẩn bị dòng khối và lực mỗi fixed step; ball vẫn độc lập với hộp và không bị đặt lại pose/vận tốc. Tại cửa, tỷ lệ ngập giảm liên tục cho tới không còn lực nước. Nước được giữ đầy theo quy tắc thí nghiệm do người dùng yêu cầu; không tạo collider bịt lỗ hoặc mô phỏng tháo nước.
+
+VFX gồm thể tích nhuộm màu, kính nhẹ, caustic thủ tục và mesh tracer/wake có giới hạn. Presentation không tạo lực. Dòng khối, mô-men nhớt và caustic là xấp xỉ; chưa có fluid solver/áp suất/added mass/lubrication hay khúc xạ ray tracing. [Thiết kế và giới hạn](LEVEL13_WATER.md).
 
 ## ADR 019 Ghép các ván thành mê cung nối ba chiều
 

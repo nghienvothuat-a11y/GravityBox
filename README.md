@@ -1,12 +1,14 @@
 # Gravity Box — Steel Ball Lab
 
-Prototype Unity tập trung vào cảm giác một viên bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **12 bàn**: tám hộp thử hình học (tròn, vuông, tam giác, chữ L, chữ U, vành khuyên, quả tạ, ngôi sao), puzzle **09 — Leave it behind**, **10 — Opposite ways** với hai thanh trượt ngược hướng, **11 — Three dimensions** với ba tầng vật lý và **12 — Lost in glass** với mê cung không gian trong khối cầu thủy tinh. Hộp vuông có một khối lập phương cố định để kiểm tra va chạm trực diện và va chạm xiên.
+Prototype Unity tập trung vào cảm giác một viên bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **13 bàn**: tám hộp thử hình học, puzzle 09–12 và thí nghiệm **13 — Steel under water**. Bàn 13 chứa đầy nước trong cùng hộp vuông/cube của bàn 02 để so sánh lực nổi, lực cản và chuyển động của bi.
 
 Ở bàn 09, một thanh chặn có khối lượng trượt trên ray theo trọng lực. Đưa bi vào hốc giữ, nghiêng để thanh chặn rời cửa trong khi thành hốc giữ bi lại, rồi chuyển hướng nghiêng để bi đi qua khoang bên phải và ra lỗ. Thanh chặn luôn là vật thể va chạm; không có công tắc hoặc tín hiệu mở khóa. Xem [thiết kế bàn 09](Docs/LEVEL09_LEAVE_IT_BEHIND.md).
 
 Bàn 10 kết hợp các hành lang đổi hướng với hai cửa trượt được mở bởi hai chiều nghiêng đối nhau. Bàn 11 có mê cung riêng trên từng tầng; bi phải lăn tới các lỗ chuyển tầng lệch nhau rồi rơi xuống theo trọng lực, cuối cùng ra lỗ tròn ở đáy. Xem [thiết kế hai mê cung](Docs/LEVEL10_11_MAZES.md).
 
 Bàn 12 ghép các ván kính nhỏ thành một mê cung liên tục trong khối cầu: 25 đoạn, 21 khúc đổi hướng theo cả ba trục và hai nhánh cụt. Khe nhìn giữa các ván nhỏ hơn bi, chặn đường tắt sát vỏ; các lối đi thật nối tới lỗ tròn duy nhất. Xem [thiết kế mê cung trong khối cầu](Docs/LEVEL12_SPATIAL_MAZE.md).
+
+Bàn 13 giữ đầy nước ngay cả khi bi thoát qua lỗ. Bi thép chịu lực nổi và lực cản theo tốc độ tương đối; VFX thể hiện màu nước, caustic, hạt lơ lửng và wake quanh bi. Đây là mô hình lực và dòng khối xấp xỉ, chưa phải fluid solver đầy đủ. Xem [thiết kế và giới hạn bàn 13](Docs/LEVEL13_WATER.md).
 
 Bi có đường kính 30 mm, khối lượng khoảng 111 g; hộp rộng khoảng 34–72 cm tùy hình, sâu 9 cm ở bàn 01–10 và 27 cm ở bàn 11; cầu ở bàn 12 có đường kính ngoài 73,2 cm. Một đơn vị Unity là một mét. Trọng lực thế giới 9,81 m/s² và mô phỏng 120 Hz được giữ nhất quán; cảm giác nặng đến từ tỷ lệ, quán tính quay, contact, tổn hao năng lượng và âm thanh tương ứng với va chạm.
 
@@ -41,7 +43,7 @@ Ba hộp cơ bản đã được bổ sung năm hình dạng khác thường the
 
 `Scripts/Foundation` giữ session/reset; `Simulation` giữ Rigidbody, lực, rolling contact và rotation; `Gameplay` quản lý catalog, load/reset/exit; `Presentation` nhận input và thể hiện hình/âm thanh; `App` kết nối các lớp. Editor tạo prefab/mesh và kiểm tra nội dung trước build. Scene duy nhất tải một thí nghiệm tại một thời điểm.
 
-Profile đang dùng nằm trong `Assets/_Game/PhysicsLab/Profiles`: `Solid steel.asset`, `Earth.asset` và `Hand rotation.asset`. Prefab/mesh nằm trong `PhysicsLab/Prefabs` và `PhysicsLab/Meshes`; `ScriptableObjects/LevelCatalog.asset` tham chiếu đúng 12 level. Khi đổi kích thước bi phải đổi mass/inertia/contact offset và kiểm tra clearance theo cùng đơn vị. Không tăng riêng mass hoặc giảm gravity để tạo cảm giác nặng.
+Profile đang dùng nằm trong `Assets/_Game/PhysicsLab/Profiles`: `Solid steel.asset`, `Earth.asset`, `Hand rotation.asset` và `Room temperature water.asset`. Prefab/mesh nằm trong `PhysicsLab/Prefabs` và `PhysicsLab/Meshes`; `ScriptableObjects/LevelCatalog.asset` tham chiếu đúng 13 level. Khi đổi kích thước bi phải đổi mass/inertia/contact offset và kiểm tra clearance theo cùng đơn vị. Không tăng riêng mass hoặc giảm gravity để tạo cảm giác nặng.
 
 Prefab và profile đã có sẵn; không cần chạy generator để chơi. Generator tạo lại nội dung đã author, nên lưu thay đổi bằng Git hoặc prefab variant trước khi regenerate.
 

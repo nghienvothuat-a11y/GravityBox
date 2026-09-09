@@ -13,7 +13,7 @@ namespace GravityBox.Tests
     public sealed class SceneIntegrationTests
     {
         [UnityTest]
-        public IEnumerator GameplayScene_BootstrapsTwelveLevelsAndChangesOnlyOnManualNext()
+        public IEnumerator GameplayScene_BootstrapsThirteenLevelsAndChangesOnlyOnManualNext()
         {
             yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/_Game/Scenes/Gameplay.unity", new LoadSceneParameters(LoadSceneMode.Single));
             yield return null;
@@ -21,7 +21,7 @@ namespace GravityBox.Tests
             Assert.That(bootstrap, Is.Not.Null);
             Assert.That(Object.FindFirstObjectByType<Canvas>(), Is.Not.Null);
             var levels = bootstrap.Levels;
-            Assert.That(levels.Catalog.Levels.Length, Is.EqualTo(12));
+            Assert.That(levels.Catalog.Levels.Length, Is.EqualTo(13));
             Assert.That(Time.fixedDeltaTime, Is.EqualTo(1f / 120f).Within(0.000001f));
             for (int index = 0; index < levels.Catalog.Levels.Length; index++)
             {

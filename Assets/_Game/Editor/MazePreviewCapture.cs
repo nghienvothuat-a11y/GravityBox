@@ -198,7 +198,7 @@ namespace GravityBox.Editor
             }
         }
 
-        private static void Reframe(Camera camera, float radius)
+        internal static void Reframe(Camera camera, float radius)
         {
             camera.fieldOfView = 40;
             float vertical = camera.fieldOfView * .5f * Mathf.Deg2Rad;
@@ -211,7 +211,7 @@ namespace GravityBox.Editor
             camera.transform.LookAt(Vector3.zero);
         }
 
-        private static void Render(Camera camera, RenderTexture target, string path)
+        internal static void Render(Camera camera, RenderTexture target, string path)
         {
             var request = new RenderPipeline.StandardRequest { destination = target };
             if (!RenderPipeline.SupportsRenderRequest(camera, request))

@@ -28,6 +28,19 @@ namespace GravityBox.Editor
                 Require(level.Prefab.InteriorDepth > catalog.BallProfile.Radius * 2 + .006f,
                     level.Id + ": shell depth must contain the complete ball.");
                 ValidateSpatialMaze(level, catalog.BallProfile.Radius);
+                WaterVolume water = level.Prefab.GetComponent<WaterVolume>();
+                if (level.Shape == ContainerShape.WaterBox)
+                {
+                    Require(water != null && water.Profile != null, level.Id + ": water experiment needs a fluid profile.");
+                    Require(water.Profile.Density > 990 && water.Profile.Density < 1010 && water.Profile.DynamicViscosity > 0,
+                        level.Id + ": invalid fresh water properties.");
+                    Require(water.HalfSize == new Vector3(.16f, .042f, .16f), level.Id + ": water must fill the square interior.");
+                    var visuals = level.Prefab.GetComponent<GravityBox.Presentation.WaterVisuals>();
+                    Require(visuals != null && visuals.VolumeRenderer != null && visuals.FloorRenderer != null && visuals.TracerMaterial != null,
+                        level.Id + ": missing water presentation.");
+                    Require(visuals.VolumeRenderer.GetComponent<Collider>() == null, level.Id + ": optical volume must not block the ball.");
+                }
+                else Require(water == null, level.Id + ": dry experiment unexpectedly has water forces.");
                 ValidateFootprint(level, catalog.BallProfile.Radius);
                 var channels = new HashSet<string>();
                 foreach (PressurePlate plate in level.Prefab.GetComponentsInChildren<PressurePlate>(true)) channels.Add(plate.Channel);

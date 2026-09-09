@@ -1,5 +1,16 @@
 # Nhật ký phát triển Gravity Box
 
+## Bàn 13 — hộp đầy nước — 09/09/2026
+
+- Thêm **Steel under water**, cùng hộp vuông 320 × 320 mm, cube cạnh 64 mm, bi thép 30 mm/~111 g và lỗ thoát như bàn 02. Nước giữ đầy theo yêu cầu người dùng, không bịt lỗ bằng collider; bi vẫn phải thoát hoàn toàn.
+- WaterProfile/WaterVolume bổ sung lực nổi, lực cản theo Reynolds và phần ngập liên tục tại cửa. Trọng lực thế giới/contact/mass giữ nguyên. Dòng khối và mô-men nhớt quay là xấp xỉ; chưa có CFD/added mass/lubrication. [Thiết kế và giới hạn](LEVEL13_WATER.md).
+- VFX gồm kính trong nhẹ, thể tích nhuộm xanh theo độ dày nhìn xuyên, caustic thủ tục và tối đa 220 quad tracer/wake. Hạt bị clip trong hộp; không có mặt nước hở/bọt lớn hoặc nước văng ra cửa. Hiệu ứng đọc chuyển động, không tạo lực.
+- Generate/ContentValidator đạt 13 bàn. Ba ảnh render sau mô phỏng liên tục từ spawn đã được xem trực tiếp; shader đạt sau khi sửa tên biến HLSL trùng từ khóa. [Ảnh/metadata](Images/Level13/README.md).
+- Bộ kiểm tra cuối đạt **8/8 EditMode + 69/69 PlayMode = 77/77**, kết thúc 02:44:00 UTC. Lực nổi 0,138436 N, tải nghỉ 0,95025 N ổn định, gia tốc chìm ban đầu 8,56257 m/s². Route quanh cube và thoát bằng xoay đạt. Test chọn màn được cập nhật để cuộn thẻ màn 11 vào viewport sau khi catalog thêm hàng mới. [XML/phạm vi kiểm chứng](Verification/Water13/README.md).
+- Build macOS và Android ARM64/IL2CPP thành công. APK **59.217.936 bytes**, build 09:46:20 giờ Việt Nam, có bản đặt tên `Builds/Android/GravityBox-Level13-Water.apk` để phân biệt bản cũ. Kiểm tra ZIP đạt. Chưa chạy APK trên thiết bị Android hoặc build lại iOS.
+- Đã mở player macOS mới, chọn màn 13, reset và lưu [ảnh native](Images/Level13/Water13Native.png) lúc 02:47:03 UTC. Đây là kiểm tra hiển thị, không phải xác nhận cảm giác bằng chơi tay. Player để mở ở bàn 13 cho người dùng thử.
+- Hoàn nguyên thay đổi do generator/importer ở các prefab/scene cũ sau khi xác nhận chỉ khác định danh; các vật liệu kính bàn 11 và Graphics/QualitySettings được trả về source đã commit. Nội dung bàn 01–12 được giữ nguyên.
+
 ## Bàn 12 — mê cung ván ghép — 08–09/09/2026
 
 - Ghép các ván thành mạng lối đi ba chiều, thay bố cục 32 ván rải rác. Tuyến chính có 25 đoạn và 21 lần đổi hướng, thêm hai nhánh cụt; đường cuối nối khung vào lỗ thoát trên vỏ cầu. Khe nhìn 15 mm nhỏ hơn bi 30 mm nên không còn đường rơi ra ngoài khung rồi lăn sát vỏ.

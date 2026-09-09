@@ -1,5 +1,7 @@
 # Bằng chứng kiểm thử mê cung ván ghép
 
+Trang này giữ bằng chứng của phiên bản 12 bàn trước khi thêm nước. Bộ kiểm tra mới của 13 bàn nằm tại [Water13](Water13/README.md).
+
 Bản hiện tại ghép các ván nhỏ thành mê cung liên tục thay cho 32 ván rải rác. Kết quả của bản cũ, gồm lượt native 16,305 giây, ở [Archive](../Archive/Verification/SphereFreePlanks/README.md).
 
 ## Kiểm tra Unity của bố cục hiện tại
