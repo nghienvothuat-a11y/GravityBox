@@ -13,6 +13,46 @@ namespace GravityBox.Tests
     public sealed class SceneIntegrationTests
     {
         [UnityTest]
+        public IEnumerator ExitAssistHudReflectsTheMotorAndResetClearsIt()
+        {
+            yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/_Game/Scenes/Gameplay.unity", new LoadSceneParameters(LoadSceneMode.Single));
+            yield return null;
+            var levels = Object.FindFirstObjectByType<GameBootstrap>().Levels;
+            levels.Load(1);
+            var exit = levels.Current.Exit;
+            levels.Ball.Body.position = exit.transform.TransformPoint(new Vector3(.029f, 0, -.021f));
+            levels.Ball.Body.linearVelocity = Vector3.zero;
+            UnityEngine.Physics.SyncTransforms(); exit.BeginTracking();
+            UnityEngine.UI.Text status = null, hint = null;
+            foreach (var label in Object.FindFirstObjectByType<GravityBox.Presentation.GameHud>().GetComponentsInChildren<UnityEngine.UI.Text>())
+            {
+                if (label.name == "Status") status = label;
+                if (label.name == "Teaching hint") hint = label;
+            }
+            float deadline = Time.unscaledTime + .6f;
+            bool sawAssist = false;
+            while (Time.unscaledTime < deadline && !exit.HasExited)
+            {
+                yield return null;
+                if (status.text.Contains("EXIT ASSIST"))
+                {
+                    sawAssist = true;
+                    Assert.That(hint.preferredHeight, Is.LessThanOrEqualTo(hint.rectTransform.rect.height + 1));
+                }
+            }
+            Assert.That(sawAssist, Is.True);
+            Assert.That(exit.HasExited, Is.True);
+            Assert.That(levels.Session.State, Is.EqualTo(SessionState.Completing));
+            Assert.That(levels.Ball.Body.isKinematic, Is.False);
+            levels.ResetLevel(); yield return null;
+            Assert.That(exit.AssistActive, Is.False);
+            Assert.That(hint.text, Is.EqualTo(levels.Definition.TeachingHint));
+            Scene gameplay = SceneManager.GetActiveScene();
+            SceneManager.SetActiveScene(SceneManager.CreateScene("Empty after exit assist HUD"));
+            yield return SceneManager.UnloadSceneAsync(gameplay);
+        }
+
+        [UnityTest]
         public IEnumerator GameplayScene_BootstrapsFourteenLevelsAndChangesOnlyOnManualNext()
         {
             yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/_Game/Scenes/Gameplay.unity", new LoadSceneParameters(LoadSceneMode.Single));

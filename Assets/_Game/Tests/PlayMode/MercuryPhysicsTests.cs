@@ -8,6 +8,34 @@ namespace GravityBox.Tests
 {
     public sealed partial class PhysicsLifecycleTests
     {
+        [TestCase(12)] [TestCase(13)]
+        public void Liquid_InvertedFloorFadesWithoutChangingCollidersOrSharedMaterial(int index)
+        {
+            Load(index); var liquid = levels.Current.GetComponent<WaterVolume>();
+            var visual = liquid.GetComponent<WaterVisuals>(); visual.Initialize(liquid);
+            var go = new GameObject("Inspection camera", typeof(Camera));
+            try
+            {
+                var camera = go.GetComponent<Camera>(); camera.enabled = false;
+                camera.transform.position = new Vector3(.6f, 1.1f, -1.2f); camera.transform.LookAt(Vector3.zero);
+                Material material = visual.FloorRenderer.sharedMaterial;
+                Collider[] colliders = levels.Current.GetComponentsInChildren<Collider>();
+                visual.Refresh(camera); Assert.That(visual.FloorOpacity, Is.EqualTo(1));
+                levels.Current.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.None;
+                levels.Current.Rotation.SetTargetOrientation(Quaternion.Euler(0, 0, 180));
+                Steps(360); visual.Refresh(camera);
+                Assert.That(visual.FloorOpacity, Is.EqualTo(.12f).Within(.001f));
+                var properties = new MaterialPropertyBlock(); visual.FloorRenderer.GetPropertyBlock(properties);
+                Assert.That(properties.GetFloat("_FloorOpacity"), Is.EqualTo(.12f).Within(.001f));
+                Assert.That(visual.FloorRenderer.sharedMaterial, Is.SameAs(material));
+                Assert.That(material.GetFloat("_FloorOpacity"), Is.EqualTo(1));
+                CollectionAssert.AreEqual(colliders, levels.Current.GetComponentsInChildren<Collider>());
+                foreach (Collider surface in colliders) Assert.That(surface.enabled && !surface.isTrigger, Is.True);
+                levels.ResetLevel(); Steps(1); visual.Refresh(camera); Assert.That(visual.FloorOpacity, Is.EqualTo(1));
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
         [Test]
         public void Mercury_SameSteelAndSquareRisesWithMeasuredMaterialProperties()
         {
@@ -77,6 +105,8 @@ namespace GravityBox.Tests
         public void Mercury_PartlyFloatingInOpeningDoesNotWinButFullPhysicalExitDoes()
         {
             Load(13); WaterVolume liquid = levels.Current.GetComponent<WaterVolume>();
+            // Counterfactual fluid measurement: gameplay assistance is intentionally disabled.
+            levels.Current.Exit.AssistEnabled = false;
             Rigidbody root = levels.Current.GetComponent<Rigidbody>();
             root.rotation = Quaternion.Euler(0, 0, 180);
             liquid.ResetState();

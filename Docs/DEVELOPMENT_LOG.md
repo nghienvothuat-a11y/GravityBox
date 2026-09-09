@@ -1,5 +1,14 @@
 # Nhật ký phát triển Gravity Box
 
+## Hút bi ở mọi cửa thoát, sàn chất lỏng trong hơn — 09/09/2026
+
+- Người dùng bổ sung yêu cầu hỗ trợ hút khi đã gần lỗ, áp dụng mọi màn. Đây là thay đổi có chủ ý so với nguyên tắc tự thoát ở bước cuối trước đó. [ADR 023](DECISIONS.md), [thiết kế](EXIT_ASSIST.md).
+- `ExitSocket` đăng ký force provider chung cho đủ 14 màn: vùng kích hoạt 40 mm, kiểm tra đường thông bằng sphere sweep, căn trục rồi đẩy ra. Giữ gravity/chất lỏng/collider và điều kiện cả bi ra ngoài mới thắng; ngừng lực sau thắng, bi tiếp tục dynamic. Có hướng rời ngang nhỏ để cửa hướng lên không thả bi lại đúng trục lỗ.
+- Sàn bàn 13/14 mờ theo hướng nhìn camera, giữ nguyên collider. HUD hiện trạng thái hỗ trợ và xóa khi reset. Sinh lại cấu hình cửa và ghi chú authoring cho mọi prefab; giữ ID cũ và loại bỏ thay đổi importer không liên quan.
+- **100/100 kiểm tra**, gồm 42 tình huống cửa của 14 màn tại ba góc, căn bi lệch trục, thủy ngân đứng yên tại cửa, khóa/vách chặn/phạm vi/reset, HUD và floor opacity. [XML/phạm vi](Verification/ExitAssist/README.md).
+- Ba ảnh [bật hỗ trợ ở hộp lật ngược](Images/Level14/ExitAssist/README.md) thể hiện bi ra ngoài thật, không cần xoay thêm. Không dùng ảnh cũ làm bằng chứng bản mới.
+- macOS build thành công **10:39:04 giờ Việt Nam**. Mở player mới và chọn màn 14 qua selector để người dùng thử. Không build APK mới.
+
 ## Bàn 14 — thủy ngân — 09/09/2026
 
 - Thêm **Steel in mercury**, cùng hộp vuông/cube/bi/spawn/lỗ của bàn 02 và 13. Profile riêng 13.546 kg/m³ và 0,001567367 Pa·s tại 20°C theo nguồn NIST/Assael; dùng chung lực nổi, cản và added mass của bàn 13. Bi thép nổi lên, không đổi gravity hay thêm lực nâng tùy ý.

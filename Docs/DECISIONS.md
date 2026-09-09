@@ -1,6 +1,12 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** ADR 022 thêm thủy ngân ở bàn 14; ADR 021 hiệu chỉnh nước ở bàn 13. ADR 019 giữ mê cung ván ghép ở bàn 12. Các mô tả 16 màn/zero-G và bố cục 32 ván rời bên dưới là lịch sử.
+**Phạm vi hiện tại:** ADR 023 thêm hỗ trợ thoát ở cả 14 màn theo yêu cầu mới; thay yêu cầu phải hoàn toàn tự thoát bằng trọng lực/quán tính ở bước cuối. ADR 022 thêm thủy ngân; ADR 021 hiệu chỉnh nước. Các quyết định cũ bên dưới giữ lại để theo dõi lịch sử.
+
+## ADR 023 Hút bi gần lỗ và sàn trong theo hướng nhìn
+
+Người dùng yêu cầu giảm độ khó khi đã đến gần lỗ: áp dụng motor lực ở vùng 40 mm cho mọi màn, căn giữa rồi đẩy ra. Đây là ngoại lệ gameplay được yêu cầu rõ ràng đối với nguyên tắc không hút bi trước đó. Không thay profile vật lý; giữ collider, khóa cửa và điều kiện toàn bộ bi phải thật sự ra ngoài. Trạng thái hỗ trợ không đồng nghĩa hoàn thành. Bi còn dynamic sau thắng. [Chi tiết](EXIT_ASSIST.md).
+
+Để xem được bi khi lật hộp chất lỏng, sàn bàn 13/14 đổi opacity bằng property block theo hướng mặt sàn tới camera. Không tắt collider hoặc làm mờ bi/cube. Không sửa shared material trong mỗi frame.
 
 ## ADR 022 Thủy ngân dùng chung mô hình chất lỏng
 

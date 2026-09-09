@@ -1,5 +1,7 @@
 # Triết lý thiết kế: cảm giác của bi thép
 
+**Ngoại lệ mới được người dùng yêu cầu:** trong vùng 40 mm quanh lỗ thoát, game chủ động hút/căn bi rồi đẩy ra để giảm khó ở bước cuối, áp dụng cho mọi màn. Đây là hỗ trợ gameplay, không phải mô phỏng lực tự nhiên. Ngoài vùng này giữ nguyên mô hình. Chỉ thắng khi cả viên bi ra ngoài thật. [Quy tắc và kiến trúc](EXIT_ASSIST.md).
+
 Bàn 13 bổ sung môi trường nước trong hộp vuông để thử lực nổi và lực cản lên cùng bi thép. Gravity thế giới không đổi; nước giữ đầy theo quy tắc do người dùng yêu cầu. Phần dòng chảy/hiển thị là xấp xỉ, cần phân biệt với mô phỏng chất lỏng đầy đủ. [Mô hình nước](LEVEL13_WATER.md).
 
 Bàn 14 thay môi trường bằng thủy ngân: lực nổi lớn hơn trọng lượng thép nên bi đi về mặt cao, không đảo gravity. Nổi một phần ở cửa chưa thắng; phải ra hết thật. View nhìn xuyên chất lỏng bạc được ghi rõ là hỗ trợ quan sát. Root kinematic không mô phỏng quán tính của cả khối chất lỏng trong tay người. [Mô hình thủy ngân](LEVEL14_MERCURY.md).
@@ -11,8 +13,8 @@ Bàn 14 thay môi trường bằng thủy ngân: lực nổi lớn hơn trọng 
 1. **Tỷ lệ vật lý nhất quán.** Một Unity unit là một mét. Bi đường kính 30 mm có mass khoảng 111 g, tương ứng thép đặc. Hộp có kích thước cầm tay/bàn nhỏ. Camera được chỉnh theo vật thể.
 2. **Sức nặng không đến từ tăng mass đơn lẻ.** Trọng lực thế giới vẫn 9,81 m/s². Quán tính cầu đặc, năng lượng, ma sát và restitution quyết định gia tốc lăn và phản ứng va chạm. Không giảm gravity để làm bi chuyển động chậm giả.
 3. **Người chơi tác động lên hộp.** Root kinematic chuyển động trong fixed step có giới hạn tốc độ/gia tốc góc; ball là body tự do trong world space. Xoay hộp không xoay trọng lực hoặc kéo ball bằng hierarchy.
-4. **Contact là nguồn đổi chuyển động.** Mặt cong dẫn đường; mặt phẳng/cạnh đổi hướng; cube cố định nhận xung và làm bi nảy. Không dùng trigger để thêm cú nảy, tween, hút bi hoặc chỉnh vận tốc theo một lời giải.
-5. **Năng lượng có lý do để mất hoặc tăng.** Rolling resistance tác động khi có mặt đỡ; va chạm không đàn hồi hoàn toàn mất năng lượng. Chỉ trọng lực và công từ hộp đang chuyển động có thể cấp năng lượng trong các bàn này. Air damping không được dùng để thay thế contact.
+4. **Contact là nguồn đổi chuyển động trong puzzle.** Mặt cong dẫn đường; mặt phẳng/cạnh đổi hướng; cube cố định nhận xung và làm bi nảy. Không thêm cú nảy, tween hoặc chỉnh vận tốc theo một lời giải. Vùng hút sát cửa là ngoại lệ ở bước hoàn thành, vẫn giải contact thật.
+5. **Năng lượng có lý do để mất hoặc tăng.** Rolling resistance và va chạm tiêu hao năng lượng; gravity, chuyển động hộp và tương tác chất lỏng có thể truyền năng lượng. Motor hỗ trợ thoát bổ sung công có chủ ý trong vùng cuối. Air damping không được dùng để thay thế contact.
 6. **Hình và tiếng diễn tả trạng thái thật.** Spin dễ nhận biết; âm lăn theo contact/tốc độ tiếp tuyến và âm va chạm theo xung thực. Không phát tiếng va chạm khi không có collision hoặc rung camera để che mô phỏng thiếu ổn định.
 7. **Quan sát ở thời gian thực.** Không đổi time scale khi bi thoát. Người chơi tự reset/chọn hộp, đủ thời gian quan sát sự giảm tốc và kết quả va chạm.
 8. **Hình học nhìn thấy khớp collision.** Mỗi silhouette là một vỏ thật. Sàn/nắp không lấp khoảng khuyết hoặc lõi rỗng; đường nối giữa hai vùng phải đủ rộng cho cả bi, không chỉ tâm bi. Lỗ tròn khoét xuyên, viền sáng mảnh không tạo gờ; toàn bộ bi ra ngoài mới ghi nhận thoát.

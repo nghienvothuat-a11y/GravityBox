@@ -35,9 +35,10 @@ namespace GravityBox.Editor
             visuals.FloorRenderer = root.transform.Find("Floor with circular cut").GetComponent<Renderer>();
             if (mercury)
             {
-                Material floor = Material("Mercury cutaway floor", "Universal Render Pipeline/Lit");
+                Material floor = Material("Mercury cutaway floor", "GravityBox/Mercury Cutaway");
                 floor.SetColor("_BaseColor", new Color(.24f, .27f, .3f));
-                floor.SetFloat("_Metallic", .7f); floor.SetFloat("_Smoothness", .7f); EditorUtility.SetDirty(floor);
+                floor.SetFloat("_IsFloor", 1); floor.SetFloat("_FloorOpacity", 1);
+                floor.renderQueue = (int)RenderQueue.Transparent - 30; EditorUtility.SetDirty(floor);
                 visuals.FloorRenderer.sharedMaterial = floor;
             }
             else visuals.FloorRenderer.sharedMaterial = Material("Water illuminated floor", "GravityBox/Underwater Caustics");
@@ -58,6 +59,7 @@ namespace GravityBox.Editor
             string path = PhysicsLabBuilder.Folder + "/Materials/" + name + ".mat";
             Material material = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (material == null) { material = new Material(Shader.Find(shader)); AssetDatabase.CreateAsset(material, path); }
+            else if (material.shader != Shader.Find(shader)) { material.shader = Shader.Find(shader); EditorUtility.SetDirty(material); }
             return material;
         }
     }

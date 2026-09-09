@@ -28,4 +28,6 @@ MonoBehaviour:
     its fixed cube. Tilt around the obstacle and towards the round exit. Buoyancy
     and speed-dependent water drag act on the steel ball while submerged. Water is
     retained by a level rule, while the ball can fully exit; there is no free water
-    surface or draining simulation.
+    surface or draining simulation. Shared exit assist pulls the ball through an
+    unobstructed opening within 40 mm. This is deliberate gameplay assistance; the
+    entire sphere must still physically clear the bore before completion.

@@ -1,6 +1,8 @@
 # Phạm vi kiểm chứng prototype 14 bàn
 
-Bàn 14 dùng thủy ngân: kiểm tra nổi về nắp, cản theo nghiệm tham chiếu, reset/đổi môi trường, nổi một phần không thắng, và đường từ spawn tới thoát hoàn toàn chỉ bằng xoay. Lật hộp cho cửa hướng lên, vòng cube tới cửa rồi nghiêng thêm để rời vành. [Thiết kế](LEVEL14_MERCURY.md), [bộ test hiện tại](Verification/Mercury14/README.md).
+Bản hiện tại có hỗ trợ thoát trong 40 mm quanh cửa cho **cả 14 màn**. Đường puzzle vẫn do người chơi xoay hộp; motor lực xử lý đoạn cuối qua lỗ thật. 100/100 kiểm tra gồm 42 tình huống ở miệng lỗ, ba môi trường, vách/cửa chặn và bi thủy ngân đứng yên tại cửa hướng lên. [Kiểm chứng hiện tại](Verification/ExitAssist/README.md).
+
+Bàn 14 tiếp tục đo nổi về nắp, cản theo nghiệm, reset/đổi môi trường và trạng thái nổi cân bằng khi tắt hỗ trợ. Đường giải phải nghiêng thêm để tự vượt vành là bằng chứng của bản đầu trước khi thêm motor. [Thiết kế](LEVEL14_MERCURY.md), [bằng chứng lịch sử](Verification/Mercury14/README.md).
 
 Bàn 13 thêm phép thử lực nổi, lực cản với nghiệm tham chiếu, nghỉ ổn định dưới nước, chuyển sang không khí ở lỗ thoát, đường giải quanh cube bằng xoay và lifecycle/VFX. Xem [thiết kế nước](LEVEL13_WATER.md) và [kết quả bộ test hiện tại](Verification/Water13/README.md).
 

@@ -16,7 +16,8 @@ MonoBehaviour:
   DisplayIndex: 14
   DisplayName: Steel in mercury
   Shape: 13
-  TeachingHint: Steel rises. Turn the hole upward, then tip again to release the ball.
+  TeachingHint: Steel floats. Bring it close to the green opening; exit assist will
+    draw it out.
   Environment: {fileID: 11400000, guid: 82e0ce24addfe4fc89b8bbd0db998aea, type: 2}
   Prefab: {fileID: 8089209515420681281, guid: 04fdc138e58744ec4aedae480c222615, type: 3}
   RotationMode: 1
@@ -25,7 +26,10 @@ MonoBehaviour:
   Tutorial: 0
   DesignerSolution: The same full square box and fixed cube as levels 02 and 13,
     filled with mercury. The steel ball is less dense than the liquid and rises against
-    the highest inner face. Rotate to move this support towards the exit, and use
-    momentum to leave completely. A ball only floating partly in the opening has
-    not escaped. Mercury is retained by the same level rule. The silver see-through
-    view is a visualization aid for this opaque liquid, not optical transparency.
+    the highest inner face. Rotate to guide it close to the exit; the shared exit
+    assist completes its outward movement, overcoming the partial-floating equilibrium.
+    A ball only partly in the opening has not escaped. Mercury is retained by the
+    same level rule. The silver see-through view is a visualization aid for this
+    opaque liquid, not optical transparency. Shared exit assist pulls the ball through
+    an unobstructed opening within 40 mm. This is deliberate gameplay assistance;
+    the entire sphere must still physically clear the bore before completion.

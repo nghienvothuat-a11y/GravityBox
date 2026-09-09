@@ -66,9 +66,9 @@ namespace GravityBox.Editor
                 Layout(ContainerShape.WaterBox, "Steel under water", "Tilt and let the steel ball sink. Watch its wake; compare the same box on level 02.",
                     new[] { V(-.16f,-.16f), V(.16f,-.16f), V(.16f,.16f), V(-.16f,.16f) }, V(-.1f,0), V(.105f,-.105f), .25f,
                     solution: "A completely water-filled version of the square experiment, including its fixed cube. Tilt around the obstacle and towards the round exit. Buoyancy and speed-dependent water drag act on the steel ball while submerged. Water is retained by a level rule, while the ball can fully exit; there is no free water surface or draining simulation."),
-                Layout(ContainerShape.MercuryBox, "Steel in mercury", "Steel rises. Turn the hole upward, then tip again to release the ball.",
+                Layout(ContainerShape.MercuryBox, "Steel in mercury", "Steel floats. Bring it close to the green opening; exit assist will draw it out.",
                     new[] { V(-.16f,-.16f), V(.16f,-.16f), V(.16f,.16f), V(-.16f,.16f) }, V(-.1f,0), V(.105f,-.105f), .25f,
-                    solution: "The same full square box and fixed cube as levels 02 and 13, filled with mercury. The steel ball is less dense than the liquid and rises against the highest inner face. Rotate to move this support towards the exit, and use momentum to leave completely. A ball only floating partly in the opening has not escaped. Mercury is retained by the same level rule. The silver see-through view is a visualization aid for this opaque liquid, not optical transparency.")
+                    solution: "The same full square box and fixed cube as levels 02 and 13, filled with mercury. The steel ball is less dense than the liquid and rises against the highest inner face. Rotate to guide it close to the exit; the shared exit assist completes its outward movement, overcoming the partial-floating equilibrium. A ball only partly in the opening has not escaped. Mercury is retained by the same level rule. The silver see-through view is a visualization aid for this opaque liquid, not optical transparency.")
             };
         }
 

@@ -56,6 +56,7 @@ namespace GravityBox.Gameplay
             foreach (ImpulsePad pad in Pads) pad.Bind(ball);
             foreach (KillVolume hazard in Hazards) hazard.Bind(ball);
             Exit.Bind(ball, Signals);
+            forces.AddProvider(Exit);
             // Explicit hierarchy order; no global FindObjectsOfType or singleton registry.
             foreach (MonoBehaviour component in GetComponentsInChildren<MonoBehaviour>(true))
                 if (component is IResettable resettable && component != Rotation) Resets.Register(resettable);

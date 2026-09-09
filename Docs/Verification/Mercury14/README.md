@@ -1,5 +1,7 @@
 # Kiểm chứng bàn 14 — thủy ngân
 
+Kiểm chứng bổ sung sau phản hồi bị giữ ở miệng lỗ và sàn che bi: [ExitAssist](../ExitAssist/README.md). Kết quả dưới đây giữ nguyên cho bản thủy ngân đầu tiên.
+
 Unity 6000.3.19f1, ngày 09/09/2026. `bash Tools/verify.sh` đạt **89/89**, không failure/skipped:
 
 - [EditMode.xml](EditMode.xml): 8/8, kết thúc 03:11:53 UTC.

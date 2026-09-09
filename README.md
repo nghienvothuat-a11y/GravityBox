@@ -2,7 +2,9 @@
 
 Prototype Unity tập trung vào cảm giác một viên bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **14 bàn**: tám hộp thử hình học, puzzle 09–12, **13 — Steel under water** và **14 — Steel in mercury**. Hai môi trường chất lỏng dùng cùng hộp vuông/cube của bàn 02: bi chìm trong nước và nổi trong thủy ngân.
 
-Bàn 14 giữ luật chất lỏng đầy, không chảy qua cửa; dùng hình ảnh bạc nhìn xuyên có nhãn để thấy bi bên trong thủy ngân đục. Bi nổi lưng chừng ở lỗ chưa thắng; nghiêng tiếp để thoát toàn bộ. [Thiết kế/giới hạn](Docs/LEVEL14_MERCURY.md), [kiểm chứng hiện tại](Docs/Verification/Mercury14/README.md). Bản mới xuất macOS; APK cũ chưa có màn 14.
+Cả 14 màn có **hỗ trợ hút trong bán kính 4 cm quanh lỗ**: căn bi rồi đẩy ra qua cửa thật, chỉ thắng khi toàn bộ bi đã thoát. Đây là hỗ trợ gameplay theo yêu cầu, không thay mô hình vật lý ở phần còn lại. [Thiết kế](Docs/EXIT_ASSIST.md), [100/100 kiểm tra](Docs/Verification/ExitAssist/README.md).
+
+Bàn 14 giữ luật chất lỏng đầy, không chảy qua cửa; dùng hình ảnh bạc nhìn xuyên có nhãn để thấy bi bên trong thủy ngân đục. Hỗ trợ thoát xử lý cả bi nổi đứng yên ở miệng lỗ. Sàn bàn 13/14 trong hơn khi lật về phía camera. [Thiết kế/giới hạn](Docs/LEVEL14_MERCURY.md). Bản mới xuất macOS; APK cũ chưa có màn 14 và hỗ trợ thoát.
 
 Bản nước hiệu chỉnh bổ sung cản khi bi lăn sát thành và added mass; giữ nước 20°C và bi thép 111 g. Có benchmark giảm tốc, hội tụ 60/120/240 Hz và kiểm tra lỗ thật. [Công thức/giới hạn](Docs/LEVEL13_WATER.md), [kiểm chứng](Docs/Verification/Water13/README.md). Bản hiệu chỉnh chỉ xuất macOS; APK hiện có vẫn là bản nước trước đó.
 

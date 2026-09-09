@@ -22,6 +22,9 @@ namespace GravityBox.Editor
             public string[] Files = { "Water13Still.png", "Water13Moving.png", "Water13Turned.png" };
             public Vector3[] BallWorldPositions = new Vector3[3];
             public int[] LiveWakeParticles = new int[3];
+            public float[] FloorOpacity = new float[3];
+            public bool[] FullBallExited = new bool[3];
+            public float[] SimulatedSeconds = new float[3];
         }
 
         [MenuItem("Gravity Box/Capture Water Experiment")]
@@ -30,14 +33,17 @@ namespace GravityBox.Editor
         [MenuItem("Gravity Box/Capture Mercury Experiment")]
         public static void CaptureMercury() => CaptureLevel(13);
 
-        private static void CaptureLevel(int index)
+        [MenuItem("Gravity Box/Capture Mercury Mouth Release")]
+        public static void CaptureMercuryRelease() => CaptureLevel(13, true);
+
+        private static void CaptureLevel(int index, bool release = false)
         {
             int result = 0;
-            try { Run(index); } catch (Exception e) { Debug.LogException(e); result = 1; }
+            try { Run(index, release); } catch (Exception e) { Debug.LogException(e); result = 1; }
             if (Application.isBatchMode) EditorApplication.Exit(result);
         }
 
-        private static void Run(int index)
+        private static void Run(int index, bool release)
         {
             if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null) throw new InvalidOperationException("Water capture needs graphics; omit -nographics.");
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Capture in Edit Mode.");
@@ -85,7 +91,27 @@ namespace GravityBox.Editor
                 string directory = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Artifacts");
                 Directory.CreateDirectory(directory);
                 var evidence = new Evidence { CapturedUtc = DateTime.UtcNow.ToString("O") };
-                if (mercury)
+                float simulatedSeconds = 0;
+                if (release)
+                {
+                    evidence.Purpose = "Isolated regression rendering at the upward mercury mouth, not a human playthrough. Fixture settles for 3 s with exit assist disabled, then enables the shipped exit force. No further box rotation or ball pose/velocity assignment. Full sphere clearance still controls the win.";
+                    evidence.Files = new[] { "Mercury14Mouth.png", "Mercury14Assisting.png", "Mercury14Released.png" };
+                    level.Exit.AssistEnabled = false;
+                    Quaternion start = Quaternion.Euler(0, 0, 180);
+                    level.GetComponent<Rigidbody>().rotation = start;
+                    level.Rotation.SetTargetOrientation(start);
+                    ball.Body.position = start * new Vector3(.105f, -.0404f, -.105f);
+                    ball.Body.linearVelocity = Vector3.zero;
+                    UnityEngine.Physics.SyncTransforms(); water.ResetState(); level.Exit.BeginTracking();
+                    Tick(360); Save(0);
+                    if (level.Exit.HasExited) throw new InvalidOperationException("Partial float must not win.");
+                    level.Exit.AssistEnabled = true;
+                    Tick(5); Save(1);
+                    for (int tick = 0; tick < 420 && !level.Exit.HasExited; tick++) Tick(1);
+                    if (!level.Exit.HasExited) throw new InvalidOperationException("Exit assistance did not release the mercury ball.");
+                    Tick(10); Save(2);
+                }
+                else if (mercury)
                 {
                     evidence.Files = new[] { "Mercury14Rising.png", "Mercury14Ceiling.png", "Mercury14Turned.png" };
                     Tick(12); Save(0); Tick(108); Save(1);
@@ -95,15 +121,16 @@ namespace GravityBox.Editor
                     Tick(120); Save(0);
                     level.Rotation.SetTargetOrientation(Quaternion.Euler(0, 0, -25)); Tick(50); Save(1);
                 }
-                level.Rotation.SetTargetOrientation(Quaternion.Euler(48, 28, 14)); Tick(80); Save(2);
-                File.WriteAllText(Path.Combine(directory, mercury ? "Mercury14RenderFixtures.json" : "Water13RenderFixtures.json"), JsonUtility.ToJson(evidence, true));
-                Debug.Log($"LIQUID {index + 1}: three rendered views after continuous physics; no ball pose/velocity edits after spawn.");
+                if (!release) { level.Rotation.SetTargetOrientation(Quaternion.Euler(48, 28, 14)); Tick(80); Save(2); }
+                File.WriteAllText(Path.Combine(directory, release ? "Mercury14ReleaseFixtures.json" : mercury ? "Mercury14RenderFixtures.json" : "Water13RenderFixtures.json"), JsonUtility.ToJson(evidence, true));
+                Debug.Log($"LIQUID {index + 1}: three rendered views. " + evidence.Purpose);
 
                 void Tick(int count)
                 {
                     for (int i = 0; i < count; i++)
                     {
                         level.Rotation.Step(Time.fixedDeltaTime); forces.Step(); UnityEngine.Physics.Simulate(Time.fixedDeltaTime);
+                        level.Exit.EvaluateTraversal(); simulatedSeconds += Time.fixedDeltaTime;
                         visuals.Advance(Time.fixedDeltaTime);
                     }
                 }
@@ -111,6 +138,9 @@ namespace GravityBox.Editor
                 {
                     visuals.Refresh(camera); evidence.BallWorldPositions[i] = ball.Body.position;
                     evidence.LiveWakeParticles[i] = visuals.LiveWakeCount;
+                    evidence.FloorOpacity[i] = visuals.FloorOpacity;
+                    evidence.FullBallExited[i] = level.Exit.HasExited;
+                    evidence.SimulatedSeconds[i] = simulatedSeconds;
                     MazePreviewCapture.Render(camera, target, Path.Combine(directory, evidence.Files[i]));
                     foreach (string shaderName in new[] { mercury ? "GravityBox/Mercury Cutaway" : "GravityBox/Underwater Caustics", "GravityBox/Retained Water", "GravityBox/Water Tracers" })
                         if (ShaderUtil.ShaderHasError(Shader.Find(shaderName))) throw new InvalidOperationException("Water shader failed: " + shaderName);

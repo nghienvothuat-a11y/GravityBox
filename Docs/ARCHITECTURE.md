@@ -28,6 +28,7 @@ Các lớp được cô lập bằng asmdef. Foundation không tham chiếu Unit
 | GameBootstrap | Gameplay scene / phiên chạy | Khởi tạo clock 120 Hz và kết nối hệ thống |
 | LevelManager | Bootstrap / phiên chạy | Load một hộp, reset, chuyển hộp thủ công, session |
 | LevelRuntime | LevelManager / một lần load | Root, spawn, exit, registry theo hộp |
+| ExitSocket / ExitSocket.Assist | LevelRuntime / một lần load | Kiểm tra bi ra hoàn toàn; force provider hỗ trợ trong 40 mm, có kiểm tra lối đi và reset theo session |
 | BallController | LevelManager / một lần load | Rigidbody độc lập, contact/rolling state, reset, dữ liệu feedback |
 | PhysicalProp | LevelRuntime / một lần load | Body thanh trượt độc lập, đăng ký lực, lưu/khôi phục pose/vận tốc, thu hồi khi đổi bàn |
 | GravitySliderGuide | PhysicalProp / một lần load | Đọc độ dịch chuyển/vận tốc theo ray; không điều khiển chuyển động hoặc gửi unlock |

@@ -28,6 +28,7 @@ namespace GravityBox.Presentation
         public int LiveWakeCount { get; private set; }
         public int TracerCount => Count;
         public float VisualClock => clock;
+        public float FloorOpacity { get; private set; } = 1;
 
         public void Initialize(WaterVolume volume)
         {
@@ -135,6 +136,13 @@ namespace GravityBox.Presentation
             block.SetVector("_HalfSize", water.HalfSize);
             block.SetFloat("_FluidClock", clock);
             block.SetFloat("_Motion", water.RelativeVelocity.magnitude * water.SubmergedFraction);
+            // Fade the panel only when its outside face turns towards the viewer.
+            // Keep the real floor/circular bore collider and the exit inlay untouched.
+            Vector3 toCamera = camera != null && FloorRenderer != null
+                ? camera.transform.position - FloorRenderer.bounds.center : transform.up;
+            float facing = Vector3.Dot(-transform.up, toCamera.normalized);
+            FloorOpacity = Mathf.Lerp(1, .12f, Mathf.SmoothStep(0, 1, Mathf.InverseLerp(-.2f, .45f, facing)));
+            block.SetFloat("_FloorOpacity", FloorOpacity);
             block.SetMatrix("_WaterWorldToLocal", transform.worldToLocalMatrix);
             VolumeRenderer?.SetPropertyBlock(block); FloorRenderer?.SetPropertyBlock(block);
             tracerRenderer?.SetPropertyBlock(block);

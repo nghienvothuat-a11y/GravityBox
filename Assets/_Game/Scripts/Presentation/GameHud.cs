@@ -31,6 +31,7 @@ namespace GravityBox.Presentation
         private Button layerViewButton;
         private GameObject levelModal, pauseOverlay, debugPanel;
         private float nextRefresh;
+        private bool wasAssisting;
         public bool ModalOpen => levelModal != null && levelModal.activeSelf;
 
         public void Initialize(LevelManager manager)
@@ -262,6 +263,14 @@ namespace GravityBox.Presentation
 
         private void RefreshStatusText(SessionState session)
         {
+            hint.text = levels.Definition.TeachingHint;
+            if (session == SessionState.Active && levels.Current.Exit.AssistActive)
+            {
+                state.text = "EXIT ASSIST · DRAWING THE BALL OUT";
+                hint.text = "Close enough. Let the opening guide the ball out.";
+                state.color = Accent;
+                return;
+            }
             if (session == SessionState.Active && levels.Definition.Shape == ContainerShape.MercuryBox)
             {
                 state.text = "MERCURY · SEE-THROUGH VIEW · STEEL RISES";
@@ -309,7 +318,7 @@ namespace GravityBox.Presentation
                 : session == SessionState.Failed ? "TRY A DIFFERENT ANGLE. RESETTING…"
                 : session == SessionState.Paused ? "SIMULATION PAUSED"
                 : session == SessionState.Finished ? "CHOOSE A BOX TO CONTINUE."
-                : "ROLL THROUGH THE GREEN OPENING.";
+                : "GET CLOSE TO THE GREEN OPENING.";
             state.color = session == SessionState.Completing ? Accent : Muted;
         }
 
@@ -330,10 +339,15 @@ namespace GravityBox.Presentation
         private void Update()
         {
             if (levels == null) return;
+            if (wasAssisting != levels.Current.Exit.AssistActive)
+            {
+                wasAssisting = levels.Current.Exit.AssistActive;
+                RefreshStatusText(levels.Session.State);
+            }
             if (Screen.safeArea != lastSafe) ApplySafeArea();
             if (Time.unscaledTime < nextRefresh) return;
             nextRefresh = Time.unscaledTime + 0.25f;
-            if ((gravitySlider != null || layerView != null) && levels.Session.State == SessionState.Active) RefreshStatusText(SessionState.Active);
+            if (levels.Session.State == SessionState.Active) RefreshStatusText(SessionState.Active);
             if (ModalOpen) RefreshSelectorCaption();
             if (levels.Ball != null) stats.text = $"{levels.Ball.Body.linearVelocity.magnitude:0.00} m/s";
             if (debugPanel.activeSelf && levels.Ball != null)

@@ -1,5 +1,7 @@
 # Bàn 14 — hình ảnh thủy ngân
 
+Bổ sung góc lật hộp và thao tác thoát ở [ExitAssist](ExitAssist/README.md); ba ảnh dưới là bản đầu tiên trước khi sàn có hiệu ứng mờ theo góc nhìn.
+
 Ba ảnh từ prefab thật, render lúc **03:10:54 UTC ngày 09/09/2026**. Bắt đầu ở spawn và mô phỏng liên tục; chỉ xoay hộp, không ghi lại pose/vận tốc bi sau spawn. Đã xem cả ba ảnh và kiểm tra shader.
 
 - [Đang nổi lên](Mercury14Rising.png): sau 0,1 s, tâm bi y=−0,004419 m, từ spawn y=−0,024 m.

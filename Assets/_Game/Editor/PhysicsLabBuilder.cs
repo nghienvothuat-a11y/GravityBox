@@ -67,6 +67,7 @@ namespace GravityBox.Editor
                 if (layout.Shape == ContainerShape.GravityLock)
                     level.DesignerSolution = "From spawn, roll down the left chamber and around the south end of the holding recess. Roll right, then north beneath its back wall. Keep the ball against this wall while northward gravity slides the amber block into its rail housing. Tilt mainly right, retaining a little northward slope, to cross the open passage. Guide the ball to the circular exit in the right chamber. All motion comes from gravity, contacts and a passive slider joint; the recess sends no signal.";
                 if (!string.IsNullOrEmpty(layout.Solution)) level.DesignerSolution = layout.Solution;
+                level.DesignerSolution += " Shared exit assist pulls the ball through an unobstructed opening within 40 mm. This is deliberate gameplay assistance; the entire sphere must still physically clear the bore before completion.";
                 level.Prefab = BuildContainer(layout);
                 catalog.Levels[i] = level;
                 EditorUtility.SetDirty(level);

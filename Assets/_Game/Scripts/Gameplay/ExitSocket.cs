@@ -6,7 +6,7 @@ using UnityEngine;
 namespace GravityBox.Gameplay
 {
     // Local +Z points out of the box. Geometry and this contract share the same aperture.
-    public sealed class ExitSocket : MonoBehaviour, IResettable
+    public sealed partial class ExitSocket : MonoBehaviour, IResettable
     {
         [Min(0.001f)] public float ApertureRadius = 0.023f;
         [Min(0.0001f)] public float WallHalfDepth = 0.003f;
@@ -26,10 +26,12 @@ namespace GravityBox.Gameplay
         {
             ball = target;
             signals = bus;
+            assistRoot = GetComponentInParent<Rigidbody>();
+            ResetAssist();
             BeginTracking();
         }
         public void CaptureInitialState() { }
-        public void ResetState() { HasExited = false; Accepting = true; traversing = clearing = false; }
+        public void ResetState() { HasExited = false; Accepting = true; traversing = clearing = false; ResetAssist(); }
         public void BeginTracking() { if (ball != null) previous = transform.InverseTransformPoint(ball.Body.position); }
 
         // Also called after manual Physics.Simulate in tests and before out-of-bounds checks.

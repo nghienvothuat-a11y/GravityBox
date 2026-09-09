@@ -1,12 +1,18 @@
 Shader "GravityBox/Underwater Caustics"
 {
-    Properties { _BaseColor("Underwater plate", Color) = (.12,.27,.31,1) }
+    Properties
+    {
+        _BaseColor("Underwater plate", Color) = (.12,.27,.31,1)
+        _FloorOpacity("Inspection opacity", Range(0,1)) = 1
+    }
     SubShader
     {
-        Tags { "RenderPipeline"="UniversalPipeline" "RenderType"="Opaque" "Queue"="Geometry" }
+        Tags { "RenderPipeline"="UniversalPipeline" "RenderType"="Transparent" "Queue"="Transparent-30" }
         Pass
         {
             Tags { "LightMode"="UniversalForward" }
+            Blend SrcAlpha OneMinusSrcAlpha
+            ZWrite Off
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
@@ -14,7 +20,7 @@ Shader "GravityBox/Underwater Caustics"
             CBUFFER_START(UnityPerMaterial)
                 half4 _BaseColor;
                 float4 _BallLocal;
-                float _FluidClock, _Motion;
+                float _FluidClock, _Motion, _FloorOpacity;
             CBUFFER_END
             struct Attributes { float4 positionOS:POSITION; float3 normalOS:NORMAL; };
             struct Varyings { float4 positionCS:SV_POSITION; float3 p:TEXCOORD0; float3 normalWS:TEXCOORD1; };
@@ -48,7 +54,7 @@ Shader "GravityBox/Underwater Caustics"
                 float diffuse=.5+.5*saturate(dot(normalize(i.normalWS),light.direction));
                 float grid=1-smoothstep(.012,.035,min(abs(frac(i.p.x*20+.5)-.5),abs(frac(i.p.z*20+.5)-.5)));
                 half3 color=_BaseColor.rgb*diffuse + half3(.21,.43,.42)*(cells*.46+wake*.20)+grid*.018;
-                return half4(color,1);
+                return half4(color,_FloorOpacity);
             }
             ENDHLSL
         }

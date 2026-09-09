@@ -2,6 +2,8 @@
 
 Bổ sung bàn 13/14: cùng hộp vuông và bi/cube của bàn 02, chứa nước hoặc thủy ngân. Cổng nghiệm thu gồm lực nổi, giảm tốc dưới lực cản, nghỉ ổn định, thoát qua lỗ, reset/unload và shader/render. Theo yêu cầu mới chỉ build macOS. [Nước](LEVEL13_WATER.md), [thủy ngân](LEVEL14_MERCURY.md).
 
+Yêu cầu tiếp theo đã bổ sung [hỗ trợ hút ở mọi cửa thoát](EXIT_ASSIST.md), vùng 40 mm, và sàn bàn 13/14 trong theo hướng nhìn. Cổng nghiệm thu có bi đứng yên ở cửa hướng lên, căn lệch trục, không hút xuyên vách/cửa chặn và không hoàn thành khi mới vào vùng hỗ trợ.
+
 Phạm vi hiện tại có tám hộp thử hình học, bàn 09 **Leave it behind**, bàn 10 với mê cung và hai thanh trượt đối nhau, bàn 11 với mê cung ba tầng và lỗ chuyển tầng vật lý, bàn 12 với mê cung ván ghép ba chiều, nhánh cụt và khoảng rơi trong cầu thủy tinh. Hộp vuông tiếp tục có cube cố định. Mô hình bi thép và trọng lực dùng chung; cơ cấu mới phải mở đường bằng chuyển động thật. Kế hoạch 16 màn và cơ chế nắp rơi ở [tài liệu lịch sử](Archive/README.md).
 
 ## Mục tiêu nghiệm thu
