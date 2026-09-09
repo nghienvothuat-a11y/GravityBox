@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 712e7b1510cd8471a9d06f433a62d2e9, type: 3}
+  m_Name: C026
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDesignProfile
+  SchemaVersion: 1
+  ContentVersion: 1
+  Chapter: 3
+  Role: 0
+  IsBoss: 0
+  SourcePrototypes: 0c000000
+  IntroducedSkills:
+  - spatial
+  RequiredSkills:
+  - brake
+  - tilt
+  DifficultyBudget: 29
+  AuthorRating:
+    Reasoning: 0
+    Spatial: 0
+    Precision: 0
+    Coordination: 0
+    Timing: 0
+    RecoveryCost: 0
+  HasAuthorRating: 0
+  PlaytestCalibrated: 0
+  ImplementedByModel: gpt-5.6-sol
+  DesignIntent: "Gi\u1EDBi thi\u1EC7u h\xECnh h\u1ECDc m\u1EA1ng 3D: xoay \u0111\u1EC3
+    m\u1ED9t v\xE1ch tr\u1EDF th\xE0nh m\u1EB7t \u0111\u1EE1 ti\u1EBFp theo. B\u1ED1
+    tr\xED: P12 \u2014 m\u1EA1ng r\xFAt g\u1ECDn kho\u1EA3ng ba kh\xFAc \u0111\u1ED5i
+    h\u01B0\u1EDBng, kh\xF4ng nh\xE1nh c\u1EE5t."
+  RecoveryPlan: "M\u1ED7i kh\xFAc r\u1EBD c\xF3 khoang n\u1ED1i \u0111\u1EE7 \u0111\u1EC3
+    d\u1EEBng v\xE0 quay l\u1EA1i; kh\xF4ng r\u01A1i kh\u1ECFi m\u1EA1ng v\xE0o kho\u1EA3ng
+    k\xEDn"
+  RecoveryBudgetSeconds: 10
+  ValidationNotes: Difficulty budget is an authoring ceiling; human playtest calibration
+    pending. See Docs/Verification/Campaign100 for actual validation evidence.

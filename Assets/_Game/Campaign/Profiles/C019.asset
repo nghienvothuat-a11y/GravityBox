@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 712e7b1510cd8471a9d06f433a62d2e9, type: 3}
+  m_Name: C019
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDesignProfile
+  SchemaVersion: 1
+  ContentVersion: 1
+  Chapter: 2
+  Role: 3
+  IsBoss: 0
+  SourcePrototypes: 060000000a000000
+  IntroducedSkills: []
+  RequiredSkills:
+  - brake
+  - corner
+  - parking
+  - slider
+  - tilt
+  DifficultyBudget: 23
+  AuthorRating:
+    Reasoning: 0
+    Spatial: 0
+    Precision: 0
+    Coordination: 0
+    Timing: 0
+    RecoveryCost: 0
+  HasAuthorRating: 0
+  PlaytestCalibrated: 0
+  ImplementedByModel: gpt-5.6-sol
+  DesignIntent: "Luy\u1EC7n, m\xE0n ngh\u1EC9: \u0111\u1ECDc nhanh h\xECnh h\u1ECDc,
+    \u0111i m\u1ED9t v\xF2ng ng\u1EAFn; kh\xF4ng t\u0103ng s\u1ED1 c\u1EEDa ho\u1EB7c
+    \u0111\u1ED9 h\u1EB9p. B\u1ED1 tr\xED: P10 r\xFAt g\u1ECDn + h\xECnh h\u1ECDc
+    P06 \u2014 tuy\u1EBFn cong ng\u1EAFn v\u1EDBi m\u1ED9t thanh tr\u01B0\u1EE3t
+    quen thu\u1ED9c."
+  RecoveryPlan: "C\xF3 s\xE2n ch\u1EDD hai ph\xEDa c\u1EEDa, kh\xF4ng chu\u1ED7i
+    thao t\xE1c gi\u1EEF ch\xEDnh x\xE1c k\xE9o d\xE0i"
+  RecoveryBudgetSeconds: 10
+  ValidationNotes: Difficulty budget is an authoring ceiling; human playtest calibration
+    pending. See Docs/Verification/Campaign100 for actual validation evidence.

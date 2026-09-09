@@ -22,7 +22,7 @@ namespace GravityBox.App
                 Directory.CreateDirectory(folder);
                 FilePath = Path.Combine(folder, "session-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + ".csv");
                 writer = new StreamWriter(FilePath) { AutoFlush = true };
-                writer.WriteLine("utc,event,level,environment,elapsed_seconds,resets,drags,drag_distance");
+                writer.WriteLine("utc,event,level,environment,elapsed_seconds,resets,drags,drag_distance,content_version,chapter,boss,role,difficulty_budget,escaped,ball_count");
                 levels.GameplayEvent += Record;
                 Record("level_start");
             }
@@ -38,9 +38,14 @@ namespace GravityBox.App
             if (writer == null) return;
             try
             {
+                LevelDesignProfile design = levels.Definition.Design;
                 writer.WriteLine(string.Join(",", Cell(DateTime.UtcNow.ToString("O")), Cell(name), Cell(levels.Definition.Id),
                     Cell(levels.Definition.Environment.Id), levels.Elapsed.ToString("F3", CultureInfo.InvariantCulture),
-                    levels.ResetCount, levels.DragCount, levels.DragDistance.ToString("F3", CultureInfo.InvariantCulture)));
+                    levels.ResetCount, levels.DragCount, levels.DragDistance.ToString("F3", CultureInfo.InvariantCulture),
+                    design != null ? design.ContentVersion : 1, design != null ? design.Chapter : 0,
+                    design != null && design.IsBoss ? 1 : 0, Cell(design != null ? design.Role.ToString() : "Lab"),
+                    design != null ? design.DifficultyBudget.ToString("F1", CultureInfo.InvariantCulture) : "",
+                    levels.EscapedCount, levels.Balls.Count));
             }
             catch (IOException error)
             {
@@ -51,6 +56,7 @@ namespace GravityBox.App
 
         private void OnDestroy()
         {
+            if (levels != null && levels.Current != null) Record("session_end_" + levels.Session.State.ToString().ToLowerInvariant());
             if (levels != null) levels.GameplayEvent -= Record;
             writer?.Dispose();
         }

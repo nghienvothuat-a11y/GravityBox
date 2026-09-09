@@ -64,7 +64,7 @@ namespace GravityBox.Editor
             if (!AssetDatabase.Contains(mesh))
             {
                 string safe = Level.name.Replace('/','-') + " " + name.Replace('/','-') + ".asset";
-                string path = PhysicsLabBuilder.Folder + "/Meshes/" + safe;
+                string path = GeometryAssetScope.MeshPath(safe.Substring(0, safe.Length - ".asset".Length));
                 saved = AssetDatabase.LoadAssetAtPath<Mesh>(path);
                 if (saved == null) { saved = mesh; AssetDatabase.CreateAsset(saved,path); }
                 else { EditorUtility.CopySerialized(mesh,saved); Object.DestroyImmediate(mesh); }

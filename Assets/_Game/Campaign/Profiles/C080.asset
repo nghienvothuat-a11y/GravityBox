@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 712e7b1510cd8471a9d06f433a62d2e9, type: 3}
+  m_Name: C080
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDesignProfile
+  SchemaVersion: 1
+  ContentVersion: 1
+  Chapter: 8
+  Role: 5
+  IsBoss: 1
+  SourcePrototypes: 0e000000070000000b0000000f000000
+  IntroducedSkills: []
+  RequiredSkills:
+  - brake
+  - corner
+  - drop
+  - mercury
+  - tilt
+  DifficultyBudget: 72
+  AuthorRating:
+    Reasoning: 0
+    Spatial: 0
+    Precision: 0
+    Coordination: 0
+    Timing: 0
+    RecoveryCost: 0
+  HasAuthorRating: 0
+  PlaytestCalibrated: 0
+  ImplementedByModel: gpt-6-astra
+  DesignIntent: "T\u1ED5ng h\u1EE3p n\u1ED5i, c\u0103n c\u1ED5 n\u1ED1i, v\xF2ng
+    v\u1EADt c\u1EA3n v\xE0 \u0111\u1ED5i m\u1EB7t \u0111\u1EE1; c\u1EA3 m\xE0n l\xE0
+    th\u1EE7y ng\xE2n, kh\xF4ng chuy\u1EC3n m\xF4i tr\u01B0\u1EDDng. B\u1ED1 tr\xED:
+    P14 + P07 + P11 + P15 \u2014 c\xE1c khoang ph\xEDa cao n\u1ED1i quanh m\u1ED9t
+    ph\xF9 \u0111i\xEAu m\u1EB7t tr\u0103ng, m\u1ED9t bi."
+  RecoveryPlan: "S\xE2n tr\xEAn m\u1ED7i khoang gi\u1EEF ti\u1EBFn \u0111\u1ED9 c\u1EE5c
+    b\u1ED9; \u0111\u01B0\u1EDDng n\u1ED5i sai ng\u1EAFn v\xE0 quay l\u1EA1i \u0111\u01B0\u1EE3c;
+    m\u1EB7t quan s\xE1t ph\u1EA3i th\u1EC3 hi\u1EC7n r\xF5 d\xF9 v\u1EADt li\u1EC7u
+    b\u1EA1c"
+  RecoveryBudgetSeconds: 20
+  ValidationNotes: Difficulty budget is an authoring ceiling; human playtest calibration
+    pending. See Docs/Verification/Campaign100 for actual validation evidence.

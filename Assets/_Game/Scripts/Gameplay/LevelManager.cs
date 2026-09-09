@@ -10,6 +10,10 @@ namespace GravityBox.Gameplay
     {
         private LevelCatalog catalog;
         private EnvironmentForceSystem forces;
+        private LevelCatalog primaryCatalog, alternateCatalog;
+        private CampaignProgress campaignProgress;
+        private LevelDefinition loadedDefinition;
+        private ICampaignProgressStorage progressStorage;
         private float transitionAt;
         private float startTime;
         public readonly GameSession Session = new GameSession();
@@ -23,8 +27,10 @@ namespace GravityBox.Gameplay
         {
             get { foreach (BallController b in balls) if (!Current.Exit.HasBallExited(b)) return b; return Ball; }
         }
-        public LevelDefinition Definition => catalog.Levels[Index];
+        public LevelDefinition Definition => loadedDefinition != null ? loadedDefinition : catalog.Levels[Index];
         public LevelCatalog Catalog => catalog;
+        public LevelCatalog AlternateCatalog => catalog == primaryCatalog ? alternateCatalog : primaryCatalog;
+        public CampaignProgress Progress => campaignProgress;
         public int Index { get; private set; }
         public int ResetCount { get; private set; }
         public int DragCount { get; private set; }
@@ -33,24 +39,41 @@ namespace GravityBox.Gameplay
         public event Action<LevelDefinition> Loaded;
         public event Action<string> GameplayEvent;
 
-        public void Initialize(LevelCatalog config, EnvironmentForceSystem forceSystem)
+        public void Initialize(LevelCatalog config, EnvironmentForceSystem forceSystem, LevelCatalog alternate = null, bool resume = false,
+            ICampaignProgressStorage storage = null)
         {
             if (config == null || config.Levels == null || config.Levels.Length == 0)
                 throw new InvalidOperationException("Gravity Box requires a non-empty LevelCatalog.");
             catalog = config;
+            primaryCatalog = config;
+            alternateCatalog = alternate;
+            progressStorage = storage;
+            campaignProgress = config.IsCampaign ? new CampaignProgress(config.Id, progressStorage) : null;
             forces = forceSystem;
+            Session.Changed -= OnStateChanged;
             Session.Changed += OnStateChanged;
-            Load(0);
+            Load(resume && campaignProgress != null ? campaignProgress.ResumeIndex(config) : 0);
+        }
+
+        public void SwitchCatalog()
+        {
+            LevelCatalog next = AlternateCatalog;
+            if (next == null) return;
+            catalog = next;
+            campaignProgress = catalog.IsCampaign ? new CampaignProgress(catalog.Id, progressStorage) : null;
+            Load(campaignProgress != null ? campaignProgress.ResumeIndex(catalog) : 0);
         }
 
         public void Load(int index)
         {
+            if (Current != null) GameplayEvent?.Invoke(Session.State == SessionState.Completing ? "level_leave_complete" : "level_abandon");
             Session.BeginLoading();
             Time.timeScale = 1;
             transitionAt = float.PositiveInfinity;
             CleanupLevel();
             Index = Mathf.Clamp(index, 0, catalog.Levels.Length - 1);
-            LevelDefinition level = Definition;
+            LevelDefinition level = catalog.Levels[Index];
+            loadedDefinition = level;
             Current = Instantiate(level.Prefab, Vector3.zero, Quaternion.identity);
             Current.name = "LevelRoot • " + level.DisplayName;
             // Every dynamic ball lives in world space, independent of the rotating root.
@@ -79,6 +102,7 @@ namespace GravityBox.Gameplay
             startTime = Time.time;
             UnityEngine.Physics.SyncTransforms();
             Session.Activate();
+            campaignProgress?.Visit(level.Id);
             Loaded?.Invoke(level);
             GameplayEvent?.Invoke("level_start");
         }
@@ -106,6 +130,7 @@ namespace GravityBox.Gameplay
         private void Complete()
         {
             if (!Session.TryComplete()) return;
+            campaignProgress?.Complete(Definition);
             GameplayEvent?.Invoke("level_complete");
             transitionAt = float.PositiveInfinity;
         }
@@ -120,10 +145,17 @@ namespace GravityBox.Gameplay
 
         public void Next()
         {
+            if (catalog.IsCampaign && Index == catalog.Levels.Length - 1) return;
             Load((Index + 1) % catalog.Levels.Length);
         }
 
-        public void TogglePause() => Session.TogglePause();
+        public void TogglePause()
+        {
+            Session.TogglePause();
+            GameplayEvent?.Invoke(Session.State == SessionState.Paused ? "level_pause" : "level_resume");
+        }
+
+        public void RecordEvent(string eventName) => GameplayEvent?.Invoke(eventName);
 
         private void Update()
         {

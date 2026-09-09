@@ -1,6 +1,12 @@
-# Gravity Box — Steel Ball Lab
+# Gravity Box — Campaign 100
 
-Prototype Unity tập trung vào cảm giác bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **23 bàn**: giữ 16 thí nghiệm trước và thêm bảy màn cơ khí 17–23. Hai môi trường chất lỏng dùng cùng hộp vuông/cube của bàn 02: bi chìm trong nước và nổi trong thủy ngân.
+Prototype Unity có **100 màn campaign, 10 chương và 10 boss ở các mốc 10–100**, cùng **23 màn Physics Lab** để so sánh cơ chế. Màn khô giữ chung bi thép 30 mm / 111 g, trọng lực 9,81 m/s² và mô phỏng 120 Hz. Mọi bi phải đi qua lỗ thật mới thắng; assist 40 mm chỉ hỗ trợ đoạn thoát cuối.
+
+Campaign dạy từng kỹ năng, xen màn nghỉ ở nhịp x4/x9, rồi kết hợp trong boss. Các chương lần lượt là nghiêng/phanh, cửa/cầu, không gian 3D, hai bi, cam nhớ, con lắc/bay–đón, nước, thủy ngân, hình học lạ và phối hợp tổng hợp. 55 màn do GPT-5.6 Sol triển khai; 35 màn khó và 10 boss do GPT-6 Astra triển khai theo phân công của người dùng.
+
+Có chọn chương/màn, đánh dấu boss và màn đã hoàn thành, lưu tiến độ bằng ID ổn định, chuyển sang Lab, zoom quan sát chủ động và xem lại chuyển động thực 15 giây cuối sau khi hoàn thành boss. Prototype cho phép chọn cả 100 màn để test; không bắt mở khóa tuần tự. Điểm độ khó là ngân sách thiết kế **chưa được hiệu chỉnh bằng playtest người thật**. [Thiết kế campaign](Docs/CHILL_CAMPAIGN_DESIGN.md), [ma trận 100 màn](Docs/CAMPAIGN_LEVEL_MATRIX.md), [kiến trúc triển khai và phạm vi kiểm chứng](Docs/CAMPAIGN_IMPLEMENTATION.md).
+
+Các đoạn bên dưới mô tả **Physics Lab P01–P23**, không phải thứ tự campaign C001–C100.
 
 **17–23:** cầu bản lề tự dựng, cân hai bi, lồng treo độc lập, cổng con lắc, lăn–bay–đón, bánh cam có cóc nhớ trạng thái, và boss hai bi trong khối cầu kính. Các cơ cấu dùng Rigidbody/joint, lực tiếp xúc và trọng lực; ball không được điều khiển bằng đường chạy hoặc xung phóng. Chốt/cóc giữ được mô hình hóa bằng ràng buộc lý tưởng tại trạng thái cơ khí đã đạt. [Thiết kế và cách test](Docs/MECHANICAL_LEVELS_17_23.md).
 
@@ -8,9 +14,9 @@ Prototype Unity tập trung vào cảm giác bi thép lăn trong hộp: tăng t�
 
 Màn 15 là hộp đầu sư tử bằng đồng và kính: bờm/tai là thành hộp thật, mắt/mũi/mõm là các gờ va chạm. Trọng lực bình thường; dẫn bi vòng qua khuôn mặt đến lỗ ở miệng. [Thiết kế](Docs/LEVEL15_LION_HEAD.md), [ảnh](Docs/Images/Level15/README.md).
 
-Cả 23 màn có **hỗ trợ hút trong bán kính 4 cm quanh lỗ cuối**: căn từng bi rồi đẩy ra qua cửa thật, chỉ thắng khi đủ số bi đã thoát hoàn toàn. Các lỗ chuyển nội bộ không có lực hút. Đây là hỗ trợ gameplay theo yêu cầu, không thay mô hình vật lý ở phần còn lại. [Thiết kế](Docs/EXIT_ASSIST.md).
+Cả campaign và 23 màn Lab có **hỗ trợ hút trong bán kính 4 cm quanh lỗ cuối**: căn từng bi rồi đẩy ra qua cửa thật, chỉ thắng khi đủ số bi đã thoát hoàn toàn. Các lỗ chuyển nội bộ không có lực hút. Đây là hỗ trợ gameplay theo yêu cầu, không thay mô hình vật lý ở phần còn lại. [Thiết kế](Docs/EXIT_ASSIST.md).
 
-Bàn 14 giữ luật chất lỏng đầy, không chảy qua cửa; dùng hình ảnh bạc nhìn xuyên có nhãn để thấy bi bên trong thủy ngân đục. Hỗ trợ thoát xử lý cả bi nổi đứng yên ở miệng lỗ. Sàn bàn 13/14 trong hơn khi lật về phía camera. [Thiết kế/giới hạn](Docs/LEVEL14_MERCURY.md). Bản mới xuất macOS; APK cũ chưa có màn 14–23 và hỗ trợ thoát.
+Bàn 14 giữ luật chất lỏng đầy, không chảy qua cửa; dùng hình ảnh bạc nhìn xuyên có nhãn để thấy bi bên trong thủy ngân đục. Hỗ trợ thoát xử lý cả bi nổi đứng yên ở miệng lỗ. Sàn bàn 13/14 trong hơn khi lật về phía camera. [Thiết kế/giới hạn](Docs/LEVEL14_MERCURY.md). Bản mới xuất macOS; APK cũ chưa có campaign 100 màn.
 
 Bản nước hiệu chỉnh bổ sung cản khi bi lăn sát thành và added mass; giữ nước 20°C và bi thép 111 g. Có benchmark giảm tốc, hội tụ 60/120/240 Hz và kiểm tra lỗ thật. [Công thức/giới hạn](Docs/LEVEL13_WATER.md), [kiểm chứng](Docs/Verification/Water13/README.md). Bản hiệu chỉnh chỉ xuất macOS; APK hiện có vẫn là bản nước trước đó.
 
@@ -27,7 +33,7 @@ Bi có đường kính 30 mm, khối lượng khoảng 111 g; hộp rộng kho�
 ## Chạy và quan sát
 
 1. Mở project bằng Unity **6000.3.19f1**.
-2. Mở `Assets/_Game/Scenes/Gameplay.unity` hoặc menu **Gravity Box → Open Gameplay**.
+2. Mở `Assets/_Game/Scenes/Campaign.unity`. Scene `Gameplay.unity` giữ riêng Physics Lab cũ.
 3. Chọn Game View portrait **9:16**, nhấn Play.
 
 Kéo chuột trái hoặc một ngón tay trong vùng hộp để nghiêng. Nghiêng nhẹ rồi giữ để quan sát gia tốc; trả mặt hộp về ngang để quan sát quán tính và giảm tốc. Trong hộp vuông, đưa bi vào mặt phẳng và góc của khối lập phương để so sánh hướng nảy. **R** reset; **P/Esc** pause. Chọn hộp và chuyển tiếp bằng HUD. Ở bàn 11, chạm dòng trạng thái tầng để bật/tắt xem toàn bộ tầng; chế độ xem chỉ đổi vật liệu hiển thị, mọi sàn và vách vẫn va chạm.
@@ -53,7 +59,7 @@ Ba hộp cơ bản đã được bổ sung năm hình dạng khác thường the
 
 ## Cấu trúc và tuning
 
-`Scripts/Foundation` giữ session/reset; `Simulation` giữ Rigidbody, lực, rolling contact và rotation; `Gameplay` quản lý catalog, load/reset/exit; `Presentation` nhận input và thể hiện hình/âm thanh; `App` kết nối các lớp. Editor tạo prefab/mesh và kiểm tra nội dung trước build. Scene duy nhất tải một thí nghiệm tại một thời điểm.
+`Scripts/Foundation` giữ session/reset; `Simulation` giữ Rigidbody, lực, rolling contact và rotation; `Gameplay` quản lý catalog, load/reset/exit; `Presentation` nhận input và thể hiện hình/âm thanh; `App` kết nối các lớp. Editor tạo prefab/mesh và kiểm tra nội dung trước build. Scene Campaign tải một màn tại một thời điểm, chuyển catalog qua HUD; scene Gameplay giữ điểm chạy Lab cũ.
 
 Profile đang dùng nằm trong `Assets/_Game/PhysicsLab/Profiles`: `Solid steel.asset`, `Earth.asset`, `Hand rotation.asset`, `Room temperature water.asset` và `Room temperature mercury.asset`. Prefab/mesh nằm trong `PhysicsLab/Prefabs` và `PhysicsLab/Meshes`; `ScriptableObjects/LevelCatalog.asset` tham chiếu 23 level. Khi đổi kích thước bi phải đổi mass/inertia/contact offset và kiểm tra clearance theo cùng đơn vị. Không tăng riêng mass hoặc giảm gravity để tạo cảm giác nặng.
 
@@ -66,11 +72,8 @@ Prefab và profile đã có sẵn; không cần chạy generator để chơi. Ge
 ```bash
 bash Tools/verify.sh
 bash Tools/build.sh macOS
-bash Tools/build.sh Android
-bash Tools/build.sh iOS
-bash Tools/build.sh iOS-Simulator
 ```
 
 Có thể đặt `UNITY_EDITOR` tới executable đúng phiên bản. XML/log vào `Artifacts/`, build vào `Builds/`; hai thư mục này không commit. Validator kiểm tra catalog, prefab, scale, spawn và aperture; tests kiểm tra luật chuyển động, contact, đường biên/lõi rỗng, độ rộng lối đi và lifecycle. Đường giải 16 màn cũ không còn là cổng nghiệm thu của physics lab.
 
-Android cần module và SDK/NDK/JDK tương ứng. iOS export cần module iOS; compile/cài cần Xcode và signing phù hợp. `bash Tools/run-ios-simulator.sh` export, compile và cài lên simulator đang boot trên Apple Silicon; có thể truyền UDID làm tham số đầu. Telemetry chỉ lưu CSV local. Trạng thái build/chạy thực tế được ghi riêng trong nhật ký; tests không tự chứng minh cảm giác chơi đã đạt.
+Các lệnh Android/iOS cũ vẫn build scene Lab, chưa chuyển sang campaign và không được chạy trong lượt triển khai này. Android cần module và SDK/NDK/JDK tương ứng. iOS export cần module iOS; compile/cài cần Xcode và signing phù hợp. `bash Tools/run-ios-simulator.sh` export, compile và cài lên simulator đang boot trên Apple Silicon; có thể truyền UDID làm tham số đầu. Telemetry chỉ lưu CSV local. Trạng thái build/chạy thực tế được ghi riêng trong nhật ký; tests không tự chứng minh cảm giác chơi đã đạt.

@@ -10,6 +10,8 @@ namespace GravityBox.App
     public sealed class GameBootstrap : MonoBehaviour
     {
         public LevelCatalog Catalog;
+        public LevelCatalog PhysicsLab;
+        public bool ResumeCampaign = true;
         public Camera GameplayCamera;
         public GameFeedback Feedback;
         public bool RecordPlaytest = true;
@@ -23,11 +25,15 @@ namespace GravityBox.App
             forces.transform.SetParent(transform, false);
             Levels = new GameObject("Level Manager").AddComponent<LevelManager>();
             Levels.transform.SetParent(transform, false);
-            Levels.Initialize(Catalog, forces);
+            Levels.Initialize(Catalog, forces, PhysicsLab, ResumeCampaign && Catalog.IsCampaign);
             var hud = new GameObject("HUD").AddComponent<GameHud>();
             hud.transform.SetParent(transform, false);
             hud.Initialize(Levels);
             GameplayCamera.GetComponent<CameraRig>()?.Initialize(Levels);
+            var replay = gameObject.AddComponent<BossReplay>();
+            replay.Initialize(Levels, GameplayCamera.GetComponent<CameraRig>());
+            hud.AttachReplay(replay);
+            hud.AttachInspection(GameplayCamera.GetComponent<CameraRig>());
             var input = new GameObject("Rotation Input").AddComponent<RotationInputController>();
             input.transform.SetParent(transform, false);
             input.Initialize(Levels, GameplayCamera, hud);

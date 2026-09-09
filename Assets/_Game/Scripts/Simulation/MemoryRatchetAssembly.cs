@@ -14,8 +14,10 @@ namespace GravityBox.Simulation
         public float ToothDegrees=30f;
         public float ReturnSpring=12f;
         public float ReturnDamping=.18f;
+        [Range(1,3)] public int MaximumTeeth=3;
+        [Range(0,90)] public float PassageOpenDegrees=86;
         public int RetainedTeeth { get; private set; }
-        public bool PassageAligned => Cam!=null && Cam.Angle>=86f;
+        public bool PassageAligned => Cam!=null && Cam.Angle>=PassageOpenDegrees;
         private JointLimits initialLimits;
         private int permittedTooth=1;
 
@@ -38,7 +40,8 @@ namespace GravityBox.Simulation
                 DrivePawl.Body.AddTorque(pawlAxis*(-.004f*DrivePawl.Angle*Mathf.Deg2Rad-.00006f*speed),ForceMode.Force);
             }
             JointLimits limits=Cam.Joint.limits;
-            int reached=Mathf.Clamp(Mathf.FloorToInt((Cam.Angle-.10f)/ToothDegrees),0,3);
+            int maximum=Mathf.Clamp(MaximumTeeth,1,3);
+            int reached=Mathf.Clamp(Mathf.FloorToInt((Cam.Angle-.10f)/ToothDegrees),0,maximum);
             bool changed=false;
             if(reached>RetainedTeeth)
             {
@@ -49,7 +52,7 @@ namespace GravityBox.Simulation
             // A two-pawl escapement arrests the NEXT tooth even after a hard
             // impact. Its keeper can withdraw only after the physical rack has
             // returned. Releasing this limit adds no torque or angular impulse.
-            if(RetainedTeeth==permittedTooth && permittedTooth<3 && Rack.Displacement<.0035f)
+            if(RetainedTeeth==permittedTooth && permittedTooth<maximum && Rack.Displacement<.0035f)
             {
                 permittedTooth++;
                 limits.max=permittedTooth*ToothDegrees+1.5f;

@@ -172,7 +172,7 @@ namespace GravityBox.Editor
 
         private static Mesh Save(string name, List<Vector3> vertices, List<int> triangles, List<Vector3> normals = null)
         {
-            string path = PhysicsLabBuilder.Folder + "/Meshes/" + name + ".asset";
+            string path = GeometryAssetScope.MeshPath(name);
             Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
             if (mesh == null) { mesh = new Mesh { name = name }; AssetDatabase.CreateAsset(mesh, path); }
             mesh.Clear(); mesh.indexFormat = vertices.Count > 65535 ? IndexFormat.UInt32 : IndexFormat.UInt16;

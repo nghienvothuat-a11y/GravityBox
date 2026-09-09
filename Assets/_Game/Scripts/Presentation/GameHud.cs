@@ -23,6 +23,12 @@ namespace GravityBox.Presentation
         private Rect lastSafe;
         private Text title, number, environment, hint, state, progress, stats, pauseLabel, debugText;
         private Text selectorCaption;
+        private Text edition;
+        private LevelCatalog selectorCatalog;
+        private int selectorChapter;
+        private BossReplay replay;
+        private Text replayLabel;
+        private CameraRig inspectionCamera;
         private ScrollRect selectorScroll;
         private GravitySliderGuide gravitySlider;
         private GravitySliderGuide[] gravitySliders = Array.Empty<GravitySliderGuide>();
@@ -52,6 +58,27 @@ namespace GravityBox.Presentation
             OnStateChanged(levels.Session.State);
         }
 
+        public void AttachReplay(BossReplay playback)
+        {
+            replay = playback;
+            replayLabel = Button("Boss replay", safe, "XEM LẠI", 62, 414, 330, 74, Surface, Ink, () => replay.Toggle());
+            replayLabel.transform.parent.gameObject.SetActive(false);
+        }
+
+        public void AttachInspection(CameraRig camera)
+        {
+            inspectionCamera = camera;
+            Button("Zoom out", safe, "−", 816, 414, 90, 74, Surface, Ink, () => inspectionCamera.AdjustInspection(-.5f));
+            Button("Zoom in", safe, "+", 928, 414, 90, 74, Surface, Ink, () => inspectionCamera.AdjustInspection(.5f));
+            InstallFloorInspection();
+        }
+        private void InstallFloorInspection()
+        {
+            if (!levels.Catalog.IsCampaign || levels.Current.GetComponent<WaterVolume>() != null || levels.Current.GetComponent<ContainerInspectionView>() != null) return;
+            Transform floor = levels.Current.transform.Find("Floor with circular cut");
+            if (floor != null) levels.Current.gameObject.AddComponent<ContainerInspectionView>().Initialize(floor.GetComponent<Renderer>(), inspectionCamera != null ? inspectionCamera.GetComponent<Camera>() : Camera.main);
+        }
+
         private void Build()
         {
             var canvas = gameObject.AddComponent<Canvas>();
@@ -71,11 +98,12 @@ namespace GravityBox.Presentation
             }
 
             Label("Brand", safe, "G R A V I T Y  /  B O X", 30, Ink, 60, 52, 760, 45);
-            Label("Edition", safe, "STEEL BALL   /   PHYSICS STUDY", 19, Muted, 60, 104, 760, 30);
+            edition = Label("Edition", safe, "STEEL BALL   /   PHYSICS STUDY", 19, Muted, 60, 104, 760, 30);
             Label("Prototype", safe, "PROTOTYPE", 19, Muted, -275, 57, 215, 34, true, TextAnchor.MiddleRight);
             Line("Header rule", safe, 60, 155, -60, new Color(0.2f, 0.29f, 0.33f));
             number = Label("Level number", safe, "01", 64, Muted, 58, 191, 130, 82);
             title = Label("Container name", safe, "Circle", 57, Ink, 204, 191, 804, 82);
+            title.resizeTextForBestFit = true; title.resizeTextMinSize = 30; title.resizeTextMaxSize = 57;
             environment = Label("Ball specification", safe, "STEEL · 111 g · Ø 30 mm", 22, Muted, 62, 296, 650, 38);
             Label("Environment", safe, "EARTH GRAVITY", 20, Muted, -365, 296, 305, 38, true, TextAnchor.MiddleRight);
             state = Label("Status", safe, "ROLL THROUGH THE GREEN OPENING.", 21, Muted, 62, 354, 945, 40);
@@ -91,13 +119,14 @@ namespace GravityBox.Presentation
 
             var bottom = Rect("Controls", safe, new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 346), new Vector2(0, 346));
             bottom.pivot = new Vector2(0.5f, 1);
-            progress = Label("Progress", bottom, "", 23, Muted, 60, 0, 300, 36);
+            progress = Label("Progress", bottom, "", 23, Muted, 60, 0, 600, 36);
             stats = Label("Speed", bottom, "0.00 m/s", 23, Ink, -340, 0, 280, 36, true, TextAnchor.MiddleRight);
             Line("Controls rule", bottom, 60, 49, -60, new Color(0.15f, 0.22f, 0.26f));
             hint = Label("Teaching hint", bottom, "Tilt gently. Watch the ball gather speed.", 27, Ink, 60, 67, 960, 80);
+            hint.resizeTextForBestFit = true; hint.resizeTextMinSize = 20; hint.resizeTextMaxSize = 27;
             Button("Reset", bottom, "RESET", 60, 167, 290, 124, Accent, new Color(0.05f, 0.10f, 0.10f), () => levels.ResetLevel());
-            Button("Next experiment", bottom, "NEXT BOX", 372, 167, 290, 124, Surface, Ink, () => levels.Load((levels.Index + 1) % levels.Catalog.Levels.Length));
-            Button("Experiments", bottom, "SHAPES", 684, 167, 188, 124, Surface, Ink, ToggleLevels);
+            Button("Next experiment", bottom, "NEXT", 372, 167, 290, 124, Surface, Ink, () => levels.Next());
+            Button("Experiments", bottom, "LEVELS", 684, 167, 188, 124, Surface, Ink, ToggleLevels);
             pauseLabel = Button("Pause", bottom, "II", 894, 167, 126, 124, Surface, Ink, () => levels.TogglePause());
             Label("Input hint", bottom, "DRAG TO TILT     /     RELEASE TO OBSERVE", 19, Muted, 60, 295, 960, 34, false, TextAnchor.MiddleCenter);
 
@@ -109,21 +138,37 @@ namespace GravityBox.Presentation
 
         private void BuildLevelModal()
         {
-            RectTransform panel = Panel("Experiment selector", safe, new Color(0.037f, 0.065f, 0.086f, 0.99f), 0, 0, 0, 0);
+            selectorCatalog = levels.Catalog;
+            bool campaign = selectorCatalog.IsCampaign;
+            int startIndex = campaign ? Mathf.Clamp(selectorChapter, 0, 9) * 10 : 0;
+            int endIndex = Mathf.Min(startIndex + (campaign ? 10 : selectorCatalog.Levels.Length), selectorCatalog.Levels.Length);
+            RectTransform panel = Panel("Experiment selector", safe, new Color(0.037f, 0.065f, 0.086f, 1), 0, 0, 0, 0);
             panel.anchorMin = Vector2.zero;
             panel.anchorMax = Vector2.one;
             panel.offsetMin = new Vector2(38, 54);
             panel.offsetMax = new Vector2(-38, -174);
             levelModal = panel.gameObject;
             panel.GetComponent<Image>().raycastTarget = true;
-            Label("Selector title", panel, "Choose a box", 43, Ink, 40, 30, 860, 80);
+            Label("Selector title", panel, campaign ? "100 màn · Hành trình" : "Physics Lab · 23 boxes", 43, Ink, 40, 30, 860, 80);
             selectorCaption = Label("Selector caption", panel, $"{levels.Catalog.Levels.Length} BOXES   /   SAME STEEL BALL", 24, Muted, 42, 116, 920, 46);
+            if (campaign)
+            {
+                Button("Previous chapter", panel, "<", 42, 166, 100, 66, Surface, Ink, () => ChangeChapter(-1));
+                Label("Chapter", panel, $"CHẶNG {selectorChapter + 1:00} / 10", 25, Ink, 163, 169, 400, 62);
+                Button("Next chapter", panel, ">", 583, 166, 100, 66, Surface, Ink, () => ChangeChapter(1));
+            }
+            if (levels.AlternateCatalog != null)
+                Button("Switch catalog", panel, campaign ? "PHYSICS LAB" : "CAMPAIGN", 710, 166, 220, 66, Surface, Ink, () =>
+                {
+                    levelModal.SetActive(false);
+                    levels.SwitchCatalog();
+                });
 
             // The first eight shapes fit as two columns on portrait phones. A
             // clipped scroll area keeps later additions and shorter windows usable.
             RectTransform viewport = Rect("Shape viewport", panel, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             viewport.offsetMin = new Vector2(38, 168);
-            viewport.offsetMax = new Vector2(-38, -188);
+            viewport.offsetMax = new Vector2(-38, campaign || levels.AlternateCatalog != null ? -252 : -188);
             Image scrollSurface = viewport.gameObject.AddComponent<Image>();
             scrollSurface.color = Color.clear;
             viewport.gameObject.AddComponent<RectMask2D>();
@@ -135,31 +180,35 @@ namespace GravityBox.Presentation
             scroll.movementType = ScrollRect.MovementType.Clamped;
             scroll.scrollSensitivity = 48;
             const float cardHeight = 290, gap = 20;
-            int rows = (levels.Catalog.Levels.Length + 1) / 2;
+            int rows = (endIndex - startIndex + 1) / 2;
             RectTransform content = Rect("Shape cards", viewport, new Vector2(0, 1), Vector2.one,
                 Vector2.zero, new Vector2(0, rows * cardHeight + Mathf.Max(0, rows - 1) * gap));
             content.pivot = new Vector2(0.5f, 1);
             scroll.content = content;
-            for (int i = 0; i < levels.Catalog.Levels.Length; i++)
+            for (int i = startIndex; i < endIndex; i++)
             {
                 int index = i;
                 LevelDefinition definition = levels.Catalog.Levels[i];
-                int column = i % 2;
-                float top = i / 2 * (cardHeight + gap);
+                int column = (i - startIndex) % 2;
+                float top = (i - startIndex) / 2 * (cardHeight + gap);
                 RectTransform card = Panel("Select " + definition.Id, content, Surface, 0, 0, 0, 0);
                 card.anchorMin = new Vector2(column * 0.5f, 1);
                 card.anchorMax = new Vector2((column + 1) * 0.5f, 1);
                 card.offsetMin = new Vector2(column == 0 ? 0 : gap * 0.5f, -top - cardHeight);
                 card.offsetMax = new Vector2(column == 0 ? -gap * 0.5f : 0, -top);
                 ConfigureButton(card, () => { levelModal.SetActive(false); levels.Load(index); });
-                Label("Number " + definition.Id, card, $"{i + 1:00}", 23, Accent, 24, 17, 100, 34);
+                bool boss = definition.Design != null && definition.Design.IsBoss;
+                bool completed = levels.Progress != null && levels.Progress.IsComplete(definition.Id);
+                Label("Number " + definition.Id, card, $"{i + 1:000}" + (boss ? "  ◆ BOSS" : "") + (completed ? "  ✓" : ""), 23, boss ? Amber : Accent, 24, 17, 350, 34);
                 Text name = Label("Name " + definition.Id, card, definition.DisplayName, 34, Ink, 24, 55, 0, 52);
                 name.rectTransform.anchorMax = Vector2.one;
                 name.rectTransform.sizeDelta = new Vector2(-48, 52);
+                name.resizeTextForBestFit = true; name.resizeTextMinSize = 23; name.resizeTextMaxSize = 34;
                 Text description = Label("Hint " + definition.Id, card, definition.TeachingHint, 26, Muted, 24, 118, 0, 150);
                 description.alignment = TextAnchor.UpperLeft;
                 description.rectTransform.anchorMax = Vector2.one;
                 description.rectTransform.sizeDelta = new Vector2(-48, 150);
+                description.resizeTextForBestFit = true; description.resizeTextMinSize = 21; description.resizeTextMaxSize = 26;
             }
             Text close = Button("Close selector", panel, "BACK TO BOX", 38, 0, 0, 124, Accent, Surface, ToggleLevels);
             var closeRect = (RectTransform)close.transform.parent;
@@ -172,6 +221,20 @@ namespace GravityBox.Presentation
             close.rectTransform.offsetMin = new Vector2(12, 8);
             close.rectTransform.offsetMax = new Vector2(-12, -8);
             levelModal.SetActive(false);
+        }
+
+        private void ChangeChapter(int direction)
+        {
+            selectorChapter = Mathf.Clamp(selectorChapter + direction, 0, 9);
+            RebuildSelector(true);
+        }
+
+        private void RebuildSelector(bool open)
+        {
+            if (levelModal != null) { levelModal.SetActive(false); Destroy(levelModal); }
+            BuildLevelModal();
+            levelModal.SetActive(open);
+            if (open) { Canvas.ForceUpdateCanvases(); RefreshSelectorCaption(); }
         }
 
         private GameObject Overlay(string name, string heading, string caption, string action, Action callback)
@@ -217,6 +280,11 @@ namespace GravityBox.Presentation
         private void ToggleLevels()
         {
             bool open = !levelModal.activeSelf;
+            if (open && levels.Catalog.IsCampaign)
+            {
+                selectorChapter = levels.Index / 10;
+                RebuildSelector(false);
+            }
             levelModal.SetActive(open);
             if (open && levels.Session.State == SessionState.Active) levels.TogglePause();
             else if (!open && levels.Session.State == SessionState.Paused) levels.TogglePause();
@@ -230,8 +298,16 @@ namespace GravityBox.Presentation
 
         private void OnLoaded(LevelDefinition definition)
         {
+            bool campaign = levels.Catalog.IsCampaign;
+            if (selectorCatalog != levels.Catalog)
+            {
+                selectorChapter = levels.Index / 10;
+                RebuildSelector(false);
+            }
+            edition.text = campaign ? "CAMPAIGN   /   100 LEVELS · 10 BOSSES" : "STEEL BALL   /   PHYSICS STUDY";
             var water = levels.Current.GetComponent<WaterVolume>();
             if (water != null) levels.Current.GetComponent<WaterVisuals>()?.Initialize(water);
+            InstallFloorInspection();
             relay = levels.Current.GetComponent<CooperativeRelay>();
             heart = levels.Current.GetComponent<MechanicalHeart>();
             nestedCage = levels.Current.GetComponent<NestedCagePuzzle>();
@@ -261,7 +337,8 @@ namespace GravityBox.Presentation
             layerViewButton.interactable = layered != null;
             state.raycastTarget = layered != null;
             state.rectTransform.sizeDelta = new Vector2(945, layered != null ? 124 : 40);
-            number.text = definition.DisplayIndex.ToString("00");
+            number.text = definition.DisplayIndex.ToString(campaign ? "000" : "00");
+            number.color = definition.Design != null && definition.Design.IsBoss ? Amber : Muted;
             title.text = definition.DisplayName;
             environment.text = (levels.Balls.Count > 1 ? $"{levels.Balls.Count} × " : "") + $"STEEL · {levels.Ball.Profile.Mass * 1000:0} g · Ø {levels.Ball.Profile.Radius * 2000:0} mm";
             hint.text = definition.TeachingHint;
@@ -286,6 +363,15 @@ namespace GravityBox.Presentation
         {
             RefreshProgress();
             hint.text = levels.Definition.TeachingHint;
+            if (levels.Catalog.IsCampaign && session == SessionState.Active)
+            {
+                bool boss = levels.Definition.Design != null && levels.Definition.Design.IsBoss;
+                state.text = levels.Current.Exit.AssistActive ? "EXIT ASSIST · DRAWING THE BALL OUT"
+                    : boss ? $"◆ BOSS {levels.Definition.DisplayIndex:000} · ĐƯA TẤT CẢ BI RA NGOÀI"
+                    : $"CHẶNG {(levels.Index / 10) + 1:00} · XOAY NHẸ, QUAN SÁT, THỬ TIẾP";
+                state.color = boss ? Amber : Accent;
+                return;
+            }
             if (session == SessionState.Active && relay != null)
             {
                 state.text = relay.Released ? "BOTH GATES HELD OPEN · BRING BOTH BALLS HOME"
@@ -390,6 +476,11 @@ namespace GravityBox.Presentation
 
         private void RefreshSelectorCaption()
         {
+            if (levels.Catalog.IsCampaign)
+            {
+                selectorCaption.text = $"{levels.Progress?.CompletedCount ?? 0}/100 HOÀN THÀNH · PROTOTYPE: THỬ TỰ DO";
+                return;
+            }
             bool overflow = selectorScroll.content.rect.height > selectorScroll.viewport.rect.height + 1;
             selectorCaption.text = $"{levels.Catalog.Levels.Length} BOXES   /   "
                 + (overflow ? "SCROLL TO EXPLORE" : "SAME STEEL BALL");
@@ -398,6 +489,11 @@ namespace GravityBox.Presentation
         private void Update()
         {
             if (levels == null) return;
+            if (replayLabel != null)
+            {
+                replayLabel.transform.parent.gameObject.SetActive(replay.Available || replay.IsPlaying);
+                replayLabel.text = replay.IsPlaying ? "DỪNG XEM LẠI" : "XEM LẠI";
+            }
             if (lastEscaped != levels.EscapedCount || wasAssisting != levels.Current.Exit.AssistActive)
             {
                 wasAssisting = levels.Current.Exit.AssistActive;

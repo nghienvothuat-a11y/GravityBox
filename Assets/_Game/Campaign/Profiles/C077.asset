@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 712e7b1510cd8471a9d06f433a62d2e9, type: 3}
+  m_Name: C077
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDesignProfile
+  SchemaVersion: 1
+  ContentVersion: 1
+  Chapter: 8
+  Role: 2
+  IsBoss: 0
+  SourcePrototypes: 0e00000007000000
+  IntroducedSkills: []
+  RequiredSkills:
+  - brake
+  - corner
+  - mercury
+  - tilt
+  DifficultyBudget: 63
+  AuthorRating:
+    Reasoning: 0
+    Spatial: 0
+    Precision: 0
+    Coordination: 0
+    Timing: 0
+    RecoveryCost: 0
+  HasAuthorRating: 0
+  PlaytestCalibrated: 0
+  ImplementedByModel: gpt-6-astra
+  DesignIntent: "K\u1EBFt h\u1EE3p c\u0103n l\u1ED1i v\xE0 \u0111\u1ED5i m\u1EB7t
+    \u0111\u1EE1 ph\xEDa cao; kh\xF4ng y\xEAu c\u1EA7u v\u1EADn t\u1ED1c t\u1ED1i
+    thi\u1EC3u hay c\xFA ph\xF3ng. B\u1ED1 tr\xED: P14 + P07 \u2014 hai khoang c\xF3
+    m\u1EB7t cao l\u1EC7ch nhau, c\u1ED5 n\u1ED1i \u0111\u1EE7 r\u1ED9ng v\xE0 c\xF3
+    s\xE2n c\u0103n hai \u0111\u1EA7u."
+  RecoveryPlan: "Hai \u0111\u1EA7u c\u1ED5 c\xF3 t\xFAi \u1ED5n \u0111\u1ECBnh; l\u1EA1c
+    h\u01B0\u1EDBng v\u1EABn \u1EDF khoang hi\u1EC7n t\u1EA1i, d\u1EC5 c\u0103n l\u1EA1i"
+  RecoveryBudgetSeconds: 10
+  ValidationNotes: Difficulty budget is an authoring ceiling; human playtest calibration
+    pending. See Docs/Verification/Campaign100 for actual validation evidence.

@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 712e7b1510cd8471a9d06f433a62d2e9, type: 3}
+  m_Name: C042
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDesignProfile
+  SchemaVersion: 1
+  ContentVersion: 1
+  Chapter: 5
+  Role: 0
+  IsBoss: 0
+  SourcePrototypes: 16000000
+  IntroducedSkills:
+  - cam-return
+  RequiredSkills:
+  - brake
+  - cam-stroke
+  - tilt
+  DifficultyBudget: 45
+  AuthorRating:
+    Reasoning: 0
+    Spatial: 0
+    Precision: 0
+    Coordination: 0
+    Timing: 0
+    RecoveryCost: 0
+  HasAuthorRating: 0
+  PlaytestCalibrated: 0
+  ImplementedByModel: gpt-5.6-sol
+  DesignIntent: "Gi\u1EDBi thi\u1EC7u m\u1ED9t b\u01B0\u1EDBc: rack ph\u1EA3i h\u1ED3i
+    \u0111\u1EE7 tr\u01B0\u1EDBc l\u1EA7n \u0111\u1EA9y k\u1EBF; kh\xF4ng th\u1EC3
+    gi\u1EEF bi \u0111\xE8 m\xE3i \u0111\u1EC3 \u0111i ti\u1EBFp. B\u1ED1 tr\xED:
+    P22 \u2014 hai n\u1EA5c, kho\u1EA3ng h\u1ED3i rack nh\xECn tr\u1ECDn, c\u1EEDa
+    ch\u1EC9 th\u1EB3ng sau l\u1EA7n \u0111\u1EA9y th\u1EE9 hai."
+  RecoveryPlan: "V\xF9ng l\xF9i bi r\u1ED9ng v\xE0 c\xF3 v\u1EA1ch v\u1ECB tr\xED
+    rack; sai nh\u1ECBp ch\u1EC9 d\u1EEBng ti\u1EBFn \u0111\u1ED9, kh\xF4ng m\u1EA5t
+    n\u1EA5c"
+  RecoveryBudgetSeconds: 10
+  ValidationNotes: Difficulty budget is an authoring ceiling; human playtest calibration
+    pending. See Docs/Verification/Campaign100 for actual validation evidence.

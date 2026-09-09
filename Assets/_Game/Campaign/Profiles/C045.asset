@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 712e7b1510cd8471a9d06f433a62d2e9, type: 3}
+  m_Name: C045
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDesignProfile
+  SchemaVersion: 1
+  ContentVersion: 1
+  Chapter: 5
+  Role: 0
+  IsBoss: 0
+  SourcePrototypes: 16000000
+  IntroducedSkills:
+  - cam-route
+  RequiredSkills:
+  - brake
+  - cam-return
+  - cam-stroke
+  - tilt
+  DifficultyBudget: 49
+  AuthorRating:
+    Reasoning: 0
+    Spatial: 0
+    Precision: 0
+    Coordination: 0
+    Timing: 0
+    RecoveryCost: 0
+  HasAuthorRating: 0
+  PlaytestCalibrated: 0
+  ImplementedByModel: gpt-6-astra
+  DesignIntent: "Gi\u1EDBi thi\u1EC7u: m\u1ED9t tr\u1EA1ng th\xE1i trung gian l\xE0
+    m\u1ED9t ph\u1EA7n \u0111\u01B0\u1EDDng \u0111i, kh\xF4ng ch\u1EC9 l\xE0 ti\u1EBFn
+    \u0111\u1ED9 t\u1EDBi c\u1EEDa cu\u1ED1i. B\u1ED1 tr\xED: P22 \u2014 cam c\xF3
+    hai l\u1ED1i trung gian n\u1ED1i ti\u1EBFp; ch\u1EC9 ti\u1EBFp c\u1EADn \u0111\u01B0\u1EE3c
+    m\u1EB7t \u0111\u1EA9y k\u1EBF sau khi qua l\u1ED1i th\u1EE9 nh\u1EA5t."
+  RecoveryPlan: "H\xECnh h\u1ECDc ch\u1EB7n vi\u1EC7c b\u1ECF qua n\u1EA5c c\u1EA7n
+    \u0111i; c\xE1c n\u1EA5c \u0111\xE3 qua gi\u1EEF l\u1ED1i quay l\u1EA1i, kh\xF4ng
+    t\u1EA1o kh\xF3a m\u1EC1m v\xEC \u0111\u1EA9y qu\xE1"
+  RecoveryBudgetSeconds: 10
+  ValidationNotes: Difficulty budget is an authoring ceiling; human playtest calibration
+    pending. See Docs/Verification/Campaign100 for actual validation evidence.
