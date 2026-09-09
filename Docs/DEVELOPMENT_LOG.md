@@ -1,6 +1,18 @@
 # Nhật ký phát triển Gravity Box
 
+## Bàn 13 — hiệu chỉnh cản nước — 09/09/2026
+
+- Thay việc dùng cầu cô lập cho mọi trạng thái bằng cản cầu khi bay và cản hiệu dụng khi lăn sát mặt phẳng. Hiệu chỉnh dựa trên vận tốc tương đối, độ trượt và raycast collider sàn/cube thật; lỗ thoát không bị coi là mặt sàn. Giữ mật độ/độ nhớt nước, thêm giả định độ nhám 3 µm và công bố các miền áp dụng.
+- Bổ sung added mass 7,05586 g khi ngập hết. Rigidbody dùng quán tính tịnh tiến thép+nước nhưng giữ inertia quay và trọng lượng thép; lực nổi vẫn 0,138436 N, tải nghỉ vẫn 0,95025 N. Gia tốc chìm ban đầu 8,05071 m/s². Tính lực gia tốc phần tử nước từ hai trạng thái dòng, không dùng gia tốc của bi sau va chạm.
+- Tách WaterHydrodynamics khỏi lifecycle; tích phân cản ngầm theo các thành phần vận tốc. Reset/disable/thoát/unload trả mass và lịch sử dòng; HUD và mức âm lăn tham chiếu khối lượng thép.
+- **8/8 EditMode + 75/75 PlayMode = 83/83**, kết thúc 02:59:54 UTC. 12 trường hợp nước, có kiểm tra hệ số Reynolds và hội tụ 60/120/240 Hz. Lăn từ 0,3 m/s trên mặt phẳng hiệu chuẩn: 0,179540 m/s sau 1 s ở 120 Hz, nghiệm 0,179418 m/s. Không suy diễn sai số tích phân thành độ chính xác nước thật. [XML/phạm vi](Verification/Water13/README.md).
+- Ba ảnh mới từ mô phỏng liên tục tại 03:01:12 UTC đã được xem: bi, cube, cửa tròn và wake còn đọc được; ở góc xoay mạnh bi có thể khuất sau cube. [Ảnh hiệu chỉnh](Images/Level13/README.md). Chưa giải CFD/squeeze-film va chạm hoặc hiệu chuẩn restitution ướt; xem ADR 021 và [giới hạn](LEVEL13_WATER.md).
+- Theo yêu cầu mới, chỉ xuất macOS; APK vẫn là bản nước đầu. Bằng chứng 77 test của bản trước được giữ ở [Baseline](Verification/Water13/Baseline/README.md).
+- macOS build thành công lúc 10:02:15 giờ Việt Nam; đã mở bàn 13, reset, kiểm tra HUD và lưu F12 lúc 03:03:12 UTC. Player.log không có exception trong lượt khởi chạy này. Không coi kiểm tra hiển thị là lượt xác nhận cảm giác chơi tay. Vật liệu/settings bị importer đổi trong render đã được trả về source trước build.
+
 ## Bàn 13 — hộp đầy nước — 09/09/2026
+
+Lịch sử bản đầu `08525a4`; các số đo dưới đây thuộc [bộ kiểm chứng trước hiệu chỉnh](Verification/Water13/Baseline/README.md).
 
 - Thêm **Steel under water**, cùng hộp vuông 320 × 320 mm, cube cạnh 64 mm, bi thép 30 mm/~111 g và lỗ thoát như bàn 02. Nước giữ đầy theo yêu cầu người dùng, không bịt lỗ bằng collider; bi vẫn phải thoát hoàn toàn.
 - WaterProfile/WaterVolume bổ sung lực nổi, lực cản theo Reynolds và phần ngập liên tục tại cửa. Trọng lực thế giới/contact/mass giữ nguyên. Dòng khối và mô-men nhớt quay là xấp xỉ; chưa có CFD/added mass/lubrication. [Thiết kế và giới hạn](LEVEL13_WATER.md).

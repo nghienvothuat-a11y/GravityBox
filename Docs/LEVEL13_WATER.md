@@ -5,23 +5,35 @@ Hộp vuông chứa đầy nước, cùng kích thước, spawn, lỗ tròn và 
 ## Hình học và luật nước
 
 - Lòng hộp 320 × 320 mm; khoảng giữa hai mặt trong sàn/nắp 84 mm. Khối lập phương cạnh 64 mm ở giữa, giống bàn 02.
-- Bi thép đặc đường kính 30 mm, mật độ 7.850 kg/m³, khối lượng 0,11097676 kg. Không đổi mass, inertia, vật liệu tiếp xúc, gravity hoặc tốc độ mô phỏng 120 Hz.
+- Bi thép đặc đường kính 30 mm, mật độ 7.850 kg/m³, khối lượng vật chất 0,11097676 kg. Giữ mô-men quán tính thép, vật liệu tiếp xúc, trọng lực thế giới và mô phỏng 120 Hz. Từ bản hiệu chỉnh, Rigidbody dùng quán tính tịnh tiến gồm thép và added mass của nước; xem công thức dưới đây.
 - Nước phủ kín vùng trong hộp. Không có khoảng khí, mặt nước hở, bọt nổi lớn hoặc cơ chế đổ nước.
 - Nước được giữ trong hộp theo yêu cầu thiết kế, kể cả tại lỗ thoát. Đây là quy tắc giữ thể tích nước của bàn thử, không phải mô phỏng một bể mở có thể chảy qua lỗ. Không thêm collider bịt lỗ: bi vẫn đi qua lỗ tròn R=23 mm và phải ra hoàn toàn mới thắng.
 
 ## Mô hình lực
 
-`WaterProfile` chứa mật độ nước 998,2 kg/m³, độ nhớt động lực 0,001002 Pa·s, tương ứng gần nhiệt độ phòng. `WaterVolume` là force provider riêng của bàn 13. `EnvironmentForceSystem` chuẩn bị provider theo mỗi bước vật lý trước khi cộng gia tốc; provider bị thu hồi cùng level, không lan lực cản sang các bàn khô.
+`WaterProfile` giữ mật độ 998,2 kg/m³ và độ nhớt động lực 0,001002 Pa·s, gần nước 20°C. Không tăng độ nhớt để tạo cảm giác đặc. `WaterHydrodynamics` chứa các công thức thuần; `WaterVolume` lấy trạng thái bi, hình học và dòng nước rồi áp lực qua `EnvironmentForceSystem`.
 
-Lực nổi `Fb = −rho_water × V_submerged × g_world`. Bi vẫn chìm vì thép đặc nặng hơn nước nhiều. Khi chìm hoàn toàn, lực nổi khoảng 0,138436 N, giảm tải đỡ xuống khoảng 0,95025 N; gia tốc chìm ban đầu 8,56257 m/s² khi chưa có tốc độ. Cơ sở: [Archimedes — OpenStax](https://openstax.org/books/university-physics-volume-1/pages/14-4-archimedes-principle-and-buoyancy).
+**Quán tính và lực nổi.** Đặt `m` là khối lượng thép, `mf = rho × V_submerged`, `ma = 0,5 mf`. Hệ số added mass 0,5 là nghiệm cầu trong dòng thế không bị giới hạn bởi thành, dùng làm gần đúng cơ sở. [Brennen, Caltech — Added mass](https://brennen.caltech.edu/fluidbook/basicfluiddynamics/unsteadyflows/addedmass/introduction.pdf).
 
-Lực cản tác dụng ngược vận tốc tương đối với nước: `Fd = −0,5 rho Cd A |v_rel| v_rel`, `A = pi r²`. Dùng tương quan Schiller–Naumann dưới Re=1.000, Cd=0,44 ở vùng Newton; biểu thức dưới Re nhỏ tiến về lực Stokes. Tích phân lực bằng Rigidbody, không ghi đè vận tốc hoặc dùng damping toàn cục. Impulse tiêu tán được giới hạn để không đảo hướng vận tốc tương đối trong một tick. Tham khảo [phương trình lực cản — NASA](https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-equation/) và [tương quan trong tài liệu CFD COMSOL](https://doc.comsol.com/5.6/doc/com.comsol.help.cfd/CFDModuleUsersGuide.pdf).
+Phương trình đang tích phân: `(m + ma) a = m g − mf g + Fdrag + (mf + ma) Du/Dt + Fcontact`. Khi ngập hoàn toàn: `mf = 14,11172 g`, `ma = 7,05586 g`; quán tính tịnh tiến là 118,03262 g, trọng lượng vẫn chỉ `m g`. Rigidbody.mass chứa `m+ma` để cả lực và impulse tiếp xúc cùng dùng quán tính này. Provider trừ phần `ma g` mà gravity provider chung đã cộng. Mô-men quán tính giữ `2/5 m r²`; HUD hiển thị **111 g thép**. Không ghi đè vận tốc.
 
-Lực nổi/lực cản giảm liên tục theo thể tích chỏm cầu còn nằm trong nước khi bi qua mặt cửa; hết hoàn toàn khi bi rời nước. Phép tính chỏm cầu chính xác tại mặt cửa phẳng tách biệt. Ở góc ngoài của hộp, phép gần đúng mặt gần nhất không phải phép giao thể tích cầu–hộp đầy đủ, nhưng các vùng đó bị vỏ vật lý chặn.
+Lực nổi vẫn 0,138436 N và tải nghỉ 0,95025 N. Gia tốc chìm ban đầu ở nước đứng yên đổi từ 8,56257 thành **8,05071 m/s²**, vì cần gia tốc cả lượng nước tương đương. [Archimedes — OpenStax](https://openstax.org/books/university-physics-volume-1/pages/14-4-archimedes-principle-and-buoyancy).
 
-Nước có vận tốc khối xấp xỉ được kéo theo chuyển động xoay của hộp, với thời gian đáp ứng 0,4 s. Vận tốc tương đối theo pháp tuyến bằng không tại mỗi mặt hộp. Đây là nội suy dòng khối có giới hạn, chưa giải áp suất hay bảo toàn không nén được của CFD. Mô-men nhớt quay dùng giới hạn Stokes `−8 pi mu r³ omega_rel`.
+**Cản khi bay và khi lăn.** Xa thành, giữ `Fd = −0,5 rho Cd A |v_rel| v_rel`, với Schiller–Naumann dưới Re=1.000 và Cd=0,44 ở vùng Newton trước drag crisis. [NASA — Drag equation](https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-equation/), [COMSOL — CFD guide](https://doc.comsol.com/5.6/doc/com.comsol.help.cfd/CFDModuleUsersGuide.pdf).
 
-Giới hạn: chưa mô phỏng SPH/Navier–Stokes, added mass, history force, lubrication sát thành, biến dạng mặt nước, hoặc dòng xoáy phản hồi hai chiều từ bi vào nước. Lực cản cầu cô lập và mô-men nhớt thấp-Re là xấp xỉ; tiếp xúc bi–đáy vẫn dùng material chung, chưa có màng bôi trơn nước. Những giới hạn này cần giữ rõ khi đánh giá cảm giác, không tự tăng lực cản để biến nước thành chất lỏng đặc.
+Sát mặt phẳng, dùng cản hiệu dụng của cầu lăn không trượt: `Cd_gap = (−44,2 log10(G/D) + 34)/Re`; cộng `Cd_wake = 1,70 − 0,136 log10(Re) − 0,0716 log10(Re)²` trong phạm vi 5–300. Báo cáo thực nghiệm cho vùng Re khoảng 1.000–10.000 có Cd xấp xỉ 1, cao hơn cầu tự do. [Nanayakkara et al., JFM 2024, §2.1 và §4.3](https://doi.org/10.1017/jfm.2024.146).
+
+Lựa chọn triển khai: giữ đa thức wake trong miền công bố, nội suy tới plateau 1 từ Re 300–1.000; không kéo dài đa thức tới tốc độ lớn. Giả định độ nhám hiệu dụng 3 µm (`G/D=10⁻⁴` cho bi 30 mm), chưa đo trên một hộp thật. Khe vật lý lớn hơn độ nhám sẽ thay thế G. Tắt dần hiệu chỉnh trong khoảng cách r/4 khỏi mặt; giảm theo độ trượt và dùng mặt lăn có trọng số lớn nhất. Các phép nội suy này là lựa chọn mô hình, không phải tương quan thực nghiệm đã kiểm chứng cho cả hộp.
+
+Sáu tia trong hệ tọa độ hộp tìm mặt collider thật của sàn, nắp, thành và cube. Tia qua lỗ không gặp sàn nên không thêm lực thành tại cửa. Cản lăn hiệu dụng đã bao gồm đóng góp mô-men/r: áp dưới dạng lực tại tâm, giảm mô-men nhớt tự do theo cùng trọng số để tránh tính hai lần. Giữ ma sát và cản lăn vật liệu do biến dạng như bản khô. Khi trượt mạnh, quay về mô hình cầu tự do; chưa có tương quan riêng cho cầu trượt sát thành.
+
+Ở 0,2 m/s, cản lăn tham chiếu là **0,014609 N**, trong khi cầu cô lập là **0,006209 N**. Force thực tế tại 120 Hz sau bước tích phân ổn định là 0,014534 N. Đây là kết quả của mô hình hiệu chỉnh, không phải đo lực trên thiết bị thật.
+
+**Tích phân và dòng nước.** Cản được tích phân với hệ số ngầm theo từng thành phần vận tốc, đảm bảo impulse cản không đảo chiều thành phần tương đối; solver tiếp xúc vẫn xử lý chuyển động cuối bước. Giữ trường vận tốc khối có thời gian đáp ứng 0,4 s. Tính `Du/Dt` bằng truy ngược một phần tử nước qua hai trạng thái dòng liên tiếp; việc bi đổi vị trí trong nước tĩnh không sinh lực áp suất giả. Đây là lực gia tốc từ trường dòng xấp xỉ, chưa giải phương trình áp suất.
+
+Phần ngập theo chỏm cầu làm lực và added mass giảm liên tục tại cửa; ra hết nước thì trả Rigidbody.mass về mass thép và rơi với 9,81 m/s². Reset/disable/unload xóa lịch sử dòng và quán tính nước. Thay added mass theo phần ngập giữ vận tốc liên tục; chưa mô phỏng năng lượng mặt thoáng, nước bám hoặc impulse nước khi ra/vào.
+
+**Giới hạn cần giữ rõ.** Mô hình tốt hơn cho cản lăn và quán tính, chưa phải nước chính xác hoàn toàn: không CFD, history force, lift/wake dao động, squeeze-film theo pháp tuyến khi va chạm, ảnh hưởng nhiều thành lên tensor added mass, hoặc phản hồi bi–nước hai chiều. Plateau trên Re=10.000 là ngoại suy; hệ số gap và cản hiệu dụng dùng cho lăn không trượt gần mặt phẳng, không chứng minh chính xác cho mọi va chạm/cạnh/lỗ. Trường dòng chưa bảo toàn không nén được và chưa giải dòng quanh cube. Hệ số ma sát/restitution tiếp xúc vẫn là bản khô; chỉ chuyển động trước/sau va chạm chịu lực nước. Muốn hiệu chuẩn tiếp cần đo video cùng bi 30 mm và hộp thật, đặc biệt vận tốc, nhám và độ nảy.
 
 ## Hình ảnh
 
@@ -31,7 +43,7 @@ Tối đa 220 quad dùng một mesh động, không tạo GameObject theo từng
 
 ## Kiểm chứng và thử tay
 
-Sáu test PlayMode riêng kiểm tra: cùng hộp/bi và lực nổi; lực cản theo nghiệm giảm tốc tham chiếu; tải đỡ ổn định; chuyển qua biên nước và trở lại rơi tự do; đường từ spawn vòng qua cube ra lỗ bằng xoay; dòng nước/VFX/reset/unload. Ở bài hiệu chuẩn bỏ gravity và biên bể, tốc độ 1 m/s sau một giây còn 0,41510 m/s, gần nghiệm liên tục 0,41688 m/s. Đây là bể hiệu chuẩn riêng, không phải thay hình học trong player.
+Các test nước kiểm tra lực nổi/added mass, giảm tốc giữa nước, cản lăn so với nghiệm giải tích tại 60/120/240 Hz, hệ số trong các miền Reynolds, năng lượng tiêu tán, mặt cube/sàn/lỗ thật, gia tốc dòng, tải nghỉ, thoát hoàn toàn và lifecycle. Trên mặt phẳng hiệu chuẩn dài, bỏ riêng cản biến dạng khô để cô lập thủy động lực: từ 0,3 m/s, sau 1 giây đạt 0,179540 m/s tại 120 Hz; nghiệm liên tục là 0,179418 m/s. Sai số tích phân khoảng 0,068%, không phải độ chính xác so với nước thật.
 
 So sánh với bàn 02 bằng cùng góc nghiêng: quan sát lúc bắt đầu lăn, khi lao vào cube, khi đổi chiều hộp và lúc bi chìm qua chiều dày hộp. Ở tốc độ nhỏ và quãng đường ngắn, khác biệt của bi thép trong nước có thể vừa phải; nước không làm nó lơ lửng hoặc chuyển động như slow motion.
 

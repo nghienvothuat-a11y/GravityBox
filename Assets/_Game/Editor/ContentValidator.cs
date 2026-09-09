@@ -34,6 +34,8 @@ namespace GravityBox.Editor
                     Require(water != null && water.Profile != null, level.Id + ": water experiment needs a fluid profile.");
                     Require(water.Profile.Density > 990 && water.Profile.Density < 1010 && water.Profile.DynamicViscosity > 0,
                         level.Id + ": invalid fresh water properties.");
+                    Require(water.Profile.EffectiveRoughness > 0 && water.Profile.EffectiveRoughness < .0003f,
+                        level.Id + ": water wall model needs a finite microscopic roughness.");
                     Require(water.HalfSize == new Vector3(.16f, .042f, .16f), level.Id + ": water must fill the square interior.");
                     var visuals = level.Prefab.GetComponent<GravityBox.Presentation.WaterVisuals>();
                     Require(visuals != null && visuals.VolumeRenderer != null && visuals.FloorRenderer != null && visuals.TracerMaterial != null,

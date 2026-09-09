@@ -33,7 +33,7 @@ Các lớp được cô lập bằng asmdef. Foundation không tham chiếu Unit
 | GravitySliderGuide | PhysicalProp / một lần load | Đọc độ dịch chuyển/vận tốc theo ray; không điều khiển chuyển động hoặc gửi unlock |
 | LayeredMaze | LevelRuntime / một lần load | Metadata sàn, lỗ chuyển tầng và đường authoring; xác định tầng từ vị trí thật của bi |
 | SpatialMaze | LevelRuntime / một lần load | Metadata vỏ cầu, nút/đoạn nối, tuyến kiểm chứng và descriptor ván ghép; không điều khiển bi |
-| WaterVolume / WaterProfile | LevelRuntime / một lần load; asset read-only | Lực nổi, lực cản, phần ngập và dòng khối xấp xỉ ở bàn 13 |
+| WaterVolume / WaterProfile / WaterHydrodynamics | LevelRuntime / một lần load; asset read-only | Lực nổi, cản lăn/cầu, added mass, phần ngập và dòng khối xấp xỉ ở bàn 13 |
 | WaterVisuals | HUD khởi tạo / một lần load | Mesh tracer, wake và shader nước; đọc simulation, không tạo lực |
 | MazeLayerView | HUD khởi tạo / một lần load | Làm mờ các tầng không hoạt động hoặc hiện tổng thể bằng vật liệu, giữ nguyên physics |
 | EnvironmentForceSystem | Bootstrap / phiên chạy | Áp gia tốc thế giới một lần cho mỗi body đã đăng ký |
@@ -90,5 +90,7 @@ Input chỉ xoay root. Bi chuyển động trong world space, có thể rơi d�
 ## Mở rộng sau khi cảm giác đạt
 
 Bàn 13 mở rộng hệ lực bằng `IForceStepProvider.PrepareStep(dt)` trước lượt cộng gia tốc. `WaterVolume` tính phần ngập, vận tốc nước và lực lên bi, áp mô-men nhớt qua Rigidbody; Earth gravity vẫn do provider chung quản lý. `LevelRuntime` chỉ phụ thuộc Simulation. HUD khởi tạo `WaterVisuals`, giống seam presentation của mê cung tầng; reset registry thu hồi trạng thái, `EnvironmentForceSystem.Clear` bỏ provider cũ khi đổi bàn. [Mô hình và giới hạn nước](LEVEL13_WATER.md).
+
+`WaterHydrodynamics` tách công thức cản khỏi Unity lifecycle. WaterVolume sở hữu added mass: Rigidbody.mass là quán tính tịnh tiến thép+nước, profile vẫn chứa mass/inertia thép; provider bù trọng lượng phần nước và trả mass khi ra nước/disable/reset. Không ghi mass lặp khi phần ngập không đổi, tránh đánh thức bi đang nghỉ. Trường dòng lưu hai snapshot để tính gia tốc phần tử nước, không dùng gia tốc đo của bi. Hiệu chỉnh cản lăn raycast collider thật và không tạo collider bổ sung.
 
 Giữ seam giữa simulation, level content và presentation để tinh chỉnh từng phần. Chỉ thêm bàn/cơ cấu sau khi cảm giác bi đạt qua thử trực tiếp. Force providers, PhysicalProp, save adapter hoặc loader async có thể được mở rộng khi có yêu cầu cụ thể; số lượng lớp không phải mục tiêu. Các rule tín hiệu/zero-G cũ không được coi là nền tảng cần bật lại.

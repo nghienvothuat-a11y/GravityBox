@@ -1,6 +1,14 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** ADR 020 thêm thí nghiệm nước ở bàn 13. ADR 019 giữ mê cung ván ghép ở bàn 12. Cùng mô hình bi thép; các mô tả 16 màn/zero-G và bố cục 32 ván rời bên dưới là lịch sử.
+**Phạm vi hiện tại:** ADR 021 hiệu chỉnh nước ở bàn 13; ADR 020 thêm thí nghiệm này. ADR 019 giữ mê cung ván ghép ở bàn 12. Các mô tả 16 màn/zero-G và bố cục 32 ván rời bên dưới là lịch sử.
+
+## ADR 021 Cản lăn sát thành và quán tính nước
+
+Phản hồi cho thấy cản nước chưa thuyết phục. Bản đầu áp mô hình cầu cô lập cả lúc bi lăn sát đáy. Bổ sung tương quan cản lăn gần mặt phẳng, tra collider thật để không đóng cửa thoát; giữ các thông số nước. Tách công thức vào WaterHydrodynamics, có benchmark lực và chuyển động theo miền Reynolds.
+
+Added mass bằng nửa khối lượng nước bị chiếm được đưa vào Rigidbody.mass để solver dùng cùng quán tính cho lực và tiếp xúc. Khối lượng thép trong profile/HUD và mô-men quán tính thép giữ nguyên. WaterVolume bù gravity của added mass, bổ sung lực gia tốc từ trường dòng, phục hồi mass khi ra nước/disable/reset. Tránh phản hồi gia tốc đo từ frame trước của bi vì impulse tiếp xúc có thể bị nhầm thành lực thủy động lực và gây rung.
+
+Giới hạn: added mass đẳng hướng của cầu trong môi trường rộng; cản thành nội suy cho gần mặt phẳng và lăn ít trượt; chưa giải squeeze-film va chạm hoặc áp suất CFD. Hệ số nối miền và độ nhám là giả định công khai. Bộ kiểm chứng đối chiếu nghiệm mô hình và hội tụ bước thời gian, chưa chứng minh trùng thiết bị thật. Chỉ build macOS theo yêu cầu; APK trước đó giữ bản nước đầu tiên. [Công thức, nguồn và giới hạn](LEVEL13_WATER.md).
 
 ## ADR 020 Hộp đầy nước để so sánh bi thép
 
@@ -8,7 +16,7 @@ Bàn 13 dùng cùng hình học hộp vuông, cube, spawn và lỗ thoát như b
 
 WaterVolume đăng ký với EnvironmentForceSystem trong một lần load. Provider chuẩn bị dòng khối và lực mỗi fixed step; ball vẫn độc lập với hộp và không bị đặt lại pose/vận tốc. Tại cửa, tỷ lệ ngập giảm liên tục cho tới không còn lực nước. Nước được giữ đầy theo quy tắc thí nghiệm do người dùng yêu cầu; không tạo collider bịt lỗ hoặc mô phỏng tháo nước.
 
-VFX gồm thể tích nhuộm màu, kính nhẹ, caustic thủ tục và mesh tracer/wake có giới hạn. Presentation không tạo lực. Dòng khối, mô-men nhớt và caustic là xấp xỉ; chưa có fluid solver/áp suất/added mass/lubrication hay khúc xạ ray tracing. [Thiết kế và giới hạn](LEVEL13_WATER.md).
+VFX gồm thể tích nhuộm màu, kính nhẹ, caustic thủ tục và mesh tracer/wake có giới hạn. Presentation không tạo lực. Bản đầu chưa có added mass/cản sát thành; ADR 021 bổ sung mô hình này. Caustic và dòng khối vẫn là xấp xỉ. [Thiết kế và giới hạn](LEVEL13_WATER.md).
 
 ## ADR 019 Ghép các ván thành mê cung nối ba chiều
 

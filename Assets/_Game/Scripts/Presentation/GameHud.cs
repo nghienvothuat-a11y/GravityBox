@@ -247,7 +247,7 @@ namespace GravityBox.Presentation
             state.rectTransform.sizeDelta = new Vector2(945, layered != null ? 124 : 40);
             number.text = definition.DisplayIndex.ToString("00");
             title.text = definition.DisplayName;
-            environment.text = $"STEEL · {levels.Ball.Body.mass * 1000:0} g · Ø {levels.Ball.Profile.Radius * 2000:0} mm";
+            environment.text = $"STEEL · {levels.Ball.Profile.Mass * 1000:0} g · Ø {levels.Ball.Profile.Radius * 2000:0} mm";
             hint.text = definition.TeachingHint;
             progress.text = $"{definition.DisplayIndex:00} / {levels.Catalog.Levels.Length:00}";
             RefreshStatusText(levels.Session.State);

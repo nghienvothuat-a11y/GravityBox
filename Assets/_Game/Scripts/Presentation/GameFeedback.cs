@@ -99,7 +99,7 @@ namespace GravityBox.Presentation
                 levels.Session.State != SessionState.Paused && Time.timeScale > 0;
             float speed = observedBall.ContactSpeed;
             float gravity = levels.Definition.Environment.Acceleration.magnitude;
-            float weight = observedBall.Body.mass * Mathf.Max(gravity, 0.01f);
+            float weight = observedBall.Profile.Mass * Mathf.Max(gravity, 0.01f);
             float load = Mathf.Sqrt(Mathf.Clamp01(observedBall.ContactLoad / (weight * 1.5f)));
             float rollingReference = Mathf.Sqrt(Mathf.Max(0.001f, gravity * observedBall.Profile.Radius * 2));
             float motion = Mathf.Sqrt(Mathf.Clamp01(speed / rollingReference));
