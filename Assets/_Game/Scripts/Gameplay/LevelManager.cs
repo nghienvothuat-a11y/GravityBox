@@ -14,6 +14,7 @@ namespace GravityBox.Gameplay
         private CampaignProgress campaignProgress;
         private LevelDefinition loadedDefinition;
         private ICampaignProgressStorage progressStorage;
+        private bool completionAdvanceSuspended;
         private float transitionAt;
         private float startTime;
         public readonly GameSession Session = new GameSession();
@@ -70,6 +71,7 @@ namespace GravityBox.Gameplay
             Session.BeginLoading();
             Time.timeScale = 1;
             transitionAt = float.PositiveInfinity;
+            completionAdvanceSuspended = false;
             CleanupLevel();
             Index = Mathf.Clamp(index, 0, catalog.Levels.Length - 1);
             LevelDefinition level = catalog.Levels[Index];
@@ -113,6 +115,7 @@ namespace GravityBox.Gameplay
             GameplayEvent?.Invoke("level_reset");
             Time.timeScale = 1;
             transitionAt = float.PositiveInfinity;
+            completionAdvanceSuspended = false;
             ResetCount++;
             Current.ResetAll();
             Session.Activate();
@@ -132,7 +135,17 @@ namespace GravityBox.Gameplay
             if (!Session.TryComplete()) return;
             campaignProgress?.Complete(Definition);
             GameplayEvent?.Invoke("level_complete");
-            transitionAt = float.PositiveInfinity;
+            completionAdvanceSuspended = false;
+            transitionAt = Time.unscaledTime + catalog.CompletionDelay;
+        }
+
+        // Boss replay can temporarily hold the automatic transition without
+        // changing the recorded simulation or the completion state.
+        public void SuspendCompletionAdvance(bool suspended)
+        {
+            if (Session.State != SessionState.Completing) return;
+            completionAdvanceSuspended = suspended;
+            transitionAt = suspended ? float.PositiveInfinity : Time.unscaledTime + catalog.CompletionDelay;
         }
 
         public void Fail()
@@ -168,7 +181,7 @@ namespace GravityBox.Gameplay
             }
             if (Time.unscaledTime < transitionAt) return;
             transitionAt = float.PositiveInfinity;
-            if (Session.State == SessionState.Completing) Next();
+            if (Session.State == SessionState.Completing && !completionAdvanceSuspended) Next();
             else if (Session.State == SessionState.Failed) ResetLevel();
         }
 

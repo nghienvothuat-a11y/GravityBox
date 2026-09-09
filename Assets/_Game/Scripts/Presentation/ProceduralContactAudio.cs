@@ -34,21 +34,32 @@ namespace GravityBox.Presentation
 
         public static AudioClip CreateRolling()
         {
-            var noise = new float[SampleRate * 2];
-            var samples = new float[noise.Length];
+            const int seconds = 3;
+            const int overlap = 4096;
+            int length = SampleRate * seconds;
+            var noise = new float[length + overlap];
+            var filtered = new float[noise.Length];
+            var samples = new float[length];
             var random = new System.Random(5907);
             for (int i = 0; i < noise.Length; i++) noise[i] = (float)random.NextDouble() * 2 - 1;
             float body = 0, texture = 0;
-            // Warm up with the same periodic input to join the loop without a click.
-            for (int pass = 0; pass < 2; pass++)
+            for (int i = 0; i < filtered.Length; i++)
             {
-                for (int i = 0; i < samples.Length; i++)
-                {
-                    body += (noise[i] - body) * 0.038f;
-                    texture += (noise[i] - texture) * 0.26f;
-                    samples[i] = body * 1.9f + (texture - body) * 0.22f;
-                }
+                // Two gentle low passes retain a heavy bearing rumble and remove
+                // the sandpaper-like high band from the earlier placeholder.
+                body += (noise[i] - body) * .010f;
+                texture += (noise[i] - texture) * .052f;
+                filtered[i] = body * 1.45f + (texture - body) * .12f;
             }
+            System.Array.Copy(filtered, samples, length);
+            // Fold the continuation into the beginning. The sample immediately
+            // after the loop end now flows into sample zero without a periodic click.
+            for (int i = 0; i < overlap; i++)
+            {
+                float t = Mathf.SmoothStep(0, 1, (float)i / (overlap - 1));
+                samples[i] = Mathf.Lerp(filtered[length + i], filtered[i], t) * .72f;
+            }
+            for (int i = overlap; i < samples.Length; i++) samples[i] *= .72f;
             return Clip("Steel bearing rolling (procedural)", samples);
         }
 

@@ -74,7 +74,7 @@ Bounds của LevelRuntime là hàng rào kiểm tra lỗi sau vùng vỏ và ng�
 
 ## Session và reset
 
-Active có thể chuyển Paused, Completing khi bi thoát, hoặc Failed nếu phát hiện lọt ra ngoài sai đường. Completing giữ time scale 1; manager không tự chuyển bàn theo timer. Next được người chơi gọi và quay vòng 13 bàn. Reset có thể gọi từ trạng thái đang chơi hoặc đã thoát để lặp cùng điều kiện.
+Active có thể chuyển Paused, Completing khi mọi bi thoát, hoặc Failed nếu phát hiện lọt ra ngoài sai đường. Completing giữ time scale 1 và lên lịch tải màn kế sau `CompletionDelay`; campaign dùng 1,15 giây, C100 không quay vòng. Boss replay có thể tạm giữ lịch này mà không đổi trạng thái vật lý. Next vẫn cho phép bỏ qua thủ công khi test. Reset hủy lịch chuyển đang chờ và khôi phục cùng điều kiện.
 
 Reset khôi phục root pose trước, xóa input backlog, khôi phục exit/traversal state, rồi world pose/vận tốc của props và contact state của bi. Cuối cùng SyncTransforms và BeginTracking lấy mẫu mới. Registry chỉ capture trạng thái ban đầu một lần; reset không ghi đè trạng thái chuẩn bằng kết quả thử trước đó.
 

@@ -22,6 +22,7 @@ Phạm vi bản đầu theo yêu cầu cập nhật: **100 màn campaign, 10 ch�
 - Sai thao tác nên đưa bi về sân đỡ/hốc hồi phục gần đó. Chốt cơ khí giữ được một phần kết quả bằng trạng thái vật lý thực. Reset chủ động vẫn trả cả màn về ban đầu; không gọi teleport là checkpoint vật lý.
 - Luôn nhìn được bi, mặt đỡ và vùng tiếp theo tại thời điểm phải quyết định. Kính mù, glare, rung camera và hiệu ứng che đường là lỗi readability, không phải điểm khó hợp lệ.
 - Có thể dừng, quan sát và tiếp tục. Trong lúc điều khiển, camera ổn định; không tự orbit hoặc thay time scale. Cảnh quay khoe thiết kế nằm trong replay sau khi đã thoát.
+- Khi tất cả bi đã thoát, giữ một nhịp payoff ngắn rồi tự tải màn kế tiếp. C100 dừng ở trạng thái hoàn thành; replay boss đang chạy tạm giữ lượt chuyển.
 - Chấp nhận cách giải vật lý hợp lệ khác với dự kiến. Waypoint kiểm thử không trở thành điều kiện thắng vô hình.
 
 ## 3. Đo độ khó: dự báo trước, hiệu chỉnh bằng người chơi

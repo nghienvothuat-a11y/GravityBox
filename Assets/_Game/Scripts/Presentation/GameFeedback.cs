@@ -11,6 +11,11 @@ namespace GravityBox.Presentation
     {
         public AudioClip ImpactClip, SuccessClip, FailClip, MechanismClip, RollClip;
         public bool SynthesizeContactAudio = true;
+        [Header("Rolling comfort")]
+        [Range(0, .2f)] public float RollingMaxVolume = .075f;
+        public Vector2 RollingPitchRange = new Vector2(.72f, .98f);
+        [Min(.01f)] public float RollingFadeInPerSecond = .35f;
+        [Min(.01f)] public float RollingFadeOutPerSecond = 1.4f;
         private readonly AudioSource[] impactVoices = new AudioSource[6];
         private AudioSource effects, rolling;
         private AudioClip generatedImpact, generatedRoll, contactImpact;
@@ -55,6 +60,8 @@ namespace GravityBox.Presentation
             // The camera changes distance to frame the apparatus. Its framing must
             // not change the perceived strength of the same physical contact.
             source.spatialBlend = 0;
+            source.dopplerLevel = 0;
+            source.reverbZoneMix = 0;
             return source;
         }
 
@@ -124,11 +131,17 @@ namespace GravityBox.Presentation
             float weight = observedBall.Profile.Mass * Mathf.Max(gravity, 0.01f);
             float load = Mathf.Sqrt(Mathf.Clamp01(observedBall.ContactLoad / (weight * 1.5f)));
             float rollingReference = Mathf.Sqrt(Mathf.Max(0.001f, gravity * observedBall.Profile.Radius * 2));
-            float motion = Mathf.Sqrt(Mathf.Clamp01(speed / rollingReference));
-            float volume = audible ? motion * load * 0.16f : 0;
-            rolling.volume = Mathf.MoveTowards(rolling.volume, volume, Time.unscaledDeltaTime * 2);
+            // Keep tiny contact jitter silent, then bring in a soft bed gradually.
+            // This preserves speed/load information without a constant hiss.
+            float normalizedSpeed = Mathf.InverseLerp(.018f, rollingReference, speed);
+            float motion = Mathf.SmoothStep(0, 1, normalizedSpeed);
+            float voiceCeiling = RollingMaxVolume / Mathf.Sqrt(Mathf.Max(1, ballVoices.Count));
+            float volume = audible ? motion * load * voiceCeiling : 0;
+            float fade = volume > rolling.volume ? RollingFadeInPerSecond : RollingFadeOutPerSecond;
+            rolling.volume = Mathf.MoveTowards(rolling.volume, volume, Time.unscaledDeltaTime * fade);
             float turnsPerSecond = speed / (2 * Mathf.PI * observedBall.Profile.Radius);
-            rolling.pitch = 0.65f + Mathf.Clamp01(turnsPerSecond / 10) * 0.85f;
+            rolling.pitch = Mathf.Lerp(RollingPitchRange.x, RollingPitchRange.y,
+                Mathf.SmoothStep(0, 1, Mathf.Clamp01(turnsPerSecond / 12)));
             rolling.panStereo = BallPan(observedBall);
         }
 

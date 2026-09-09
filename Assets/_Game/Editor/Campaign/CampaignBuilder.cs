@@ -34,7 +34,7 @@ namespace GravityBox.Editor
             var catalog = Asset<LevelCatalog>(CatalogPath);
             catalog.Id = "gravity-box-campaign-v1"; catalog.DisplayName = "Hành trình 100 màn"; catalog.IsCampaign = true;
             catalog.BallPrefab = lab.BallPrefab; catalog.BallProfile = lab.BallProfile; catalog.Rotation = lab.Rotation;
-            catalog.CompletionDelay = lab.CompletionDelay; catalog.FailureDelay = lab.FailureDelay;
+            catalog.CompletionDelay = 1.15f; catalog.FailureDelay = lab.FailureDelay;
             catalog.Levels = new LevelDefinition[specs.Length];
             foreach (CampaignLevelSpec spec in specs)
             {

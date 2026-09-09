@@ -1,5 +1,12 @@
 # Nhật ký phát triển Gravity Box
 
+## Tự chuyển màn và âm thanh lăn dịu hơn — 09/09/2026
+
+- Khi toàn bộ bi đã ra khỏi lỗ, Campaign giữ hiệu ứng thắng 1,15 giây rồi tự tải màn kế tiếp; Physics Lab giữ 1,8 giây. C100 dừng tại trạng thái hoàn thành, không quay về C001. NEXT vẫn dùng để bỏ qua nhanh trong lúc test.
+- Boss replay tạm giữ bộ đếm tự chuyển màn; khi replay kết thúc, khoảng chờ thắng bắt đầu lại để người chơi không bị cắt mất đoạn xem lại.
+- Âm thanh lăn mới hạ trần âm lượng, tắt nhiễu do rung tiếp xúc rất nhỏ, dùng fade-in chậm/fade-out nhanh, bỏ Doppler/reverb và giới hạn pitch 0,72–0,98. Procedural loop dài ba giây, lọc bớt dải cao và crossfade đầu/cuối để giảm tiếng rít, tiếng sạn và nhịp click lặp lại.
+- **391/391 passed**: 11 EditMode + 380 PlayMode. Bộ test xác nhận tự chuyển Campaign/Lab, luật đủ toàn bộ bi, reset, replay và việc C100 không wrap. [XML và phạm vi](Verification/AutoAdvanceAudio/README.md).
+
 ## Bàn 17–23 — sáu họ cơ khí và boss — 09/09/2026
 
 - Thêm cầu gập tự rơi, cân hai bi, lồng treo độc lập, cửa con lắc, lấy đà–bay–đón, cam có trí nhớ và boss phối hợp hai bi trong khối cầu. Các màn 18/23 có hai bi; tất cả bi thoát mới thắng. [Thiết kế/cách thử](MECHANICAL_LEVELS_17_23.md), ADR 026.

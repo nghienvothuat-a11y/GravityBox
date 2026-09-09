@@ -112,6 +112,7 @@ namespace GravityBox.Presentation
             }
             previousTimeScale = Time.timeScale; Time.timeScale = 0;
             IsPlaying = true; playbackTime = 0;
+            levels.SuspendCompletionAdvance(true);
             if (cameraRig != null) cameraRig.ReplayView = true;
             levels.RecordEvent("boss_replay_start");
             Display(0);
@@ -141,6 +142,7 @@ namespace GravityBox.Presentation
             if (ghostRoot != null) { ghostRoot.SetActive(false); Destroy(ghostRoot); }
             if (cameraRig != null) cameraRig.ReplayView = false;
             Time.timeScale = previousTimeScale;
+            levels?.SuspendCompletionAdvance(false);
             levels?.RecordEvent("boss_replay_end");
         }
         private void OnDestroy()

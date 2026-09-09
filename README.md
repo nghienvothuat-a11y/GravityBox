@@ -38,7 +38,9 @@ Bi có đường kính 30 mm, khối lượng khoảng 111 g; hộp rộng kho�
 
 Kéo chuột trái hoặc một ngón tay trong vùng hộp để nghiêng. Nghiêng nhẹ rồi giữ để quan sát gia tốc; trả mặt hộp về ngang để quan sát quán tính và giảm tốc. Trong hộp vuông, đưa bi vào mặt phẳng và góc của khối lập phương để so sánh hướng nảy. **R** reset; **P/Esc** pause. Chọn hộp và chuyển tiếp bằng HUD. Ở bàn 11, chạm dòng trạng thái tầng để bật/tắt xem toàn bộ tầng; chế độ xem chỉ đổi vật liệu hiển thị, mọi sàn và vách vẫn va chạm.
 
-Lỗ thoát vẫn là lỗ tròn xuyên mặt hộp, với viền sáng mảnh không có collider hoặc gờ nổi. Chỉ khi toàn bộ bi đi qua lỗ mới ghi nhận thoát. Mô phỏng tiếp tục ở tốc độ thực; không slow motion hoặc tự chuyển bàn. Người chơi chọn khi nào reset hoặc chuyển hộp.
+Lỗ thoát vẫn là lỗ tròn xuyên mặt hộp, với viền sáng mảnh không có collider hoặc gờ nổi. Chỉ khi toàn bộ bi đi qua lỗ mới ghi nhận thoát. Sau khoảnh khắc thắng ngắn, game tự tải màn kế tiếp; nút NEXT vẫn được giữ để bỏ qua nhanh khi test. Mô phỏng tiếp tục ở tốc độ thực và không slow motion.
+
+Âm thanh lăn dùng lớp rumble đã lọc bớt dải cao, không phát khi bi chỉ rung rất nhỏ, vào chậm và tắt nhanh theo tiếp xúc. Pitch được giới hạn trong vùng trầm; âm lượng tổng được cân lại khi có nhiều bi để tránh tiếng rít và tiếng ồn liên tục.
 
 **D** bật diagnostics trong Editor/development build. **F12** lưu ảnh native vào `Application.persistentDataPath/gravity-box.png`.
 

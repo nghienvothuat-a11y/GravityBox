@@ -179,6 +179,37 @@ namespace GravityBox.Tests
             LogAssert.NoUnexpectedReceived();
         }
 
+        [UnityTest]
+        public IEnumerator CampaignAutoAdvancesAfterAllBallsButNeverWrapsAfterLevel100()
+        {
+            levels.enabled = true;
+            yield return EscapeCurrentRoster();
+            Assert.That(levels.Session.State, Is.EqualTo(SessionState.Completing));
+            yield return new WaitForSecondsRealtime(levels.Catalog.CompletionDelay + .1f);
+            Assert.That(levels.Index, Is.EqualTo(1));
+            Assert.That(levels.Session.State, Is.EqualTo(SessionState.Active));
+
+            Load(100);
+            yield return EscapeCurrentRoster();
+            yield return new WaitForSecondsRealtime(levels.Catalog.CompletionDelay + .1f);
+            Assert.That(levels.Index, Is.EqualTo(99), "C100 must not wrap back to onboarding.");
+            Assert.That(levels.Session.State, Is.EqualTo(SessionState.Completing));
+
+            IEnumerator EscapeCurrentRoster()
+            {
+                ExitSocket exit = levels.Current.Exit;
+                foreach (BallController ball in levels.Balls)
+                {
+                    ball.Body.position = exit.transform.TransformPoint(new Vector3(0, 0, -.025f));
+                    ball.Body.linearVelocity = Vector3.zero; ball.Body.angularVelocity = Vector3.zero;
+                    Physics.SyncTransforms(); exit.BeginTracking();
+                    for (int tick = 0; tick < 480 && !exit.HasBallExited(ball); tick++) Steps(1);
+                    Assert.That(exit.HasBallExited(ball), Is.True);
+                }
+                yield return null;
+            }
+        }
+
         [Test]
         public void SwitchingCampaignAndLabCleansPropsAndRestoresStableIdProgress()
         {
