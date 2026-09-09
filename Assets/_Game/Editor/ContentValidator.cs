@@ -81,7 +81,7 @@ namespace GravityBox.Editor
                         joint.angularZMotion == ConfigurableJointMotion.Locked, level.Id + ": slider must have one constrained travel axis.");
                     Require(joint.xDrive.positionSpring == 0 && joint.xDrive.positionDamper == 0 &&
                         joint.linearLimitSpring.spring == 0 && joint.linearLimitSpring.damper == 0,
-                        level.Id + ": gravity slider must not be motor or spring driven.");
+                        level.Id + ": joint drive must stay disabled; powered sliders use their explicit force component.");
                 }
                 LayeredMaze layered = level.Prefab.GetComponent<LayeredMaze>();
                 if (layered != null)
@@ -111,6 +111,21 @@ namespace GravityBox.Editor
                 var ball = new GameObject("Spawn clearance probe", typeof(SphereCollider));
                 SceneManager.MoveGameObjectToScene(ball, preview);
                 SphereCollider sphere = ball.GetComponent<SphereCollider>(); sphere.radius = radius;
+                for (int i = 0; i < level.BallCount; i++)
+                {
+                    Require(level.GetBallSpawn(i) != null, definition.Id + ": missing ball spawn " + i);
+                    Vector3 candidate = level.GetBallSpawn(i).position;
+                    Require(!level.IsOutside(candidate), definition.Id + ": ball spawn outside bounds.");
+                    for (int j = 0; j < i; j++)
+                        Require(Vector3.Distance(candidate, level.GetBallSpawn(j).position) > radius * 2, definition.Id + ": overlapping ball spawns.");
+                    foreach (Collider solid in level.GetComponentsInChildren<Collider>(true))
+                    {
+                        if (solid.isTrigger || !solid.enabled) continue;
+                        bool overlap = UnityEngine.Physics.ComputePenetration(sphere, candidate, Quaternion.identity, solid,
+                            solid.transform.position, solid.transform.rotation, out _, out float penetration);
+                        Require(!overlap || penetration < radius * .01f, definition.Id + ": spawn " + i + " overlaps " + solid.name);
+                    }
+                }
                 Vector3 spawn = level.BallSpawn.position;
                 Require(!level.IsOutside(spawn), definition.Id + ": spawn outside bounds.");
                 foreach (Collider solid in level.GetComponentsInChildren<Collider>(true))
@@ -142,9 +157,13 @@ namespace GravityBox.Editor
             foreach (Vector2 point in level.Footprint)
                 Require(!float.IsNaN(point.x) && !float.IsNaN(point.y) && point.magnitude + radius < level.BoundsHalfExtent,
                     definition.Id + ": footprint exceeds framing/failure bounds.");
-            Vector3 spawn = level.transform.InverseTransformPoint(level.BallSpawn.position);
+            for (int i = 0; i < level.BallCount; i++)
+            {
+                Require(level.GetBallSpawn(i) != null, definition.Id + ": missing ball spawn " + i);
+                Vector3 spawn = level.transform.InverseTransformPoint(level.GetBallSpawn(i).position);
+                ValidateInterior(new Vector2(spawn.x, spawn.z), radius, "spawn " + i);
+            }
             Vector3 exit = level.transform.InverseTransformPoint(level.Exit.transform.position);
-            ValidateInterior(new Vector2(spawn.x, spawn.z), radius, "spawn");
             ValidateInterior(new Vector2(exit.x, exit.z), level.Exit.ApertureRadius, "exit");
 
             void ValidateInterior(Vector2 point, float clearance, string label)

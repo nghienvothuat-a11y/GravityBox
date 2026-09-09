@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e965f9168c2046c28c59aa4b83cc1ec, type: 3}
+  m_Name: CooperativeBox
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDefinition
+  Id: steel-lab-cooperativebox
+  DisplayIndex: 16
+  DisplayName: Two to escape
+  Shape: 15
+  TeachingHint: Hold cyan A to let B cross. B presses amber to release A. Get BOTH
+    balls out.
+  Environment: {fileID: 11400000, guid: 82e0ce24addfe4fc89b8bbd0db998aea, type: 2}
+  Prefab: {fileID: 3375090899389237206, guid: 1c04a19ca1c7c4aa5b6b7f9d665cbd52, type: 3}
+  RotationMode: 1
+  InitialLocalVelocity: {x: 0, y: 0, z: 0}
+  ParSeconds: 0
+  Tutorial: 0
+  DesignerSolution: Two steel balls share one rotating box and Earth gravity. Cyan
+    A holds a spring plunger while amber B crosses the right gate. B then compresses
+    the retaining plunger, which holds both powered shutters open. Retrieve A from
+    its holding pocket and guide both spheres to the one round exit. Shutters remain
+    physical colliders throughout their motion. The level only completes after both
+    full spheres have left. Shared exit assist pulls the ball through an unobstructed
+    opening within 40 mm. This is deliberate gameplay assistance; the entire sphere
+    must still physically clear the bore before completion.

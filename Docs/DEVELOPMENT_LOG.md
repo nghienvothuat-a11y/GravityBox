@@ -1,5 +1,14 @@
 # Nhật ký phát triển Gravity Box
 
+## Bàn 16 — hai bi phối hợp và luật thoát toàn bộ — 09/09/2026
+
+- Thêm **Two to escape**: hai bi thép ~111 g, cùng thao tác xoay, trong hai khoang của hộp vuông. A nén nút lò xo để mở cửa cho B; B qua cửa và nén nút chốt giữ mở hai cửa, giải phóng A. Cửa chạy bằng lực motor giới hạn và luôn giữ collider. [Thiết kế](LEVEL16_COOPERATIVE.md), ADR 025.
+- Đổi luật chung thành toàn bộ roster bi phải thoát. `AdditionalBallSpawns`, danh sách body/force/lifecycle và traversal/assist riêng từng bi; event từng bi rồi event hoàn tất. HUD đếm OUT, âm thanh theo từng bi, camera theo viên cuối thoát. Reset ở 1/2 khôi phục toàn màn; 15 màn cũ vẫn là 1/1.
+- **112/112 kiểm tra** (8 EditMode + 104 PlayMode), kết thúc **04:26:21 UTC**. Có hai thứ tự thoát, partial reset, va chạm bi-bi, tải nút, cửa chặn, một đường phối hợp từ hai spawn chỉ bằng xoay, xoay rộng/đảo hộp và 51 tình huống bi/cửa của 16 màn. Scene integration xác nhận 1/2 vẫn chơi tiếp, không fail vì viên đã thoát rơi xa. [XML/phạm vi](Verification/Cooperative16/README.md).
+- Fixture lỗ được cập nhật để xoay cả props/bi đã tách khỏi hierarchy khi chuẩn bị góc cố định và chờ viên trước rời bore trước khi đặt viên sau. Điều này giữ va chạm giữa hai bi, không sửa lực hút để xuyên vật cản. Những thay đổi ID scene/prefab cũ và importer material/settings không đổi dữ liệu gameplay đã được hoàn nguyên.
+- Sáu [ảnh liên tục](Images/Level16/README.md), bắt đầu **04:19:55 UTC**, ghi A giữ, B qua cửa, chốt giữ, 1/2 và 2/2. Capture chạy trong Play Mode để có callback contact thật; các ảnh Editor không Play Mode ban đầu không được dùng làm bằng chứng. Mặt nút chuyển sang kính màu để thấy viên bi đang giữ.
+- macOS build thành công lúc **11:27:05 giờ Việt Nam**, mở sẵn màn 16, kiểm tra HUD/hai bi và lưu F12 lúc 11:29:04. Không có exception/error trong Player.log đã đọc. Chưa đánh giá lượt giải bằng tay trên player; không build APK mới.
+
 ## Bàn 15 — hộp đầu sư tử — 09/09/2026
 
 - Thêm **The lion's mouth**, hộp khô hình mặt nạ sư tử bằng đồng/kính. Contour bờm/tai 50 đỉnh là thành hộp thật; năm khối mắt, mũi và mõm dùng mesh phù điêu vát cạnh với collider tương ứng. Lỗ tròn ở miệng giữ hỗ trợ thoát chung. [Thiết kế](LEVEL15_LION_HEAD.md).

@@ -52,12 +52,12 @@ namespace GravityBox.Tests
         public void Teardown()
         {
             GameObject root = levels.Current != null ? levels.Current.gameObject : null;
-            GameObject ball = levels.Ball != null ? levels.Ball.gameObject : null;
+            var balls = new List<BallController>(levels.Balls);
             PhysicalProp[] props = levels.Current != null ? levels.Current.Props : System.Array.Empty<PhysicalProp>();
             Object.DestroyImmediate(services);
             foreach (PhysicalProp prop in props) if (prop != null) Object.DestroyImmediate(prop.gameObject);
             if (root != null) Object.DestroyImmediate(root);
-            if (ball != null) Object.DestroyImmediate(ball);
+            foreach (BallController ball in balls) if (ball != null) Object.DestroyImmediate(ball.gameObject);
             UnityEngine.Physics.simulationMode = previousMode;
             UnityEngine.Physics.gravity = previousGravity;
             Time.fixedDeltaTime = previousFixedDelta;
@@ -107,13 +107,13 @@ namespace GravityBox.Tests
         }
 
         [Test]
-        public void EveryBox_LoadsOneWorldSpaceBallWithClearSpawnAndRestoresItsState()
+        public void EveryBox_LoadsAuthoredWorldSpaceBallsWithClearSpawnsAndRestoresTheirState()
         {
             for (int index = 0; index < levels.Catalog.Levels.Length; index++)
             {
                 Load(index);
                 Assert.That(forces.Environment, Is.SameAs(levels.Definition.Environment));
-                Assert.That(forces.TargetCount, Is.EqualTo(1 + levels.Current.Props.Length));
+                Assert.That(forces.TargetCount, Is.EqualTo(levels.Balls.Count + levels.Current.Props.Length));
                 Assert.That(levels.Ball.transform.parent, Is.Null);
                 Assert.That(levels.Current.IsOutside(levels.Ball.Body.position), Is.False);
                 SphereCollider sphere = levels.Ball.GetComponent<SphereCollider>();
@@ -155,7 +155,7 @@ namespace GravityBox.Tests
                     Assert.That(Quaternion.Angle(levels.Current.Rotation.Orientation, orientation), Is.LessThan(0.001f));
                     Assert.That(levels.Current.Exit.HasExited, Is.False);
                     Assert.That(levels.Current.Resets.Count, Is.EqualTo(registryCount));
-                    Assert.That(forces.TargetCount, Is.EqualTo(1 + levels.Current.Props.Length));
+                    Assert.That(forces.TargetCount, Is.EqualTo(levels.Balls.Count + levels.Current.Props.Length));
                     Assert.That(levels.Session.State, Is.EqualTo(SessionState.Active));
                 }
             }
@@ -243,7 +243,7 @@ namespace GravityBox.Tests
                 foreach (var renderer in levels.Current.Exit.GetComponentsInChildren<MeshRenderer>())
                     Assert.That(renderer.GetComponent<Collider>(), Is.Null, "The thin light ring must not create a lip.");
                 LaunchThroughExit();
-                Assert.That(levels.Current.Exit.HasExited, Is.True, levels.Definition.Id + " blocks the aperture.");
+                Assert.That(levels.Current.Exit.HasBallExited(levels.Ball), Is.True, levels.Definition.Id + " blocks the aperture.");
                 Assert.That(levels.Ball.Body.isKinematic, Is.False);
                 Vector3 local = levels.Current.Exit.transform.InverseTransformPoint(levels.Ball.Body.position);
                 Assert.That(local.z, Is.GreaterThan(levels.Current.Exit.WallHalfDepth + Radius));

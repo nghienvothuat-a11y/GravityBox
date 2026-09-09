@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GravityBox.Foundation;
 using GravityBox.Simulation;
 using UnityEngine;
@@ -13,7 +14,15 @@ namespace GravityBox.Gameplay
         private float startTime;
         public readonly GameSession Session = new GameSession();
         public LevelRuntime Current { get; private set; }
-        public BallController Ball { get; private set; }
+        private readonly List<BallController> balls = new List<BallController>();
+        public IReadOnlyList<BallController> Balls => balls;
+        // Primary-ball compatibility for single-ball diagnostics and legacy presentation.
+        public BallController Ball => balls.Count == 0 ? null : balls[0];
+        public int EscapedCount => Current != null ? Current.Exit.EscapedCount : 0;
+        public BallController ActiveBall
+        {
+            get { foreach (BallController b in balls) if (!Current.Exit.HasBallExited(b)) return b; return Ball; }
+        }
         public LevelDefinition Definition => catalog.Levels[Index];
         public LevelCatalog Catalog => catalog;
         public int Index { get; private set; }
@@ -44,12 +53,24 @@ namespace GravityBox.Gameplay
             LevelDefinition level = Definition;
             Current = Instantiate(level.Prefab, Vector3.zero, Quaternion.identity);
             Current.name = "LevelRoot • " + level.DisplayName;
-            // A dynamic ball must never inherit LevelRoot transforms.
-            Ball = Instantiate(catalog.BallPrefab, Current.BallSpawn.position, Current.BallSpawn.rotation);
-            Ball.name = "Ball (world space)";
-            Ball.Configure(catalog.BallProfile, Current.transform.TransformDirection(level.InitialLocalVelocity), level.Environment.IsZeroGravity);
-            forces.Configure(Ball, level.Environment);
-            Current.Initialize(Ball, catalog.Rotation, level.RotationMode, forces);
+            // Every dynamic ball lives in world space, independent of the rotating root.
+            for (int i = 0; i < Current.BallCount; i++)
+            {
+                Transform spawn = Current.GetBallSpawn(i);
+                BallController ball = Instantiate(catalog.BallPrefab, spawn.position, spawn.rotation);
+                ball.name = "Ball " + (i + 1) + " (world space)";
+                ball.Configure(catalog.BallProfile, Current.transform.TransformDirection(level.InitialLocalVelocity), level.Environment.IsZeroGravity);
+                balls.Add(ball);
+                if (i == 0) forces.Configure(ball, level.Environment); else forces.Register(ball);
+                if (Current.BallCount > 1)
+                {
+                    var tint = new MaterialPropertyBlock();
+                    tint.SetColor("_BaseColor", i % 2 == 0 ? new Color(.42f,.8f,.88f) : new Color(.95f,.67f,.3f));
+                    foreach (Renderer renderer in ball.GetComponentsInChildren<Renderer>()) renderer.SetPropertyBlock(tint);
+                }
+            }
+            Current.Initialize(balls, catalog.Rotation, level.RotationMode, forces);
+            Current.Exit.BallExited += OnBallExited;
             Current.Exit.Exited += Complete;
             foreach (KillVolume hazard in Current.Hazards) hazard.Hit += Fail;
             ResetCount = 0;
@@ -80,6 +101,8 @@ namespace GravityBox.Gameplay
             DragDistance += distance;
         }
 
+        private void OnBallExited(BallController ball) => GameplayEvent?.Invoke("ball_exit_" + (balls.IndexOf(ball) + 1));
+
         private void Complete()
         {
             if (!Session.TryComplete()) return;
@@ -90,7 +113,7 @@ namespace GravityBox.Gameplay
         public void Fail()
         {
             if (!Session.TryFail()) return;
-            Ball.Capture(Ball.Body.position);
+            foreach (BallController ball in balls) if (!Current.Exit.HasBallExited(ball)) ball.Capture(ball.Body.position);
             GameplayEvent?.Invoke("level_fail");
             transitionAt = Time.unscaledTime + catalog.FailureDelay;
         }
@@ -108,7 +131,8 @@ namespace GravityBox.Gameplay
             if (Session.State == SessionState.Active)
             {
                 Current.Exit.EvaluateTraversal();
-                if (!Current.Exit.HasExited && Current.IsOutside(Ball.Body.position)) Fail();
+                foreach (BallController ball in balls)
+                    if (!Current.Exit.HasBallExited(ball) && Current.IsOutside(ball.Body.position)) { Fail(); break; }
             }
             if (Time.unscaledTime < transitionAt) return;
             transitionAt = float.PositiveInfinity;
@@ -132,18 +156,20 @@ namespace GravityBox.Gameplay
             if (Current != null)
             {
                 Current.Exit.Exited -= Complete;
+                Current.Exit.BallExited -= OnBallExited;
                 foreach (KillVolume hazard in Current.Hazards) hazard.Hit -= Fail;
                 Current.ReleaseProps();
                 Current.gameObject.SetActive(false);
                 Destroy(Current.gameObject);
                 Current = null;
             }
-            if (Ball != null)
+            foreach (BallController ball in balls)
             {
-                Ball.gameObject.SetActive(false);
-                Destroy(Ball.gameObject);
-                Ball = null;
+                if (ball == null) continue;
+                ball.gameObject.SetActive(false);
+                Destroy(ball.gameObject);
             }
+            balls.Clear();
         }
 
         private void OnDestroy()

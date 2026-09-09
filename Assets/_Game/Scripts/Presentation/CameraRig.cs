@@ -30,7 +30,7 @@ namespace GravityBox.Presentation
             if (levels != null && levels.Ball != null &&
                 (levels.Session.State == SessionState.Completing || levels.Session.State == SessionState.Finished))
             {
-                Vector3 ball = levels.Ball.Body.position;
+                Vector3 ball = levels.Current.Exit.LastEscapedBall != null ? levels.Current.Exit.LastEscapedBall.Body.position : levels.Ball.Body.position;
                 float margin = levels.Ball.Profile.Radius * 2;
                 // Show the complete escape, then keep the apparatus readable while
                 // the ball continues its real trajectory beyond the framing area.

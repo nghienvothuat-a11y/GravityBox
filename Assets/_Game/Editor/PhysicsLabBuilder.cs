@@ -229,6 +229,7 @@ namespace GravityBox.Editor
             if (shape == ContainerShape.WaterBox) WaterBoxBuilder.AddWater(root);
             if (shape == ContainerShape.MercuryBox) WaterBoxBuilder.AddMercury(root);
             if (shape == ContainerShape.LionHead) LionHeadBuilder.Build(root, outline, exit, Aperture, contact);
+            if (shape == ContainerShape.CooperativeBox) CooperativeBoxBuilder.Build(level, contact);
             GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, Folder + "/Prefabs/" + shape + " box.prefab");
             Object.DestroyImmediate(root); return saved.GetComponent<LevelRuntime>();
         }

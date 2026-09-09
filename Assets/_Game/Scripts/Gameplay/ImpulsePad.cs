@@ -11,20 +11,21 @@ namespace GravityBox.Gameplay
         [Min(0)] public float Speed = 5f;
         [Min(0)] public float Cooldown = 0.3f;
         public bool Spring;
-        private float readyAt;
-        private BallController ball;
+        private readonly System.Collections.Generic.Dictionary<BallController, float> readyAt = new System.Collections.Generic.Dictionary<BallController, float>();
+        private System.Collections.Generic.IReadOnlyList<BallController> balls;
         public bool IsActive { get; private set; } = true;
         public event Action Fired;
 
-        public void Bind(BallController target) => ball = target;
+        public void Bind(BallController target) => Bind(new[] { target });
+        public void Bind(System.Collections.Generic.IReadOnlyList<BallController> targets) { balls = targets; readyAt.Clear(); }
         public void CaptureInitialState() { }
-        public void ResetState() { readyAt = 0; IsActive = true; }
+        public void ResetState() { readyAt.Clear(); IsActive = true; }
         public void SetActive(bool active) => IsActive = active;
 
         public bool TryFire(BallController target)
         {
-            if (!IsActive || target == null || target.IsCaptured || Time.time < readyAt) return false;
-            readyAt = Time.time + Cooldown;
+            if (!IsActive || target == null || target.IsCaptured || (readyAt.TryGetValue(target, out float time) && Time.time < time)) return false;
+            readyAt[target] = Time.time + Cooldown;
             Vector3 direction = transform.TransformDirection(LocalDirection).normalized;
             float currentAlongNormal = Vector3.Dot(target.Body.linearVelocity, direction);
             float desiredSpeed = Spring ? Mathf.Max(Speed, -currentAlongNormal * 0.95f) : Speed;
@@ -35,7 +36,9 @@ namespace GravityBox.Gameplay
 
         private void OnTriggerEnter(Collider other)
         {
-            if (ball != null && other.attachedRigidbody == ball.Body) TryFire(ball);
+            if (balls == null) return;
+            foreach (BallController ball in balls)
+                if (ball != null && other.attachedRigidbody == ball.Body) { TryFire(ball); break; }
         }
     }
 }

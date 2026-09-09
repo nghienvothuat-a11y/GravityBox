@@ -32,6 +32,8 @@ namespace GravityBox.Presentation
         private GameObject levelModal, pauseOverlay, debugPanel;
         private float nextRefresh;
         private bool wasAssisting;
+        private int lastEscaped = -1;
+        private CooperativeRelay relay;
         public bool ModalOpen => levelModal != null && levelModal.activeSelf;
 
         public void Initialize(LevelManager manager)
@@ -225,6 +227,7 @@ namespace GravityBox.Presentation
         {
             var water = levels.Current.GetComponent<WaterVolume>();
             if (water != null) levels.Current.GetComponent<WaterVisuals>()?.Initialize(water);
+            relay = levels.Current.GetComponent<CooperativeRelay>();
             gravitySlider = null;
             var sliders = new System.Collections.Generic.List<GravitySliderGuide>();
             // Props live outside the rotating hierarchy after initialization.
@@ -248,9 +251,9 @@ namespace GravityBox.Presentation
             state.rectTransform.sizeDelta = new Vector2(945, layered != null ? 124 : 40);
             number.text = definition.DisplayIndex.ToString("00");
             title.text = definition.DisplayName;
-            environment.text = $"STEEL · {levels.Ball.Profile.Mass * 1000:0} g · Ø {levels.Ball.Profile.Radius * 2000:0} mm";
+            environment.text = (levels.Balls.Count > 1 ? $"{levels.Balls.Count} × " : "") + $"STEEL · {levels.Ball.Profile.Mass * 1000:0} g · Ø {levels.Ball.Profile.Radius * 2000:0} mm";
             hint.text = definition.TeachingHint;
-            progress.text = $"{definition.DisplayIndex:00} / {levels.Catalog.Levels.Length:00}";
+            RefreshProgress();
             RefreshStatusText(levels.Session.State);
         }
 
@@ -261,9 +264,28 @@ namespace GravityBox.Presentation
             pauseLabel.text = session == SessionState.Paused ? ">" : "II";
         }
 
+        private void RefreshProgress()
+        {
+            lastEscaped = levels.EscapedCount;
+            progress.text = $"{levels.Definition.DisplayIndex:00}/{levels.Catalog.Levels.Length:00}  ·  OUT {levels.EscapedCount}/{levels.Balls.Count}";
+        }
+
         private void RefreshStatusText(SessionState session)
         {
+            RefreshProgress();
             hint.text = levels.Definition.TeachingHint;
+            if (session == SessionState.Active && relay != null)
+            {
+                state.text = relay.Released ? "BOTH GATES HELD OPEN · BRING BOTH BALLS HOME"
+                    : relay.Holding ? "A IS HOLDING · GUIDE B TO THE AMBER PLUNGER"
+                    : "PARK A AGAINST THE CYAN PLUNGER";
+                hint.text = levels.EscapedCount > 0 ? "One is out. Keep going: the other ball must leave too."
+                    : relay.Released ? "Back A out of its pocket. Both gates stay open; lead both balls to the green exit."
+                    : relay.Holding ? "Keep A pressed while steering B through the cyan gate to the amber pocket."
+                    : "Cyan and amber move together. Use the walls to hold one while steering the other.";
+                state.color = relay.Released ? Accent : Amber;
+                return;
+            }
             if (session == SessionState.Active && levels.Current.Exit.AssistActive)
             {
                 state.text = "EXIT ASSIST · DRAWING THE BALL OUT";
@@ -314,7 +336,7 @@ namespace GravityBox.Presentation
                 state.color = clear ? Accent : Amber;
                 return;
             }
-            state.text = session == SessionState.Completing ? "BALL OUTSIDE. RESET OR CHOOSE THE NEXT BOX."
+            state.text = session == SessionState.Completing ? "ALL BALLS OUTSIDE. RESET OR CHOOSE THE NEXT BOX."
                 : session == SessionState.Failed ? "TRY A DIFFERENT ANGLE. RESETTING…"
                 : session == SessionState.Paused ? "SIMULATION PAUSED"
                 : session == SessionState.Finished ? "CHOOSE A BOX TO CONTINUE."
@@ -339,7 +361,7 @@ namespace GravityBox.Presentation
         private void Update()
         {
             if (levels == null) return;
-            if (wasAssisting != levels.Current.Exit.AssistActive)
+            if (lastEscaped != levels.EscapedCount || wasAssisting != levels.Current.Exit.AssistActive)
             {
                 wasAssisting = levels.Current.Exit.AssistActive;
                 RefreshStatusText(levels.Session.State);
@@ -349,7 +371,13 @@ namespace GravityBox.Presentation
             nextRefresh = Time.unscaledTime + 0.25f;
             if (levels.Session.State == SessionState.Active) RefreshStatusText(SessionState.Active);
             if (ModalOpen) RefreshSelectorCaption();
-            if (levels.Ball != null) stats.text = $"{levels.Ball.Body.linearVelocity.magnitude:0.00} m/s";
+            if (levels.Ball != null)
+            {
+                float speed = 0;
+                foreach (BallController ball in levels.Balls)
+                    if (!levels.Current.Exit.HasBallExited(ball)) speed = Mathf.Max(speed, ball.Body.linearVelocity.magnitude);
+                stats.text = $"{speed:0.00} m/s";
+            }
             if (debugPanel.activeSelf && levels.Ball != null)
             {
                 Rigidbody rb = levels.Ball.Body;

@@ -1,5 +1,7 @@
 # Hỗ trợ thoát ở mọi màn
 
+Từ bàn 16, cửa theo dõi traversal và assist độc lập cho từng bi. Một bi thoát không tắt hỗ trợ của bi còn lại; chỉ khi đủ toàn bộ bi mới hoàn thành màn. Collider của bi khác vẫn chặn sphere sweep, tránh hút xuyên qua nhau. [Luật nhiều bi](LEVEL16_COOPERATIVE.md).
+
 Theo yêu cầu mới ngày 09/09/2026, mọi màn dùng lực hỗ trợ khi bi đã đến gần lỗ. Đây là quy tắc gameplay có chủ ý để giảm độ khó ở bước cuối, không phải lực từ của vật liệu hay tính chất mới của nước/thủy ngân.
 
 Tâm bi vào vùng cầu bán kính **40 mm** quanh tâm miệng lỗ sẽ kích hoạt. Bi được căn vào trục lỗ rồi đẩy ra ngoài qua collider thật. Các giá trị mặc định nằm trên `ExitSocket`: tốc độ căn 0,24 m/s, tốc độ đẩy 0,65 m/s, giới hạn gia tốc hỗ trợ 45 m/s². Sau khi tâm đã vượt mặt ngoài hơn nửa bán kính bi, bổ sung hướng rời ngang 0,35 m/s, hướng ra xa tâm hộp (trục tiếp tuyến dự phòng cho lỗ ở tâm). Nhờ vậy lỗ hướng lên không thả bi rơi ngay trở lại đúng trục lỗ. Đây là vận tốc mục tiêu của bộ điều khiển lực, không phải ghi trực tiếp `Rigidbody.linearVelocity`.

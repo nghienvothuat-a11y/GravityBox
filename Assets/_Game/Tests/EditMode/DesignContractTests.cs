@@ -99,11 +99,11 @@ namespace GravityBox.Tests
         }
 
         [Test]
-        public void Catalog_ContainsFifteenDistinctExperimentsWithSharedSteelPhysics()
+        public void Catalog_ContainsSixteenDistinctExperimentsWithSharedSteelPhysics()
         {
             var catalog = Catalog(); var ids = new HashSet<string>();
             var shapes = new HashSet<ContainerShape>();
-            Assert.That(catalog.Levels.Length, Is.EqualTo(15));
+            Assert.That(catalog.Levels.Length, Is.EqualTo(16));
             Assert.That(catalog.BallPrefab, Is.Not.Null);
             Assert.That(catalog.Rotation, Is.Not.Null);
             for (int i = 0; i < catalog.Levels.Length; i++)
@@ -126,7 +126,7 @@ namespace GravityBox.Tests
                 Assert.That(level.Prefab.GetComponentsInChildren<ImpulsePad>(true), Is.Empty);
                 Assert.That(level.Prefab.GetComponentsInChildren<KillVolume>(true), Is.Empty);
                 Assert.That(level.Prefab.GetComponentsInChildren<PhysicalProp>(true).Length,
-                    Is.EqualTo(level.Shape == ContainerShape.GravityLock ? 1 : level.Shape == ContainerShape.MechanicalMaze ? 2 : 0));
+                    Is.EqualTo(level.Shape == ContainerShape.GravityLock ? 1 : level.Shape == ContainerShape.MechanicalMaze ? 2 : level.Shape == ContainerShape.CooperativeBox ? 4 : 0));
                 if (level.Shape == ContainerShape.SphereMaze)
                 {
                     SpatialMaze sphere = level.Prefab.GetComponent<SpatialMaze>();
@@ -145,7 +145,7 @@ namespace GravityBox.Tests
             }
             CollectionAssert.AreEquivalent(new[] { ContainerShape.Circle, ContainerShape.Square, ContainerShape.Triangle,
                 ContainerShape.LShape, ContainerShape.UShape, ContainerShape.Annulus, ContainerShape.Dumbbell, ContainerShape.Star,
-                ContainerShape.GravityLock, ContainerShape.MechanicalMaze, ContainerShape.LayeredMaze, ContainerShape.SphereMaze, ContainerShape.WaterBox, ContainerShape.MercuryBox, ContainerShape.LionHead }, shapes);
+                ContainerShape.GravityLock, ContainerShape.MechanicalMaze, ContainerShape.LayeredMaze, ContainerShape.SphereMaze, ContainerShape.WaterBox, ContainerShape.MercuryBox, ContainerShape.LionHead, ContainerShape.CooperativeBox }, shapes);
         }
 
         [Test]

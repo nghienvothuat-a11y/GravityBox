@@ -1,12 +1,14 @@
 # Gravity Box — Steel Ball Lab
 
-Prototype Unity tập trung vào cảm giác một viên bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **15 bàn**: tám hộp thử hình học, puzzle 09–12, **13 — Steel under water**, **14 — Steel in mercury** và **15 — The lion's mouth**. Hai môi trường chất lỏng dùng cùng hộp vuông/cube của bàn 02: bi chìm trong nước và nổi trong thủy ngân.
+Prototype Unity tập trung vào cảm giác bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **16 bàn**: tám hộp thử hình học, puzzle 09–12, **13 — Steel under water**, **14 — Steel in mercury**, **15 — The lion's mouth** và **16 — Two to escape**. Hai môi trường chất lỏng dùng cùng hộp vuông/cube của bàn 02: bi chìm trong nước và nổi trong thủy ngân.
+
+**Luật chung: tất cả bi phải thoát qua lỗ mới thắng.** Bàn 16 có hai bi cùng chịu một thao tác xoay: A giữ nút lò xo để B qua cửa; B nhấn chốt giữ mở hai cửa, rồi cả hai tới lỗ chung. HUD đếm `OUT 0/2 → 1/2 → 2/2`; các màn cũ vẫn có một bi. [Thiết kế phối hợp](Docs/LEVEL16_COOPERATIVE.md), [kiểm chứng hiện tại](Docs/Verification/Cooperative16/README.md).
 
 Màn 15 là hộp đầu sư tử bằng đồng và kính: bờm/tai là thành hộp thật, mắt/mũi/mõm là các gờ va chạm. Trọng lực bình thường; dẫn bi vòng qua khuôn mặt đến lỗ ở miệng. [Thiết kế](Docs/LEVEL15_LION_HEAD.md), [ảnh](Docs/Images/Level15/README.md).
 
-Cả 15 màn có **hỗ trợ hút trong bán kính 4 cm quanh lỗ**: căn bi rồi đẩy ra qua cửa thật, chỉ thắng khi toàn bộ bi đã thoát. Đây là hỗ trợ gameplay theo yêu cầu, không thay mô hình vật lý ở phần còn lại. [Thiết kế](Docs/EXIT_ASSIST.md), [kiểm chứng hiện tại](Docs/Verification/Lion15/README.md).
+Cả 16 màn có **hỗ trợ hút trong bán kính 4 cm quanh lỗ**: căn từng bi rồi đẩy ra qua cửa thật, chỉ thắng khi đủ số bi đã thoát hoàn toàn. Đây là hỗ trợ gameplay theo yêu cầu, không thay mô hình vật lý ở phần còn lại. [Thiết kế](Docs/EXIT_ASSIST.md).
 
-Bàn 14 giữ luật chất lỏng đầy, không chảy qua cửa; dùng hình ảnh bạc nhìn xuyên có nhãn để thấy bi bên trong thủy ngân đục. Hỗ trợ thoát xử lý cả bi nổi đứng yên ở miệng lỗ. Sàn bàn 13/14 trong hơn khi lật về phía camera. [Thiết kế/giới hạn](Docs/LEVEL14_MERCURY.md). Bản mới xuất macOS; APK cũ chưa có màn 14/15 và hỗ trợ thoát.
+Bàn 14 giữ luật chất lỏng đầy, không chảy qua cửa; dùng hình ảnh bạc nhìn xuyên có nhãn để thấy bi bên trong thủy ngân đục. Hỗ trợ thoát xử lý cả bi nổi đứng yên ở miệng lỗ. Sàn bàn 13/14 trong hơn khi lật về phía camera. [Thiết kế/giới hạn](Docs/LEVEL14_MERCURY.md). Bản mới xuất macOS; APK cũ chưa có màn 14–16 và hỗ trợ thoát.
 
 Bản nước hiệu chỉnh bổ sung cản khi bi lăn sát thành và added mass; giữ nước 20°C và bi thép 111 g. Có benchmark giảm tốc, hội tụ 60/120/240 Hz và kiểm tra lỗ thật. [Công thức/giới hạn](Docs/LEVEL13_WATER.md), [kiểm chứng](Docs/Verification/Water13/README.md). Bản hiệu chỉnh chỉ xuất macOS; APK hiện có vẫn là bản nước trước đó.
 

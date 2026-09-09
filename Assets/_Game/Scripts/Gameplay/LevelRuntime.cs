@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using GravityBox.Foundation;
 using GravityBox.Simulation;
 using UnityEngine;
@@ -13,6 +14,9 @@ namespace GravityBox.Gameplay
     public sealed class LevelRuntime : MonoBehaviour
     {
         public Transform BallSpawn;
+        public Transform[] AdditionalBallSpawns = System.Array.Empty<Transform>();
+        public int BallCount => 1 + AdditionalBallSpawns.Length;
+        public Transform GetBallSpawn(int index) => index == 0 ? BallSpawn : AdditionalBallSpawns[index - 1];
         public ExitSocket Exit;
         public BoxRotationController Rotation;
         public float BoundsHalfExtent = 3.7f;
@@ -31,8 +35,12 @@ namespace GravityBox.Gameplay
         public KillVolume[] Hazards { get; private set; }
 
         public void Initialize(BallController ball, RotationSettings settings, RotationMode mode, EnvironmentForceSystem forceSystem)
+            => Initialize(new[] { ball }, settings, mode, forceSystem);
+
+        public void Initialize(IReadOnlyList<BallController> balls, RotationSettings settings, RotationMode mode, EnvironmentForceSystem forceSystem)
         {
             forces = forceSystem;
+            BallController ball = balls[0];
             Props = GetComponentsInChildren<PhysicalProp>(true);
             foreach (PhysicalProp prop in Props)
             {
@@ -46,22 +54,30 @@ namespace GravityBox.Gameplay
             {
                 water.Bind(ball, forces.Environment);
                 forces.AddProvider(water);
+                for (int i = 1; i < balls.Count; i++)
+                {
+                    WaterVolume bodyWater = gameObject.AddComponent<WaterVolume>();
+                    bodyWater.Profile = water.Profile; bodyWater.HalfSize = water.HalfSize; bodyWater.Obstacle = water.Obstacle;
+                    bodyWater.Bind(balls[i], forces.Environment); forces.AddProvider(bodyWater);
+                }
             }
             Plates = GetComponentsInChildren<PressurePlate>(true);
             Pads = GetComponentsInChildren<ImpulsePad>(true);
             Hazards = GetComponentsInChildren<KillVolume>(true);
-            foreach (PressurePlate plate in Plates) plate.Bind(Signals, ball);
+            foreach (PressurePlate plate in Plates) plate.Bind(Signals, balls);
             foreach (SignalDoor door in GetComponentsInChildren<SignalDoor>(true)) door.Bind(Signals);
-            foreach (OneWayGate gate in GetComponentsInChildren<OneWayGate>(true)) gate.Bind(ball);
-            foreach (ImpulsePad pad in Pads) pad.Bind(ball);
-            foreach (KillVolume hazard in Hazards) hazard.Bind(ball);
-            Exit.Bind(ball, Signals);
+            foreach (OneWayGate gate in GetComponentsInChildren<OneWayGate>(true)) gate.Bind(balls);
+            foreach (ImpulsePad pad in Pads) pad.Bind(balls);
+            foreach (KillVolume hazard in Hazards) hazard.Bind(balls);
+            Exit.Bind(balls, Signals);
             forces.AddProvider(Exit);
             // Explicit hierarchy order; no global FindObjectsOfType or singleton registry.
             foreach (MonoBehaviour component in GetComponentsInChildren<MonoBehaviour>(true))
                 if (component is IResettable resettable && component != Rotation) Resets.Register(resettable);
             foreach (PhysicalProp prop in Props) Resets.Register(prop);
-            Resets.Register(ball);
+            foreach (BallController target in balls) Resets.Register(target);
+            CooperativeRelay relay = GetComponent<CooperativeRelay>();
+            if (relay != null) { relay.Bind(balls); forces.AddProvider(relay); }
         }
 
         public void ResetAll()

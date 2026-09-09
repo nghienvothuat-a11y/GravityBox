@@ -12,15 +12,18 @@ namespace GravityBox.Gameplay
         public Transform Visual;
         private Vector3 initialScale;
         private MechanismSignals signals;
-        private BallController ball;
+        private System.Collections.Generic.IReadOnlyList<BallController> balls;
+        private readonly System.Collections.Generic.HashSet<Rigidbody> occupants = new System.Collections.Generic.HashSet<Rigidbody>();
         public bool IsActive { get; private set; }
         public event Action Activated;
 
-        public void Bind(MechanismSignals bus, BallController target) { signals = bus; ball = target; }
+        public void Bind(MechanismSignals bus, BallController target) => Bind(bus, new[] { target });
+        public void Bind(MechanismSignals bus, System.Collections.Generic.IReadOnlyList<BallController> targets)
+        { signals = bus; balls = targets; occupants.Clear(); }
         public void CaptureInitialState() { if (Visual != null) initialScale = Visual.localScale; }
         public void ResetState()
         {
-            IsActive = false;
+            IsActive = false; occupants.Clear();
             signals?.Set(Channel, false);
             if (Visual != null) Visual.localScale = initialScale;
         }
@@ -32,9 +35,15 @@ namespace GravityBox.Gameplay
             if (Visual != null) Visual.localScale = active ? initialScale * 0.8f : initialScale;
             if (active) Activated?.Invoke();
         }
-        private void OnTriggerEnter(Collider other) { if (IsBall(other)) SetActive(true); }
-        private void OnTriggerStay(Collider other) { if (IsBall(other)) SetActive(true); }
-        private void OnTriggerExit(Collider other) { if (!Latch && IsBall(other)) SetActive(false); }
-        private bool IsBall(Collider other) => ball != null && other.attachedRigidbody == ball.Body && !ball.IsCaptured;
+        private void OnTriggerEnter(Collider other) => OnTriggerStay(other);
+        private void OnTriggerStay(Collider other) { if (IsBall(other)) { occupants.Add(other.attachedRigidbody); SetActive(true); } }
+        private void OnTriggerExit(Collider other) { occupants.Remove(other.attachedRigidbody); if (!Latch && occupants.Count == 0) SetActive(false); }
+        private bool IsBall(Collider other)
+        {
+            if (balls == null) return false;
+            foreach (BallController ball in balls)
+                if (ball != null && other.attachedRigidbody == ball.Body && !ball.IsCaptured) return true;
+            return false;
+        }
     }
 }

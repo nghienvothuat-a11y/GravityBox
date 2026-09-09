@@ -12,33 +12,39 @@ namespace GravityBox.Gameplay
         [Min(.01f)] public float AssistSpeed = .24f;
         [Min(.01f)] public float AssistEjectionSpeed = .65f;
         [Min(1)] public float AssistMaxAcceleration = 45;
-        public bool AssistActive { get; private set; }
-        public Vector3 AssistAcceleration { get; private set; }
+        public bool AssistActive => passages.Exists(p => p.AssistActive);
+        public Vector3 AssistAcceleration => passages.Count == 0 ? Vector3.zero : passages[0].AssistAcceleration;
         private Rigidbody assistRoot;
         private readonly RaycastHit[] assistHits = new RaycastHit[16];
 
         public void PrepareStep(float dt)
         {
-            AssistAcceleration = Vector3.zero;
-            if (dt <= 0 || !CanAssist()) { AssistActive = false; return; }
+            foreach (Passage p in passages) PrepareAssist(p, dt);
+        }
+
+        private void PrepareAssist(Passage passage, float dt)
+        {
+            BallController ball = passage.Ball;
+            passage.AssistAcceleration = Vector3.zero;
+            if (dt <= 0 || !CanAssist(passage)) { passage.AssistActive = false; return; }
             float radius = ball.Profile.Radius;
             float clearance = ApertureRadius - radius - ClearanceTolerance;
-            if (clearance <= 0) { AssistActive = false; return; }
+            if (clearance <= 0) { passage.AssistActive = false; return; }
             Vector3 p = transform.InverseTransformPoint(ball.Body.position);
             Vector3 align = new Vector3(0, 0, -WallHalfDepth - radius - .001f);
             Vector3 outside = new Vector3(0, 0, WallHalfDepth + radius + CompletionMargin + .02f);
-            if (!AssistActive)
+            if (!passage.AssistActive)
             {
                 // Start from inside/partly in the aperture, never recapture a ball
                 // arriving from outside. Sweeps prevent attraction through a maze wall
                 // or a physical shutter; triggers never form an invisible blocker.
                 if (p.sqrMagnitude > AssistRadius * AssistRadius || p.z > WallHalfDepth
-                    || !AssistPathClear(ball.Body.position, transform.TransformPoint(align), radius)
-                    || !AssistPathClear(transform.TransformPoint(align), transform.TransformPoint(outside), radius)) return;
-                AssistActive = true;
+                    || !AssistPathClear(ball, ball.Body.position, transform.TransformPoint(align), radius)
+                    || !AssistPathClear(ball, transform.TransformPoint(align), transform.TransformPoint(outside), radius)) return;
+                passage.AssistActive = true;
             }
             if (p.sqrMagnitude > AssistRadius * AssistRadius * 6.25f)
-            { ResetAssist(); return; }
+            { passage.AssistActive = false; passage.AssistAcceleration = Vector3.zero; return; }
             float radial = new Vector2(p.x, p.y).magnitude;
             Vector3 goal = radial > clearance * .6f && p.z < -WallHalfDepth ? align : outside;
             Vector3 relative = ball.Body.linearVelocity
@@ -57,16 +63,19 @@ namespace GravityBox.Gameplay
             // Exponential velocity response keeps the force bounded and timestep-aware.
             // Gravity, buoyancy, drag and contacts still run; no velocity/pose assignment.
             float response = (1 - Mathf.Exp(-180 * dt)) / dt;
-            AssistAcceleration = Vector3.ClampMagnitude((desired - relative) * response, AssistMaxAcceleration);
+            passage.AssistAcceleration = Vector3.ClampMagnitude((desired - relative) * response, AssistMaxAcceleration);
         }
 
         public Vector3 GetAcceleration(IPhysicsAffectable target, EnvironmentProfile environment)
-            => ReferenceEquals(target, ball) && CanAssist() ? AssistAcceleration : Vector3.zero;
+        {
+            Passage p = target is BallController targetBall ? Find(targetBall) : null;
+            return p != null && CanAssist(p) ? p.AssistAcceleration : Vector3.zero;
+        }
 
-        private bool CanAssist() => AssistEnabled && isActiveAndEnabled && Accepting && !HasExited
-            && IsUnlocked && ball != null && !ball.IsCaptured && !ball.Body.isKinematic;
+        private bool CanAssist(Passage p) => AssistEnabled && isActiveAndEnabled && Accepting && !p.Exited
+            && IsUnlocked && p.Ball != null && !p.Ball.IsCaptured && !p.Ball.Body.isKinematic;
 
-        private bool AssistPathClear(Vector3 from, Vector3 to, float radius)
+        private bool AssistPathClear(BallController ball, Vector3 from, Vector3 to, float radius)
         {
             Vector3 delta = to - from;
             if (delta.sqrMagnitude < 1e-10f) return true;
@@ -78,7 +87,10 @@ namespace GravityBox.Gameplay
             return true;
         }
 
-        private void ResetAssist() { AssistActive = false; AssistAcceleration = Vector3.zero; }
+        private void ResetAssist()
+        {
+            foreach (Passage p in passages) { p.AssistActive = false; p.AssistAcceleration = Vector3.zero; }
+        }
         private void OnDisable() => ResetAssist();
     }
 }

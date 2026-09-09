@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using GravityBox.Foundation;
 using GravityBox.Gameplay;
 using GravityBox.Simulation;
@@ -13,7 +15,13 @@ namespace GravityBox.Presentation
         private AudioSource effects, rolling;
         private AudioClip generatedImpact, generatedRoll, contactImpact;
         private LevelManager levels;
-        private BallController observedBall;
+        private sealed class BallVoice
+        {
+            public BallController Ball;
+            public AudioSource Rolling;
+            public Action<float> Impact;
+        }
+        private readonly List<BallVoice> ballVoices = new List<BallVoice>();
         private float lastImpact = float.NegativeInfinity;
         private int nextVoice;
         private Camera view;
@@ -52,9 +60,16 @@ namespace GravityBox.Presentation
 
         private void OnLoaded(LevelDefinition definition)
         {
-            if (observedBall != null) observedBall.Impact -= OnImpact;
-            observedBall = levels.Ball;
-            observedBall.Impact += OnImpact;
+            ClearBallVoices();
+            foreach (BallController ball in levels.Balls)
+            {
+                var voice = new BallVoice { Ball = ball, Rolling = CreateSource() };
+                voice.Impact = impulse => OnImpact(ball, impulse);
+                ball.Impact += voice.Impact;
+                voice.Rolling.loop = true; voice.Rolling.clip = rolling.clip; voice.Rolling.volume = 0;
+                if (voice.Rolling.clip != null) voice.Rolling.Play();
+                ballVoices.Add(voice);
+            }
             view.backgroundColor = definition.Environment.Background;
             lastImpact = float.NegativeInfinity;
             rolling.volume = 0;
@@ -64,7 +79,7 @@ namespace GravityBox.Presentation
             foreach (ImpulsePad pad in levels.Current.Pads) pad.Fired += Mechanism;
         }
 
-        private void OnImpact(float impulse)
+        private void OnImpact(BallController observedBall, float impulse)
         {
             if (observedBall == null || contactImpact == null) return;
             float mass = observedBall.Body.mass;
@@ -74,11 +89,11 @@ namespace GravityBox.Presentation
             lastImpact = Time.unscaledTime;
             float strength = Mathf.Clamp01(impulse / (mass * 1.8f));
             AudioSource voice = impactVoices[nextVoice++ % impactVoices.Length];
-            voice.panStereo = BallPan();
+            voice.panStereo = BallPan(observedBall);
             voice.PlayOneShot(contactImpact, Mathf.Sqrt(strength) * 0.62f);
         }
 
-        private float BallPan()
+        private float BallPan(BallController observedBall)
         {
             float x = view.WorldToViewportPoint(observedBall.Body.position).x;
             return Mathf.Clamp(x * 2 - 1, -1, 1) * 0.35f;
@@ -94,8 +109,15 @@ namespace GravityBox.Presentation
 
         private void Update()
         {
-            if (levels == null || observedBall == null) return;
-            bool audible = observedBall.HasContact && !observedBall.IsCaptured &&
+            if (levels == null) return;
+            foreach (BallVoice voice in ballVoices) UpdateRolling(voice);
+        }
+        private void UpdateRolling(BallVoice voice)
+        {
+            BallController observedBall = voice.Ball;
+            AudioSource rolling = voice.Rolling;
+            if (observedBall == null) return;
+            bool audible = observedBall.HasContact && !observedBall.IsCaptured && !levels.Current.Exit.HasBallExited(observedBall) &&
                 levels.Session.State != SessionState.Paused && Time.timeScale > 0;
             float speed = observedBall.ContactSpeed;
             float gravity = levels.Definition.Environment.Acceleration.magnitude;
@@ -107,7 +129,17 @@ namespace GravityBox.Presentation
             rolling.volume = Mathf.MoveTowards(rolling.volume, volume, Time.unscaledDeltaTime * 2);
             float turnsPerSecond = speed / (2 * Mathf.PI * observedBall.Profile.Radius);
             rolling.pitch = 0.65f + Mathf.Clamp01(turnsPerSecond / 10) * 0.85f;
-            rolling.panStereo = BallPan();
+            rolling.panStereo = BallPan(observedBall);
+        }
+
+        private void ClearBallVoices()
+        {
+            foreach (BallVoice voice in ballVoices)
+            {
+                if (voice.Ball != null) voice.Ball.Impact -= voice.Impact;
+                if (voice.Rolling != null) { voice.Rolling.Stop(); Destroy(voice.Rolling); }
+            }
+            ballVoices.Clear();
         }
 
         private void OnDestroy()
@@ -117,7 +149,7 @@ namespace GravityBox.Presentation
                 levels.Loaded -= OnLoaded;
                 levels.GameplayEvent -= OnEvent;
             }
-            if (observedBall != null) observedBall.Impact -= OnImpact;
+            ClearBallVoices();
             if (generatedImpact != null) Destroy(generatedImpact);
             if (generatedRoll != null) Destroy(generatedRoll);
         }

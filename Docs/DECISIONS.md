@@ -1,6 +1,10 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** ADR 024 thêm hộp đầu sư tử, tổng 15 màn. Hỗ trợ thoát ADR 023 áp dụng cho toàn catalog. Các quyết định cũ bên dưới giữ lại để theo dõi lịch sử.
+**Phạm vi hiện tại:** ADR 025 thêm luật tất cả bi thoát và màn phối hợp hai bi, tổng 16 màn. Hỗ trợ thoát ADR 023 áp dụng riêng cho từng bi. Các quyết định cũ bên dưới giữ lại để theo dõi lịch sử.
+
+## ADR 025 Toàn bộ bi phải thoát, cơ quan phối hợp ở bàn 16
+
+Thêm danh sách spawn/bi và trạng thái traversal/assist riêng cho mỗi bi vào runtime chung. Không hard-code điều kiện hai bi trong luật thắng. Bàn 16 dùng hai khoang và nút nhấn có tiếp xúc, lò xo thực, cửa trượt có collider và lực motor giới hạn. B giữ chốt mở hai cửa để A có đường rời hốc; bi nào thoát trước cũng không làm mất khả năng giải. Đây là cơ quan được cấp năng lượng, phân biệt với slider trọng lực thụ động ở bàn 09/10. [Thiết kế](LEVEL16_COOPERATIVE.md).
 
 ## ADR 024 Hình đầu sư tử là hình học của hộp
 

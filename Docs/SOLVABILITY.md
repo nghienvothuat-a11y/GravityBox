@@ -1,6 +1,8 @@
-# Phạm vi kiểm chứng prototype 15 bàn
+# Phạm vi kiểm chứng prototype 16 bàn
 
-Bản hiện tại có hỗ trợ thoát trong 40 mm quanh cửa cho **cả 15 màn**. Đường puzzle vẫn do người chơi xoay hộp; motor lực xử lý đoạn cuối qua lỗ thật. Các phép thử gồm cửa thoát ở ba tư thế, các môi trường, vách/cửa chặn và bi thủy ngân đứng yên tại cửa hướng lên. Bàn 15 thêm đường từ spawn qua cả hai bên mõm và va chạm mũi. [Kiểm chứng hiện tại](Verification/Lion15/README.md).
+Luật hiện tại yêu cầu toàn bộ bi thoát. Bàn 16 có hai bi: kiểm tra cả hai thứ tự thoát, tiếp tục ở 1/2, partial reset, tiếp xúc hai bi, nút giữ phải có tải, cửa đóng chặn B và đường phối hợp từ hai spawn đến lỗ chung. [Kiểm chứng hiện tại](Verification/Cooperative16/README.md). Các bằng chứng cũ được liên kết bên dưới để đối chiếu lịch sử.
+
+Bản hiện tại có hỗ trợ thoát trong 40 mm quanh cửa cho **cả 16 màn**. Đường puzzle vẫn do người chơi xoay hộp; motor lực xử lý đoạn cuối qua lỗ thật. Các phép thử gồm cửa thoát ở ba tư thế, các môi trường, vách/cửa chặn và bi thủy ngân đứng yên tại cửa hướng lên. Bàn 15 thêm đường từ spawn qua cả hai bên mõm và va chạm mũi. [Kiểm chứng bàn 15](Verification/Lion15/README.md).
 
 Bàn 14 tiếp tục đo nổi về nắp, cản theo nghiệm, reset/đổi môi trường và trạng thái nổi cân bằng khi tắt hỗ trợ. Đường giải phải nghiêng thêm để tự vượt vành là bằng chứng của bản đầu trước khi thêm motor. [Thiết kế](LEVEL14_MERCURY.md), [bằng chứng lịch sử](Verification/Mercury14/README.md).
 
@@ -12,7 +14,7 @@ Mục tiêu hiện tại là chuyển động và va chạm của bi thép. Khô
 
 - Catalog: tám hình Circle/Square/Triangle/LShape/UShape/Annulus/Dumbbell/Star, GravityLock ở bàn 09, MechanicalMaze ở 10, LayeredMaze ở 11 và SphereMaze ở 12; Earth gravity, free rotation, cùng profile bi thép. Bàn 09 có một PhysicalProp, bàn 10 có hai; không có cơ cấu mở bằng tín hiệu.
 - Mô phỏng độc lập: freefall 9,81 m/s², quán tính cầu, gia tốc lăn trên dốc, contact và mất năng lượng, rebound, spin và rolling resistance.
-- Prefab thật: spawn clearance, thành hộp theo từng cạnh contour gồm cả thành trong vành khuyên, sàn/nắp hỗ trợ đúng vùng có thể chơi và để trống phần khuyết/lõi rỗng; contact với cube, nằm yên, containment khi nghiêng và lỗ thoát thật. Scene integration kiểm tra cả 15 bàn. Phép kiểm tra vỏ dùng chiều sâu của từng prefab, gồm hộp 0,27 m ở bàn 11.
+- Prefab thật: spawn clearance, thành hộp theo từng cạnh contour gồm cả thành trong vành khuyên, sàn/nắp hỗ trợ đúng vùng có thể chơi và để trống phần khuyết/lõi rỗng; contact với cube, nằm yên, containment khi nghiêng và lỗ thoát thật. Scene integration kiểm tra cả 16 bàn. Phép kiểm tra vỏ dùng chiều sâu của từng prefab, gồm hộp 0,27 m ở bàn 11.
 - Lối đi mới: sphere sweep theo toàn bộ bán kính 0,015 m qua góc chữ L/U, nửa vòng vành khuyên, cổ quả tạ và vùng giữa ngôi sao; sau đó đưa bi qua các waypoint bằng gravity và rotation intent.
 - Exit: hướng đi từ trong ra ngoài, clearance tròn, toàn bộ bán kính vượt vỏ, một lần phát event, reset xóa passage cũ. Không teleport hoặc capture lúc thoát.
 - Puzzle 09: thanh chặn kín toàn bộ chiều sâu cửa, body/joint không drive hoặc signal, trượt mở/đóng do gravity; fixture từ spawn chỉ xoay hộp để giữ bi, mở cửa, đi sang khoang phải và thoát thật.

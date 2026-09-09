@@ -17,25 +17,40 @@ namespace GravityBox.Tests
                 levels.Current.GetComponent<Rigidbody>().rotation = pose;
                 levels.Current.transform.rotation = pose;
                 levels.Current.Rotation.SetTargetOrientation(pose);
+                // This fixture changes pose instantaneously: move the detached bodies too.
+                // Gameplay instead rotates through the controller's bounded motion.
+                foreach (var prop in levels.Current.Props)
+                { prop.Body.position = pose * prop.Body.position; prop.Body.rotation = pose * prop.Body.rotation; }
+                foreach (var target in levels.Balls) target.Body.position = pose * target.Body.position;
                 UnityEngine.Physics.SyncTransforms();
                 levels.Current.GetComponent<WaterVolume>()?.ResetState();
-                BeginExitApproach(); levels.Ball.Body.linearVelocity = Vector3.zero;
-                int wins = 0; levels.Current.Exit.Exited += () => wins++;
+                var exit = levels.Current.Exit;
+                foreach (var ball in levels.Balls)
+                {
+                // Each aperture fixture starts after the previous sphere has physically left the bore.
+                if (exit.EscapedCount > 0) Steps(60);
+                ball.Body.position = exit.transform.TransformPoint(new Vector3(0,0,-exit.WallHalfDepth-ball.Profile.Radius*1.2f));
+                ball.Body.linearVelocity = ball.Body.angularVelocity = Vector3.zero; UnityEngine.Physics.SyncTransforms(); exit.BeginTracking();
+                int exits = 0; exit.BallExited += target => { if (target == ball) exits++; };
                 Steps(1);
+                // A departing partner is a real collider: assistance waits for a clear bore.
+                for (int wait = 0; wait < 120 && !exit.AssistActive && !exit.HasBallExited(ball); wait++) Steps(1);
                 Assert.That(levels.Current.Exit.AssistActive, Is.True, levels.Definition.Id);
-                Assert.That(levels.Current.Exit.HasExited, Is.False, "Entering assistance is not a win.");
+                Assert.That(exit.HasBallExited(ball), Is.False, "Entering assistance is not a win.");
                 int ticks = 1;
-                while (ticks < 360 && !levels.Current.Exit.HasExited) { Steps(1); ticks++; }
-                Assert.That(levels.Current.Exit.HasExited, Is.True, levels.Definition.Id + " at " + angle
-                    + " local=" + levels.Current.Exit.transform.InverseTransformPoint(levels.Ball.Body.position)
+                while (ticks < 360 && !exit.HasBallExited(ball)) { Steps(1); ticks++; }
+                Assert.That(exit.HasBallExited(ball), Is.True, levels.Definition.Id + " at " + angle
+                    + " local=" + levels.Current.Exit.transform.InverseTransformPoint(ball.Body.position)
                     + " assist=" + levels.Current.Exit.AssistActive);
-                Assert.That(wins, Is.EqualTo(1)); Assert.That(levels.Ball.Body.isKinematic, Is.False);
-                float depth = levels.Current.Exit.transform.InverseTransformPoint(levels.Ball.Body.position).z;
+                Assert.That(exits, Is.EqualTo(1)); Assert.That(ball.Body.isKinematic, Is.False);
+                float depth = levels.Current.Exit.transform.InverseTransformPoint(ball.Body.position).z;
                 Assert.That(depth, Is.GreaterThanOrEqualTo(levels.Current.Exit.WallHalfDepth + Radius));
                 Steps(1);
                 Assert.That(levels.Current.Exit.AssistActive, Is.False);
                 Assert.That(levels.Current.Exit.AssistAcceleration, Is.EqualTo(Vector3.zero));
                 TestContext.WriteLine($"Assist {index+1:00}, box Z={angle}: fully out in {ticks*Dt:F3}s.");
+                }
+                Assert.That(exit.HasExited, Is.True);
             }
         }
 
