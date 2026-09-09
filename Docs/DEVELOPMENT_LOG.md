@@ -1,5 +1,12 @@
 # Nhật ký phát triển Gravity Box
 
+## Bàn 15 — hộp đầu sư tử — 09/09/2026
+
+- Thêm **The lion's mouth**, hộp khô hình mặt nạ sư tử bằng đồng/kính. Contour bờm/tai 50 đỉnh là thành hộp thật; năm khối mắt, mũi và mõm dùng mesh phù điêu vát cạnh với collider tương ứng. Lỗ tròn ở miệng giữ hỗ trợ thoát chung. [Thiết kế](LEVEL15_LION_HEAD.md).
+- Trọng lực Trái Đất, bi thép 30 mm/~111 g, contact và controller xoay giữ nguyên. `LionHeadBuilder` sinh asset trong Editor, không thêm runtime riêng; nối enum cuối để giữ ID cũ. Kính riêng alpha thấp giúp đọc bi và gờ rõ hơn.
+- **104/104 kiểm tra** (8 EditMode + 96 PlayMode), kết thúc 03:55:03 UTC. Bi va mũi bật lại, đi từ spawn vòng qua cả hai bên má tới thoát hoàn toàn, reset đạt; hỗ trợ chung được kiểm tra ở 45 tình huống cửa của 15 màn. [XML/phạm vi](Verification/Lion15/README.md).
+- Bốn [ảnh prefab](Images/Level15/README.md) lúc 03:53:48 UTC đã được xem; shader kính đạt. macOS build thành công lúc **10:58:52 giờ Việt Nam**, đã mở màn 15 từ selector và lưu ảnh native lúc 11:00:07. Không có exception/error trong Player.log đã đọc. Không coi fixture đường giải là đánh giá cảm giác chơi tay; không build APK mới.
+
 ## Hút bi ở mọi cửa thoát, sàn chất lỏng trong hơn — 09/09/2026
 
 - Người dùng bổ sung yêu cầu hỗ trợ hút khi đã gần lỗ, áp dụng mọi màn. Đây là thay đổi có chủ ý so với nguyên tắc tự thoát ở bước cuối trước đó. [ADR 023](DECISIONS.md), [thiết kế](EXIT_ASSIST.md).

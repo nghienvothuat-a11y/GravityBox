@@ -1,6 +1,8 @@
 # Kiến trúc Gravity Box
 
-Prototype hiện tại tải tám thí nghiệm hình học và bốn puzzle vật lý, dùng chung mô hình bi thép. Bàn 09 có một thanh trượt, bàn 10 có hai thanh trượt ngược hướng và bàn 11 có ba tầng mê cung và bàn 12 có mê cung ba chiều trong khối cầu. Bi chuyển động trong world space; hộp là vật thể kinematic nhận ý định xoay từ người chơi. PhysX giải quyết va chạm giữa chúng. Không có đường điều khiển input trực tiếp tới vị trí hoặc vận tốc của bi.
+Bàn 15 thêm hình hộp đầu sư tử có bờm/tai và năm gờ mặt thật. `LionHeadBuilder` sinh asset trong Editor; runtime dùng các thành phần chung, không thêm lực hay cơ cấu riêng. [Thiết kế](LEVEL15_LION_HEAD.md).
+
+Prototype hiện tại tải 15 màn: tám thí nghiệm hình học, bốn puzzle vật lý, nước, thủy ngân và hộp đầu sư tử, dùng chung mô hình bi thép. Bàn 09 có một thanh trượt, bàn 10 có hai thanh trượt ngược hướng, bàn 11 có ba tầng mê cung và bàn 12 có mê cung ba chiều trong khối cầu. Bi chuyển động trong world space; hộp là vật thể kinematic nhận ý định xoay từ người chơi. PhysX giải quyết va chạm giữa chúng. Không có đường điều khiển input trực tiếp tới vị trí hoặc vận tốc của bi.
 
 ## Phụ thuộc
 

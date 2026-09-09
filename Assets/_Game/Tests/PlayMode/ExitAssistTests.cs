@@ -8,7 +8,7 @@ namespace GravityBox.Tests
     public sealed partial class PhysicsLifecycleTests
     {
         [TestCase(0)] [TestCase(90)] [TestCase(180)]
-        public void ExitAssist_AllFourteenLevelsPullThroughTheRealHoleAtDifferentOrientations(float angle)
+        public void ExitAssist_AllCatalogLevelsPullThroughTheRealHoleAtDifferentOrientations(float angle)
         {
             for (int index = 0; index < levels.Catalog.Levels.Length; index++)
             {

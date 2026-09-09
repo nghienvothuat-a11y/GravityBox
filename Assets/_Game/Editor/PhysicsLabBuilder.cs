@@ -228,6 +228,7 @@ namespace GravityBox.Editor
             MeshObject("Subtle light inlay", outlet.transform, PhysicsLabGeometry.Inlay(Aperture, Thickness / 2), rim, false);
             if (shape == ContainerShape.WaterBox) WaterBoxBuilder.AddWater(root);
             if (shape == ContainerShape.MercuryBox) WaterBoxBuilder.AddMercury(root);
+            if (shape == ContainerShape.LionHead) LionHeadBuilder.Build(root, outline, exit, Aperture, contact);
             GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, Folder + "/Prefabs/" + shape + " box.prefab");
             Object.DestroyImmediate(root); return saved.GetComponent<LevelRuntime>();
         }

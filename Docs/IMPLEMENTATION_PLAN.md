@@ -1,4 +1,6 @@
-# Kế hoạch prototype: tám hộp thử, bốn puzzle và thí nghiệm nước
+# Kế hoạch prototype: 15 màn thử vật lý và hình học
+
+Bổ sung bàn 15: hộp đầu sư tử với contour bờm/tai và năm gờ mặt có va chạm, trọng lực bình thường, dùng runtime chung. Nghiệm thu hai đường từ spawn tới miệng, vỏ kín, phản ứng va chạm và selector. [Thiết kế](LEVEL15_LION_HEAD.md).
 
 Bổ sung bàn 13/14: cùng hộp vuông và bi/cube của bàn 02, chứa nước hoặc thủy ngân. Cổng nghiệm thu gồm lực nổi, giảm tốc dưới lực cản, nghỉ ổn định, thoát qua lỗ, reset/unload và shader/render. Theo yêu cầu mới chỉ build macOS. [Nước](LEVEL13_WATER.md), [thủy ngân](LEVEL14_MERCURY.md).
 
@@ -18,7 +20,7 @@ Chỉ tăng mass không đạt mục tiêu này: trọng lực tạo cùng gia t
 | --- | --- | --- |
 | 1. Mô hình vật lý | Bi thép đường kính 30 mm/111 g, hộp bàn nhỏ, 9,81 m/s², 120 Hz | Freefall, quán tính, dốc lăn, tổn hao năng lượng qua contact |
 | 2. Tám hộp | Ba hình cơ bản và năm hình lõm/lõi rỗng; cube cố định; lỗ thoát phẳng | Spawn không chồng, sàn/nắp đúng contour, vỏ kín, lối đi đủ cả bán kính bi |
-| 3. Đọc chuyển động | Vật liệu bi, camera, âm thanh lăn/va chạm, HUD 14 bàn | Nhìn được quay/tăng tốc; chọn được mọi hình trên màn hình nhỏ |
+| 3. Đọc chuyển động | Vật liệu bi, camera, âm thanh lăn/va chạm, HUD 15 bàn | Nhìn được quay/tăng tốc; chọn được mọi hình trên màn hình nhỏ |
 | 4. Lặp thí nghiệm | Reset, pause, chọn hộp, quan sát sau thoát ở thời gian thực | 100 reset mỗi bàn, không giữ state cũ, không auto advance |
 | 5. Thử cảm giác | Quan sát trực tiếp các tình huống dưới đây | Người dùng xác nhận cảm giác bi có sức nặng và có thể dự đoán |
 | 6. Puzzle 09 | Hốc giữ bi, thanh chặn trên ray không motor, cửa xuyên vách và lỗ thoát | Cửa đóng ngăn cả bi; gravity mở/đóng thật; giải được bằng nghiêng; reset hai body |
@@ -43,6 +45,6 @@ Ghi cảm nhận nhẹ/nặng, trơn/dính, nảy quá mức/thiếu phản hồ
 
 ## Sau prototype
 
-Phạm vi hiện tại gồm 14 bàn đã yêu cầu, với thí nghiệm nước và thủy ngân. Các mê cung cần thử trực tiếp để đánh giá độ khó; bàn 13/14 cần so sánh cảm giác với bàn 02 và giới hạn mô hình đã ghi. Zero-G, switch, cửa theo tín hiệu, pad, hazard hoặc nắp rơi tiếp tục nằm ngoài catalog. Các mở rộng sau cần dùng cùng mô hình vật lý đã chốt trước khi bổ sung onboarding, tiến trình, save, hiệu năng thiết bị thật và nội dung thương mại.
+Phạm vi hiện tại gồm 15 bàn đã yêu cầu, với thí nghiệm nước và thủy ngân. Các mê cung cần thử trực tiếp để đánh giá độ khó; bàn 13/14 cần so sánh cảm giác với bàn 02 và giới hạn mô hình đã ghi. Zero-G, switch, cửa theo tín hiệu, pad, hazard hoặc nắp rơi tiếp tục nằm ngoài catalog. Các mở rộng sau cần dùng cùng mô hình vật lý đã chốt trước khi bổ sung onboarding, tiến trình, save, hiệu năng thiết bị thật và nội dung thương mại.
 
 Kết quả từng lượt test/build/chạy được ghi tại [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md); không suy diễn việc chạy trên thiết bị từ một lần build thành công.

@@ -1,6 +1,10 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** ADR 023 thêm hỗ trợ thoát ở cả 14 màn theo yêu cầu mới; thay yêu cầu phải hoàn toàn tự thoát bằng trọng lực/quán tính ở bước cuối. ADR 022 thêm thủy ngân; ADR 021 hiệu chỉnh nước. Các quyết định cũ bên dưới giữ lại để theo dõi lịch sử.
+**Phạm vi hiện tại:** ADR 024 thêm hộp đầu sư tử, tổng 15 màn. Hỗ trợ thoát ADR 023 áp dụng cho toàn catalog. Các quyết định cũ bên dưới giữ lại để theo dõi lịch sử.
+
+## ADR 024 Hình đầu sư tử là hình học của hộp
+
+Màn 15 dùng một mặt nạ sư tử có chiều sâu: contour lõm tạo bờm/tai, năm gờ mặt vát cạnh tạo va chạm. Chọn hình cách điệu rõ đường lăn qua nắp kính. Vỏ và các khối nổi có collider theo mesh; inlay màu không collider. Dùng lại runtime và toàn bộ profile bi/gravity/rotation/exit, chỉ thêm authoring builder cùng shape ID nối cuối. [Thiết kế](LEVEL15_LION_HEAD.md).
 
 ## ADR 023 Hút bi gần lỗ và sàn trong theo hướng nhìn
 

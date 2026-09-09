@@ -241,7 +241,7 @@ namespace GravityBox.Editor
             throw new InvalidOperationException("A panel edge could not be matched to its cut plane.");
         }
 
-        private static Vector2[] OrientedContour(Vector2[] points, bool counterClockwise)
+        internal static Vector2[] OrientedContour(Vector2[] points, bool counterClockwise)
         {
             if (points == null) throw new ArgumentNullException(nameof(points));
             var copy = (Vector2[])points.Clone();

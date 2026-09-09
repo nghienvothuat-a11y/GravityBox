@@ -47,6 +47,9 @@ namespace GravityBox.Editor
         [MenuItem("Gravity Box/Capture Sphere Maze Render Fixtures")]
         public static void CaptureSphere() => CaptureLevel(11);
 
+        [MenuItem("Gravity Box/Capture Lion Head Render Fixtures")]
+        public static void CaptureLion() => CaptureLevel(14);
+
         private static void CaptureLevel(int index)
         {
             int exitCode = 0;
@@ -83,7 +86,8 @@ namespace GravityBox.Editor
                 Scene scene = EditorSceneManager.OpenScene(PrototypeBuilder.ScenePath, OpenSceneMode.Single);
                 var catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(PrototypeBuilder.CatalogPath);
                 bool spatial = index == 11;
-                ContainerShape shape = spatial ? ContainerShape.SphereMaze : ContainerShape.LayeredMaze;
+                bool lion = index == 14;
+                ContainerShape shape = lion ? ContainerShape.LionHead : spatial ? ContainerShape.SphereMaze : ContainerShape.LayeredMaze;
                 if (catalog == null || catalog.Levels.Length <= index || catalog.Levels[index].Shape != shape)
                     throw new InvalidOperationException("Generate the requested maze before capturing it: " + shape);
                 foreach (GameObject root in scene.GetRootGameObjects())
@@ -101,7 +105,7 @@ namespace GravityBox.Editor
                 ball.Configure(catalog.BallProfile, Vector3.zero, false);
                 ball.Body.isKinematic = true;
                 var maze = level.GetComponent<LayeredMaze>();
-                if (!spatial && (maze == null || maze.Decks.Length != 3))
+                if (!spatial && !lion && (maze == null || maze.Decks.Length != 3))
                     throw new InvalidOperationException("The rendering fixture expects the three authored maze decks.");
 
                 target = new RenderTexture(Width, Height, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB)
@@ -117,26 +121,33 @@ namespace GravityBox.Editor
                 camera.backgroundColor = definition.Environment.Background;
                 Reframe(camera, level.BoundsHalfExtent * 1.05f);
                 PlaceBall(0);
-                if (!spatial)
+                if (!spatial && !lion)
                 {
                     layerView = level.gameObject.AddComponent<MazeLayerView>();
                     layerView.Initialize(maze, ball);
                 }
                 string output = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Artifacts");
                 Directory.CreateDirectory(output);
-                string[] files = spatial
+                string[] files = lion ? new[] { "Lion15Front.png", "Lion15Turned.png", "Lion15Back.png", "Lion15Face.png" } : spatial
                     ? new[] { "Sphere12Front.png", "Sphere12Turned.png", "Sphere12Back.png", "Sphere12Exit.png" }
                     : new[] { "Layer11Top.png", "Layer11Middle.png", "Layer11Bottom.png", "Layer11Overview.png" };
                 var snapshots = new Snapshot[4];
-                for (int layer = 0; layer < (spatial ? 4 : 3); layer++)
+                for (int layer = 0; layer < (spatial || lion ? 4 : 3); layer++)
                 {
-                    if (spatial)
+                    if (spatial || lion)
                     {
-                        Vector3[] angles = { Vector3.zero, new Vector3(50, 65, 25), new Vector3(15, 180, -35), new Vector3(155, 15, 0) };
+                        Vector3[] angles = lion
+                            ? new[] { Vector3.zero, new Vector3(25,-30,15), new Vector3(160,20,10), Vector3.zero }
+                            : new[] { Vector3.zero, new Vector3(50,65,25), new Vector3(15,180,-35), new Vector3(155,15,0) };
                         level.transform.rotation = Quaternion.Euler(angles[layer]);
+                        if (lion && layer == 3)
+                        {
+                            camera.transform.position = Vector3.up * camera.transform.position.magnitude;
+                            camera.transform.LookAt(Vector3.zero, Vector3.forward);
+                        }
                     }
                     PlaceBall(layer);
-                    if (!spatial)
+                    if (!spatial && !lion)
                     {
                         layerView.SetOverview(false);
                         layerView.Refresh();
@@ -144,9 +155,11 @@ namespace GravityBox.Editor
                             throw new InvalidOperationException("The actual layer view did not select the requested rendering fixture deck.");
                     }
                     Render(camera, target, Path.Combine(output, files[layer]));
-                    snapshots[layer] = Record(files[layer], spatial ? -1 : layer, false);
+                    if (lion && ShaderUtil.ShaderHasError(Shader.Find("GravityBox/Inspection Glass")))
+                        throw new InvalidOperationException("Lion inspection glass shader failed.");
+                    snapshots[layer] = Record(files[layer], spatial || lion ? -1 : layer, false);
                 }
-                if (!spatial)
+                if (!spatial && !lion)
                 {
                     PlaceBall(0);
                     layerView.Refresh();
@@ -160,16 +173,17 @@ namespace GravityBox.Editor
                     Level = definition.Id, Width = Width, Height = Height,
                     CameraPosition = camera.transform.position, CameraEuler = camera.transform.eulerAngles,
                     Images = snapshots,
-                    Purpose = spatial ? "Rendering fixtures only. Sphere orientation and ball spawn pose are placed explicitly; no physics simulation or route verification is performed."
+                    Purpose = lion ? "Lion-mask rendering fixtures only. Four views of the authored prefab with ball at spawn; physical route verification is separate. No scene assets are saved."
+                        : spatial ? "Rendering fixtures only. Sphere orientation and ball spawn pose are placed explicitly; no physics simulation or route verification is performed."
                         : "Rendering fixtures only. The ball is placed at authored deck entries; no physics simulation or route verification is performed."
                 };
-                File.WriteAllText(Path.Combine(output, spatial ? "Sphere12RenderFixtures.json" : "Layer11RenderFixtures.json"), JsonUtility.ToJson(manifest, true));
+                File.WriteAllText(Path.Combine(output, lion ? "Lion15RenderFixtures.json" : spatial ? "Sphere12RenderFixtures.json" : "Layer11RenderFixtures.json"), JsonUtility.ToJson(manifest, true));
                 Debug.Log(definition.DisplayName + " RENDER FIXTURES: captured four views at 796x1494. "
                     + "Each ball pose is an explicitly placed visual fixture, not evidence of a physics solve. No scene assets saved.");
 
                 void PlaceBall(int layer)
                 {
-                    Vector3 local = spatial ? level.transform.InverseTransformPoint(level.BallSpawn.position) : maze.Decks[layer].RouteLocalPoints[0];
+                    Vector3 local = spatial || lion ? level.transform.InverseTransformPoint(level.BallSpawn.position) : maze.Decks[layer].RouteLocalPoints[0];
                     Vector3 world = level.transform.TransformPoint(local);
                     ball.transform.SetPositionAndRotation(world, Quaternion.identity);
                     ball.Body.position = world;
