@@ -409,8 +409,10 @@ namespace GravityBox.Tests
         }
 
         private void AssertSpatialShellCoverage(SpatialMaze maze)
+            => AssertRadialShellCoverage(maze.ShellCollider,maze.InnerRadius,maze.ShellThickness);
+        private void AssertRadialShellCoverage(MeshCollider shell,float innerRadius,float thickness)
         {
-            Assert.That(maze.ShellCollider, Is.Not.Null);
+            Assert.That(shell, Is.Not.Null);
             Vector3 outletNormal = levels.Current.transform.InverseTransformDirection(levels.Current.Exit.transform.forward);
             Quaternion sampleOrientation = Quaternion.FromToRotation(Vector3.down, outletNormal);
             int samples = 0;
@@ -422,15 +424,15 @@ namespace GravityBox.Tests
                 float theta = (3f + latitude * 10.5f) * Mathf.Deg2Rad;
                 float phi = (longitude * 15f + 3.7f) * Mathf.Deg2Rad;
                 Vector3 radial = sampleOrientation * new Vector3(Mathf.Sin(theta) * Mathf.Cos(phi), Mathf.Cos(theta), Mathf.Sin(theta) * Mathf.Sin(phi));
-                Vector3 origin = levels.Current.transform.TransformPoint(radial * (maze.InnerRadius - Radius - 0.008f));
+                Vector3 origin = levels.Current.transform.TransformPoint(radial * (innerRadius - Radius - 0.008f));
                 Vector3 direction = levels.Current.transform.TransformDirection(radial);
                 bool blocked = false;
-                foreach (RaycastHit hit in UnityEngine.Physics.SphereCastAll(origin, Radius, direction, Radius * 2 + maze.ShellThickness + 0.016f, ~0, QueryTriggerInteraction.Ignore))
-                    if (hit.collider == maze.ShellCollider)
+                foreach (RaycastHit hit in UnityEngine.Physics.SphereCastAll(origin, Radius, direction, Radius * 2 + thickness + 0.016f, ~0, QueryTriggerInteraction.Ignore))
+                    if (hit.collider == shell)
                     {
                         blocked = true;
                         float radius = levels.Current.transform.InverseTransformPoint(hit.point).magnitude;
-                        Assert.That(radius, Is.EqualTo(maze.InnerRadius).Within(0.0015f));
+                        Assert.That(radius, Is.EqualTo(innerRadius).Within(0.0015f));
                     }
                 Assert.That(blocked, Is.True, "The complete ball must meet the spherical shell at " + radial.ToString("F3"));
                 samples++;
@@ -439,21 +441,23 @@ namespace GravityBox.Tests
         }
 
         private void AssertSpatialShellSection(SpatialMaze maze)
+            => AssertRadialShellSection(maze.ShellCollider,maze.InnerRadius,maze.ShellThickness);
+        private void AssertRadialShellSection(MeshCollider shell,float innerRadius,float thickness)
         {
-            Assert.That(levels.Current.InteriorDepth, Is.EqualTo(2 * (maze.InnerRadius + maze.ShellThickness)).Within(0.0001f));
+            Assert.That(levels.Current.InteriorDepth, Is.EqualTo(2 * (innerRadius + thickness)).Within(0.0001f));
             Transform root = levels.Current.transform;
             Vector3 outletNormal = root.InverseTransformDirection(levels.Current.Exit.transform.forward);
             Quaternion sampleOrientation = Quaternion.FromToRotation(Vector3.down, outletNormal);
             Vector3 rayDirection = root.TransformDirection(outletNormal);
             int covered = 0, empty = 0;
-            float outer = maze.InnerRadius + maze.ShellThickness;
+            float outer = innerRadius + thickness;
             for (float x = -outer - 0.04f; x <= outer + 0.04f; x += 0.03f)
             for (float z = -outer - 0.04f; z <= outer + 0.04f; z += 0.03f)
             {
                 float radial = Mathf.Sqrt(x * x + z * z);
                 if (Mathf.Abs(radial - outer) < 0.008f) continue;
                 Vector3 origin = root.TransformPoint(sampleOrientation * new Vector3(x, outer + 0.04f, z));
-                bool hit = maze.ShellCollider.Raycast(new Ray(origin, rayDirection), out RaycastHit surface, outer * 2 + 0.08f);
+                bool hit = shell.Raycast(new Ray(origin, rayDirection), out RaycastHit surface, outer * 2 + 0.08f);
                 Assert.That(hit, Is.EqualTo(radial < outer), "The shell silhouette must follow a sphere, including its empty corners.");
                 if (hit)
                 {
@@ -464,7 +468,7 @@ namespace GravityBox.Tests
             }
             Assert.That(covered, Is.GreaterThan(100));
             Assert.That(empty, Is.GreaterThan(100));
-            bool blocked = maze.ShellCollider.Raycast(new Ray(root.position, rayDirection), out _, outer + 0.03f);
+            bool blocked = shell.Raycast(new Ray(root.position, rayDirection), out _, outer + 0.03f);
             Assert.That(blocked, Is.False, "The real exit must cut through both shell surfaces.");
         }
     }

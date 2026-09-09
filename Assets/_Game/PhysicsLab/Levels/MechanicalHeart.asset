@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e965f9168c2046c28c59aa4b83cc1ec, type: 3}
+  m_Name: MechanicalHeart
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDefinition
+  Id: steel-lab-mechanicalheart
+  DisplayIndex: 23
+  DisplayName: Mechanical heart
+  Shape: 22
+  TeachingHint: A raises the bridge. B secures the route. Bring BOTH balls through
+    the heart.
+  Environment: {fileID: 11400000, guid: 82e0ce24addfe4fc89b8bbd0db998aea, type: 2}
+  Prefab: {fileID: 6396063878599192096, guid: bdd3b3e2031934d6594d56f4bbfbd81e, type: 3}
+  RotationMode: 1
+  InitialLocalVelocity: {x: 0, y: 0, z: 0}
+  ParSeconds: 0
+  Tutorial: 0
+  DesignerSolution: Two steel balls cooperate through a lever bridge, a weighted
+    inner cage and a freefall receiving route inside a transparent spherical enclosure.
+    A loads the far lever arm, B travels through the raised route and secures its
+    retaining catch, then both leave through the inner transfer and final round hole.
+    All required balls must physically exit. Shared exit assist pulls the ball through
+    an unobstructed opening within 40 mm. This is deliberate gameplay assistance;
+    the entire sphere must still physically clear the bore before completion.

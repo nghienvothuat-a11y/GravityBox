@@ -16,7 +16,7 @@ namespace GravityBox.Editor
     {
         public const string Folder = "Assets/_Game/PhysicsLab";
         private const float Radius = 0.015f, Depth = 0.09f, Thickness = 0.006f, Aperture = 0.023f;
-        private static Material floor, glass, frame, steel, obstacle, rim, amber, marking;
+        private static Material floor, glass, mechanismGlass, frame, steel, obstacle, rim, amber, marking;
         private static PhysicsMaterial contact, sliderContact;
 
         public static void Generate()
@@ -91,6 +91,14 @@ namespace GravityBox.Editor
         {
             floor = Material("Satin aluminium", new Color(0.29f, 0.36f, 0.40f), 0.55f, 0.38f);
             glass = Material("Clear cover", new Color(0.62f, 0.81f, 0.88f, 0.045f), 0, 0.7f, true);
+            mechanismGlass = Material("Mechanism clear glass", new Color(.50f,.75f,.83f,.075f), 0, .25f, true);
+            // Multiple nested clear walls must not stack full-strength specular glare over the balls.
+            mechanismGlass.SetFloat("_BlendModePreserveSpecular", 0);
+            mechanismGlass.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+            mechanismGlass.SetFloat("_SpecularHighlights", 0);
+            mechanismGlass.EnableKeyword("_SPECULARHIGHLIGHTS_OFF");
+            mechanismGlass.SetFloat("_EnvironmentReflections", 0);
+            mechanismGlass.EnableKeyword("_ENVIRONMENTREFLECTIONS_OFF");
             frame = Material("Machined edges", new Color(0.45f, 0.54f, 0.58f), 0.8f, 0.65f);
             steel = Material("Polished solid steel", new Color(0.82f, 0.85f, 0.88f), 1, 0.82f);
             obstacle = Material("Fixed brass cube", new Color(0.54f, 0.34f, 0.15f), 0.72f, 0.48f);
@@ -175,6 +183,23 @@ namespace GravityBox.Editor
 
         private static LevelRuntime BuildContainer(PhysicsLabLayout layout)
         {
+            if(layout.Shape >= ContainerShape.GravityBridge)
+            {
+                LevelRuntime machine;
+                switch(layout.Shape)
+                {
+                    case ContainerShape.GravityBridge: machine=GravityBridgeBuilder.Build(mechanismGlass,frame,rim,contact);break;
+                    case ContainerShape.BalanceMachine: machine=BalanceMachineBuilder.Build(mechanismGlass,frame,rim,contact);break;
+                    case ContainerShape.NestedCage: machine=NestedCageBuilder.Build(mechanismGlass,frame,rim,contact);break;
+                    case ContainerShape.PendulumGate: machine=PendulumGateBuilder.Build(mechanismGlass,frame,rim,contact);break;
+                    case ContainerShape.FlightCatch: machine=FlightCatchBuilder.Build(mechanismGlass,frame,rim,contact);break;
+                    case ContainerShape.MechanicalMemory: machine=MechanicalMemoryBuilder.Build(mechanismGlass,frame,rim,contact);break;
+                    case ContainerShape.MechanicalHeart: machine=MechanicalHeartBuilder.Build(mechanismGlass,frame,rim,contact);break;
+                    default: throw new System.ArgumentOutOfRangeException(nameof(layout.Shape));
+                }
+                GameObject machinePrefab=PrefabUtility.SaveAsPrefabAsset(machine.gameObject,Folder+"/Prefabs/"+layout.Shape+" box.prefab");
+                Object.DestroyImmediate(machine.gameObject);return machinePrefab.GetComponent<LevelRuntime>();
+            }
             if (layout.Shape == ContainerShape.SphereMaze)
             {
                 LevelRuntime sphere = SphereMazeBuilder.Build(glass, frame, rim, contact);

@@ -1,14 +1,16 @@
 # Gravity Box — Steel Ball Lab
 
-Prototype Unity tập trung vào cảm giác bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **16 bàn**: tám hộp thử hình học, puzzle 09–12, **13 — Steel under water**, **14 — Steel in mercury**, **15 — The lion's mouth** và **16 — Two to escape**. Hai môi trường chất lỏng dùng cùng hộp vuông/cube của bàn 02: bi chìm trong nước và nổi trong thủy ngân.
+Prototype Unity tập trung vào cảm giác bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **23 bàn**: giữ 16 thí nghiệm trước và thêm bảy màn cơ khí 17–23. Hai môi trường chất lỏng dùng cùng hộp vuông/cube của bàn 02: bi chìm trong nước và nổi trong thủy ngân.
 
-**Luật chung: tất cả bi phải thoát qua lỗ mới thắng.** Bàn 16 có hai bi cùng chịu một thao tác xoay: A giữ nút lò xo để B qua cửa; B nhấn chốt giữ mở hai cửa, rồi cả hai tới lỗ chung. HUD đếm `OUT 0/2 → 1/2 → 2/2`; các màn cũ vẫn có một bi. [Thiết kế phối hợp](Docs/LEVEL16_COOPERATIVE.md), [kiểm chứng hiện tại](Docs/Verification/Cooperative16/README.md).
+**17–23:** cầu bản lề tự dựng, cân hai bi, lồng treo độc lập, cổng con lắc, lăn–bay–đón, bánh cam có cóc nhớ trạng thái, và boss hai bi trong khối cầu kính. Các cơ cấu dùng Rigidbody/joint, lực tiếp xúc và trọng lực; ball không được điều khiển bằng đường chạy hoặc xung phóng. Chốt/cóc giữ được mô hình hóa bằng ràng buộc lý tưởng tại trạng thái cơ khí đã đạt. [Thiết kế và cách test](Docs/MECHANICAL_LEVELS_17_23.md).
+
+**Luật chung: tất cả bi phải thoát qua lỗ mới thắng.** Bàn 16 có hai bi cùng chịu một thao tác xoay: A giữ nút lò xo để B qua cửa; B nhấn chốt giữ mở hai cửa, rồi cả hai tới lỗ chung. Bàn 18 và 23 cũng có hai bi. HUD đếm `OUT 0/2 → 1/2 → 2/2`; những màn còn lại có một bi. [Thiết kế phối hợp](Docs/LEVEL16_COOPERATIVE.md), [kiểm chứng hiện tại](Docs/Verification/Cooperative16/README.md).
 
 Màn 15 là hộp đầu sư tử bằng đồng và kính: bờm/tai là thành hộp thật, mắt/mũi/mõm là các gờ va chạm. Trọng lực bình thường; dẫn bi vòng qua khuôn mặt đến lỗ ở miệng. [Thiết kế](Docs/LEVEL15_LION_HEAD.md), [ảnh](Docs/Images/Level15/README.md).
 
-Cả 16 màn có **hỗ trợ hút trong bán kính 4 cm quanh lỗ**: căn từng bi rồi đẩy ra qua cửa thật, chỉ thắng khi đủ số bi đã thoát hoàn toàn. Đây là hỗ trợ gameplay theo yêu cầu, không thay mô hình vật lý ở phần còn lại. [Thiết kế](Docs/EXIT_ASSIST.md).
+Cả 23 màn có **hỗ trợ hút trong bán kính 4 cm quanh lỗ cuối**: căn từng bi rồi đẩy ra qua cửa thật, chỉ thắng khi đủ số bi đã thoát hoàn toàn. Các lỗ chuyển nội bộ không có lực hút. Đây là hỗ trợ gameplay theo yêu cầu, không thay mô hình vật lý ở phần còn lại. [Thiết kế](Docs/EXIT_ASSIST.md).
 
-Bàn 14 giữ luật chất lỏng đầy, không chảy qua cửa; dùng hình ảnh bạc nhìn xuyên có nhãn để thấy bi bên trong thủy ngân đục. Hỗ trợ thoát xử lý cả bi nổi đứng yên ở miệng lỗ. Sàn bàn 13/14 trong hơn khi lật về phía camera. [Thiết kế/giới hạn](Docs/LEVEL14_MERCURY.md). Bản mới xuất macOS; APK cũ chưa có màn 14–16 và hỗ trợ thoát.
+Bàn 14 giữ luật chất lỏng đầy, không chảy qua cửa; dùng hình ảnh bạc nhìn xuyên có nhãn để thấy bi bên trong thủy ngân đục. Hỗ trợ thoát xử lý cả bi nổi đứng yên ở miệng lỗ. Sàn bàn 13/14 trong hơn khi lật về phía camera. [Thiết kế/giới hạn](Docs/LEVEL14_MERCURY.md). Bản mới xuất macOS; APK cũ chưa có màn 14–23 và hỗ trợ thoát.
 
 Bản nước hiệu chỉnh bổ sung cản khi bi lăn sát thành và added mass; giữ nước 20°C và bi thép 111 g. Có benchmark giảm tốc, hội tụ 60/120/240 Hz và kiểm tra lỗ thật. [Công thức/giới hạn](Docs/LEVEL13_WATER.md), [kiểm chứng](Docs/Verification/Water13/README.md). Bản hiệu chỉnh chỉ xuất macOS; APK hiện có vẫn là bản nước trước đó.
 
@@ -20,7 +22,7 @@ Bàn 12 ghép các ván kính nhỏ thành một mê cung liên tục trong kh�
 
 Bàn 13 giữ đầy nước ngay cả khi bi thoát qua lỗ. Bi thép chịu lực nổi và lực cản theo tốc độ tương đối; VFX thể hiện màu nước, caustic, hạt lơ lửng và wake quanh bi. Đây là mô hình lực và dòng khối xấp xỉ, chưa phải fluid solver đầy đủ. Xem [thiết kế và giới hạn bàn 13](Docs/LEVEL13_WATER.md).
 
-Bi có đường kính 30 mm, khối lượng khoảng 111 g; hộp rộng khoảng 34–72 cm tùy hình, sâu 9 cm ở bàn 01–10 và 27 cm ở bàn 11; cầu ở bàn 12 có đường kính ngoài 73,2 cm. Một đơn vị Unity là một mét. Trọng lực thế giới 9,81 m/s² và mô phỏng 120 Hz được giữ nhất quán; cảm giác nặng đến từ tỷ lệ, quán tính quay, contact, tổn hao năng lượng và âm thanh tương ứng với va chạm.
+Bi có đường kính 30 mm, khối lượng khoảng 111 g; hộp rộng khoảng 34–101 cm tùy hình, sâu 9 cm ở bàn 01–10 và 27 cm ở bàn 11; cầu ở bàn 12 có đường kính ngoài 73,2 cm. Một đơn vị Unity là một mét. Trọng lực thế giới 9,81 m/s² và mô phỏng 120 Hz được giữ nhất quán; cảm giác nặng đến từ tỷ lệ, quán tính quay, contact, tổn hao năng lượng và âm thanh tương ứng với va chạm.
 
 ## Chạy và quan sát
 
@@ -53,7 +55,7 @@ Ba hộp cơ bản đã được bổ sung năm hình dạng khác thường the
 
 `Scripts/Foundation` giữ session/reset; `Simulation` giữ Rigidbody, lực, rolling contact và rotation; `Gameplay` quản lý catalog, load/reset/exit; `Presentation` nhận input và thể hiện hình/âm thanh; `App` kết nối các lớp. Editor tạo prefab/mesh và kiểm tra nội dung trước build. Scene duy nhất tải một thí nghiệm tại một thời điểm.
 
-Profile đang dùng nằm trong `Assets/_Game/PhysicsLab/Profiles`: `Solid steel.asset`, `Earth.asset`, `Hand rotation.asset`, `Room temperature water.asset` và `Room temperature mercury.asset`. Prefab/mesh nằm trong `PhysicsLab/Prefabs` và `PhysicsLab/Meshes`; `ScriptableObjects/LevelCatalog.asset` tham chiếu đúng 14 level. Khi đổi kích thước bi phải đổi mass/inertia/contact offset và kiểm tra clearance theo cùng đơn vị. Không tăng riêng mass hoặc giảm gravity để tạo cảm giác nặng.
+Profile đang dùng nằm trong `Assets/_Game/PhysicsLab/Profiles`: `Solid steel.asset`, `Earth.asset`, `Hand rotation.asset`, `Room temperature water.asset` và `Room temperature mercury.asset`. Prefab/mesh nằm trong `PhysicsLab/Prefabs` và `PhysicsLab/Meshes`; `ScriptableObjects/LevelCatalog.asset` tham chiếu 23 level. Khi đổi kích thước bi phải đổi mass/inertia/contact offset và kiểm tra clearance theo cùng đơn vị. Không tăng riêng mass hoặc giảm gravity để tạo cảm giác nặng.
 
 Prefab và profile đã có sẵn; không cần chạy generator để chơi. Generator tạo lại nội dung đã author, nên lưu thay đổi bằng Git hoặc prefab variant trước khi regenerate.
 

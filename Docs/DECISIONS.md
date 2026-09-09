@@ -1,6 +1,6 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** ADR 025 thêm luật tất cả bi thoát và màn phối hợp hai bi, tổng 16 màn. Hỗ trợ thoát ADR 023 áp dụng riêng cho từng bi. Các quyết định cũ bên dưới giữ lại để theo dõi lịch sử.
+**Phạm vi hiện tại:** ADR 026 thêm sáu họ cơ khí và boss, tổng 23 màn. ADR 025 giữ luật tất cả bi thoát và roster nhiều bi. Hỗ trợ thoát ADR 023 áp dụng riêng cho từng bi. Các quyết định cũ bên dưới giữ lại để theo dõi lịch sử.
 
 ## ADR 025 Toàn bộ bi phải thoát, cơ quan phối hợp ở bàn 16
 
@@ -171,3 +171,14 @@ EnvironmentForceSystem chuyển từ một target sang danh sách đăng ký the
 LevelRuntime giữ danh sách Props trước khi tách khỏi LevelRoot, đăng ký force/reset một lần. Reset root trước các body; ReleaseProps vô hiệu hóa object và hủy đăng ký trước Destroy để load liên tiếp không tạo va chạm/lực ma. Việc tách khỏi hierarchy là thao tác khởi tạo, không phải thời điểm nắp rơi. Nắp luôn dynamic, không có trạng thái unlock hoặc animation mở.
 
 Các cơ cấu tín hiệu ở màn cũ khác chưa được chuyển đổi trong thay đổi L06; được đánh dấu trong kế hoạch chuyển nội dung. Không tuyên bố toàn bộ 16 màn đã tuân thủ triết lý mới.
+
+
+## ADR 026 Sáu họ cơ khí và boss trong catalog 23 màn — 09/09/2026
+
+Bàn 17–23 kiểm chứng cầu gập, cân hai bi, lồng treo, cửa con lắc, lăn–bay–đón, cam nhớ trạng thái và chuỗi phối hợp hai bi. Mỗi cơ cấu dùng Rigidbody độc lập, joint và lực tiếp xúc; mọi bi dùng profile thép và gravity chung. Không thêm đường điều khiển bi hoặc lực phóng theo kịch bản.
+
+`MechanicalAuthoring` chỉ sinh nội dung Editor; các builder mỗi họ sinh prefab có thể kiểm tra trong Inspector. `PhysicalHinge` đọc góc xoắn tương đối từ quaternion body để tránh phụ thuộc telemetry `HingeJoint.angle` không hữu hạn ở cấu hình gần góc gốc đã gặp trong fixture. Native joint vẫn giải toàn bộ ràng buộc; script chỉ bổ sung mô-men cản ổ trục. Các trạng thái giữ chốt/cóc được mô hình hóa bằng giới hạn joint sau khi contact hoặc góc răng thực đã đạt, không kéo chi tiết đến góc mục tiêu. Đây là mô hình cơ cấu lý tưởng, chưa mô phỏng biến dạng hay từng răng đàn hồi.
+
+`LevelRuntime` thu component trước khi tách prop khỏi root, đăng ký force/reset theo scope và truyền roster qua `IBallMechanism`. Mọi bi và prop đều được kiểm tra sau 100 lần reset/màn. `RackSpringVisual` chỉ đọc vị trí để vẽ lò xo, không nằm trong lớp mô phỏng. Kính của bảy màn cơ khí dùng vật liệu riêng giảm phản sáng chồng lớp, giúp thấy tải và chuyển động bên trong.
+
+Giữ lỗ tròn thật, hỗ trợ thoát 4 cm chỉ ở lỗ cuối và luật tất cả bi ra ngoài. Màn 18/23 có hai bi. Đường giải tự động là chứng cứ khả thi vật lý; độ khó, cảm giác tay và khả năng tạo clip hấp dẫn cần người chơi xác nhận trên bản Mac. Chấp nhận lời giải vật lý khác nếu người chơi tìm được; boss chưa có nhà bao truyền bi bắt buộc qua lồng ở mọi tư thế. Xem [bảy màn cơ khí](MECHANICAL_LEVELS_17_23.md).

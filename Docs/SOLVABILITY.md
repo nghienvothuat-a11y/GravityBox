@@ -1,8 +1,10 @@
-# Phạm vi kiểm chứng prototype 16 bàn
+# Phạm vi kiểm chứng prototype 23 bàn
+
+Bàn 17–23 có các fixture từ spawn chỉ gửi ý định xoay qua controller người chơi; không đặt lại pose/vận tốc bi ở giữa lời giải. Kiểm tra riêng tiếp xúc chốt, mô-men hai bi, giới hạn lồng treo, cửa con lắc, bay tự do và cứu bi, ba nấc cam, cùng chuỗi phối hợp của boss. [Thiết kế và cách thử](MECHANICAL_LEVELS_17_23.md); [bằng chứng bản này](Verification/Mechanical17-23/README.md).
 
 Luật hiện tại yêu cầu toàn bộ bi thoát. Bàn 16 có hai bi: kiểm tra cả hai thứ tự thoát, tiếp tục ở 1/2, partial reset, tiếp xúc hai bi, nút giữ phải có tải, cửa đóng chặn B và đường phối hợp từ hai spawn đến lỗ chung. [Kiểm chứng hiện tại](Verification/Cooperative16/README.md). Các bằng chứng cũ được liên kết bên dưới để đối chiếu lịch sử.
 
-Bản hiện tại có hỗ trợ thoát trong 40 mm quanh cửa cho **cả 16 màn**. Đường puzzle vẫn do người chơi xoay hộp; motor lực xử lý đoạn cuối qua lỗ thật. Các phép thử gồm cửa thoát ở ba tư thế, các môi trường, vách/cửa chặn và bi thủy ngân đứng yên tại cửa hướng lên. Bàn 15 thêm đường từ spawn qua cả hai bên mõm và va chạm mũi. [Kiểm chứng bàn 15](Verification/Lion15/README.md).
+Bản hiện tại có hỗ trợ thoát trong 40 mm quanh cửa cho **cả 23 màn**. Đường puzzle vẫn do người chơi xoay hộp; motor lực xử lý đoạn cuối qua lỗ thật. Các phép thử gồm cửa thoát ở ba tư thế, các môi trường, vách/cửa chặn và bi thủy ngân đứng yên tại cửa hướng lên. Bàn 15 thêm đường từ spawn qua cả hai bên mõm và va chạm mũi. [Kiểm chứng bàn 15](Verification/Lion15/README.md).
 
 Bàn 14 tiếp tục đo nổi về nắp, cản theo nghiệm, reset/đổi môi trường và trạng thái nổi cân bằng khi tắt hỗ trợ. Đường giải phải nghiêng thêm để tự vượt vành là bằng chứng của bản đầu trước khi thêm motor. [Thiết kế](LEVEL14_MERCURY.md), [bằng chứng lịch sử](Verification/Mercury14/README.md).
 
@@ -14,14 +16,14 @@ Mục tiêu hiện tại là chuyển động và va chạm của bi thép. Khô
 
 - Catalog: tám hình Circle/Square/Triangle/LShape/UShape/Annulus/Dumbbell/Star, GravityLock ở bàn 09, MechanicalMaze ở 10, LayeredMaze ở 11 và SphereMaze ở 12; Earth gravity, free rotation, cùng profile bi thép. Bàn 09 có một PhysicalProp, bàn 10 có hai; không có cơ cấu mở bằng tín hiệu.
 - Mô phỏng độc lập: freefall 9,81 m/s², quán tính cầu, gia tốc lăn trên dốc, contact và mất năng lượng, rebound, spin và rolling resistance.
-- Prefab thật: spawn clearance, thành hộp theo từng cạnh contour gồm cả thành trong vành khuyên, sàn/nắp hỗ trợ đúng vùng có thể chơi và để trống phần khuyết/lõi rỗng; contact với cube, nằm yên, containment khi nghiêng và lỗ thoát thật. Scene integration kiểm tra cả 16 bàn. Phép kiểm tra vỏ dùng chiều sâu của từng prefab, gồm hộp 0,27 m ở bàn 11.
+- Prefab thật: spawn clearance, thành hộp theo từng cạnh contour gồm cả thành trong vành khuyên, sàn/nắp hỗ trợ đúng vùng có thể chơi và để trống phần khuyết/lõi rỗng; contact với cube, nằm yên, containment khi nghiêng và lỗ thoát thật. Scene integration kiểm tra cả 23 bàn. Phép kiểm tra vỏ dùng chiều sâu của từng prefab, gồm hộp 0,27 m ở bàn 11.
 - Lối đi mới: sphere sweep theo toàn bộ bán kính 0,015 m qua góc chữ L/U, nửa vòng vành khuyên, cổ quả tạ và vùng giữa ngôi sao; sau đó đưa bi qua các waypoint bằng gravity và rotation intent.
 - Exit: hướng đi từ trong ra ngoài, clearance tròn, toàn bộ bán kính vượt vỏ, một lần phát event, reset xóa passage cũ. Không teleport hoặc capture lúc thoát.
 - Puzzle 09: thanh chặn kín toàn bộ chiều sâu cửa, body/joint không drive hoặc signal, trượt mở/đóng do gravity; fixture từ spawn chỉ xoay hộp để giữ bi, mở cửa, đi sang khoang phải và thoát thật.
 - Mê cung 10: hai trục ray đối nhau; nghiêng một chiều mở A và giữ B đóng, nghiêng ngược đảo trạng thái. Cả hai cửa chặn toàn bộ cầu ở mọi chiều sâu hợp lệ. Route từ spawn đi qua hành lang, hai hốc/cửa và lỗ thoát chỉ bằng rotation intent; không phát signal. Reset khôi phục riêng từng body/anchor và unload thu hồi cả hai targets.
 - Mê cung 11: ba sàn thật đỡ bi ngoài lỗ, sphere cast và body thật đi qua hai lỗ chuyển tầng cùng lỗ cuối. Route từ spawn đi qua waypoint trên cả ba tầng, kiểm tra tính liên tục của vị trí từng bước để phát hiện teleport; chỉ exit cuối phát thắng. Chế độ xem theo tầng/tổng thể chỉ đổi vật liệu, giữ pose/vận tốc, body dynamic và mọi collider.
 - Mê cung cầu 12: các ván mỏng ghép thành tuyến ba chiều có nhánh cụt; khe nhìn nhỏ hơn viên bi để chặn thoát ra ngoài mạng. Kiểm tra collider thật ở các đoạn nối/ngã rẽ/cap và đường đi đủ 25 đoạn qua 21 khúc đổi hướng từ spawn tới lỗ thật chỉ bằng rotation intent.
-- Lifecycle/input: mỗi body được áp gravity một lần (hai targets ở bàn 09, ba ở bàn 10), 100 reset mỗi bàn gồm cả root/prop, cleanup, manual next, pause, mouse/touch và tốc độ mô phỏng không đổi sau thoát. Bộ chọn tới được bàn 12 và quay lại bàn 11; nút xem tầng không tạo rotation input.
+- Lifecycle/input: mỗi body được áp gravity một lần (hai targets ở bàn 09, ba ở bàn 10), 100 reset mỗi bàn gồm cả root, mọi bi và prop, cleanup, manual next, pause, mouse/touch và tốc độ mô phỏng không đổi sau thoát. Bộ chọn tới được bàn 12 và quay lại bàn 11; nút xem tầng không tạo rotation input.
 
 Test exit có thể đặt bi vào vị trí thử và cấp vận tốc khởi đầu để cô lập detector/collider. Đây là fixture kiểm tra một hợp đồng vật lý, không phải chứng minh người chơi đã giải bàn từ spawn. Test dốc/va chạm cũng dùng điều kiện ban đầu kiểm soát được; player không có các thao tác thử nghiệm này.
 

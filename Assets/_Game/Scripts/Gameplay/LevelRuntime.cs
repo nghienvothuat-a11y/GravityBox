@@ -41,6 +41,9 @@ namespace GravityBox.Gameplay
         {
             forces = forceSystem;
             BallController ball = balls[0];
+            // Articulated props detach into world space. Capture their components
+            // first so bearings, catches and racks retain level-scoped lifetimes.
+            MonoBehaviour[] components = GetComponentsInChildren<MonoBehaviour>(true);
             Props = GetComponentsInChildren<PhysicalProp>(true);
             foreach (PhysicalProp prop in Props)
             {
@@ -59,6 +62,7 @@ namespace GravityBox.Gameplay
                     WaterVolume bodyWater = gameObject.AddComponent<WaterVolume>();
                     bodyWater.Profile = water.Profile; bodyWater.HalfSize = water.HalfSize; bodyWater.Obstacle = water.Obstacle;
                     bodyWater.Bind(balls[i], forces.Environment); forces.AddProvider(bodyWater);
+                    Resets.Register(bodyWater);
                 }
             }
             Plates = GetComponentsInChildren<PressurePlate>(true);
@@ -72,12 +76,15 @@ namespace GravityBox.Gameplay
             Exit.Bind(balls, Signals);
             forces.AddProvider(Exit);
             // Explicit hierarchy order; no global FindObjectsOfType or singleton registry.
-            foreach (MonoBehaviour component in GetComponentsInChildren<MonoBehaviour>(true))
+            foreach (MonoBehaviour component in components)
                 if (component is IResettable resettable && component != Rotation) Resets.Register(resettable);
             foreach (PhysicalProp prop in Props) Resets.Register(prop);
             foreach (BallController target in balls) Resets.Register(target);
-            CooperativeRelay relay = GetComponent<CooperativeRelay>();
-            if (relay != null) { relay.Bind(balls); forces.AddProvider(relay); }
+            foreach (MonoBehaviour component in components)
+            {
+                if (component is IBallMechanism mechanism) mechanism.Bind(balls);
+                if (component is IForceProvider provider) forces.AddProvider(provider);
+            }
         }
 
         public void ResetAll()

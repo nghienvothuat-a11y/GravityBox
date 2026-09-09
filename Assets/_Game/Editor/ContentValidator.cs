@@ -152,7 +152,7 @@ namespace GravityBox.Editor
         {
             LevelRuntime level = definition.Prefab;
             // A sphere is defined by its radial shell, not an extruded XZ contour.
-            if (level.GetComponent<SpatialMaze>() != null) return;
+            if (level.GetComponent<SpatialMaze>() != null || level.GetComponent<SphericalEnclosure>() != null) return;
             Require(level.Footprint != null && level.Footprint.Length >= 3, definition.Id + ": missing authored footprint.");
             foreach (Vector2 point in level.Footprint)
                 Require(!float.IsNaN(point.x) && !float.IsNaN(point.y) && point.magnitude + radius < level.BoundsHalfExtent,

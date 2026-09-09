@@ -4,7 +4,8 @@ using UnityEngine;
 
 namespace GravityBox.Gameplay
 {
-    public enum ContainerShape { Circle, Square, Triangle, LShape, UShape, Annulus, Dumbbell, Star, GravityLock, MechanicalMaze, LayeredMaze, SphereMaze, WaterBox, MercuryBox, LionHead, CooperativeBox }
+    public enum ContainerShape { Circle, Square, Triangle, LShape, UShape, Annulus, Dumbbell, Star, GravityLock, MechanicalMaze, LayeredMaze, SphereMaze, WaterBox, MercuryBox, LionHead, CooperativeBox,
+        GravityBridge, BalanceMachine, NestedCage, PendulumGate, FlightCatch, MechanicalMemory, MechanicalHeart }
 
     [CreateAssetMenu(menuName = "Gravity Box/Level Definition")]
     public sealed class LevelDefinition : ScriptableObject

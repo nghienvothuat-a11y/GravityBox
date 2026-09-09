@@ -1,5 +1,15 @@
 # Nhật ký phát triển Gravity Box
 
+## Bàn 17–23 — sáu họ cơ khí và boss — 09/09/2026
+
+- Thêm cầu gập tự rơi, cân hai bi, lồng treo độc lập, cửa con lắc, lấy đà–bay–đón, cam có trí nhớ và boss phối hợp hai bi trong khối cầu. Các màn 18/23 có hai bi; tất cả bi thoát mới thắng. [Thiết kế/cách thử](MECHANICAL_LEVELS_17_23.md), ADR 026.
+- Cơ cấu dùng Rigidbody/joint, tải trọng, contact, bearing damping và lò xo. Chốt/cóc là ràng buộc cơ khí lý tưởng giữ trạng thái đã đạt; không có pose/velocity ghi trực tiếp lên bi hoặc lực phóng theo kịch bản. Lỗ chuyển nội bộ không hút, chỉ lỗ cuối giữ hỗ trợ 4 cm.
+- Tách builder mỗi họ và helper authoring. Runtime thu component trước khi tách prop; đăng ký force/reset và bind roster qua interface. Bổ sung reset WaterVolume clone và kiểm tra mọi bi trong lifecycle chung. Lò xo nhìn thấy nằm trong lớp Presentation.
+- **129/129 passed**: 8 EditMode + 121 PlayMode, kết thúc **07:21:43 UTC**. Có 17 bài mới; mỗi màn 17–23 có route từ spawn bằng rotation intent. Riêng 21 có đường cứu bi hụt; 22 cần đủ ba lần rack hồi/đẩy; 23 ghi từng bi vào lồng, qua miệng, có đoạn bay tự do rồi ra khỏi cầu. Toàn bộ 23 màn qua 100 reset/màn và scene/input regression. [XML, ảnh và phạm vi](Verification/Mechanical17-23/README.md).
+- Kính mới tách riêng, giảm phản sáng chồng lớp để thấy bi/cơ cấu; chụp và xem đủ bảy prefab từ hai hướng. Coil được khởi tạo đúng ngay trong Editor. Các hình render ban đầu không được dùng làm bằng chứng giải bằng tay.
+- macOS build thành công **330.623.858 bytes**. Đã mở bản mới, chọn/reset màn 23, kiểm tra HUD hai bi, sau đó để sẵn màn 17. Có ảnh F12 từ player; không có exception/error trong log đã đọc. CUA drag chỉ ghi press không có quãng kéo nên không tính là xác nhận thao tác xoay bằng tay. Không build APK.
+- Chấp nhận các lời giải vật lý khác nếu người chơi tìm được; boss còn khoảng hở thả bi có thể cho đường vòng qua lồng. Bộ test chứng minh khả thi, chưa thay thế đánh giá feeling/độ khó từ người chơi.
+
 ## Bàn 16 — hai bi phối hợp và luật thoát toàn bộ — 09/09/2026
 
 - Thêm **Two to escape**: hai bi thép ~111 g, cùng thao tác xoay, trong hai khoang của hộp vuông. A nén nút lò xo để mở cửa cho B; B qua cửa và nén nút chốt giữ mở hai cửa, giải phóng A. Cửa chạy bằng lực motor giới hạn và luôn giữ collider. [Thiết kế](LEVEL16_COOPERATIVE.md), ADR 025.

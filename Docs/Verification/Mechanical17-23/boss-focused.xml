@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="2" result="Passed" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-09 07:18:40Z" end-time="2026-09-09 07:18:42Z" duration="1.8887203">
+  <test-suite type="TestSuite" id="1143" name="Gravity Box" fullname="Gravity Box" runstate="Runnable" testcasecount="121" result="Passed" start-time="2026-09-09 07:18:40Z" end-time="2026-09-09 07:18:42Z" duration="1.888720" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1137" name="GravityBox.Tests.PlayMode.dll" fullname="/Users/mrk/GravityBox/Library/ScriptAssemblies/GravityBox.Tests.PlayMode.dll" runstate="Runnable" testcasecount="121" result="Passed" start-time="2026-09-09 07:18:40Z" end-time="2026-09-09 07:18:42Z" duration="1.876959" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="22842" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1138" name="GravityBox" fullname="GravityBox" runstate="Runnable" testcasecount="121" result="Passed" start-time="2026-09-09 07:18:40Z" end-time="2026-09-09 07:18:42Z" duration="1.875525" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1139" name="Tests" fullname="GravityBox.Tests" runstate="Runnable" testcasecount="121" result="Passed" start-time="2026-09-09 07:18:40Z" end-time="2026-09-09 07:18:42Z" duration="1.874344" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1001" name="PhysicsLifecycleTests" fullname="GravityBox.Tests.PhysicsLifecycleTests" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" testcasecount="89" result="Passed" start-time="2026-09-09 07:18:40Z" end-time="2026-09-09 07:18:42Z" duration="1.872038" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1049" name="Heart_FromBothSpawnsSecuresBridgeTransfersCageAndEscapes" fullname="GravityBox.Tests.PhysicsLifecycleTests.Heart_FromBothSpawnsSecuresBridgeTransfersCageAndEscapes" methodname="Heart_FromBothSpawnsSecuresBridgeTransfersCageAndEscapes" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1453006283" result="Passed" start-time="2026-09-09 07:18:40Z" end-time="2026-09-09 07:18:41Z" duration="1.719026" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Heart lift A=(-0.1973, 0.0119, -0.0553),B=(0.0674, 0.0211, 0.0551),angle=25.00
+Heart ball1 entered cage at (0.01150, 0.02997, -0.05683); t=12.992.
+Heart ball1 crossed mouth plane (0.01124, -0.03201, 0.11300), next=(0.01043, -0.03201, 0.11461); t=15.458.
+Heart ball1 wholly cleared mouth at (0.00354, -0.04168, 0.13105); t=15.500.
+Heart ball1 unsupported after mouth, local=(0.00354, -0.37007, -0.02195); t=15.500.
+Heart ball2 entered cage at (-0.00908, 0.02605, -0.05334); t=16.292.
+Heart cage loaded A=(1.5569, -17.1251, -0.0711), B=(0.0720, -0.3170, -0.1878), angle=0.01
+Heart ball2 crossed mouth plane (0.01379, -0.03202, 0.11300), next=(0.01372, -0.03202, 0.11318); t=32.000.
+Heart ball2 wholly cleared mouth at (0.00965, -0.04167, 0.12955); t=32.050.
+Heart ball2 unsupported after mouth, local=(0.00965, -0.36944, -0.02328); t=32.050.
+Heart final A=(2.1639, -98.1724, -6.2788),B=(0.0020, -0.5225, 0.0027); cage=True/True, mouth=True/True, flight=True/True
+]]></output>
+            </test-case>
+            <test-case id="1048" name="Heart_UnpressedReleaseCannotRetainBridgeAndResetRestoresBothBallsAndProps" fullname="GravityBox.Tests.PhysicsLifecycleTests.Heart_UnpressedReleaseCannotRetainBridgeAndResetRestoresBothBallsAndProps" methodname="Heart_UnpressedReleaseCannotRetainBridgeAndResetRestoresBothBallsAndProps" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1087624874" result="Passed" start-time="2026-09-09 07:18:41Z" end-time="2026-09-09 07:18:42Z" duration="0.131945" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: /Users/mrk/Library/Application Support/Gravity Box Lab/Gravity Box/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

@@ -53,7 +53,7 @@ namespace GravityBox.Tests
         }
 
         [UnityTest]
-        public IEnumerator GameplayScene_BootstrapsSixteenLevelsAndChangesOnlyOnManualNext()
+        public IEnumerator GameplayScene_BootstrapsTwentyThreeLevelsAndChangesOnlyOnManualNext()
         {
             yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/_Game/Scenes/Gameplay.unity", new LoadSceneParameters(LoadSceneMode.Single));
             yield return null;
@@ -61,7 +61,7 @@ namespace GravityBox.Tests
             Assert.That(bootstrap, Is.Not.Null);
             Assert.That(Object.FindFirstObjectByType<Canvas>(), Is.Not.Null);
             var levels = bootstrap.Levels;
-            Assert.That(levels.Catalog.Levels.Length, Is.EqualTo(16));
+            Assert.That(levels.Catalog.Levels.Length, Is.EqualTo(23));
             Assert.That(Time.fixedDeltaTime, Is.EqualTo(1f / 120f).Within(0.000001f));
             for (int index = 0; index < levels.Catalog.Levels.Length; index++)
             {
@@ -93,7 +93,7 @@ namespace GravityBox.Tests
                 Assert.That(levels.Session.State, Is.EqualTo(SessionState.Completing));
                 levels.Next();
             }
-            Assert.That(levels.Index, Is.Zero, "Manual next wraps around all sixteen levels.");
+            Assert.That(levels.Index, Is.Zero, "Manual next wraps around all twenty-three levels.");
             levels.Load(0);
             levels.TogglePause();
             Assert.That(Time.timeScale, Is.Zero);
@@ -101,7 +101,7 @@ namespace GravityBox.Tests
             Assert.That(Time.timeScale, Is.EqualTo(1));
             Assert.That(levels.Session.State, Is.EqualTo(SessionState.Active));
             Scene gameplay = SceneManager.GetActiveScene();
-            Scene empty = SceneManager.CreateScene("Empty after sixteen-level integration");
+            Scene empty = SceneManager.CreateScene("Empty after twenty-three-level integration");
             SceneManager.SetActiveScene(empty);
             yield return SceneManager.UnloadSceneAsync(gameplay);
         }

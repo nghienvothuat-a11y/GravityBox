@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e965f9168c2046c28c59aa4b83cc1ec, type: 3}
+  m_Name: FlightCatch
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDefinition
+  Id: steel-lab-flightcatch
+  DisplayIndex: 21
+  DisplayName: Catch me
+  Shape: 20
+  TeachingHint: Build speed on the ramp. Rotate the receiving trough under the flying
+    ball.
+  Environment: {fileID: 11400000, guid: 82e0ce24addfe4fc89b8bbd0db998aea, type: 2}
+  Prefab: {fileID: 8979698347520386273, guid: b739b1c5300b3435792321e58209dc9f, type: 3}
+  RotationMode: 1
+  InitialLocalVelocity: {x: 0, y: 0, z: 0}
+  ParSeconds: 0
+  Tutorial: 0
+  DesignerSolution: Gravity and rolling contact accelerate the steel ball down the
+    takeoff ramp. During the unsupported flight the ball keeps its world-space trajectory
+    while the player reorients the enclosure and receiving trough. Land in the receiving
+    route and reach the real circular exit. A missed catch returns through the recovery
+    route; no launch impulse or airborne attraction is added. Shared exit assist
+    pulls the ball through an unobstructed opening within 40 mm. This is deliberate
+    gameplay assistance; the entire sphere must still physically clear the bore before
+    completion.

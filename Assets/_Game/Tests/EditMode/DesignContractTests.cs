@@ -99,11 +99,11 @@ namespace GravityBox.Tests
         }
 
         [Test]
-        public void Catalog_ContainsSixteenDistinctExperimentsWithSharedSteelPhysics()
+        public void Catalog_ContainsTwentyThreeDistinctExperimentsWithSharedSteelPhysics()
         {
             var catalog = Catalog(); var ids = new HashSet<string>();
             var shapes = new HashSet<ContainerShape>();
-            Assert.That(catalog.Levels.Length, Is.EqualTo(16));
+            Assert.That(catalog.Levels.Length, Is.EqualTo(23));
             Assert.That(catalog.BallPrefab, Is.Not.Null);
             Assert.That(catalog.Rotation, Is.Not.Null);
             for (int i = 0; i < catalog.Levels.Length; i++)
@@ -125,8 +125,10 @@ namespace GravityBox.Tests
                 Assert.That(level.Prefab.GetComponentsInChildren<OneWayGate>(true), Is.Empty);
                 Assert.That(level.Prefab.GetComponentsInChildren<ImpulsePad>(true), Is.Empty);
                 Assert.That(level.Prefab.GetComponentsInChildren<KillVolume>(true), Is.Empty);
-                Assert.That(level.Prefab.GetComponentsInChildren<PhysicalProp>(true).Length,
-                    Is.EqualTo(level.Shape == ContainerShape.GravityLock ? 1 : level.Shape == ContainerShape.MechanicalMaze ? 2 : level.Shape == ContainerShape.CooperativeBox ? 4 : 0));
+                int propCount=level.Prefab.GetComponentsInChildren<PhysicalProp>(true).Length;
+                if(level.Shape < ContainerShape.GravityBridge)
+                    Assert.That(propCount, Is.EqualTo(level.Shape == ContainerShape.GravityLock ? 1 : level.Shape == ContainerShape.MechanicalMaze ? 2 : level.Shape == ContainerShape.CooperativeBox ? 4 : 0));
+                else Assert.That(propCount,Is.EqualTo(level.Shape==ContainerShape.FlightCatch ? 0 : level.Shape==ContainerShape.MechanicalMemory || level.Shape==ContainerShape.MechanicalHeart ? 3 : 1));
                 if (level.Shape == ContainerShape.SphereMaze)
                 {
                     SpatialMaze sphere = level.Prefab.GetComponent<SpatialMaze>();
@@ -138,14 +140,17 @@ namespace GravityBox.Tests
                     Assert.That(sphere.ClearWidth, Is.GreaterThan(catalog.BallProfile.Radius * 2));
                     Assert.That(sphere.SightGap, Is.LessThan(catalog.BallProfile.Radius * 2));
                 }
-                else Assert.That(level.Prefab.InteriorDepth, Is.EqualTo(level.Shape == ContainerShape.LayeredMaze ? 0.27f : 0.09f).Within(0.0001f));
+                else if(level.Shape < ContainerShape.GravityBridge)
+                    Assert.That(level.Prefab.InteriorDepth, Is.EqualTo(level.Shape == ContainerShape.LayeredMaze ? 0.27f : 0.09f).Within(0.0001f));
+                else Assert.That(level.Prefab.InteriorDepth,Is.GreaterThan(catalog.BallProfile.Radius*2+.006f));
                 Assert.That(level.Prefab.Exit.RequiredChannel, Is.Null.Or.Empty);
                 Assert.That(level.TeachingHint, Is.Not.Empty);
                 Assert.That(level.DesignerSolution, Is.Not.Empty);
             }
             CollectionAssert.AreEquivalent(new[] { ContainerShape.Circle, ContainerShape.Square, ContainerShape.Triangle,
                 ContainerShape.LShape, ContainerShape.UShape, ContainerShape.Annulus, ContainerShape.Dumbbell, ContainerShape.Star,
-                ContainerShape.GravityLock, ContainerShape.MechanicalMaze, ContainerShape.LayeredMaze, ContainerShape.SphereMaze, ContainerShape.WaterBox, ContainerShape.MercuryBox, ContainerShape.LionHead, ContainerShape.CooperativeBox }, shapes);
+                ContainerShape.GravityLock, ContainerShape.MechanicalMaze, ContainerShape.LayeredMaze, ContainerShape.SphereMaze, ContainerShape.WaterBox, ContainerShape.MercuryBox, ContainerShape.LionHead, ContainerShape.CooperativeBox,
+                ContainerShape.GravityBridge,ContainerShape.BalanceMachine,ContainerShape.NestedCage,ContainerShape.PendulumGate,ContainerShape.FlightCatch,ContainerShape.MechanicalMemory,ContainerShape.MechanicalHeart }, shapes);
         }
 
         [Test]

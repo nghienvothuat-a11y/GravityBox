@@ -7,7 +7,7 @@ namespace GravityBox.Gameplay
 {
     // Pressure-operated powered shutters: physical contacts compress the plungers;
     // bounded motor forces move collidable gates. The second switch retains both gates.
-    public sealed class CooperativeRelay : MonoBehaviour, IResettable, IForceProvider, IForceStepProvider
+    public sealed class CooperativeRelay : MonoBehaviour, IBallMechanism, IResettable, IForceProvider, IForceStepProvider
     {
         public PressurePlunger HoldSwitch, ReleaseSwitch;
         public GravitySliderGuide LeftGate, RightGate;

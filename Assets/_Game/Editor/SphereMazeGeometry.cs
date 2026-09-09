@@ -86,7 +86,7 @@ namespace GravityBox.Editor
 
         // The inner/outer skins terminate at the same cylindrical bore radius.
         // Separate bore vertices preserve its inward-facing cylinder normals.
-        public static Mesh Shell(float innerRadius, float thickness, float aperture)
+        public static Mesh Shell(float innerRadius, float thickness, float aperture, string name = "SphereMaze hollow spherical shell")
         {
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();
@@ -107,7 +107,7 @@ namespace GravityBox.Editor
                 Vector3 normal = (normals[a] + normals[b]).normalized;
                 Triangle(a, b, b + 1, normal); Triangle(a, b + 1, a + 1, normal);
             }
-            return Save("SphereMaze hollow spherical shell", vertices, triangles, normals);
+            return Save(name, vertices, triangles, normals);
 
             int AddSkin(float radius, int orientation)
             {

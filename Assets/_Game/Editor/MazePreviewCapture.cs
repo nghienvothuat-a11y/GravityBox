@@ -234,11 +234,11 @@ namespace GravityBox.Editor
             RenderPipeline.SubmitRenderRequest(camera, request);
             RenderPipeline.SubmitRenderRequest(camera, request);
             RenderTexture previous = RenderTexture.active;
-            var image = new Texture2D(Width, Height, TextureFormat.RGBA32, false, false);
+            var image = new Texture2D(target.width, target.height, TextureFormat.RGBA32, false, false);
             try
             {
                 RenderTexture.active = target;
-                image.ReadPixels(new Rect(0, 0, Width, Height), 0, 0);
+                image.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0);
                 image.Apply();
                 File.WriteAllBytes(path, image.EncodeToPNG());
                 var colors = new HashSet<Color32>();

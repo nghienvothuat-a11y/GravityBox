@@ -114,21 +114,30 @@ namespace GravityBox.Tests
                 Load(index);
                 Assert.That(forces.Environment, Is.SameAs(levels.Definition.Environment));
                 Assert.That(forces.TargetCount, Is.EqualTo(levels.Balls.Count + levels.Current.Props.Length));
-                Assert.That(levels.Ball.transform.parent, Is.Null);
-                Assert.That(levels.Current.IsOutside(levels.Ball.Body.position), Is.False);
-                SphereCollider sphere = levels.Ball.GetComponent<SphereCollider>();
-                foreach (Collider solid in levels.Current.GetComponentsInChildren<Collider>())
+                var initial=new List<Vector3>();
+                var solids=new List<Collider>(levels.Current.GetComponentsInChildren<Collider>());
+                foreach(var prop in levels.Current.Props)solids.AddRange(prop.GetComponentsInChildren<Collider>());
+                foreach(var ball in levels.Balls)
                 {
-                    if (!solid.enabled || solid.isTrigger) continue;
-                    bool overlap = UnityEngine.Physics.ComputePenetration(sphere, levels.Ball.Body.position, levels.Ball.Body.rotation,
-                        solid, solid.transform.position, solid.transform.rotation, out _, out float depth);
-                    Assert.That(!overlap || depth < Radius * 0.01f, Is.True, levels.Definition.Id + " spawn overlaps " + solid.name);
+                    initial.Add(ball.Body.position);
+                    Assert.That(ball.transform.parent,Is.Null);Assert.That(levels.Current.IsOutside(ball.Body.position),Is.False);
+                    SphereCollider sphere=ball.GetComponent<SphereCollider>();
+                    foreach(Collider solid in solids)
+                    {
+                        if(!solid.enabled || solid.isTrigger)continue;
+                        bool overlap=UnityEngine.Physics.ComputePenetration(sphere,ball.Body.position,ball.Body.rotation,
+                            solid,solid.transform.position,solid.transform.rotation,out _,out float depth);
+                        Assert.That(!overlap || depth<Radius*.01f,Is.True,levels.Definition.Id+" "+ball.name+" spawn overlaps "+solid.name);
+                    }
                 }
                 Steps(24);
                 levels.ResetLevel();
-                Assert.That(Vector3.Distance(levels.Ball.Body.position, levels.Current.BallSpawn.position), Is.LessThan(0.00001f));
-                Assert.That(levels.Ball.Body.linearVelocity, Is.EqualTo(Vector3.zero));
-                Assert.That(levels.Ball.Body.angularVelocity, Is.EqualTo(Vector3.zero));
+                for(int i=0;i<levels.Balls.Count;i++)
+                {
+                    Assert.That(Vector3.Distance(levels.Balls[i].Body.position,initial[i]),Is.LessThan(.00001f));
+                    Assert.That(levels.Balls[i].Body.linearVelocity,Is.EqualTo(Vector3.zero));
+                    Assert.That(levels.Balls[i].Body.angularVelocity,Is.EqualTo(Vector3.zero));
+                }
                 Assert.That(levels.Current.Resets.Count, Is.GreaterThanOrEqualTo(3));
             }
         }
@@ -139,19 +148,25 @@ namespace GravityBox.Tests
             for (int index = 0; index < levels.Catalog.Levels.Length; index++)
             {
                 Load(index);
-                Vector3 position = levels.Ball.Body.position;
+                var positions=new List<Vector3>();foreach(var ball in levels.Balls)positions.Add(ball.Body.position);
                 Quaternion orientation = levels.Current.Rotation.Orientation;
                 int registryCount = levels.Current.Resets.Count;
                 for (int reset = 0; reset < 100; reset++)
                 {
-                    levels.Ball.Body.position += Vector3.one * Radius * 3;
-                    levels.Ball.Body.linearVelocity = Vector3.one;
-                    levels.Ball.Body.angularVelocity = Vector3.one * 20;
+                    foreach(var ball in levels.Balls)
+                    {
+                        ball.Body.position+=Vector3.one*Radius*3;
+                        ball.Body.linearVelocity=Vector3.one;
+                        ball.Body.angularVelocity=Vector3.one*20;
+                    }
                     levels.Current.GetComponent<Rigidbody>().rotation = Quaternion.Euler(reset, reset * 3, 35);
                     levels.ResetLevel();
-                    Assert.That(Vector3.Distance(levels.Ball.Body.position, position), Is.LessThan(0.00001f));
-                    Assert.That(levels.Ball.Body.linearVelocity, Is.EqualTo(Vector3.zero));
-                    Assert.That(levels.Ball.Body.angularVelocity, Is.EqualTo(Vector3.zero));
+                    for(int i=0;i<levels.Balls.Count;i++)
+                    {
+                        Assert.That(Vector3.Distance(levels.Balls[i].Body.position,positions[i]),Is.LessThan(.00001f));
+                        Assert.That(levels.Balls[i].Body.linearVelocity,Is.EqualTo(Vector3.zero));
+                        Assert.That(levels.Balls[i].Body.angularVelocity,Is.EqualTo(Vector3.zero));
+                    }
                     Assert.That(Quaternion.Angle(levels.Current.Rotation.Orientation, orientation), Is.LessThan(0.001f));
                     Assert.That(levels.Current.Exit.HasExited, Is.False);
                     Assert.That(levels.Current.Resets.Count, Is.EqualTo(registryCount));
@@ -259,6 +274,9 @@ namespace GravityBox.Tests
             {
                 Load(index);
                 SpatialMaze sphere = levels.Current.GetComponent<SpatialMaze>();
+                SphericalEnclosure enclosure = levels.Current.GetComponent<SphericalEnclosure>();
+                if(enclosure != null)
+                { AssertRadialShellCoverage(enclosure.ShellCollider,enclosure.InnerRadius,enclosure.ShellThickness); continue; }
                 if (sphere != null)
                 {
                     AssertSpatialShellCoverage(sphere);
@@ -301,6 +319,9 @@ namespace GravityBox.Tests
             {
                 Load(index);
                 SpatialMaze sphere = levels.Current.GetComponent<SpatialMaze>();
+                SphericalEnclosure enclosure = levels.Current.GetComponent<SphericalEnclosure>();
+                if(enclosure != null)
+                { AssertRadialShellSection(enclosure.ShellCollider,enclosure.InnerRadius,enclosure.ShellThickness); continue; }
                 if (sphere != null)
                 {
                     AssertSpatialShellSection(sphere);

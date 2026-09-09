@@ -34,6 +34,11 @@ namespace GravityBox.Presentation
         private bool wasAssisting;
         private int lastEscaped = -1;
         private CooperativeRelay relay;
+        private ContactSeatLatch mechanicalCatch;
+        private NestedCagePuzzle nestedCage;
+        private PendulumGatePuzzle pendulum;
+        private MemoryRatchetAssembly memory;
+        private MechanicalHeart heart;
         public bool ModalOpen => levelModal != null && levelModal.activeSelf;
 
         public void Initialize(LevelManager manager)
@@ -228,11 +233,18 @@ namespace GravityBox.Presentation
             var water = levels.Current.GetComponent<WaterVolume>();
             if (water != null) levels.Current.GetComponent<WaterVisuals>()?.Initialize(water);
             relay = levels.Current.GetComponent<CooperativeRelay>();
+            heart = levels.Current.GetComponent<MechanicalHeart>();
+            nestedCage = levels.Current.GetComponent<NestedCagePuzzle>();
+            pendulum = levels.Current.GetComponent<PendulumGatePuzzle>();
+            memory = levels.Current.GetComponent<MemoryRatchetAssembly>();
+            mechanicalCatch = null;
             gravitySlider = null;
             var sliders = new System.Collections.Generic.List<GravitySliderGuide>();
             // Props live outside the rotating hierarchy after initialization.
             foreach (PhysicalProp prop in levels.Current.Props)
             {
+                var seated=prop.GetComponent<ContactSeatLatch>();
+                if(seated!=null) mechanicalCatch=seated;
                 var slider = prop.GetComponent<GravitySliderGuide>();
                 if (slider != null) sliders.Add(slider);
             }
@@ -293,6 +305,31 @@ namespace GravityBox.Presentation
                 state.color = Accent;
                 return;
             }
+            if(session==SessionState.Active && heart!=null)
+            {
+                state.text=heart.BridgeCatch.Latched ? "BRIDGE SECURED · BRING BOTH THROUGH THE HEART"
+                    : heart.Released ? "PAWL RELEASED · KEEP THE BRIDGE SEATED"
+                    : "A: LOAD THE LONG ARM · B: PRESS THE RETAINING PIN";
+                state.color=heart.BridgeCatch.Latched ? Accent : Amber;return;
+            }
+            if(session==SessionState.Active && memory!=null)
+            {
+                state.text=memory.PassageAligned ? "CAM ALIGNED · THE CROSSING IS OPEN"
+                    : $"CAM: {memory.RetainedTeeth}/3 STEPS HELD · PUSH, RETURN, REPEAT";
+                state.color=memory.PassageAligned ? Accent : Amber;return;
+            }
+            if(session==SessionState.Active && mechanicalCatch!=null)
+            {
+                state.text=mechanicalCatch.Latched ? "PAWL SEATED · THE ROUTE STAYS OPEN"
+                    : levels.Balls.Count>1 ? "MOVE A TO THE FAR END TO LIFT B" : "PARK THE BALL · LET THE BRIDGE FALL INTO ITS SEAT";
+                state.color=mechanicalCatch.Latched ? Accent : Amber;return;
+            }
+            if(session==SessionState.Active && nestedCage!=null)
+            { state.text="TIP THE OUTER BOX PAST THE INNER CAGE STOP";state.color=Accent;return; }
+            if(session==SessionState.Active && pendulum!=null)
+            { state.text="SIDEWAYS: SWING · FORWARD: CROSS THE OPENING";state.color=Accent;return; }
+            if(session==SessionState.Active && levels.Definition.Shape==ContainerShape.FlightCatch)
+            { state.text="ROLL · FLY · ROTATE THE BOX TO CATCH";state.color=Accent;return; }
             if (session == SessionState.Active && levels.Definition.Shape == ContainerShape.MercuryBox)
             {
                 state.text = "MERCURY · SEE-THROUGH VIEW · STEEL RISES";

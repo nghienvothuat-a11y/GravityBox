@@ -1,4 +1,6 @@
-# Kế hoạch prototype: 16 màn thử vật lý và hình học
+# Kế hoạch prototype: 23 màn thử vật lý và cơ cấu
+
+Bổ sung bàn 17–23: cầu gập do trọng lực, cân hai bi, lồng treo độc lập, cửa con lắc, bay và đón, cam có trí nhớ cơ học, boss phối hợp hai bi. Mỗi dạng có kiểm tra cơ cấu, đường giải từ spawn bằng xoay chung, reset và khả năng quan sát. Chỉ build macOS theo yêu cầu. [Bảy màn mới](MECHANICAL_LEVELS_17_23.md).
 
 Bổ sung bàn 16 và luật toàn bộ bi thoát: tách roster/lifecycle, force và traversal/assist cho từng bi; xây hai khoang phối hợp bằng nút lò xo và cửa trượt có lực motor; kiểm tra không thắng sớm, reset/đổi màn và đường giải chỉ bằng xoay chung. Cửa thứ hai giữ mở để giải phóng cả hai bi. [Thiết kế](LEVEL16_COOPERATIVE.md).
 
@@ -22,13 +24,16 @@ Chỉ tăng mass không đạt mục tiêu này: trọng lực tạo cùng gia t
 | --- | --- | --- |
 | 1. Mô hình vật lý | Bi thép đường kính 30 mm/111 g, hộp bàn nhỏ, 9,81 m/s², 120 Hz | Freefall, quán tính, dốc lăn, tổn hao năng lượng qua contact |
 | 2. Tám hộp | Ba hình cơ bản và năm hình lõm/lõi rỗng; cube cố định; lỗ thoát phẳng | Spawn không chồng, sàn/nắp đúng contour, vỏ kín, lối đi đủ cả bán kính bi |
-| 3. Đọc chuyển động | Vật liệu bi, camera, âm thanh lăn/va chạm, HUD 16 bàn | Nhìn được quay/tăng tốc; chọn được mọi hình trên màn hình nhỏ |
+| 3. Đọc chuyển động | Vật liệu bi, camera, âm thanh lăn/va chạm, HUD 23 bàn | Nhìn được quay/tăng tốc; chọn được mọi hình trên màn hình nhỏ |
 | 4. Lặp thí nghiệm | Reset, pause, chọn hộp, quan sát sau thoát ở thời gian thực | 100 reset mỗi bàn, không giữ state cũ, không auto advance |
 | 5. Thử cảm giác | Quan sát trực tiếp các tình huống dưới đây | Người dùng xác nhận cảm giác bi có sức nặng và có thể dự đoán |
 | 6. Puzzle 09 | Hốc giữ bi, thanh chặn trên ray không motor, cửa xuyên vách và lỗ thoát | Cửa đóng ngăn cả bi; gravity mở/đóng thật; giải được bằng nghiêng; reset hai body |
 | 7. Mê cung 10 | Hành lang đổi hướng, hai thanh chặn trên ray ngược nhau và hai hốc giữ | Hai cửa đáp ứng gravity đối nhau, chặn toàn bộ chiều sâu; route từ spawn qua hai cửa đến thoát; reset ba body |
 | 8. Mê cung 11 | Ba sàn, ba hệ vách, hai lỗ chuyển tầng lệch nhau, chế độ xem từng tầng/tổng thể | Sàn đỡ bi ngoài lỗ; cầu rơi qua lỗ; route liên tục qua cả ba tầng tới thoát; chế độ xem giữ mọi collider |
 | 9. Mê cung cầu 12 | Vỏ cầu trong suốt, ván ghép thành 25 đoạn nối/21 khúc ngoặt và hai nhánh cụt | Kiểm tra đường tắt bằng toàn bộ bán kính bi, passage thật ở các khớp, route đủ tuyến từ spawn tới thoát bằng xoay cầu |
+
+| 10. Cơ cấu 17–22 | Sáu họ cơ cấu có đường giải và đường hồi phục cụ thể | Tải tiếp xúc, mô-men, khớp, quỹ đạo bay, ba nấc cam và reset được kiểm tra trên prefab thật |
+| 11. Boss 23 | Hai bi phối hợp rồi qua lồng và bộ hứng trong cầu | Không thắng sớm; từ cả hai spawn qua các chặng và thoát; vẫn nhìn được bi sau nhiều lớp kính |
 
 ## Buổi thử cảm giác
 
@@ -47,6 +52,6 @@ Ghi cảm nhận nhẹ/nặng, trơn/dính, nảy quá mức/thiếu phản hồ
 
 ## Sau prototype
 
-Phạm vi hiện tại gồm 16 bàn đã yêu cầu, với nước, thủy ngân và bài phối hợp hai bi. Các mê cung cần thử trực tiếp để đánh giá độ khó; bàn 13/14 cần so sánh cảm giác với bàn 02 và giới hạn mô hình đã ghi. Các trigger/signal door cũ, Zero-G, pad, hazard và nắp rơi vẫn ngoài catalog; bàn 16 dùng nút tiếp xúc lò xo và cửa có lực motor riêng. Các mở rộng sau cần dùng cùng mô hình vật lý đã chốt trước khi bổ sung onboarding, tiến trình, save, hiệu năng thiết bị thật và nội dung thương mại.
+Phạm vi hiện tại gồm 23 bàn đã yêu cầu, với nước, thủy ngân, bài phối hợp hai bi và sáu họ cơ cấu mới cùng một boss tổng hợp. Các mê cung cần thử trực tiếp để đánh giá độ khó; bàn 13/14 cần so sánh cảm giác với bàn 02 và giới hạn mô hình đã ghi. Các trigger/signal door cũ, Zero-G, pad, hazard và nắp rơi vẫn ngoài catalog; bàn 16 dùng nút tiếp xúc lò xo và cửa có lực motor riêng. Các mở rộng sau cần dùng cùng mô hình vật lý đã chốt trước khi bổ sung onboarding, tiến trình, save, hiệu năng thiết bị thật và nội dung thương mại.
 
 Kết quả từng lượt test/build/chạy được ghi tại [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md); không suy diễn việc chạy trên thiết bị từ một lần build thành công.

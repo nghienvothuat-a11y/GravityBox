@@ -1,12 +1,16 @@
 # Kiến trúc Gravity Box
 
+Catalog hiện tại gồm 23 màn. Bảy cơ cấu mới được author qua `MechanicalAuthoring` và các builder riêng 17–23. Helper chỉ sinh prefab, collider và mesh; không xây hoặc điều khiển đường đi ở runtime. `PhysicalHinge` giữ bearing friction, đo góc xoắn tương đối từ quaternion Rigidbody và giao tải cho native HingeJoint. `ContactSeatLatch` khóa bậc tự do sau tiếp xúc với ngàm thật; `MemoryRatchetAssembly` quản lý hai cóc lý tưởng cùng lò xo hồi, không xoay cam bằng animation.
+
+`LevelRuntime` thu danh sách component trước khi `PhysicalProp` tách khỏi cây hộp, đăng ký `IResettable` và `IForceProvider` một lần theo vòng đời màn. `IBallMechanism.Bind` truyền roster tường minh cho cơ cấu cần nhận biết contact của các bi. Nhờ vậy chốt nằm trên body tự do vẫn được reset; đổi màn thu hồi cả các body có joint nối nhau. `SphericalEnclosure` mô tả vỏ cầu độc lập với graph mê cung; boss không phải tạo metadata mê cung giả để dùng vỏ cong. [Thiết kế cơ khí](MECHANICAL_LEVELS_17_23.md).
+
 Luật hiện tại quản lý danh sách `LevelManager.Balls`: mỗi bi có lifecycle, force, contact audio và trạng thái cửa riêng. `ExitSocket.BallExited` cập nhật bộ đếm; `Exited` chỉ phát khi toàn bộ roster đã ra ngoài. Các màn cũ có một spawn; `AdditionalBallSpawns` mở rộng nội dung. Camera sau thắng theo viên cuối vừa ra. `Ball` chỉ còn là truy cập bi chính cho công cụ cũ.
 
 Bàn 16 dùng `CooperativeRelay` + hai `PressurePlunger` và bốn `PhysicalProp` (hai nút, hai cửa). Nút đo contact và hành trình thật; cửa được đẩy bằng lực motor giới hạn, không tắt collider. Chốt giữ mở hai cửa và được nhả khi reset. [Thiết kế](LEVEL16_COOPERATIVE.md).
 
 Bàn 15 thêm hình hộp đầu sư tử có bờm/tai và năm gờ mặt thật. `LionHeadBuilder` sinh asset trong Editor; runtime dùng các thành phần chung, không thêm lực hay cơ cấu riêng. [Thiết kế](LEVEL15_LION_HEAD.md).
 
-Prototype hiện tại tải 16 màn: tám thí nghiệm hình học, bốn puzzle vật lý, nước, thủy ngân, hộp đầu sư tử và bài phối hợp hai bi, dùng chung mô hình bi thép. Bàn 09 có một thanh trượt, bàn 10 có hai thanh trượt ngược hướng, bàn 11 có ba tầng mê cung và bàn 12 có mê cung ba chiều trong khối cầu. Bi chuyển động trong world space; hộp là vật thể kinematic nhận ý định xoay từ người chơi. PhysX giải quyết va chạm giữa chúng. Không có đường điều khiển input trực tiếp tới vị trí hoặc vận tốc của bi.
+Prototype hiện tại tải 23 màn: tám thí nghiệm hình học, bốn puzzle vật lý, nước, thủy ngân, hộp đầu sư tử, bài phối hợp hai bi và bảy màn cơ khí mới; dùng chung mô hình bi thép. Bàn 09 có một thanh trượt, bàn 10 có hai thanh trượt ngược hướng, bàn 11 có ba tầng mê cung và bàn 12 có mê cung ba chiều trong khối cầu. Bi chuyển động trong world space; hộp là vật thể kinematic nhận ý định xoay từ người chơi. PhysX giải quyết va chạm giữa chúng. Không có đường điều khiển input trực tiếp tới vị trí hoặc vận tốc của bi.
 
 ## Phụ thuộc
 
