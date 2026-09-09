@@ -4,7 +4,8 @@ using UnityEngine;
 namespace GravityBox.Simulation
 {
     /// <summary>
-    /// Retained, completely filled water. Archimedes buoyancy and sphere drag in SI units.
+    /// Retained, completely filled Newtonian liquid. Legacy Water name preserves assets.
+    /// Water and mercury use the same SI-unit force path, driven only by their profile.
     /// Rotation-driven bulk flow is a bounded approximation, not Navier–Stokes/SPH.
     /// The real exit remains open to the ball; water retention is an authored game rule.
     /// </summary>
@@ -119,7 +120,7 @@ namespace GravityBox.Simulation
             Vector3 wallVelocity = boxVelocity + Vector3.Cross(boxSpin, centre - container.position);
             Vector3 v = ball.Body.linearVelocity - wallVelocity;
             Vector3 spin = ball.Body.angularVelocity - boxSpin;
-            // L13 has axis-aligned flat panels and a cube. Query the ACTUAL collider
+            // L13/L14 have axis-aligned flat panels and a cube. Query the ACTUAL collider
             // faces, including the cut floor, not the water bounds: never seal the exit.
             // Use the strongest rolling face, not six stacked copies of the drag law.
             for (int axis = 0; axis < 3; axis++)

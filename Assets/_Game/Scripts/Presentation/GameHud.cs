@@ -262,6 +262,12 @@ namespace GravityBox.Presentation
 
         private void RefreshStatusText(SessionState session)
         {
+            if (session == SessionState.Active && levels.Definition.Shape == ContainerShape.MercuryBox)
+            {
+                state.text = "MERCURY · SEE-THROUGH VIEW · STEEL RISES";
+                state.color = new Color(.76f, .81f, .9f);
+                return;
+            }
             if (session == SessionState.Active && levels.Definition.Shape == ContainerShape.WaterBox)
             {
                 state.text = "FULL OF WATER · STEEL STILL SINKS";

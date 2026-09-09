@@ -206,7 +206,7 @@ namespace GravityBox.Editor
                 MeshObject("Inner lower edge " + i, root.transform, PhysicsLabGeometry.Border(shape + " inner lower edge " + i, boundary, Thickness + .001f, -depth / 2 - Thickness / 2, -depth / 2 + .001f), frame, false);
                 MeshObject("Inner upper edge " + i, root.transform, PhysicsLabGeometry.Border(shape + " inner upper edge " + i, boundary, Thickness + .001f, depth / 2 - .001f, depth / 2 + Thickness / 2), frame, false);
             }
-            if (shape == ContainerShape.Square || shape == ContainerShape.WaterBox)
+            if (shape == ContainerShape.Square || shape == ContainerShape.WaterBox || shape == ContainerShape.MercuryBox)
             {
                 var cube = GameObject.CreatePrimitive(PrimitiveType.Cube); cube.name = "Fixed cube";
                 cube.transform.SetParent(root.transform, false); cube.transform.localScale = Vector3.one * 0.064f;
@@ -226,6 +226,7 @@ namespace GravityBox.Editor
             level.Exit = outlet.GetComponent<ExitSocket>(); level.Exit.ApertureRadius = Aperture; level.Exit.WallHalfDepth = Thickness / 2;
             MeshObject("Subtle light inlay", outlet.transform, PhysicsLabGeometry.Inlay(Aperture, Thickness / 2), rim, false);
             if (shape == ContainerShape.WaterBox) WaterBoxBuilder.AddWater(root);
+            if (shape == ContainerShape.MercuryBox) WaterBoxBuilder.AddMercury(root);
             GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, Folder + "/Prefabs/" + shape + " box.prefab");
             Object.DestroyImmediate(root); return saved.GetComponent<LevelRuntime>();
         }

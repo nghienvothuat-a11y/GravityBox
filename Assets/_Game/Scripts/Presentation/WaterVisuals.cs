@@ -10,6 +10,8 @@ namespace GravityBox.Presentation
     {
         public Renderer VolumeRenderer, FloorRenderer;
         public Material TracerMaterial;
+        [Tooltip("Silver diagnostic visualization of opaque mercury; has no effect on physics.")]
+        public bool MercuryCutaway;
         private const int Motes = 100, WakeParticles = 120, Count = Motes + WakeParticles;
         private struct Particle { public Vector3 Position, Velocity; public float Age, Life, Size; }
         private readonly Particle[] particles = new Particle[Count];
@@ -124,7 +126,7 @@ namespace GravityBox.Presentation
                 int v = i * 4;
                 vertices[v] = p.Position - a - b; vertices[v + 1] = p.Position + a - b;
                 vertices[v + 2] = p.Position + a + b; vertices[v + 3] = p.Position - a + b;
-                Color c = new Color(.5f, .87f, 1, alpha);
+                Color c = MercuryCutaway ? new Color(.82f, .88f, .95f, alpha * .65f) : new Color(.5f, .87f, 1, alpha);
                 colors[v] = colors[v + 1] = colors[v + 2] = colors[v + 3] = c;
             }
             mesh.vertices = vertices; mesh.colors = colors; mesh.bounds = new Bounds(Vector3.zero, water.HalfSize * 2.1f);

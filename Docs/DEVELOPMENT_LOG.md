@@ -1,5 +1,15 @@
 # Nhật ký phát triển Gravity Box
 
+## Bàn 14 — thủy ngân — 09/09/2026
+
+- Thêm **Steel in mercury**, cùng hộp vuông/cube/bi/spawn/lỗ của bàn 02 và 13. Profile riêng 13.546 kg/m³ và 0,001567367 Pa·s tại 20°C theo nguồn NIST/Assael; dùng chung lực nổi, cản và added mass của bàn 13. Bi thép nổi lên, không đổi gravity hay thêm lực nâng tùy ý.
+- Khi ngập hết: lực nổi 1,878635 N, gia tốc khởi đầu +3,821224 m/s², added mass 95,75103 g. Tải nghỉ ở nắp 0,789953 N ổn định. Nổi lưng chừng ở cửa không thắng; xoay nghiêng tiếp cho vành rời bi mới thoát thật. [Công thức/giới hạn](LEVEL14_MERCURY.md).
+- Thể tích bạc nhìn xuyên có nhãn, bỏ caustic nước; cube/bi và tracer đọc được ở ba góc. Shader chỉ tạo hình ảnh, không tạo collider/lực. [Ảnh liên tục](Images/Level14/README.md) lúc 03:10:54 UTC.
+- Generate/ContentValidator đạt 14 màn. Hoàn nguyên các thay đổi ID không đổi dữ liệu ở scene/prefab cũ và các màu legacy material do generator/importer; giữ asset bàn 14 và trường view mới ở prefab bàn 13.
+- **8/8 EditMode + 81/81 PlayMode = 89/89**, kết thúc 03:12:34 UTC. Có sáu test thủy ngân, đi từ spawn tới thoát hoàn toàn chỉ qua xoay, giảm tốc theo nghiệm, cân bằng phần ngập, nghỉ nắp, reset và đổi lại nước. [XML/kết quả](Verification/Mercury14/README.md). Test không chứng minh độ chính xác toàn bộ thủy ngân thực hoặc cảm giác chơi tay.
+- Theo yêu cầu hiện tại chỉ xuất macOS; APK cũ chưa có màn 14.
+- macOS build thành công lúc 10:13:50 giờ Việt Nam. Đã mở màn 14 từ selector, quan sát HUD/bi nổi, không có exception trong Player.log đã đọc. Người dùng bắt đầu xoay thử; dừng thao tác UI để giữ lượt chơi. Ba vật liệu kính bàn 11 bị importer đổi blend đã được trả về source sau khi Unity kết thúc.
+
 ## Bàn 13 — hiệu chỉnh cản nước — 09/09/2026
 
 - Thay việc dùng cầu cô lập cho mọi trạng thái bằng cản cầu khi bay và cản hiệu dụng khi lăn sát mặt phẳng. Hiệu chỉnh dựa trên vận tốc tương đối, độ trượt và raycast collider sàn/cube thật; lỗ thoát không bị coi là mặt sàn. Giữ mật độ/độ nhớt nước, thêm giả định độ nhám 3 µm và công bố các miền áp dụng.

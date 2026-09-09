@@ -1,6 +1,12 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** ADR 021 hiệu chỉnh nước ở bàn 13; ADR 020 thêm thí nghiệm này. ADR 019 giữ mê cung ván ghép ở bàn 12. Các mô tả 16 màn/zero-G và bố cục 32 ván rời bên dưới là lịch sử.
+**Phạm vi hiện tại:** ADR 022 thêm thủy ngân ở bàn 14; ADR 021 hiệu chỉnh nước ở bàn 13. ADR 019 giữ mê cung ván ghép ở bàn 12. Các mô tả 16 màn/zero-G và bố cục 32 ván rời bên dưới là lịch sử.
+
+## ADR 022 Thủy ngân dùng chung mô hình chất lỏng
+
+Thêm màn riêng với hình học bàn 02/13 và profile thủy ngân ở 20°C. Giữ solver/bi/gravity: lực nổi lớn hơn trọng lượng thép nên bi nổi về mặt cao nhất. Khi chỉ nổi một phần ở cửa thì chưa hoàn thành; người chơi phải xoay tiếp để cả bi rời vành thật.
+
+Thủy ngân đục sẽ che toàn bộ trò chơi trong hộp đầy. Chọn view bạc nhìn xuyên có nhãn rõ, bỏ caustic nước, giữ tracer chỉ để quan sát. Không thay tính chất vật lý để phục vụ hình ảnh. Root vẫn kinematic; không tuyên bố mô phỏng việc tay xoay khối thủy ngân khoảng 113 kg. [Công thức/giới hạn](LEVEL14_MERCURY.md).
 
 ## ADR 021 Cản lăn sát thành và quán tính nước
 

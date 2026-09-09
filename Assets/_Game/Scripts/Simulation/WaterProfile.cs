@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace GravityBox.Simulation
 {
-    [CreateAssetMenu(menuName = "Gravity Box/Water Profile")]
+    // Legacy serialized type name; density/viscosity also support the mercury experiment.
+    [CreateAssetMenu(menuName = "Gravity Box/Liquid Profile")]
     public sealed class WaterProfile : ScriptableObject
     {
         [Min(1)] public float Density = 998.2f;

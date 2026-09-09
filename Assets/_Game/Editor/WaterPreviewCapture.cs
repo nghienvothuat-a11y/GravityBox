@@ -25,14 +25,19 @@ namespace GravityBox.Editor
         }
 
         [MenuItem("Gravity Box/Capture Water Experiment")]
-        public static void Capture()
+        public static void Capture() => CaptureLevel(12);
+
+        [MenuItem("Gravity Box/Capture Mercury Experiment")]
+        public static void CaptureMercury() => CaptureLevel(13);
+
+        private static void CaptureLevel(int index)
         {
             int result = 0;
-            try { Run(); } catch (Exception e) { Debug.LogException(e); result = 1; }
+            try { Run(index); } catch (Exception e) { Debug.LogException(e); result = 1; }
             if (Application.isBatchMode) EditorApplication.Exit(result);
         }
 
-        private static void Run()
+        private static void Run(int index)
         {
             if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null) throw new InvalidOperationException("Water capture needs graphics; omit -nographics.");
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Capture in Edit Mode.");
@@ -53,8 +58,9 @@ namespace GravityBox.Editor
                     if (bootstrap != null) { bootstrap.enabled = false; camera = bootstrap.GameplayCamera; }
                 }
                 var catalog = AssetDatabase.LoadAssetAtPath<LevelCatalog>(PrototypeBuilder.CatalogPath);
-                if (catalog.Levels.Length < 13) throw new InvalidOperationException("Generate water level first.");
-                LevelDefinition definition = catalog.Levels[12];
+                if (catalog.Levels.Length <= index) throw new InvalidOperationException("Generate liquid level first.");
+                LevelDefinition definition = catalog.Levels[index];
+                bool mercury = definition.Shape == ContainerShape.MercuryBox;
                 level = ((GameObject)PrefabUtility.InstantiatePrefab(definition.Prefab.gameObject, scene)).GetComponent<LevelRuntime>();
                 ball = ((GameObject)PrefabUtility.InstantiatePrefab(catalog.BallPrefab.gameObject, scene)).GetComponent<BallController>();
                 ball.Configure(catalog.BallProfile, Vector3.zero, false);
@@ -79,11 +85,19 @@ namespace GravityBox.Editor
                 string directory = Path.Combine(Path.GetDirectoryName(Application.dataPath), "Artifacts");
                 Directory.CreateDirectory(directory);
                 var evidence = new Evidence { CapturedUtc = DateTime.UtcNow.ToString("O") };
-                Tick(120); Save(0);
-                level.Rotation.SetTargetOrientation(Quaternion.Euler(0, 0, -25)); Tick(50); Save(1);
+                if (mercury)
+                {
+                    evidence.Files = new[] { "Mercury14Rising.png", "Mercury14Ceiling.png", "Mercury14Turned.png" };
+                    Tick(12); Save(0); Tick(108); Save(1);
+                }
+                else
+                {
+                    Tick(120); Save(0);
+                    level.Rotation.SetTargetOrientation(Quaternion.Euler(0, 0, -25)); Tick(50); Save(1);
+                }
                 level.Rotation.SetTargetOrientation(Quaternion.Euler(48, 28, 14)); Tick(80); Save(2);
-                File.WriteAllText(Path.Combine(directory, "Water13RenderFixtures.json"), JsonUtility.ToJson(evidence, true));
-                Debug.Log("WATER 13: three rendered views after continuous physics; no ball pose/velocity edits after spawn.");
+                File.WriteAllText(Path.Combine(directory, mercury ? "Mercury14RenderFixtures.json" : "Water13RenderFixtures.json"), JsonUtility.ToJson(evidence, true));
+                Debug.Log($"LIQUID {index + 1}: three rendered views after continuous physics; no ball pose/velocity edits after spawn.");
 
                 void Tick(int count)
                 {
@@ -98,7 +112,7 @@ namespace GravityBox.Editor
                     visuals.Refresh(camera); evidence.BallWorldPositions[i] = ball.Body.position;
                     evidence.LiveWakeParticles[i] = visuals.LiveWakeCount;
                     MazePreviewCapture.Render(camera, target, Path.Combine(directory, evidence.Files[i]));
-                    foreach (string shaderName in new[] { "GravityBox/Underwater Caustics", "GravityBox/Retained Water", "GravityBox/Water Tracers" })
+                    foreach (string shaderName in new[] { mercury ? "GravityBox/Mercury Cutaway" : "GravityBox/Underwater Caustics", "GravityBox/Retained Water", "GravityBox/Water Tracers" })
                         if (ShaderUtil.ShaderHasError(Shader.Find(shaderName))) throw new InvalidOperationException("Water shader failed: " + shaderName);
                 }
             }

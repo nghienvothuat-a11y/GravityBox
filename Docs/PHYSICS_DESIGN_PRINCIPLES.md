@@ -2,6 +2,8 @@
 
 Bàn 13 bổ sung môi trường nước trong hộp vuông để thử lực nổi và lực cản lên cùng bi thép. Gravity thế giới không đổi; nước giữ đầy theo quy tắc do người dùng yêu cầu. Phần dòng chảy/hiển thị là xấp xỉ, cần phân biệt với mô phỏng chất lỏng đầy đủ. [Mô hình nước](LEVEL13_WATER.md).
 
+Bàn 14 thay môi trường bằng thủy ngân: lực nổi lớn hơn trọng lượng thép nên bi đi về mặt cao, không đảo gravity. Nổi một phần ở cửa chưa thắng; phải ra hết thật. View nhìn xuyên chất lỏng bạc được ghi rõ là hỗ trợ quan sát. Root kinematic không mô phỏng quán tính của cả khối chất lỏng trong tay người. [Mô hình thủy ngân](LEVEL14_MERCURY.md).
+
 Đối tượng quan trọng nhất là viên bi: người chơi phải cảm thấy nó có quán tính, đang quay, nhận gia tốc khi nghiêng và truyền xung lực khi va vào hộp. Tám hộp thử hình học quan sát hành vi này; bàn 09–10 dùng thanh chặn trượt, bàn 11 dùng ba tầng mê cung và các lỗ rơi thật; bàn 12 ghép các ván nhỏ thành mê cung ba chiều trong cầu thủy tinh. Mọi puzzle dùng cùng trọng lực và contact.
 
 ## Các nguyên tắc đang áp dụng

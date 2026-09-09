@@ -1,4 +1,6 @@
-# Phạm vi kiểm chứng prototype 13 bàn
+# Phạm vi kiểm chứng prototype 14 bàn
+
+Bàn 14 dùng thủy ngân: kiểm tra nổi về nắp, cản theo nghiệm tham chiếu, reset/đổi môi trường, nổi một phần không thắng, và đường từ spawn tới thoát hoàn toàn chỉ bằng xoay. Lật hộp cho cửa hướng lên, vòng cube tới cửa rồi nghiêng thêm để rời vành. [Thiết kế](LEVEL14_MERCURY.md), [bộ test hiện tại](Verification/Mercury14/README.md).
 
 Bàn 13 thêm phép thử lực nổi, lực cản với nghiệm tham chiếu, nghỉ ổn định dưới nước, chuyển sang không khí ở lỗ thoát, đường giải quanh cube bằng xoay và lifecycle/VFX. Xem [thiết kế nước](LEVEL13_WATER.md) và [kết quả bộ test hiện tại](Verification/Water13/README.md).
 
@@ -8,7 +10,7 @@ Mục tiêu hiện tại là chuyển động và va chạm của bi thép. Khô
 
 - Catalog: tám hình Circle/Square/Triangle/LShape/UShape/Annulus/Dumbbell/Star, GravityLock ở bàn 09, MechanicalMaze ở 10, LayeredMaze ở 11 và SphereMaze ở 12; Earth gravity, free rotation, cùng profile bi thép. Bàn 09 có một PhysicalProp, bàn 10 có hai; không có cơ cấu mở bằng tín hiệu.
 - Mô phỏng độc lập: freefall 9,81 m/s², quán tính cầu, gia tốc lăn trên dốc, contact và mất năng lượng, rebound, spin và rolling resistance.
-- Prefab thật: spawn clearance, thành hộp theo từng cạnh contour gồm cả thành trong vành khuyên, sàn/nắp hỗ trợ đúng vùng có thể chơi và để trống phần khuyết/lõi rỗng; contact với cube, nằm yên, containment khi nghiêng và lỗ thoát thật trên cả 13 bàn. Phép kiểm tra vỏ dùng chiều sâu của từng prefab, gồm hộp 0,27 m ở bàn 11.
+- Prefab thật: spawn clearance, thành hộp theo từng cạnh contour gồm cả thành trong vành khuyên, sàn/nắp hỗ trợ đúng vùng có thể chơi và để trống phần khuyết/lõi rỗng; contact với cube, nằm yên, containment khi nghiêng và lỗ thoát thật. Scene integration kiểm tra cả 14 bàn. Phép kiểm tra vỏ dùng chiều sâu của từng prefab, gồm hộp 0,27 m ở bàn 11.
 - Lối đi mới: sphere sweep theo toàn bộ bán kính 0,015 m qua góc chữ L/U, nửa vòng vành khuyên, cổ quả tạ và vùng giữa ngôi sao; sau đó đưa bi qua các waypoint bằng gravity và rotation intent.
 - Exit: hướng đi từ trong ra ngoài, clearance tròn, toàn bộ bán kính vượt vỏ, một lần phát event, reset xóa passage cũ. Không teleport hoặc capture lúc thoát.
 - Puzzle 09: thanh chặn kín toàn bộ chiều sâu cửa, body/joint không drive hoặc signal, trượt mở/đóng do gravity; fixture từ spawn chỉ xoay hộp để giữ bi, mở cửa, đi sang khoang phải và thoát thật.

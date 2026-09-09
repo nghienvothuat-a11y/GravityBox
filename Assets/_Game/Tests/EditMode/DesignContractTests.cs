@@ -103,7 +103,7 @@ namespace GravityBox.Tests
         {
             var catalog = Catalog(); var ids = new HashSet<string>();
             var shapes = new HashSet<ContainerShape>();
-            Assert.That(catalog.Levels.Length, Is.EqualTo(13));
+            Assert.That(catalog.Levels.Length, Is.EqualTo(14));
             Assert.That(catalog.BallPrefab, Is.Not.Null);
             Assert.That(catalog.Rotation, Is.Not.Null);
             for (int i = 0; i < catalog.Levels.Length; i++)
@@ -145,7 +145,7 @@ namespace GravityBox.Tests
             }
             CollectionAssert.AreEquivalent(new[] { ContainerShape.Circle, ContainerShape.Square, ContainerShape.Triangle,
                 ContainerShape.LShape, ContainerShape.UShape, ContainerShape.Annulus, ContainerShape.Dumbbell, ContainerShape.Star,
-                ContainerShape.GravityLock, ContainerShape.MechanicalMaze, ContainerShape.LayeredMaze, ContainerShape.SphereMaze, ContainerShape.WaterBox }, shapes);
+                ContainerShape.GravityLock, ContainerShape.MechanicalMaze, ContainerShape.LayeredMaze, ContainerShape.SphereMaze, ContainerShape.WaterBox, ContainerShape.MercuryBox }, shapes);
         }
 
         [Test]

@@ -29,17 +29,20 @@ namespace GravityBox.Editor
                     level.Id + ": shell depth must contain the complete ball.");
                 ValidateSpatialMaze(level, catalog.BallProfile.Radius);
                 WaterVolume water = level.Prefab.GetComponent<WaterVolume>();
-                if (level.Shape == ContainerShape.WaterBox)
+                if (level.Shape == ContainerShape.WaterBox || level.Shape == ContainerShape.MercuryBox)
                 {
                     Require(water != null && water.Profile != null, level.Id + ": water experiment needs a fluid profile.");
-                    Require(water.Profile.Density > 990 && water.Profile.Density < 1010 && water.Profile.DynamicViscosity > 0,
-                        level.Id + ": invalid fresh water properties.");
+                    bool mercury = level.Shape == ContainerShape.MercuryBox;
+                    Require(mercury ? Mathf.Abs(water.Profile.Density - 13546) < 1 && Mathf.Abs(water.Profile.DynamicViscosity - .001567367f) < .000001f
+                        : water.Profile.Density > 990 && water.Profile.Density < 1010 && water.Profile.DynamicViscosity > 0,
+                        level.Id + ": invalid liquid properties.");
                     Require(water.Profile.EffectiveRoughness > 0 && water.Profile.EffectiveRoughness < .0003f,
                         level.Id + ": water wall model needs a finite microscopic roughness.");
                     Require(water.HalfSize == new Vector3(.16f, .042f, .16f), level.Id + ": water must fill the square interior.");
                     var visuals = level.Prefab.GetComponent<GravityBox.Presentation.WaterVisuals>();
                     Require(visuals != null && visuals.VolumeRenderer != null && visuals.FloorRenderer != null && visuals.TracerMaterial != null,
                         level.Id + ": missing water presentation.");
+                    Require(visuals.MercuryCutaway == mercury, level.Id + ": liquid appearance does not match the experiment.");
                     Require(visuals.VolumeRenderer.GetComponent<Collider>() == null, level.Id + ": optical volume must not block the ball.");
                 }
                 else Require(water == null, level.Id + ": dry experiment unexpectedly has water forces.");

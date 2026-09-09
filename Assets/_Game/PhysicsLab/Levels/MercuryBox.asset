@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e965f9168c2046c28c59aa4b83cc1ec, type: 3}
+  m_Name: MercuryBox
+  m_EditorClassIdentifier: GravityBox.Gameplay::GravityBox.Gameplay.LevelDefinition
+  Id: steel-lab-mercurybox
+  DisplayIndex: 14
+  DisplayName: Steel in mercury
+  Shape: 13
+  TeachingHint: Steel rises. Turn the hole upward, then tip again to release the ball.
+  Environment: {fileID: 11400000, guid: 82e0ce24addfe4fc89b8bbd0db998aea, type: 2}
+  Prefab: {fileID: 8089209515420681281, guid: 04fdc138e58744ec4aedae480c222615, type: 3}
+  RotationMode: 1
+  InitialLocalVelocity: {x: 0, y: 0, z: 0}
+  ParSeconds: 0
+  Tutorial: 0
+  DesignerSolution: The same full square box and fixed cube as levels 02 and 13,
+    filled with mercury. The steel ball is less dense than the liquid and rises against
+    the highest inner face. Rotate to move this support towards the exit, and use
+    momentum to leave completely. A ball only floating partly in the opening has
+    not escaped. Mercury is retained by the same level rule. The silver see-through
+    view is a visualization aid for this opaque liquid, not optical transparency.

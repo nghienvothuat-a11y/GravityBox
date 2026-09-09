@@ -1,0 +1,743 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="81" result="Passed" total="81" passed="81" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-09 03:12:00Z" end-time="2026-09-09 03:12:34Z" duration="33.7884984">
+  <test-suite type="TestSuite" id="1098" name="Gravity Box" fullname="Gravity Box" runstate="Runnable" testcasecount="81" result="Passed" start-time="2026-09-09 03:12:00Z" end-time="2026-09-09 03:12:34Z" duration="33.788498" total="81" passed="81" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1092" name="GravityBox.Tests.PlayMode.dll" fullname="/Users/mrk/GravityBox/Library/ScriptAssemblies/GravityBox.Tests.PlayMode.dll" runstate="Runnable" testcasecount="81" result="Passed" start-time="2026-09-09 03:12:00Z" end-time="2026-09-09 03:12:34Z" duration="33.785528" total="81" passed="81" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="6118" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1093" name="GravityBox" fullname="GravityBox" runstate="Runnable" testcasecount="81" result="Passed" start-time="2026-09-09 03:12:00Z" end-time="2026-09-09 03:12:34Z" duration="33.785345" total="81" passed="81" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1094" name="Tests" fullname="GravityBox.Tests" runstate="Runnable" testcasecount="81" result="Passed" start-time="2026-09-09 03:12:00Z" end-time="2026-09-09 03:12:34Z" duration="33.785252" total="81" passed="81" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1001" name="InputIntegrationTests" fullname="GravityBox.Tests.InputIntegrationTests" classname="GravityBox.Tests.InputIntegrationTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-09-09 03:12:00Z" end-time="2026-09-09 03:12:03Z" duration="2.129813" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1004" name="Mouse_CursorRestoredAfterReleasePreservesCompletedDrag" fullname="GravityBox.Tests.InputIntegrationTests.Mouse_CursorRestoredAfterReleasePreservesCompletedDrag" methodname="Mouse_CursorRestoredAfterReleasePreservesCompletedDrag" classname="GravityBox.Tests.InputIntegrationTests" runstate="Runnable" seed="612273994" result="Passed" start-time="2026-09-09 03:12:00Z" end-time="2026-09-09 03:12:01Z" duration="0.598085" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1002" name="Mouse_DragAndResetButtonWorkWithoutRotatingThroughUI" fullname="GravityBox.Tests.InputIntegrationTests.Mouse_DragAndResetButtonWorkWithoutRotatingThroughUI" methodname="Mouse_DragAndResetButtonWorkWithoutRotatingThroughUI" classname="GravityBox.Tests.InputIntegrationTests" runstate="Runnable" seed="1977311901" result="Passed" start-time="2026-09-09 03:12:01Z" end-time="2026-09-09 03:12:01Z" duration="0.347701" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1003" name="Mouse_DragCompletedBetweenFramesIsNotLost" fullname="GravityBox.Tests.InputIntegrationTests.Mouse_DragCompletedBetweenFramesIsNotLost" methodname="Mouse_DragCompletedBetweenFramesIsNotLost" classname="GravityBox.Tests.InputIntegrationTests" runstate="Runnable" seed="221555257" result="Passed" start-time="2026-09-09 03:12:01Z" end-time="2026-09-09 03:12:02Z" duration="0.342977" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1005" name="ShapeSelector_ShowsEveryNameAndHintAndLoadsTheLastBoxWithoutRotating" fullname="GravityBox.Tests.InputIntegrationTests.ShapeSelector_ShowsEveryNameAndHintAndLoadsTheLastBoxWithoutRotating" methodname="ShapeSelector_ShowsEveryNameAndHintAndLoadsTheLastBoxWithoutRotating" classname="GravityBox.Tests.InputIntegrationTests" runstate="Runnable" seed="386659914" result="Passed" start-time="2026-09-09 03:12:02Z" end-time="2026-09-09 03:12:02Z" duration="0.118917" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1006" name="Touch_DragsTheBoxWithOneFinger" fullname="GravityBox.Tests.InputIntegrationTests.Touch_DragsTheBoxWithOneFinger" methodname="Touch_DragsTheBoxWithOneFinger" classname="GravityBox.Tests.InputIntegrationTests" runstate="Runnable" seed="739301927" result="Passed" start-time="2026-09-09 03:12:02Z" end-time="2026-09-09 03:12:02Z" duration="0.373865" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1007" name="Touch_ReleasePositionContributesFinalMotion" fullname="GravityBox.Tests.InputIntegrationTests.Touch_ReleasePositionContributesFinalMotion" methodname="Touch_ReleasePositionContributesFinalMotion" classname="GravityBox.Tests.InputIntegrationTests" runstate="Runnable" seed="1539455203" result="Passed" start-time="2026-09-09 03:12:02Z" end-time="2026-09-09 03:12:03Z" duration="0.343973" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1008" name="PhysicsLifecycleTests" fullname="GravityBox.Tests.PhysicsLifecycleTests" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" testcasecount="50" result="Passed" start-time="2026-09-09 03:12:03Z" end-time="2026-09-09 03:12:07Z" duration="4.099800" total="50" passed="50" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1027" name="CircularExit_RejectsCornerOverlapButAcceptsRadialClearance" fullname="GravityBox.Tests.PhysicsLifecycleTests.CircularExit_RejectsCornerOverlapButAcceptsRadialClearance" methodname="CircularExit_RejectsCornerOverlapButAcceptsRadialClearance" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="9836657" result="Passed" start-time="2026-09-09 03:12:03Z" end-time="2026-09-09 03:12:03Z" duration="0.002199" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1043" name="CompletionWaitsForManualNextAndResetKeepsCurrentExperiment" fullname="GravityBox.Tests.PhysicsLifecycleTests.CompletionWaitsForManualNextAndResetKeepsCurrentExperiment" methodname="CompletionWaitsForManualNextAndResetKeepsCurrentExperiment" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="862705391" result="Passed" start-time="2026-09-09 03:12:03Z" end-time="2026-09-09 03:12:04Z" duration="1.901984" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1030" name="EveryBox_FloorAndCoverFollowConcavitiesAndLeaveVoidRegionsEmpty" fullname="GravityBox.Tests.PhysicsLifecycleTests.EveryBox_FloorAndCoverFollowConcavitiesAndLeaveVoidRegionsEmpty" methodname="EveryBox_FloorAndCoverFollowConcavitiesAndLeaveVoidRegionsEmpty" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1695290864" result="Passed" start-time="2026-09-09 03:12:04Z" end-time="2026-09-09 03:12:05Z" duration="0.116217" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1028" name="EveryBox_HasARealClearApertureAndAColliderFreeLightInlay" fullname="GravityBox.Tests.PhysicsLifecycleTests.EveryBox_HasARealClearApertureAndAColliderFreeLightInlay" methodname="EveryBox_HasARealClearApertureAndAColliderFreeLightInlay" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1340403449" result="Passed" start-time="2026-09-09 03:12:05Z" end-time="2026-09-09 03:12:05Z" duration="0.013303" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1029" name="EveryBox_HasUnbrokenSideWallsAroundItsActualFootprint" fullname="GravityBox.Tests.PhysicsLifecycleTests.EveryBox_HasUnbrokenSideWallsAroundItsActualFootprint" methodname="EveryBox_HasUnbrokenSideWallsAroundItsActualFootprint" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1727263279" result="Passed" start-time="2026-09-09 03:12:05Z" end-time="2026-09-09 03:12:05Z" duration="0.007882" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1022" name="EveryBox_LoadsOneWorldSpaceBallWithClearSpawnAndRestoresItsState" fullname="GravityBox.Tests.PhysicsLifecycleTests.EveryBox_LoadsOneWorldSpaceBallWithClearSpawnAndRestoresItsState" methodname="EveryBox_LoadsOneWorldSpaceBallWithClearSpawnAndRestoresItsState" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="46401918" result="Passed" start-time="2026-09-09 03:12:05Z" end-time="2026-09-09 03:12:05Z" duration="0.021993" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1032" name="EveryBox_RetainsBallDuringModerateRotationsUnlessItUsesTheExit" fullname="GravityBox.Tests.PhysicsLifecycleTests.EveryBox_RetainsBallDuringModerateRotationsUnlessItUsesTheExit" methodname="EveryBox_RetainsBallDuringModerateRotationsUnlessItUsesTheExit" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="824943866" result="Passed" start-time="2026-09-09 03:12:05Z" end-time="2026-09-09 03:12:05Z" duration="0.623693" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1025" name="Exit_RejectsInwardTravelAndCrossingSolidWallElsewhere" fullname="GravityBox.Tests.PhysicsLifecycleTests.Exit_RejectsInwardTravelAndCrossingSolidWallElsewhere" methodname="Exit_RejectsInwardTravelAndCrossingSolidWallElsewhere" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1335112509" result="Passed" start-time="2026-09-09 03:12:05Z" end-time="2026-09-09 03:12:05Z" duration="0.000479" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1024" name="Exit_RequiresWholeBallOutsideThenKeepsRealTimeMomentumAndEmitsOnce" fullname="GravityBox.Tests.PhysicsLifecycleTests.Exit_RequiresWholeBallOutsideThenKeepsRealTimeMomentumAndEmitsOnce" methodname="Exit_RequiresWholeBallOutsideThenKeepsRealTimeMomentumAndEmitsOnce" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1941231627" result="Passed" start-time="2026-09-09 03:12:05Z" end-time="2026-09-09 03:12:05Z" duration="0.001057" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1026" name="Exit_SweptCheckDetectsOneStepEscapeAndResetClearsPartialPassage" fullname="GravityBox.Tests.PhysicsLifecycleTests.Exit_SweptCheckDetectsOneStepEscapeAndResetClearsPartialPassage" methodname="Exit_SweptCheckDetectsOneStepEscapeAndResetClearsPartialPassage" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1216702885" result="Passed" start-time="2026-09-09 03:12:05Z" end-time="2026-09-09 03:12:05Z" duration="0.000328" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1042" name="GravityLock_CanBeSolvedFromSpawnByHoldingBallOpeningSliderAndTiltingOnly" fullname="GravityBox.Tests.PhysicsLifecycleTests.GravityLock_CanBeSolvedFromSpawnByHoldingBallOpeningSliderAndTiltingOnly" methodname="GravityLock_CanBeSolvedFromSpawnByHoldingBallOpeningSliderAndTiltingOnly" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="255599281" result="Passed" start-time="2026-09-09 03:12:05Z" end-time="2026-09-09 03:12:05Z" duration="0.074860" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[GRAVITY LOCK waypoint (-0.2000, -0.1100): 1.383s, ball (-0.20000, -0.02700, -0.09400), slider 0.06154 m, escape False.
+GRAVITY LOCK waypoint (-0.0750, -0.1100): 1.192s, ball (-0.09131, -0.02700, -0.10925), slider 0.12000 m, escape False.
+GRAVITY LOCK waypoint (-0.0750, 0.0000): 1.167s, ball (-0.07607, -0.02700, -0.01615), slider 0.10497 m, escape False.
+GRAVITY LOCK waypoint (0.0900, 0.0120): 1.325s, ball (0.07362, -0.02700, 0.01122), slider 0.11245 m, escape False.
+GRAVITY LOCK waypoint (0.1900, -0.1000): 1.267s, ball (0.18962, -0.05937, -0.09840), slider 0.01903 m, escape True.
+]]></output>
+            </test-case>
+            <test-case id="1039" name="GravitySlider_HasNoMotorOrSignalAndBlocksTheFullDepthDoorway" fullname="GravityBox.Tests.PhysicsLifecycleTests.GravitySlider_HasNoMotorOrSignalAndBlocksTheFullDepthDoorway" methodname="GravitySlider_HasNoMotorOrSignalAndBlocksTheFullDepthDoorway" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="799237007" result="Passed" start-time="2026-09-09 03:12:05Z" end-time="2026-09-09 03:12:05Z" duration="0.010146" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1040" name="GravitySlider_OpensAndReturnsUnderWorldGravityWithoutPublishingAnUnlock" fullname="GravityBox.Tests.PhysicsLifecycleTests.GravitySlider_OpensAndReturnsUnderWorldGravityWithoutPublishingAnUnlock" methodname="GravitySlider_OpensAndReturnsUnderWorldGravityWithoutPublishingAnUnlock" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1741123742" result="Passed" start-time="2026-09-09 03:12:05Z" end-time="2026-09-09 03:12:05Z" duration="0.032216" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1041" name="GravitySlider_ResetRestoresRootAndPropAndUnloadRemovesItsForceTarget" fullname="GravityBox.Tests.PhysicsLifecycleTests.GravitySlider_ResetRestoresRootAndPropAndUnloadRemovesItsForceTarget" methodname="GravitySlider_ResetRestoresRootAndPropAndUnloadRemovesItsForceTarget" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="487206994" result="Passed" start-time="2026-09-09 03:12:05Z" end-time="2026-09-09 03:12:05Z" duration="0.002563" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1014" name="LayeredMaze_FromSpawnTraversesAllThreeMazesThenEscapesWithoutTeleporting" fullname="GravityBox.Tests.PhysicsLifecycleTests.LayeredMaze_FromSpawnTraversesAllThreeMazesThenEscapesWithoutTeleporting" methodname="LayeredMaze_FromSpawnTraversesAllThreeMazesThenEscapesWithoutTeleporting" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1930966419" result="Passed" start-time="2026-09-09 03:12:05Z" end-time="2026-09-09 03:12:06Z" duration="0.287901" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[MAZE steel-lab-layeredmaze, goal (-0.2300, -0.1800): 0.008s, ball (-0.23000, 0.06600, -0.18000).
+MAZE steel-lab-layeredmaze, goal (-0.2250, -0.1875): 0.008s, ball (-0.23000, 0.06532, -0.18000).
+MAZE steel-lab-layeredmaze, goal (-0.0750, -0.1875): 1.283s, ball (-0.09125, 0.06300, -0.18681).
+MAZE steel-lab-layeredmaze, goal (-0.0750, -0.0625): 1.225s, ball (-0.07570, 0.06300, -0.07864).
+MAZE steel-lab-layeredmaze, goal (-0.2250, -0.0625): 1.258s, ball (-0.20887, 0.06300, -0.06305).
+MAZE steel-lab-layeredmaze, goal (-0.2250, 0.0625): 1.208s, ball (-0.22432, 0.06300, 0.04608).
+MAZE steel-lab-layeredmaze, goal (-0.0750, 0.0625): 1.283s, ball (-0.09114, 0.06300, 0.06195).
+MAZE steel-lab-layeredmaze, goal (0.0750, 0.0625): 1.275s, ball (0.05865, 0.06300, 0.06311).
+MAZE steel-lab-layeredmaze, goal (0.0750, -0.0625): 1.225s, ball (0.07357, 0.06300, -0.04609).
+MAZE steel-lab-layeredmaze, goal (0.2250, -0.0625): 1.250s, ball (0.20852, 0.06300, -0.06193).
+MAZE steel-lab-layeredmaze, goal (0.2250, 0.0625): 1.208s, ball (0.22433, 0.06300, 0.04606).
+MAZE steel-lab-layeredmaze, goal (0.2200, 0.1700): 0.992s, ball (0.22064, 0.02870, 0.15456).
+MAZE steel-lab-layeredmaze, goal (0.2200, 0.1700): 0.008s, ball (0.22059, 0.02193, 0.15590).
+MAZE steel-lab-layeredmaze, goal (0.2250, 0.1875): 0.117s, ball (0.22011, -0.01756, 0.17230).
+MAZE steel-lab-layeredmaze, goal (0.0750, 0.1875): 1.233s, ball (0.09139, -0.02700, 0.18920).
+MAZE steel-lab-layeredmaze, goal (0.0750, 0.0625): 1.192s, ball (0.07585, -0.02700, 0.07885).
+MAZE steel-lab-layeredmaze, goal (0.2250, 0.0625): 1.217s, ball (0.20897, -0.02700, 0.06317).
+MAZE steel-lab-layeredmaze, goal (0.2250, -0.0625): 1.183s, ball (0.22414, -0.02700, -0.04616).
+MAZE steel-lab-layeredmaze, goal (0.0750, -0.0625): 1.233s, ball (0.09141, -0.02700, -0.06182).
+MAZE steel-lab-layeredmaze, goal (-0.0750, -0.0625): 1.217s, ball (-0.05878, -0.02700, -0.06246).
+MAZE steel-lab-layeredmaze, goal (-0.0750, 0.0625): 1.208s, ball (-0.07285, -0.02700, 0.04623).
+MAZE steel-lab-layeredmaze, goal (-0.2250, 0.0625): 1.208s, ball (-0.20854, -0.02700, 0.06183).
+MAZE steel-lab-layeredmaze, goal (-0.2250, -0.0625): 1.183s, ball (-0.22416, -0.02700, -0.04618).
+MAZE steel-lab-layeredmaze, goal (-0.2200, -0.1700): 1.008s, ball (-0.22067, -0.05996, -0.15407).
+MAZE steel-lab-layeredmaze, goal (-0.2200, -0.1700): 0.025s, ball (-0.22050, -0.08184, -0.15815).
+MAZE steel-lab-layeredmaze, goal (-0.2250, -0.1875): 0.092s, ball (-0.22014, -0.10497, -0.17232).
+MAZE steel-lab-layeredmaze, goal (-0.2250, -0.0625): 1.242s, ball (-0.22443, -0.11700, -0.07875).
+MAZE steel-lab-layeredmaze, goal (-0.0750, -0.0625): 1.217s, ball (-0.09134, -0.11700, -0.06341).
+MAZE steel-lab-layeredmaze, goal (-0.0750, -0.1875): 1.175s, ball (-0.07622, -0.11700, -0.17108).
+MAZE steel-lab-layeredmaze, goal (0.0750, -0.1875): 1.208s, ball (0.05873, -0.11700, -0.18664).
+MAZE steel-lab-layeredmaze, goal (0.0750, -0.0625): 1.192s, ball (0.07387, -0.11700, -0.07858).
+MAZE steel-lab-layeredmaze, goal (0.2250, -0.0625): 1.200s, ball (0.20869, -0.11700, -0.06341).
+MAZE steel-lab-layeredmaze, goal (0.2250, 0.0625): 1.183s, ball (0.22389, -0.11700, 0.04636).
+MAZE steel-lab-layeredmaze, goal (0.0750, 0.0625): 1.217s, ball (0.09143, -0.11700, 0.06165).
+MAZE steel-lab-layeredmaze, goal (-0.0750, 0.0625): 1.217s, ball (-0.05883, -0.11700, 0.06251).
+MAZE steel-lab-layeredmaze, goal (-0.0750, 0.1875): 1.175s, ball (-0.07379, -0.11700, 0.17109).
+MAZE steel-lab-layeredmaze, goal (0.0750, 0.1875): 1.208s, ball (0.05859, -0.11700, 0.18661).
+MAZE steel-lab-layeredmaze, goal (0.2300, 0.1800): 1.283s, ball (0.22949, -0.15243, 0.18017).
+]]></output>
+            </test-case>
+            <test-case id="1013" name="LayeredMaze_HasThreeSolidDecksAndPhysicalStaggeredTransferHoles" fullname="GravityBox.Tests.PhysicsLifecycleTests.LayeredMaze_HasThreeSolidDecksAndPhysicalStaggeredTransferHoles" methodname="LayeredMaze_HasThreeSolidDecksAndPhysicalStaggeredTransferHoles" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="307005914" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.010624" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1015" name="LayerView_FollowsActualBodyHeightAndNeverChangesPhysicsState" fullname="GravityBox.Tests.PhysicsLifecycleTests.LayerView_FollowsActualBodyHeightAndNeverChangesPhysicsState" methodname="LayerView_FollowsActualBodyHeightAndNeverChangesPhysicsState" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="571361193" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.001483" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1010" name="MechanicalMaze_ClosedSlidersBlockWholeSphereAcrossTheFullInteriorDepth" fullname="GravityBox.Tests.PhysicsLifecycleTests.MechanicalMaze_ClosedSlidersBlockWholeSphereAcrossTheFullInteriorDepth" methodname="MechanicalMaze_ClosedSlidersBlockWholeSphereAcrossTheFullInteriorDepth" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1724199764" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.001024" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1012" name="MechanicalMaze_FromSpawnUsesBothOpposingSlidersAndEscapesByTiltingOnly" fullname="GravityBox.Tests.PhysicsLifecycleTests.MechanicalMaze_FromSpawnUsesBothOpposingSlidersAndEscapesByTiltingOnly" methodname="MechanicalMaze_FromSpawnUsesBothOpposingSlidersAndEscapesByTiltingOnly" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1947483913" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.225939" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[MAZE steel-lab-mechanicalmaze, goal (-0.2000, -0.2400): 1.192s, ball (-0.21626, -0.02700, -0.23997).
+MAZE steel-lab-mechanicalmaze, goal (-0.2000, -0.1560): 1.117s, ball (-0.20148, -0.02700, -0.17213).
+MAZE steel-lab-mechanicalmaze, goal (-0.3150, -0.1560): 1.158s, ball (-0.29885, -0.02700, -0.15710).
+MAZE steel-lab-mechanicalmaze, goal (-0.3150, -0.0700): 1.117s, ball (-0.31364, -0.02700, -0.08619).
+MAZE steel-lab-mechanicalmaze, goal (-0.2000, -0.0700): 1.183s, ball (-0.21630, -0.02700, -0.07109).
+MAZE steel-lab-mechanicalmaze, goal (-0.2000, 0.0300): 1.142s, ball (-0.20121, -0.02700, 0.01361).
+MAZE steel-lab-mechanicalmaze, goal (-0.0450, 0.0420): 1.317s, ball (-0.06115, -0.02700, 0.04080).
+MAZE steel-lab-mechanicalmaze, goal (0.0450, 0.0420): 1.125s, ball (0.02867, -0.02700, 0.04199).
+MAZE steel-lab-mechanicalmaze, goal (0.0450, -0.0800): 1.183s, ball (0.04374, -0.02700, -0.06363).
+MAZE steel-lab-mechanicalmaze, goal (0.2000, -0.0920): 1.300s, ball (0.18356, -0.02700, -0.09085).
+MAZE steel-lab-mechanicalmaze, goal (0.2000, 0.0650): 1.242s, ball (0.19932, -0.02700, 0.04892).
+MAZE steel-lab-mechanicalmaze, goal (0.3150, 0.0650): 1.158s, ball (0.29890, -0.02700, 0.06415).
+MAZE steel-lab-mechanicalmaze, goal (0.3150, 0.1450): 1.092s, ball (0.31355, -0.02700, 0.12868).
+MAZE steel-lab-mechanicalmaze, goal (0.2000, 0.1450): 1.183s, ball (0.21631, -0.02700, 0.14382).
+MAZE steel-lab-mechanicalmaze, goal (0.2000, 0.2400): 1.125s, ball (0.20126, -0.02700, 0.22382).
+MAZE steel-lab-mechanicalmaze, goal (0.3150, 0.2400): 1.200s, ball (0.31383, -0.05920, 0.23904).
+]]></output>
+            </test-case>
+            <test-case id="1011" name="MechanicalMaze_ResetRestoresBothSlidersAndUnloadRemovesBothTargets" fullname="GravityBox.Tests.PhysicsLifecycleTests.MechanicalMaze_ResetRestoresBothSlidersAndUnloadRemovesBothTargets" methodname="MechanicalMaze_ResetRestoresBothSlidersAndUnloadRemovesBothTargets" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="2038034964" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.002385" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1009" name="MechanicalMaze_TwoPassiveSlidersRespondToOppositeGravityDirections" fullname="GravityBox.Tests.PhysicsLifecycleTests.MechanicalMaze_TwoPassiveSlidersRespondToOppositeGravityDirections" methodname="MechanicalMaze_TwoPassiveSlidersRespondToOppositeGravityDirections" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1807181054" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.043503" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1018" name="Mercury_FreeCoastMatchesReferenceWithHighFluidToSteelMassRatio" fullname="GravityBox.Tests.PhysicsLifecycleTests.Mercury_FreeCoastMatchesReferenceWithHighFluidToSteelMassRatio" methodname="Mercury_FreeCoastMatchesReferenceWithHighFluidToSteelMassRatio" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="219078449" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.006482" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Mercury free coasting: 0.200 → 0.065833 m/s in 1s; reference 0.065833 m/s.
+]]></output>
+            </test-case>
+            <test-case id="1021" name="Mercury_FromSpawnReachesOpeningAndEscapesUsingOnlyBoxRotation" fullname="GravityBox.Tests.PhysicsLifecycleTests.Mercury_FromSpawnReachesOpeningAndEscapesUsingOnlyBoxRotation" methodname="Mercury_FromSpawnReachesOpeningAndEscapesUsingOnlyBoxRotation" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="436634845" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.064967" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Mercury route (-0.10, -0.11): 1.167s; exited=False.
+Mercury route (0.11, -0.11): 1.617s; exited=False.
+Mercury turn-to-release: 1.583s; exited=True; local=(0.08, -0.06, -0.11).
+]]></output>
+            </test-case>
+            <test-case id="1019" name="Mercury_PartlyFloatingInOpeningDoesNotWinButFullPhysicalExitDoes" fullname="GravityBox.Tests.PhysicsLifecycleTests.Mercury_PartlyFloatingInOpeningDoesNotWinButFullPhysicalExitDoes" methodname="Mercury_PartlyFloatingInOpeningDoesNotWinButFullPhysicalExitDoes" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1890893968" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.008092" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1017" name="Mercury_RisesToCeilingAndRestsUnderUpwardLoadWithoutPulsing" fullname="GravityBox.Tests.PhysicsLifecycleTests.Mercury_RisesToCeilingAndRestsUnderUpwardLoadWithoutPulsing" methodname="Mercury_RisesToCeilingAndRestsUnderUpwardLoadWithoutPulsing" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1129672452" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.053856" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Mercury ceiling: y=0.027000 m; load 0.789953–0.789953 N; peak speed 0.000000 m/s.
+]]></output>
+            </test-case>
+            <test-case id="1016" name="Mercury_SameSteelAndSquareRisesWithMeasuredMaterialProperties" fullname="GravityBox.Tests.PhysicsLifecycleTests.Mercury_SameSteelAndSquareRisesWithMeasuredMaterialProperties" methodname="Mercury_SameSteelAndSquareRisesWithMeasuredMaterialProperties" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1507366639" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.001111" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Mercury: buoyancy 1.878635 N; added mass 0.09575103 kg; initial rise 3.821224 m/s².
+]]></output>
+            </test-case>
+            <test-case id="1020" name="Mercury_SilverViewResetAndSwitchBackToWaterDoNotChangeSharedAssets" fullname="GravityBox.Tests.PhysicsLifecycleTests.Mercury_SilverViewResetAndSwitchBackToWaterDoNotChangeSharedAssets" methodname="Mercury_SilverViewResetAndSwitchBackToWaterDoNotChangeSharedAssets" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1808973530" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.015928" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1038" name="NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly" fullname="GravityBox.Tests.PhysicsLifecycleTests.NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.134726" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1033" name="NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly(3)" fullname="GravityBox.Tests.PhysicsLifecycleTests.NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly(3)" methodname="NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="149611152" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.023361" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[PASSAGE steel-lab-lshape, waypoint 1: reached=True, 1.508 s, closest distance 0.01637 m, final local (-0.15500, -0.02700, -0.13436).
+PASSAGE steel-lab-lshape, waypoint 2: reached=True, 1.533 s, closest distance 0.01648 m, final local (0.16990, -0.02913, -0.15552).
+]]></output>
+              </test-case>
+              <test-case id="1034" name="NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly(4)" fullname="GravityBox.Tests.PhysicsLifecycleTests.NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly(4)" methodname="NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="282069855" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.032393" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[PASSAGE steel-lab-ushape, waypoint 1: reached=True, 1.517 s, closest distance 0.01616 m, final local (-0.16568, -0.02700, -0.13456).
+PASSAGE steel-lab-ushape, waypoint 2: reached=True, 1.533 s, closest distance 0.01636 m, final local (0.14940, -0.02700, -0.15060).
+PASSAGE steel-lab-ushape, waypoint 3: reached=True, 1.492 s, closest distance 0.01518 m, final local (0.16552, -0.03005, 0.14128).
+]]></output>
+              </test-case>
+              <test-case id="1035" name="NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly(5)" fullname="GravityBox.Tests.PhysicsLifecycleTests.NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly(5)" methodname="NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1632999653" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.036683" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[PASSAGE steel-lab-annulus, waypoint 1: reached=True, 1.392 s, closest distance 0.01638 m, final local (-0.13258, -0.02700, 0.11329).
+PASSAGE steel-lab-annulus, waypoint 2: reached=True, 1.208 s, closest distance 0.01609 m, final local (-0.01414, -0.02700, 0.17589).
+PASSAGE steel-lab-annulus, waypoint 3: reached=True, 1.208 s, closest distance 0.01622 m, final local (0.11438, -0.02700, 0.13480).
+PASSAGE steel-lab-annulus, waypoint 4: reached=True, 1.225 s, closest distance 0.01636 m, final local (0.17772, -0.02914, 0.01436).
+]]></output>
+              </test-case>
+              <test-case id="1036" name="NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly(6)" fullname="GravityBox.Tests.PhysicsLifecycleTests.NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly(6)" methodname="NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="859175866" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.020261" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[PASSAGE steel-lab-dumbbell, waypoint 1: reached=True, 1.383 s, closest distance 0.01643 m, final local (-0.01582, -0.02700, 0.00000).
+PASSAGE steel-lab-dumbbell, waypoint 2: reached=True, 1.333 s, closest distance 0.01562 m, final local (0.22082, -0.02973, 0.00000).
+]]></output>
+              </test-case>
+              <test-case id="1037" name="NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly(7)" fullname="GravityBox.Tests.PhysicsLifecycleTests.NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly(7)" methodname="NewShape_FullSphereCanFollowItsBendsAndNecksByTiltingOnly" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1849396429" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.018803" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[PASSAGE steel-lab-star, waypoint 1: reached=True, 1.300 s, closest distance 0.01632 m, final local (-0.01002, -0.02700, -0.01219).
+PASSAGE steel-lab-star, waypoint 2: reached=True, 1.292 s, closest distance 0.01555 m, final local (0.00003, -0.02977, 0.19287).
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-case id="1023" name="Reset100Times_RestoresBallRootAndExitWithoutAccumulation" fullname="GravityBox.Tests.PhysicsLifecycleTests.Reset100Times_RestoresBallRootAndExitWithoutAccumulation" methodname="Reset100Times_RestoresBallRootAndExitWithoutAccumulation" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1155176197" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.017450" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1045" name="SpatialMaze_ConnectedPassagesStayClearAndTheirSightSeamsCannotReleaseTheBall" fullname="GravityBox.Tests.PhysicsLifecycleTests.SpatialMaze_ConnectedPassagesStayClearAndTheirSightSeamsCannotReleaseTheBall" methodname="SpatialMaze_ConnectedPassagesStayClearAndTheirSightSeamsCannotReleaseTheBall" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="9532636" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.019773" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1046" name="SpatialMaze_FromSpawnTraversesTheEntireConnectedMazeAndEscapesByRotationOnly" fullname="GravityBox.Tests.PhysicsLifecycleTests.SpatialMaze_FromSpawnTraversesTheEntireConnectedMazeAndEscapesByRotationOnly" methodname="SpatialMaze_FromSpawnTraversesTheEntireConnectedMazeAndEscapesByRotationOnly" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="2048725568" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.198945" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SPATIAL LEG 1/25: 20 -> 11.
+SPATIAL node (0.1740, -0.1740, 0.0000): 0.550s, ball (0.17400, -0.16996, 0.00300), speed 0.7886m/s.
+SPATIAL LEG 2/25: 11 -> 2.
+SPATIAL node (0.1740, -0.1740, -0.1740): 0.142s, ball (0.17400, -0.17789, -0.17275), speed 1.6485m/s.
+SPATIAL LEG 3/25: 2 -> 5.
+SPATIAL node (0.1740, 0.0000, -0.1740): 1.008s, ball (0.17400, 0.00099, -0.18376), speed 1.1722m/s.
+SPATIAL LEG 4/25: 5 -> 8.
+SPATIAL node (0.1740, 0.1740, -0.1740): 0.117s, ball (0.17400, 0.17023, -0.16669), speed 1.8346m/s.
+SPATIAL LEG 5/25: 8 -> 17.
+SPATIAL node (0.1740, 0.1740, 0.0000): 1.158s, ball (0.17400, 0.16922, 0.00216), speed 1.4284m/s.
+SPATIAL LEG 6/25: 17 -> 14.
+SPATIAL node (0.1740, 0.0000, 0.0000): 0.833s, ball (0.17400, 0.00361, 0.00710), speed 1.1841m/s.
+SPATIAL LEG 7/25: 14 -> 23.
+SPATIAL node (0.1740, 0.0000, 0.1740): 0.275s, ball (0.17400, -0.00035, 0.17067), speed 1.0162m/s.
+SPATIAL LEG 8/25: 23 -> 26.
+SPATIAL node (0.1740, 0.1740, 0.1740): 1.208s, ball (0.17401, 0.17327, 0.18165), speed 1.1514m/s.
+SPATIAL LEG 9/25: 26 -> 25.
+SPATIAL node (0.0000, 0.1740, 0.1740): 0.883s, ball (0.00103, 0.17339, 0.17172), speed 1.0565m/s.
+SPATIAL LEG 10/25: 25 -> 22.
+SPATIAL node (0.0000, 0.0000, 0.1740): 1.050s, ball (-0.00652, -0.00199, 0.18298), speed 1.5946m/s.
+SPATIAL LEG 11/25: 22 -> 21.
+SPATIAL node (-0.1740, 0.0000, 0.1740): 0.658s, ball (-0.17126, 0.00198, 0.16503), speed 0.7286m/s.
+SPATIAL deliberate dead end: 21 -> 18.
+SPATIAL node (-0.1740, -0.1740, 0.1740): 0.333s, ball (-0.18222, -0.17270, 0.16970), speed 1.2737m/s.
+SPATIAL returning from dead end: 18 -> 21.
+SPATIAL node (-0.1740, 0.0000, 0.1740): 1.450s, ball (-0.16999, -0.00027, 0.17039), speed 0.6827m/s.
+SPATIAL LEG 12/25: 21 -> 24.
+SPATIAL node (-0.1740, 0.1740, 0.1740): 0.133s, ball (-0.16898, 0.16954, 0.16619), speed 1.7400m/s.
+SPATIAL LEG 13/25: 24 -> 15.
+SPATIAL node (-0.1740, 0.1740, 0.0000): 0.333s, ball (-0.15897, 0.18159, 0.00465), speed 0.2693m/s.
+SPATIAL LEG 14/25: 15 -> 16.
+SPATIAL node (0.0000, 0.1740, 0.0000): 0.875s, ball (-0.00428, 0.17983, 0.00455), speed 0.6838m/s.
+SPATIAL LEG 15/25: 16 -> 7.
+SPATIAL node (0.0000, 0.1740, -0.1740): 0.633s, ball (0.00985, 0.16301, -0.17481), speed 1.1285m/s.
+SPATIAL LEG 16/25: 7 -> 6.
+SPATIAL node (-0.1740, 0.1740, -0.1740): 1.192s, ball (-0.17686, 0.18222, -0.17678), speed 1.4975m/s.
+SPATIAL LEG 17/25: 6 -> 3.
+SPATIAL node (-0.1740, 0.0000, -0.1740): 0.808s, ball (-0.18191, 0.00056, -0.18299), speed 1.0370m/s.
+SPATIAL LEG 18/25: 3 -> 12.
+SPATIAL node (-0.1740, 0.0000, 0.0000): 0.983s, ball (-0.16656, -0.00641, -0.00379), speed 0.7816m/s.
+SPATIAL LEG 19/25: 12 -> 9.
+SPATIAL node (-0.1740, -0.1740, 0.0000): 0.683s, ball (-0.17837, -0.17277, 0.00891), speed 0.7037m/s.
+SPATIAL LEG 20/25: 9 -> 0.
+SPATIAL node (-0.1740, -0.1740, -0.1740): 1.225s, ball (-0.17840, -0.17126, -0.17412), speed 1.1925m/s.
+SPATIAL LEG 21/25: 0 -> 1.
+SPATIAL node (0.0000, -0.1740, -0.1740): 1.033s, ball (-0.00158, -0.17987, -0.17744), speed 1.4316m/s.
+SPATIAL LEG 22/25: 1 -> 4.
+SPATIAL node (0.0000, 0.0000, -0.1740): 0.917s, ball (0.00829, -0.00060, -0.17400), speed 0.7567m/s.
+SPATIAL LEG 23/25: 4 -> 13.
+SPATIAL node (0.0000, 0.0000, 0.0000): 1.017s, ball (0.00514, 0.00698, -0.00318), speed 0.8822m/s.
+SPATIAL LEG 24/25: 13 -> 10.
+SPATIAL node (0.0000, -0.1740, 0.0000): 0.875s, ball (0.00024, -0.17372, 0.00669), speed 1.0795m/s.
+SPATIAL LEG 25/25: 10 -> 27.
+SPATIAL node (0.0000, -0.4003, 0.0000): 0.392s, ball (-0.00514, -0.38653, 0.00673), speed 0.8364m/s.
+SPATIAL NETWORK: 25 connected legs, rotation 1608.6 degrees, longest free fall 0.142s.
+]]></output>
+            </test-case>
+            <test-case id="1044" name="SpatialMaze_IsAConnectedBranchingNetworkWithAThreeDimensionalMainPath" fullname="GravityBox.Tests.PhysicsLifecycleTests.SpatialMaze_IsAConnectedBranchingNetworkWithAThreeDimensionalMainPath" methodname="SpatialMaze_IsAConnectedBranchingNetworkWithAThreeDimensionalMainPath" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="957591586" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:06Z" duration="0.002362" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1047" name="SpatialMaze_ResetAndUnloadPreserveOnePhysicalBallAndRemoveTheWholeVolume" fullname="GravityBox.Tests.PhysicsLifecycleTests.SpatialMaze_ResetAndUnloadPreserveOnePhysicalBallAndRemoveTheWholeVolume" methodname="SpatialMaze_ResetAndUnloadPreserveOnePhysicalBallAndRemoveTheWholeVolume" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="791455127" result="Passed" start-time="2026-09-09 03:12:06Z" end-time="2026-09-09 03:12:07Z" duration="0.052684" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1031" name="SquareFixedCube_ProducesARealCollisionAndRebound" fullname="GravityBox.Tests.PhysicsLifecycleTests.SquareFixedCube_ProducesARealCollisionAndRebound" methodname="SquareFixedCube_ProducesARealCollisionAndRebound" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="150387842" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.001664" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1049" name="Water_DragOpposesRelativeMotionAndMatchesQuadraticCoastingReference" fullname="GravityBox.Tests.PhysicsLifecycleTests.Water_DragOpposesRelativeMotionAndMatchesQuadraticCoastingReference" methodname="Water_DragOpposesRelativeMotionAndMatchesQuadraticCoastingReference" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1569005866" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.006387" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Water coasting: 1.000 → 0.43194 m/s in 1 s; analytic quadratic drag 0.43194 m/s.
+]]></output>
+            </test-case>
+            <test-case id="1060" name="Water_FlowWakePauseResetAndUnloadRemainBoundedAndIndependentOfDryLevels" fullname="GravityBox.Tests.PhysicsLifecycleTests.Water_FlowWakePauseResetAndUnloadRemainBoundedAndIndependentOfDryLevels" methodname="Water_FlowWakePauseResetAndUnloadRemainBoundedAndIndependentOfDryLevels" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="2135521181" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.009011" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1059" name="Water_FromSpawnGoesAroundCubeAndEscapesByTiltingOnly" fullname="GravityBox.Tests.PhysicsLifecycleTests.Water_FromSpawnGoesAroundCubeAndEscapesByTiltingOnly" methodname="Water_FromSpawnGoesAroundCubeAndEscapesByTiltingOnly" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="571826469" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.017548" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Water route (-0.10, -0.11): 0.950s, exited=False.
+Water route (0.11, -0.11): 1.150s, exited=True.
+]]></output>
+            </test-case>
+            <test-case id="1058" name="Water_ImmersionFadesAtExitAndDryBallRecoversEarthFreeFall" fullname="GravityBox.Tests.PhysicsLifecycleTests.Water_ImmersionFadesAtExitAndDryBallRecoversEarthFreeFall" methodname="Water_ImmersionFadesAtExitAndDryBallRecoversEarthFreeFall" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1476328044" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.002149" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1057" name="Water_MovingFluidPressureUsesMaterialAccelerationAndDisableRestoresMass" fullname="GravityBox.Tests.PhysicsLifecycleTests.Water_MovingFluidPressureUsesMaterialAccelerationAndDisableRestoresMass" methodname="Water_MovingFluidPressureUsesMaterialAccelerationAndDisableRestoresMass" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1463700271" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.000690" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1050" name="Water_RestLoadIsReducedAndStillStableWithoutPulsing" fullname="GravityBox.Tests.PhysicsLifecycleTests.Water_RestLoadIsReducedAndStillStableWithoutPulsing" methodname="Water_RestLoadIsReducedAndStillStableWithoutPulsing" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="32369454" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.050811" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Water rest: load 0.95025–0.95025 N; predicted 0.95025 N; peak speed 0.000000 m/s.
+]]></output>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1055" name="Water_RollingCoastMatchesAnalyticReferenceAndRefinesWithTimestep" fullname="GravityBox.Tests.PhysicsLifecycleTests.Water_RollingCoastMatchesAnalyticReferenceAndRefinesWithTimestep" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.047744" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1052" name="Water_RollingCoastMatchesAnalyticReferenceAndRefinesWithTimestep(60)" fullname="GravityBox.Tests.PhysicsLifecycleTests.Water_RollingCoastMatchesAnalyticReferenceAndRefinesWithTimestep(60)" methodname="Water_RollingCoastMatchesAnalyticReferenceAndRefinesWithTimestep" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="1407951796" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.007609" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Water rolling 60 Hz: 0.300 → 0.179662 m/s after 1s; reference 0.179418; min rolling weight 1.00000.
+]]></output>
+              </test-case>
+              <test-case id="1053" name="Water_RollingCoastMatchesAnalyticReferenceAndRefinesWithTimestep(120)" fullname="GravityBox.Tests.PhysicsLifecycleTests.Water_RollingCoastMatchesAnalyticReferenceAndRefinesWithTimestep(120)" methodname="Water_RollingCoastMatchesAnalyticReferenceAndRefinesWithTimestep" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="366144391" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.013093" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Water rolling 120 Hz: 0.300 → 0.179540 m/s after 1s; reference 0.179418; min rolling weight 1.00000.
+]]></output>
+              </test-case>
+              <test-case id="1054" name="Water_RollingCoastMatchesAnalyticReferenceAndRefinesWithTimestep(240)" fullname="GravityBox.Tests.PhysicsLifecycleTests.Water_RollingCoastMatchesAnalyticReferenceAndRefinesWithTimestep(240)" methodname="Water_RollingCoastMatchesAnalyticReferenceAndRefinesWithTimestep" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="805115301" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.025715" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Water rolling 240 Hz: 0.300 → 0.179479 m/s after 1s; reference 0.179418; min rolling weight 1.00000.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-case id="1051" name="Water_RollingCorrelationMatchesPublishedRegimesAndStaysFinite" fullname="GravityBox.Tests.PhysicsLifecycleTests.Water_RollingCorrelationMatchesPublishedRegimesAndStaysFinite" methodname="Water_RollingCorrelationMatchesPublishedRegimesAndStaysFinite" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="572035425" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.000575" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1048" name="Water_SameSquareAndSteelWithBuoyancyMatchingDisplacedWater" fullname="GravityBox.Tests.PhysicsLifecycleTests.Water_SameSquareAndSteelWithBuoyancyMatchingDisplacedWater" methodname="Water_SameSquareAndSteelWithBuoyancyMatchingDisplacedWater" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="217482054" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.000901" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Water: buoyancy 0.138436 N; initial sinking acceleration -8.05071 m/s².
+]]></output>
+            </test-case>
+            <test-case id="1056" name="Water_WallResistanceUsesPhysicalFloorAndCubeButDoesNotSealBore" fullname="GravityBox.Tests.PhysicsLifecycleTests.Water_WallResistanceUsesPhysicalFloorAndCubeButDoesNotSealBore" methodname="Water_WallResistanceUsesPhysicalFloorAndCubeButDoesNotSealBore" classname="GravityBox.Tests.PhysicsLifecycleTests" runstate="Runnable" seed="668784320" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:07Z" duration="0.000506" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Water actual floor at 0.2 m/s: drag 0.014534 N (old isolated sphere 0.006209 N).
+]]></output>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1061" name="SceneIntegrationTests" fullname="GravityBox.Tests.SceneIntegrationTests" classname="GravityBox.Tests.SceneIntegrationTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:34Z" duration="27.027819" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1062" name="GameplayScene_BootstrapsFourteenLevelsAndChangesOnlyOnManualNext" fullname="GravityBox.Tests.SceneIntegrationTests.GameplayScene_BootstrapsFourteenLevelsAndChangesOnlyOnManualNext" methodname="GameplayScene_BootstrapsFourteenLevelsAndChangesOnlyOnManualNext" classname="GravityBox.Tests.SceneIntegrationTests" runstate="Runnable" seed="745993967" result="Passed" start-time="2026-09-09 03:12:07Z" end-time="2026-09-09 03:12:34Z" duration="27.027221" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1063" name="SteelBallPhysicsTests" fullname="GravityBox.Tests.SteelBallPhysicsTests" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" testcasecount="24" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.527150" total="24" passed="24" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1065" name="FreeFall_AcceleratesAt981RegardlessOfSteelMassAndRetainsAirborneSpin" fullname="GravityBox.Tests.SteelBallPhysicsTests.FreeFall_AcceleratesAt981RegardlessOfSteelMassAndRetainsAirborneSpin" methodname="FreeFall_AcceleratesAt981RegardlessOfSteelMassAndRetainsAirborneSpin" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1658771667" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.002747" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1074" name="HandControlledBox_StartsAndReversesWithinAngularAccelerationAndSpeedBounds" fullname="GravityBox.Tests.SteelBallPhysicsTests.HandControlledBox_StartsAndReversesWithinAngularAccelerationAndSpeedBounds" methodname="HandControlledBox_StartsAndReversesWithinAngularAccelerationAndSpeedBounds" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1718084256" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.003014" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1073" name="LeavingOneOfTwoContacts_KeepsFloorContactAndResetClearsBothReadoutsAndMotion" fullname="GravityBox.Tests.SteelBallPhysicsTests.LeavingOneOfTwoContacts_KeepsFloorContactAndResetClearsBothReadoutsAndMotion" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.010197" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1071" name="LeavingOneOfTwoContacts_KeepsFloorContactAndResetClearsBothReadoutsAndMotion(False)" fullname="GravityBox.Tests.SteelBallPhysicsTests.LeavingOneOfTwoContacts_KeepsFloorContactAndResetClearsBothReadoutsAndMotion(False)" methodname="LeavingOneOfTwoContacts_KeepsFloorContactAndResetClearsBothReadoutsAndMotion" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1061823515" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.005019" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1072" name="LeavingOneOfTwoContacts_KeepsFloorContactAndResetClearsBothReadoutsAndMotion(True)" fullname="GravityBox.Tests.SteelBallPhysicsTests.LeavingOneOfTwoContacts_KeepsFloorContactAndResetClearsBothReadoutsAndMotion(True)" methodname="LeavingOneOfTwoContacts_KeepsFloorContactAndResetClearsBothReadoutsAndMotion" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="290309994" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.004952" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-case id="1067" name="RollingResistance_DissipatesContactEnergyWithoutDampingFreeFlight" fullname="GravityBox.Tests.SteelBallPhysicsTests.RollingResistance_DissipatesContactEnergyWithoutDampingFreeFlight" methodname="RollingResistance_DissipatesContactEnergyWithoutDampingFreeFlight" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1234500322" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.003833" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Level rolling over 0.25 s: 0.30000 → 0.28599 m/s; kinetic energy 0.0069915 → 0.0063536 J; normal load 1.08868 N.
+]]></output>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1087" name="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" testcasecount="12" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.497836" total="12" passed="12" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1075" name="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(0)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(0)" methodname="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1364283661" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.040253" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped box 0: five seconds at rest, peak speed 0.000000 m/s, height range 0.0000000 m, contact load 1.08868–1.08868 N, recurrent impacts 0.
+]]></output>
+              </test-case>
+              <test-case id="1076" name="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(1)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(1)" methodname="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1482385899" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.040590" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped box 1: five seconds at rest, peak speed 0.000000 m/s, height range 0.0000000 m, contact load 1.08868–1.08868 N, recurrent impacts 0.
+]]></output>
+              </test-case>
+              <test-case id="1077" name="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(2)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(2)" methodname="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="334325999" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.040941" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped box 2: five seconds at rest, peak speed 0.000000 m/s, height range 0.0000000 m, contact load 1.08868–1.08868 N, recurrent impacts 0.
+]]></output>
+              </test-case>
+              <test-case id="1078" name="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(3)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(3)" methodname="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="577268797" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.040806" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped box 3: five seconds at rest, peak speed 0.000000 m/s, height range 0.0000000 m, contact load 1.08868–1.08868 N, recurrent impacts 0.
+]]></output>
+              </test-case>
+              <test-case id="1079" name="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(4)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(4)" methodname="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="635276429" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.041057" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped box 4: five seconds at rest, peak speed 0.000000 m/s, height range 0.0000000 m, contact load 1.08868–1.08868 N, recurrent impacts 0.
+]]></output>
+              </test-case>
+              <test-case id="1080" name="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(5)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(5)" methodname="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1351216800" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.040701" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped box 5: five seconds at rest, peak speed 0.000002 m/s, height range 0.0000000 m, contact load 1.08868–1.08868 N, recurrent impacts 0.
+]]></output>
+              </test-case>
+              <test-case id="1081" name="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(6)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(6)" methodname="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="2004119933" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.039851" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped box 6: five seconds at rest, peak speed 0.000000 m/s, height range 0.0000000 m, contact load 1.08868–1.08868 N, recurrent impacts 0.
+]]></output>
+              </test-case>
+              <test-case id="1082" name="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(7)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(7)" methodname="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1876178520" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.040597" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped box 7: five seconds at rest, peak speed 0.000000 m/s, height range 0.0000000 m, contact load 1.08868–1.08868 N, recurrent impacts 0.
+]]></output>
+              </test-case>
+              <test-case id="1083" name="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(8)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(8)" methodname="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1644110709" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.044368" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped box 8: five seconds at rest, peak speed 0.000000 m/s, height range 0.0000000 m, contact load 1.08868–1.08868 N, recurrent impacts 0.
+]]></output>
+              </test-case>
+              <test-case id="1084" name="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(9)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(9)" methodname="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1598111328" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.045307" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped box 9: five seconds at rest, peak speed 0.000000 m/s, height range 0.0000000 m, contact load 1.08868–1.08868 N, recurrent impacts 0.
+]]></output>
+              </test-case>
+              <test-case id="1085" name="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(10)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(10)" methodname="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1330500142" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.040628" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped box 10: five seconds at rest, peak speed 0.000000 m/s, height range 0.0000000 m, contact load 1.08868–1.08868 N, recurrent impacts 0.
+]]></output>
+              </test-case>
+              <test-case id="1086" name="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(11)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad(11)" methodname="ShippedSteelBall_SettlesAtRestWithoutRecurringBouncesOrPulsingLoad" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="138546166" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.041783" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped box 11: five seconds at rest, peak speed 0.000000 m/s, height range 0.0000000 m, contact load 1.08868–1.08868 N, recurrent impacts 0.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="ParameterizedMethod" id="1091" name="ShippedSteelMaterial_PreservesMeaningfulCubeReboundsAboveRestTolerance" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelMaterial_PreservesMeaningfulCubeReboundsAboveRestTolerance" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.004461" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1088" name="ShippedSteelMaterial_PreservesMeaningfulCubeReboundsAboveRestTolerance(0.35f)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelMaterial_PreservesMeaningfulCubeReboundsAboveRestTolerance(0.35f)" methodname="ShippedSteelMaterial_PreservesMeaningfulCubeReboundsAboveRestTolerance" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1850439022" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.002500" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped cube collision at 0.35 m/s: rebound -0.13300 m/s, restitution 0.3800.
+]]></output>
+              </test-case>
+              <test-case id="1089" name="ShippedSteelMaterial_PreservesMeaningfulCubeReboundsAboveRestTolerance(1.0f)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelMaterial_PreservesMeaningfulCubeReboundsAboveRestTolerance(1.0f)" methodname="ShippedSteelMaterial_PreservesMeaningfulCubeReboundsAboveRestTolerance" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1549551346" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.001018" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped cube collision at 1.00 m/s: rebound -0.38000 m/s, restitution 0.3800.
+]]></output>
+              </test-case>
+              <test-case id="1090" name="ShippedSteelMaterial_PreservesMeaningfulCubeReboundsAboveRestTolerance(3.0f)" fullname="GravityBox.Tests.SteelBallPhysicsTests.ShippedSteelMaterial_PreservesMeaningfulCubeReboundsAboveRestTolerance(3.0f)" methodname="ShippedSteelMaterial_PreservesMeaningfulCubeReboundsAboveRestTolerance" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1407263155" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.000689" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Shipped cube collision at 3.00 m/s: rebound -1.14000 m/s, restitution 0.3800.
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-case id="1064" name="SolidSteelSphere_HasDensityDerivedMassInertiaAndSufficientSpinLimit" fullname="GravityBox.Tests.SteelBallPhysicsTests.SolidSteelSphere_HasDensityDerivedMassInertiaAndSufficientSpinLimit" methodname="SolidSteelSphere_HasDensityDerivedMassInertiaAndSufficientSpinLimit" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="533125377" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.000436" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1070" name="SteelSphere_StrikesFixedCubeReboundsAndLosesEnergyWithoutTunnelling" fullname="GravityBox.Tests.SteelBallPhysicsTests.SteelSphere_StrikesFixedCubeReboundsAndLosesEnergyWithoutTunnelling" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.001533" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1068" name="SteelSphere_StrikesFixedCubeReboundsAndLosesEnergyWithoutTunnelling(1.0f)" fullname="GravityBox.Tests.SteelBallPhysicsTests.SteelSphere_StrikesFixedCubeReboundsAndLosesEnergyWithoutTunnelling(1.0f)" methodname="SteelSphere_StrikesFixedCubeReboundsAndLosesEnergyWithoutTunnelling" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="761745212" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.000835" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1069" name="SteelSphere_StrikesFixedCubeReboundsAndLosesEnergyWithoutTunnelling(3.0f)" fullname="GravityBox.Tests.SteelBallPhysicsTests.SteelSphere_StrikesFixedCubeReboundsAndLosesEnergyWithoutTunnelling(3.0f)" methodname="SteelSphere_StrikesFixedCubeReboundsAndLosesEnergyWithoutTunnelling" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="268839418" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.000487" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-case id="1066" name="TenDegreeIncline_RollsWithSolidSphereAccelerationAndNoSlip" fullname="GravityBox.Tests.SteelBallPhysicsTests.TenDegreeIncline_RollsWithSolidSphereAccelerationAndNoSlip" methodname="TenDegreeIncline_RollsWithSolidSphereAccelerationAndNoSlip" classname="GravityBox.Tests.SteelBallPhysicsTests" runstate="Runnable" seed="1030568467" result="Passed" start-time="2026-09-09 03:12:34Z" end-time="2026-09-09 03:12:34Z" duration="0.002363" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: /Users/mrk/Library/Application Support/Gravity Box Lab/Gravity Box/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
