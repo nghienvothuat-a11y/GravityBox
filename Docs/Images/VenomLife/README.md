@@ -1,11 +1,12 @@
-# Venom — nếp khối và sợi bám
+# Venom — xúc tu, vươn thân và nhảy múa
 
-Capture cận cảnh từ PlayMode/PhysX ngày 10/09/2026 sau lần chỉnh tiếp xúc sàn và tăng nhịp diễn xuất 1,5×. Camera phóng gần để kiểm tra chi tiết, không phải kích thước mặc định trong app. Không đặt lại vị trí hạt để tạo tư thế.
+Capture cận cảnh từ PlayMode/PhysX ngày 10/09/2026 sau lần thêm bốn xúc tu phía trên và động tác vươn thân–lắc lư, dùng nhịp diễn xuất 1,5×. Camera phóng gần để kiểm tra chi tiết, không phải kích thước mặc định trong app. Không đặt lại vị trí hạt để tạo tư thế.
 
-- [Yên, dồn vai lên rồi thu lại — 10 giây](idle.gif).
+- [Yên, giơ xúc tu và vươn thân nhảy múa — 10 giây](idle.gif).
 - [Trượt ban đầu, sợi bám và nhả khi dừng ở cơ cấu — 3,4 giây](moving.gif).
 - [Hình đỉnh mềm lúc thăm dò](life-01-curious.png).
 - [Hình sợi tiếp xúc ở rìa khối](life-02-gripping.png).
+- [Hình vươn thân và giơ xúc tu](life-03-dancing.png).
 
 GIF dùng 10 frame/giây theo thời gian mô phỏng, không đại diện FPS thiết bị. Chuyển động ingame dựng hình mỗi frame, mục tiêu 60 fps. Chuỗi trượt ở đây kiểm tra tiếp xúc và nhả, không phải đường giải toàn màn.
 

@@ -12,7 +12,12 @@ namespace GravityBox.Venom
     /// </summary>
     public sealed class VenomLifeAnimation : MonoBehaviour
     {
-        private const int Arms = 5, Segments = 12, Sides = 7;
+        private const int Arms = 5, Gestures = 4, Segments = 12, Sides = 7;
+        private sealed class Gesture
+        {
+            public float Start, Duration, NextAt;
+            public int Cycle;
+        }
         private sealed class Foot
         {
             public Collider Surface;
@@ -23,14 +28,18 @@ namespace GravityBox.Venom
         private sealed class Fragment
         {
             public readonly Foot[] Feet = new Foot[Arms];
+            public readonly Gesture[] Gestures = new Gesture[VenomLifeAnimation.Gestures];
             public bool Seen;
             public int Count, Peeks;
             public float IdleTime, NextPeek, PeekStart = -100, PeekLength = 3, Head, Moving, Speed, Flow;
+            public float DanceStart = -100, DanceLength = 3.8f, NextDance, Dance, Squeezing;
             public Vector3 Up = Vector3.up, Forward = Vector3.forward, Probe = Vector3.forward, Lag, LagRate;
             public Fragment(int key, float time)
             {
                 NextPeek = 1.8f + Noise(key)*1.2f;
+                NextDance = time+5.2f+Noise(key+71)*1.6f;
                 for (int i = 0; i < Arms; i++) Feet[i] = new Foot { WaitUntil = time+Noise(key+i*19)*.7f };
+                for (int i = 0; i < Gestures.Length; i++) Gestures[i] = new Gesture { Start = -100, NextAt = time+.25f+Noise(key+i*23)*.9f };
             }
         }
         public readonly struct Plant
@@ -54,6 +63,8 @@ namespace GravityBox.Venom
         public float HeadHeight { get; private set; }
         public int TendrilCount { get; private set; }
         public float CrawlAmount { get; private set; }
+        public float DanceAmount { get; private set; }
+        public int RaisedTendrilCount { get; private set; }
         public IReadOnlyList<Plant> PlantedFeet => plants;
 
         public void Initialize(CohesiveOrganism source, VenomLevelController owner)
@@ -74,7 +85,7 @@ namespace GravityBox.Venom
             previousSimulationTime = time;
             clock += dt;
             vertices.Clear(); normals.Clear(); triangles.Clear(); plants.Clear();
-            HeadAmount = HeadHeight = CrawlAmount = 0; TendrilCount = 0;
+            HeadAmount = HeadHeight = CrawlAmount = DanceAmount = 0; TendrilCount = RaisedTendrilCount = 0;
             foreach (var fragment in fragments) if (fragment != null) fragment.Seen = false;
         }
         // Up to six extra field sources form a crest, not another simulated body.
@@ -86,8 +97,11 @@ namespace GravityBox.Venom
             if (state.Count != count)
             {
                 state.Head = state.IdleTime = 0; state.PeekStart = -100;
+                state.Dance = 0; state.DanceStart = -100; state.NextDance = clock+5.2f+Noise(key+71)*1.6f;
                 state.Lag = state.LagRate = Vector3.zero;
                 foreach (var foot in state.Feet) foot.Surface = null;
+                for(int g=0;g<state.Gestures.Length;g++)
+                { state.Gestures[g].Start=-100;state.Gestures[g].NextAt=clock+.25f+Noise(key+g*23)*.9f; }
             }
             state.Count = count;
             Vector3 centre = Vector3.zero, velocity = Vector3.zero, up = Vector3.zero, floorPoint = Vector3.zero;
@@ -121,6 +135,10 @@ namespace GravityBox.Venom
             Vector3 tangentVelocity = Vector3.ProjectOnPlane(velocity,up);
             state.Speed = Mathf.Lerp(state.Speed,tangentVelocity.magnitude,1-Mathf.Exp(-dt*10));
             Vector3 crawlIntent = level.Locomotion != null ? level.Locomotion.IntentForParticle(ids[0]) : Vector3.zero;
+            state.Squeezing = 0;
+            if(level.Locomotion != null)
+                foreach(var fragment in level.Locomotion.Fragments)
+                    if(fragment.Group==organism.Groups[ids[0]])state.Squeezing=fragment.Squeeze.Amount;
             float moving = grounded ? Mathf.Max(Smooth(.010f,.065f,state.Speed),crawlIntent.magnitude*.75f) : 0;
             state.Moving = Mathf.MoveTowards(state.Moving,moving,dt*(grounded ? 4 : 12));
             // The intended direction follows flow/downhill, never the game camera.
@@ -129,11 +147,21 @@ namespace GravityBox.Venom
                 state.Forward = Vector3.Slerp(state.Forward,intent.normalized,1-Mathf.Exp(-dt*5));
             state.Forward = Vector3.ProjectOnPlane(state.Forward,up).normalized;
             if (state.Forward.sqrMagnitude < .1f) state.Forward = Vector3.ProjectOnPlane(box.transform.forward,up).normalized;
-            state.Flow += dt*(.12f + state.Speed*8);
+            state.Flow += dt*(.24f + state.Speed*8);
             if (dt > 0)
                 state.Lag = Vector3.SmoothDamp(state.Lag,Vector3.ClampMagnitude(-tangentVelocity*.055f,.009f),
                     ref state.LagRate,.19f,Mathf.Infinity,dt);
             state.IdleTime = grounded && state.Speed < .024f && crawlIntent.sqrMagnitude < .001f ? state.IdleTime+dt : 0;
+            bool canDance = grounded && count >= 8 && state.Speed < .024f && crawlIntent.sqrMagnitude < .001f && state.Squeezing < .05f;
+            if(canDance && state.IdleTime>.6f && clock>=state.NextDance)
+            {
+                state.DanceStart=clock;state.DanceLength=3.6f+Noise(key+state.Peeks*13)*.8f;
+                state.NextDance=clock+organism.Profile.DanceInterval*Mathf.Lerp(.85f,1.25f,Noise(key+state.Peeks*43));
+            }
+            float danceTime=(clock-state.DanceStart)/state.DanceLength;
+            float danceEnvelope=Smooth(.08f,.32f,danceTime)*(1-Smooth(.73f,1,danceTime));
+            state.Dance=Mathf.MoveTowards(state.Dance,canDance?danceEnvelope:0,dt*5);
+            DanceAmount=Mathf.Max(DanceAmount,state.Dance);
             if (grounded && count >= 8 && state.IdleTime > state.NextPeek)
             {
                 state.PeekStart = clock; state.IdleTime = 0; state.Peeks++;
@@ -143,7 +171,7 @@ namespace GravityBox.Venom
             }
             float peek = (clock-state.PeekStart)/state.PeekLength;
             float envelope = Smooth(0,.28f,peek)*(1-Smooth(.58f,1,peek));
-            float targetHead = grounded && state.Speed < .024f && count >= 8 ? envelope : 0;
+            float targetHead = grounded && state.Speed < .024f && crawlIntent.sqrMagnitude < .001f && count >= 8 && state.Squeezing < .05f ? envelope : 0;
             state.Head = Mathf.MoveTowards(state.Head,targetHead,dt*3.5f);
             if (!grounded) foreach (var foot in state.Feet) foot.Surface = null;
 
@@ -159,30 +187,48 @@ namespace GravityBox.Venom
                 FlowBody(state,key,points,count,centre,up,top,bottom,floorPoint);
                 DrawFeet(state,key,points,ids,count,centre,up,floorPoint,support);
             }
-            if (state.Head < .008f) return count;
+            int physicalCount=count;
+            float expression=Mathf.Max(state.Head,state.Dance);
+            if (expression < .008f)
+            {
+                if(grounded)DrawGestures(state,key,points,physicalCount,centre,up,floorPoint,0);
+                return count;
+            }
             // An off-centre, broad fold gathers upward, hesitates, then rolls back.
             // Its asymmetric bend conveys curiosity without a permanent face/neck.
             Vector3 forward = Vector3.ProjectOnPlane(state.Probe,up).normalized;
             forward = Quaternion.AngleAxis((Smooth(.28f,.48f,peek)-Smooth(.57f,.86f,peek))*26,up)*forward;
             Vector3 anchor = centre + up*(top*.45f) + forward*.006f;
-            float lift = organism.Profile.CuriousHeadLift*state.Head;
+            float desiredLift = Mathf.Max(organism.Profile.CuriousHeadLift*state.Head,organism.Profile.DanceLift*state.Dance);
+            float lift = desiredLift;
             Vector3 direction = (up+forward*.42f).normalized;
             Vector3 side = Vector3.Cross(up,forward).normalized;
             float clearance = lift+.03f;
             for (int p = -1; p <= 1; p++)
                 if (level.RaycastBoundary(anchor+side*(p*.014f),direction,clearance,out var hit)) clearance = hit.distance;
             lift = Mathf.Min(lift,Mathf.Max(0,clearance-.026f));
-            float head = Mathf.Min(state.Head,lift/Mathf.Max(.001f,organism.Profile.CuriousHeadLift));
+            float head = expression*Mathf.Clamp01(lift/Mathf.Max(.001f,desiredLift));
             HeadAmount = Mathf.Max(HeadAmount,head); HeadHeight = Mathf.Max(HeadHeight,lift);
-            if (head < .02f) return count;
+            if (head < .02f)
+            {
+                if(grounded)DrawGestures(state,key,points,physicalCount,centre,up,floorPoint,0);
+                return count;
+            }
             for (int j = 0; j < 6; j++)
             {
                 float t = j/5f;
                 Vector3 source = anchor+up*(lift*t)+forward*(lift*.48f*t*t);
+                float beat=(clock-state.DanceStart)*6.8f;
+                source += (side*Mathf.Sin(beat-t*1.8f)*.012f+forward*Mathf.Sin(beat*.73f-t)*.007f)*state.Dance*t*t;
+                // Keep the growing crest on this side of nearby apparatus.
+                Vector3 growth=source-anchor;
+                if(growth.sqrMagnitude>1e-10f && level.RaycastBoundary(anchor,growth.normalized,growth.magnitude+.015f,out var obstruction))
+                    source=anchor+growth.normalized*Mathf.Max(0,obstruction.distance-.015f);
                 points[count] = transform.InverseTransformPoint(source);
                 supports[count] = Mathf.Lerp(.029f,.018f,t);
                 weights[count++] = head*Mathf.Lerp(.8f,.62f,t);
             }
+            if(grounded)DrawGestures(state,key,points,physicalCount,centre,up,floorPoint,lift*state.Dance);
             return count;
         }
 
@@ -223,10 +269,14 @@ namespace GravityBox.Venom
                 float stretch = 1+state.Moving*.28f;
                 Vector3 shape = forward*(x*(stretch-1)) + (side*z+up*height)*(1/Mathf.Sqrt(stretch)-1);
                 Vector3 shift = state.Lag*upper + up*fold - forward*(lobe*.003f*upper);
+                // The shoulders sway out of phase with the higher crest, keeping
+                // the base planted while the upper tissue dances.
+                float beat=(clock-state.DanceStart)*6.8f;
+                shift += (side*Mathf.Sin(beat-height*18)*.008f+up*Mathf.Sin(beat*2)*.003f)*upper*state.Dance;
                 // A crest borrows its shoulder shape from the body rather than
                 // looking like a sphere on a separately inflated stalk.
                 shift += forward*(state.Head*.006f*upper)-up*(state.Head*.002f*(1-upper));
-                deformation[i] = Vector3.ClampMagnitude(shape+shift,.014f);
+                deformation[i] = Vector3.ClampMagnitude(shape+shift,.014f)*(1-state.Squeezing*.85f);
                 average += deformation[i];
             }
             average /= count;
@@ -314,6 +364,79 @@ namespace GravityBox.Venom
                 TendrilCount++;
             }
         }
+        private void DrawGestures(Fragment state, int key, Vector3[] points, int count,
+            Vector3 centre, Vector3 up, Vector3 floor, float liftedBody)
+        {
+            int limbs=count<8?2:Gestures;
+            for(int arm=0;arm<limbs;arm++)
+            {
+                Gesture gesture=state.Gestures[arm];
+                if(dt>0 && clock>=gesture.NextAt && state.Squeezing<.2f)
+                {
+                    gesture.Cycle++;gesture.Start=clock;
+                    gesture.Duration=2.1f+Noise(key+arm*37+gesture.Cycle*19)*1.1f;
+                    gesture.NextAt=clock+gesture.Duration+.3f+Noise(key+arm*17+gesture.Cycle*7)*.8f;
+                }
+                float age=(clock-gesture.Start)/Mathf.Max(.1f,gesture.Duration);
+                float growth=Smooth(0,.22f,age)*(1-Smooth(.72f,1,age));
+                growth=Mathf.Max(growth,state.Dance*.95f)*(1-state.Squeezing);
+                if(growth<.035f)continue;
+                int seed=key*71+arm*113+gesture.Cycle*17;
+                float angle=arm*137.5f+(Noise(seed)-.5f)*55;
+                Vector3 direction=Quaternion.AngleAxis(angle,up)*state.Forward;
+                Vector3 side=Vector3.Cross(up,direction).normalized;
+                int rootId=0;float best=float.NegativeInfinity;
+                for(int i=0;i<count;i++)
+                {
+                    Vector3 offset=transform.TransformPoint(points[i])-centre;
+                    float score=Vector3.Dot(offset,direction)*.65f+Vector3.Dot(offset,up)*.8f;
+                    if(score>best){best=score;rootId=i;}
+                }
+                Vector3 origin=transform.TransformPoint(points[rootId])+direction*.003f;
+                Vector3 shoulder=centre+up*(liftedBody*.28f)+direction*.012f;
+                origin=Vector3.Lerp(origin,shoulder,state.Dance*.6f);
+                float reach=organism.Profile.RaisedTendrilReach*growth*Mathf.Lerp(.72f,1.1f,Noise(seed+11));
+                reach*=Mathf.Lerp(1,.58f,state.Moving)*(1+state.Dance*.3f)*Mathf.Sqrt(Mathf.Clamp(count/32f,.2f,1));
+                float phase=clock*(4.3f+arm*.57f)+Noise(seed+3)*6.28f;
+                phase+=state.Dance*Mathf.Sin((clock-state.DanceStart)*6.8f-arm*.7f)*1.3f;
+                Vector3 a=up*(reach*.28f)+direction*(reach*.27f);
+                Vector3 b=up*(reach*.92f)+side*(Mathf.Sin(phase-.8f)*reach*.4f)-direction*(reach*.15f);
+                Vector3 c=up*(reach*(.72f+Mathf.Sin(phase*.81f)*.14f))+
+                    direction*(reach*(.2f+Mathf.Cos(phase)*.26f))+side*(Mathf.Sin(phase)*reach*.38f);
+                float thickness=1.15f*Mathf.Sqrt(growth)*Mathf.Sqrt(Mathf.Clamp(count/32f,.3f,1));
+                bool fits=false;
+                for(int attempt=0;attempt<4;attempt++)
+                {
+                    if(CurveFits(origin,origin+a,origin+b,origin+c,thickness)){fits=true;break;}
+                    a*=.68f;b*=.68f;c*=.68f;thickness*=.85f;
+                }
+                if(!fits)continue;
+                Tube(origin,origin+a,origin+b,origin+c,up,floor,thickness);
+                RaisedTendrilCount++;TendrilCount++;
+            }
+        }
+
+        private bool CurveFits(Vector3 p0,Vector3 p1,Vector3 p2,Vector3 p3,float thickness)
+        {
+            Vector3 previous=p0;
+            for(int step=0;step<=Segments;step++)
+            {
+                float t=step/(float)Segments,u=1-t;
+                Vector3 p=u*u*u*p0+3*u*u*t*p1+3*u*t*t*p2+t*t*t*p3;
+                if(step>0 && (p-previous).sqrMagnitude>1e-10f && level.SegmentBlocked(previous,p))return false;
+                float radius=Mathf.Lerp(.006f,.00055f,Mathf.Pow(t,.55f))*thickness+.001f;
+                // Both the swept centreline and the tube's thickness need room.
+                // Shorten a flourish when close to glass, a blade or the cover.
+                for(int axis=0;axis<3;axis++)for(int sign=-1;sign<=1;sign+=2)
+                {
+                    Vector3 direction=axis==0?Vector3.right:axis==1?Vector3.up:Vector3.forward;
+                    if(level.RaycastBoundary(p,direction*sign,radius,out _))return false;
+                }
+                previous=p;
+            }
+            return true;
+        }
+
         private void Tube(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, Vector3 up, Vector3 floor, float thickness)
         {
             int first = vertices.Count;
@@ -323,7 +446,7 @@ namespace GravityBox.Venom
                 Vector3 p = u*u*u*p0 + 3*u*u*t*p1 + 3*u*t*t*p2 + t*t*t*p3;
                 Vector3 tangent = (3*u*u*(p1-p0)+6*u*t*(p2-p1)+3*t*t*(p3-p2)).normalized;
                 Vector3 right = Vector3.Cross(tangent,up).normalized;
-                if (right.sqrMagnitude < .1f) right = Vector3.Cross(tangent,Vector3.right).normalized;
+                if (right.sqrMagnitude < .1f) right = Vector3.Cross(tangent,Mathf.Abs(tangent.x)<.8f?Vector3.right:Vector3.forward).normalized;
                 Vector3 binormal = Vector3.Cross(right,tangent).normalized;
                 float radius = Mathf.Lerp(.006f,.00055f,Mathf.Pow(t,.55f))*thickness;
                 p += up*Mathf.Max(0,radius-Vector3.Dot(p-floor,up));

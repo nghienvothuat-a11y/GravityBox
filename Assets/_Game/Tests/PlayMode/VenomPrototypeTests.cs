@@ -241,13 +241,16 @@ namespace GravityBox.Tests
         [Test] public void IdleHeadLooksAroundThenRetractsWithoutMovingPhysics()
         {
             var matter=level.Organism;var surface=matter.GetComponent<VenomSurface>();var life=matter.GetComponent<VenomLifeAnimation>();
-            bool raised=false,retracted=false;float peak=0;
+            bool raised=false,retracted=false;float peak=0,dance=0;int raisedArms=0;bool capturedDance=false;
             for(int frame=0;frame<300;frame++)
             {
                 Steps(4);
                 var positions=matter.Bodies.Select(b=>b.position).ToArray();
                 var velocities=matter.Bodies.Select(b=>b.linearVelocity).ToArray();
                 surface.Rebuild(false);
+                dance=Mathf.Max(dance,life.DanceAmount);raisedArms=Mathf.Max(raisedArms,life.RaisedTendrilCount);
+                if(!capturedDance && life.DanceAmount>.9f && life.HeadHeight>.05f)
+                { Capture("life-03-dancing");capturedDance=true; }
                 CollectionAssert.AreEqual(positions,matter.Bodies.Select(b=>b.position).ToArray(),"Curiosity must not move physical nodes.");
                 CollectionAssert.AreEqual(velocities,matter.Bodies.Select(b=>b.linearVelocity).ToArray(),"No decorative animation force.");
                 if(life.HeadHeight>peak)
@@ -261,6 +264,9 @@ namespace GravityBox.Tests
             }
             Assert.That(peak,Is.GreaterThan(.025f),"An idle creature should visibly lift a small head.");
             Assert.That(retracted,Is.True,"The head must return to the body between looks.");
+            Assert.That(dance,Is.GreaterThan(.9f),"Idle performance should include a visible stretch and dance.");
+            Assert.That(raisedArms,Is.GreaterThanOrEqualTo(2),"Several upper tendrils should wave above the body.");
+            Assert.That(capturedDance,Is.True);
             Assert.That(matter.FragmentCount,Is.EqualTo(1));Assert.That(matter.TotalMass,Is.EqualTo(.096f).Within(.000001f));
         }
 
@@ -324,6 +330,7 @@ namespace GravityBox.Tests
             level.View.transform.position=cameraPosition;
             level.ResetExperiment();surface.Rebuild(false);
             Assert.That(life.HeadAmount,Is.Zero);Assert.That(life.TendrilCount,Is.Zero);Assert.That(life.PlantedFeet.Count,Is.Zero);
+            Assert.That(life.DanceAmount,Is.Zero);Assert.That(life.RaisedTendrilCount,Is.Zero);
         }
     }
 }

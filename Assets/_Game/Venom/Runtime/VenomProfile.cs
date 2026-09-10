@@ -27,6 +27,9 @@ namespace GravityBox.Venom
         public float IdleBulge = .0036f;
         public float CuriousHeadLift = .041f;
         public float TendrilReach = .034f;
+        public float RaisedTendrilReach = .052f;
+        public float DanceLift = .064f;
+        [Min(2)] public float DanceInterval = 10f;
         public PhysicsMaterial Contact;
         public Material Skin;
     }

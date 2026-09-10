@@ -312,6 +312,36 @@ namespace GravityBox.Tests
             Assert.That(flow,Is.GreaterThan(.5f));Assert.That(level.Organism.MergeCount,Is.GreaterThan(0));
             Assert.That(level.Organism.FragmentCount,Is.EqualTo(1));Assert.That(level.Lost,Is.False);
         }
+        [UnityTest] public IEnumerator ExpressiveIdleYieldsToInputAndSlit()
+        {
+            yield return Load(3);
+            var surface=level.Organism.GetComponent<VenomSurface>();
+            var life=level.Organism.GetComponent<VenomLifeAnimation>();
+            for(int frame=0;frame<300 && life.DanceAmount<.9f;frame++){Steps(4);surface.Rebuild(false);}
+            Assert.That(life.DanceAmount,Is.GreaterThan(.8f));
+            level.Locomotion.SetInput(Vector3.left);
+            for(int frame=0;frame<20;frame++){Steps(4);surface.Rebuild(false);}
+            Assert.That(life.DanceAmount,Is.Zero);Assert.That(life.HeadAmount,Is.Zero);
+            level.Locomotion.SetInput(Vector3.zero);Go(-.19f,.245f);Go(-.215f,-.035f);
+            level.Locomotion.SetInput(Vector3.back);
+            for(int frame=0;frame<50;frame++){Steps(4);surface.Rebuild(false);}
+            Assert.That(level.Locomotion.Selected.Squeeze.Amount,Is.GreaterThan(.95f));
+            Assert.That(life.DanceAmount,Is.Zero);Assert.That(life.RaisedTendrilCount,Is.Zero);
+            // Near the actual left glass, raised flourishes must fit in the box.
+            level.Locomotion.SetInput(Vector3.zero);
+            for(int frame=0;frame<180;frame++)
+            {
+                Steps(4);surface.Rebuild(false);
+                var filaments=level.Organism.GetComponentsInChildren<MeshFilter>().First(m=>m.name=="Transient contact filaments");
+                foreach(var vertex in filaments.sharedMesh.vertices)
+                {
+                    Vector3 p=level.Rotation.transform.InverseTransformPoint(filaments.transform.TransformPoint(vertex));
+                    Assert.That(p.x,Is.InRange(-.251f,.251f));Assert.That(p.y,Is.InRange(-.068f,.074f));
+                    Assert.That(p.z,Is.InRange(-.321f,.321f));
+                }
+            }
+        }
+
         private void Capture(string name)
         {
             string directory=Environment.GetEnvironmentVariable("VENOM_CAPTURE_DIR");

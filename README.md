@@ -20,6 +20,8 @@ Màn 02/03 có **luồn khe chủ động**: giữ hướng vào khe để mô t
 
 Sinh vật dùng hạt vật lý liên kết nhớt/dẻo và bề mặt metaball liên tục. Đây là mô hình vật chất mềm phục vụ thử gameplay, chưa phải solver chất lỏng bảo toàn thể tích. Nội dung 23 bàn bi thép bên dưới vẫn có thể mở qua scene `Gameplay.unity`; build Venom dùng scene riêng.
 
+Sinh vật có thêm **bốn xúc tu giơ lên, cuộn và quẫy lệch nhịp**; thỉnh thoảng vươn thân cao rồi lắc lư như nhảy múa. Bắt đầu bò thì thu động tác lớn; đang luồn khe thì giữ hình dáng gọn. [Xem animation 10 giây](Docs/Images/VenomLife/idle.gif).
+
 Sinh vật có animation theo hướng symbiote: thân dồn và cuộn lệch, mô phía trên có độ trễ khi trượt, thỉnh thoảng dựng một đỉnh mềm để thăm dò. Các sợi bám mọc độc lập và căng mảnh rồi thu lại. Animation đọc vận tốc, tiếp xúc thật và ý định bò ở màn 02/03. Lực bám–kéo do hệ locomotion riêng tạo ở các hạt có tiếp xúc; mesh/xúc tua chỉ biểu diễn hình ảnh, không thay đổi lượng vật chất cần thoát. [Tư liệu và cách áp dụng](Docs/VENOM_MOTION_STUDY.md) · [Ảnh/animation cận cảnh](Docs/Images/VenomLife/README.md).
 
 Bản cập nhật tiếp xúc sàn: cửa và lưỡi chém có chặn dưới đúng mặt sàn; skin không phình xuyên phần sàn đặc và cập nhật theo từng frame. Animation nhanh hơn **1,5×**, biên độ tăng khoảng **20–30%**. Đóng bản macOS đang chạy rồi mở lại app để nhận bản build mới. Kiểm chứng: rơi 2/5/10 m/s, lật hộp nhiều trục, chặn cơ cấu và đường giải thoát đủ vật chất.

@@ -37,9 +37,9 @@ Những thời gian, biên độ và quy tắc này là lựa chọn cho prototy
 
 ## Giữ quyền điều khiển và vật lý
 
-`CohesiveOrganism` vẫn quyết định chuyển động 32 hạt, khối lượng 96 g, cắt–hàn liên kết, đè nút và thoát. `VenomLifeAnimation` chỉ đọc vận tốc/tiếp xúc để dựng hình. Động tác “bám” là diễn xuất, chưa tạo lực kéo chủ động. Thể tích của mesh chưa được bảo toàn chính xác và nếp khối không phải mô phỏng cơ sinh học.
+`CohesiveOrganism` vẫn quyết định chuyển động 32 hạt, khối lượng 96 g, cắt–hàn liên kết, đè nút và thoát. `VenomLifeAnimation` chỉ đọc vận tốc/tiếp xúc để dựng hình. Các sợi “bám” là lớp diễn xuất. Từ thí nghiệm 02/03, `VenomLocomotion` tạo lực bò ở tiếp xúc thật; animation đọc ý định điều khiển nhưng không tự tác động lực. Thể tích của mesh chưa được bảo toàn chính xác và nếp khối không phải mô phỏng cơ sinh học.
 
-Hướng phát triển tiếp nếu cảm giác này phù hợp: thêm màng nối có độ dày thay đổi, rồi mới thử lực bám có giới hạn năng lượng và kiểm tra lại thiết kế puzzle. Không dùng chuyển động tự bò mạnh đến mức triệt tiêu thao tác nghiêng của người chơi.
+Hướng phát triển tiếp nếu cảm giác này phù hợp: thêm màng nối có độ dày thay đổi. Màn 01 vẫn giữ quyền điều khiển bằng nghiêng hộp; màn 02/03 dùng hệ lực bò riêng và có cơ chế luồn khe.
 
 ## Kiểm chứng
 
@@ -55,3 +55,20 @@ Hướng phát triển tiếp nếu cảm giác này phù hợp: thêm màng n�
 ### Tinh chỉnh sau phản hồi chơi
 
 Nhịp diễn xuất hiện là 1,5×; phồng thân 3,6 mm, đỉnh tò mò tối đa 41 mm, tầm vươn 34 mm. Mesh theo từng khung hình thay vì giữ tư thế thế giới ở 30 Hz. Skin được giới hạn ở sàn đặc, tôn trọng lỗ thật và các nguồn vật chất đã thoát. Chặn hành trình dưới của cửa/lưỡi chém được sửa cùng lúc để không ép khối vào sàn. [Chi tiết va chạm và kiểm chứng](VENOM_PROTOTYPE_01.md#sửa-tiếp-xúc-sàn-và-tăng-sức-sống--10092026).
+
+### Xúc tu trên cao và động tác nhảy múa — 10/09/2026
+
+Theo yêu cầu diễn xuất mới, cơ thể có hai nhóm xúc tu: tối đa năm sợi bám sàn như trước và bốn sợi tự do mọc phía trên (hai sợi với phần nhỏ). Nhóm trên vươn lên, cuộn đầu rồi thu về theo chu kỳ lệch nhau; gốc, thời lượng và pha quẫy thay đổi giữa các lượt. Khi bò, các sợi trên ngắn lại còn khoảng 58% để vẫn đọc rõ hướng tiến.
+
+Khi đứng yên đủ lâu, sinh vật dồn vai, vươn thành một đỉnh mềm cao hơn rồi uốn thân sang hai bên. Phần vai và ngọn lệch pha; xúc tu giơ lên mạnh hơn trong đợt này, tạo cảm giác nhảy múa mà đáy vẫn tựa trên sàn. Đợt đầu thường xuất hiện sau khoảng bốn giây nghỉ; sau đó khoảng 6–8 giây mỗi lượt với tốc độ animation mặc định 1,5×, mỗi đợt khoảng 2,4–2,9 giây.
+
+Thông số có thể chỉnh trong `Living matter.asset`: `RaisedTendrilReach` = 52 mm, `DanceLift` = 64 mm, `DanceInterval` = 10 giây trên đồng hồ animation (chịu hệ số `AnimationSpeed`). Nếp khối khi nghỉ chạy nhanh hơn trước.
+
+- Bắt đầu điều khiển thì thu động tác vươn thân/nhảy múa. Đang luồn khe, biên độ nếp khối giảm 85%, các xúc tu trên thu gọn theo mức nén; ở mức luồn hoàn toàn thì không giơ xúc tu.
+- Đường cong và độ dày xúc tu được kiểm tra với collider xung quanh; gần kính, lưỡi hoặc trần thì rút ngắn cử động. Các ray có đoạn dài gần bằng không được bỏ qua.
+- Tất cả dùng thời gian mô phỏng, không phụ thuộc camera hoặc đồng hồ thực. Pause giữ nguyên mesh; reset và thay đổi nhóm xóa các đợt diễn xuất cũ.
+- Chỉ thay mesh/field: không dịch hạt, thêm lực, sửa collider, khối lượng, liên kết hoặc điều kiện puzzle. Đây là tạo hình diễn xuất, không mô phỏng cơ sinh học/bảo toàn thể tích của phần vươn thêm.
+
+Kiểm chứng: **14/14** PlayMode có graphics qua, gồm 12 kiểm tra màn 01, kiểm tra thu diễn xuất khi điều khiển/luồn khe, và đường giải cắt–nhập–luồn–thoát đủ 32/32 hạt. Log/XML tại `Artifacts/VenomDance/final.*`; sau khi thêm chặn đoạn ray cực ngắn, chạy lại 4/4 kiểm tra animation liên quan qua tại `Artifacts/VenomDance/guard.*`. Có kiểm tra vị trí/vận tốc hạt không đổi khi dựng hình, pause/reset, sợi bám thật và đỉnh sợi nằm trong hộp khi đứng sát kính. Capture gồm 100 frame yên và 34 frame chuyển động, mỗi frame cách nhau 0,1 giây mô phỏng.
+
+[GIF và ảnh cận cảnh](Images/VenomLife/README.md). Các capture phục vụ xem diễn xuất, không phải số đo FPS trên thiết bị.
