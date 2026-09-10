@@ -35,6 +35,7 @@ namespace GravityBox.Venom
                 if (keys.digit1Key.wasPressedThisFrame) { End(); level.LoadExperiment(1); return; }
                 if (keys.digit2Key.wasPressedThisFrame) { End(); level.LoadExperiment(2); return; }
                 if (keys.digit3Key.wasPressedThisFrame) { End(); level.LoadExperiment(3); return; }
+                if (keys.digit5Key.wasPressedThisFrame) { End(); level.LoadExperiment(5); return; }
                 if (keys.digit4Key.wasPressedThisFrame) { End(); level.LoadExperiment(4); return; }
                 if (keys.zKey.wasPressedThisFrame && level.WallCrawl) level.ToggleZoom();
                 if (keys.tabKey.wasPressedThisFrame) level.Locomotion?.SelectNext();

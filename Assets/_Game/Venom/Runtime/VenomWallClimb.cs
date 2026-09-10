@@ -12,7 +12,7 @@ namespace GravityBox.Venom
         private sealed class State
         {
             public int Face;
-            public readonly int[] Contacts=new int[6];
+            public readonly int[] Contacts=new int[6],EdgeContacts=new int[6];
             public bool Gripping,Carrying;
             public Vector3 GripLocal,RawAtTurn,Carried;
         }
@@ -63,7 +63,7 @@ namespace GravityBox.Venom
             bool moving=strength>.03f;
             if(!moving || Vector3.Dot(localCommand.normalized,state.RawAtTurn)<.96f)state.Carrying=false;
             Vector3 heading=state.Carrying?state.Carried:Vector3.ProjectOnPlane(localCommand,Normals[state.Face]).normalized;
-            int[] contacts=state.Contacts;Array.Clear(contacts,0,6);
+            int[] contacts=state.Contacts,edges=state.EdgeContacts;Array.Clear(contacts,0,6);Array.Clear(edges,0,6);
             for(int i=0;i<32;i++)
             {
                 if(matter.Escaped[i] || matter.Groups[i]!=fragment.Group)continue;
@@ -73,7 +73,7 @@ namespace GravityBox.Venom
                     Collider shape=level.CrawlFaces[face];
                     Vector3 normal=root.TransformDirection(Normals[face]);
                     near[i,face]=shape!=null && shape.enabled && shape.Raycast(new Ray(matter.Bodies[i].position,-normal),out hits[i,face],config.AdhesionReach);
-                    if(near[i,face])contacts[face]++;
+                    if(near[i,face]){contacts[face]++;if(level.SplitVault==null || hits[i,face].distance<.025f)edges[face]++;}
                 }
             }
             if(moving && heading.sqrMagnitude>.1f)
@@ -81,7 +81,7 @@ namespace GravityBox.Venom
                 int next=state.Face;float best=-.45f;
                 for(int face=0;face<6;face++)
                 {
-                    if(face==state.Face || contacts[face]<3)continue;
+                    if(face==state.Face || edges[face]<3)continue;
                     float approach=Vector3.Dot(heading,Normals[face]);
                     if(approach<best){best=approach;next=face;}
                 }
@@ -101,6 +101,14 @@ namespace GravityBox.Venom
             if(contacts[state.Face]>=Mathf.Min(8,fragment.Count))VisitedMask|=1<<state.Face;
             Vector3 preferred=root.TransformDirection(Normals[state.Face]);
             Vector3 travel=root.TransformDirection(heading)*strength;
+            if(level.SplitVault!=null)
+            {
+                // A cut exposes smaller, yielding lobes; an intact body keeps
+                // its cohesive skin and cannot actively thread this narrow door.
+                bool canSqueeze=fragment.Count<32 && matter.CutCount>0 && state.Face==5;
+                fragment.Squeeze.Step(level,fragment.Group,fragment.Centre,canSqueeze?travel:Vector3.zero,dt);
+                for(int i=0;i<32;i++)if(matter.Groups[i]==fragment.Group)matter.SetFlow(i,fragment.Squeeze.Amount);
+            }
             int supported=0;
             for(int i=0;i<32;i++)
             {
@@ -117,7 +125,7 @@ namespace GravityBox.Venom
             if(moving)state.Gripping=false;
             else if(!state.Gripping){state.GripLocal=root.InverseTransformPoint(fragment.Centre);state.Gripping=true;}
             Vector3 grip=Vector3.ProjectOnPlane(root.TransformPoint(state.GripLocal)-fragment.Centre,preferred);
-            float weight=Mathf.Min(fragment.Count/(float)supported,2.5f);
+            float weight=Mathf.Min(fragment.Count/(float)supported,level.SplitVault!=null?4f:2.5f);
             Vector3 gravity=Vector3.down*9.81f;
             for(int i=0;i<32;i++)
             {
@@ -132,7 +140,10 @@ namespace GravityBox.Venom
                     // Trailing tissue still on the previous face feeds towards
                     // the corner while the front climbs onto the new face.
                     Vector3 direction=Vector3.Dot(normal,preferred)<.5f?-preferred:travel;
-                    desired=Vector3.ProjectOnPlane(direction,normal).normalized*(config.CrawlSpeed*strength);
+                    float speed=fragment.Following?config.FollowSpeed:config.CrawlSpeed;
+                    desired=Vector3.ProjectOnPlane(direction,normal).normalized*(speed*strength);
+                    if(level.SplitVault!=null && state.Face==5 && fragment.Squeeze.Amount>0)
+                        desired=fragment.Squeeze.Velocity(level,matter.Bodies[i].position,travel,speed);
                 }
                 else desired=Vector3.ClampMagnitude(Vector3.ProjectOnPlane(grip,normal)*5,config.CrawlSpeed);
                 Vector3 tangent=(desired-Vector3.ProjectOnPlane(relative,normal))*config.VelocityResponse-Vector3.ProjectOnPlane(gravity,normal);

@@ -15,7 +15,10 @@ namespace GravityBox.Venom
         public VenomLocomotion Locomotion { get; private set; }
         public VenomWallClimb Climbing { get; private set; }
         public VenomFollowCamera FollowView { get; private set; }
-        public bool WallCrawl => ControlMode == VenomControlMode.SurfaceCrawl;
+        public bool WallCrawl => ControlMode == VenomControlMode.SurfaceCrawl || ControlMode == VenomControlMode.SplitVault;
+        public VenomSplitVault SplitVault;
+        public float NavigationY=>SplitVault!=null?SplitVault.NavigationY:FloorBoundary.Top+.025f;
+        public Vector3 NavigationUp=>SplitVault!=null?Rotation.transform.up:Vector3.up;
         public Collider[] CrawlFaces;
         public Material IndicatorMaterial;
         public bool DirectControl => ControlMode != VenomControlMode.TiltBox;
@@ -65,6 +68,7 @@ namespace GravityBox.Venom
             var matter = new GameObject("Living matter — world space"); matter.transform.SetParent(transform, false);
             Organism = matter.AddComponent<CohesiveOrganism>(); Organism.Initialize(MatterProfile, Spawn, this);
             if(WallCrawl)Climbing=new VenomWallClimb(this);
+            SplitVault?.Initialize(this);
             if (DirectControl) Locomotion = new VenomLocomotion(this);
             if(WallCrawl)FollowView=new VenomFollowCamera(this);
             matter.AddComponent<VenomSurface>().Initialize(Organism, this);
@@ -100,7 +104,7 @@ namespace GravityBox.Venom
             Organism.Step(dt);
             if(WallCrawl)
             {
-                Locomotion.Step(dt);EvaluateEscape(dt);CheckLost();return;
+                SplitVault?.Cut();Locomotion.Step(dt);EvaluateEscape(dt);CheckLost();return;
             }
             if (DirectControl && !BladeReleased)
             {
@@ -171,6 +175,7 @@ namespace GravityBox.Venom
 
         public bool NavigationFree(Vector3 world, float clearance, bool allowOutlet)
         {
+            if(SplitVault!=null)return SplitVault.NavigationFree(world,clearance,allowOutlet);
             Vector3 p = Rotation.transform.InverseTransformPoint(world);
             if (Mathf.Abs(p.x) > .25f-clearance || Mathf.Abs(p.z) > .32f-clearance) return false;
             Vector3 hole = Rotation.transform.InverseTransformPoint(Outlet.position);
@@ -269,6 +274,7 @@ namespace GravityBox.Venom
             else GateLatched=true;
             Organism.ResetMatter();
             Climbing?.Reset();
+            SplitVault?.ResetState();
             FollowView?.Reset();
             Locomotion?.Reset();
             Rotation.InputEnabled = !DirectControl || WallCrawl;
@@ -293,7 +299,7 @@ namespace GravityBox.Venom
         }
         public void LoadExperiment(int number)
         {
-            if (number < 1 || number > 4) return;
+            if (number < 1 || number > 5) return;
             Time.timeScale = 1;
             SceneManager.LoadScene($"Venom{number:00}");
         }

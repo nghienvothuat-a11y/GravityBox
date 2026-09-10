@@ -21,7 +21,7 @@ namespace GravityBox.Venom
         public VenomNavigator(VenomLevelController owner) => level = owner;
 
         private Vector3 Point(int index) => level.Rotation.transform.TransformPoint(
-            new Vector3((index % Width - 19) * Cell, level.FloorBoundary.Top + .025f, (index / Width - 25) * Cell));
+            new Vector3((index % Width - 19) * Cell, level.NavigationY, (index / Width - 25) * Cell));
 
         public bool Clear(Vector3 a, Vector3 b, float clearance, bool allowOutlet = false)
         {
@@ -36,7 +36,7 @@ namespace GravityBox.Venom
             path.Clear();
             var box = level.Rotation.transform;
             Vector3 a = box.InverseTransformPoint(from), b = box.InverseTransformPoint(to);
-            a.y = b.y = level.FloorBoundary.Top + .025f;
+            a.y = b.y = level.NavigationY;
             from = box.TransformPoint(a); to = box.TransformPoint(b);
             // Followers may enter the real opening only when their target is there.
             bool allowOutlet = Vector3.ProjectOnPlane(to-level.Outlet.position,box.up).magnitude < .065f;
@@ -98,7 +98,11 @@ namespace GravityBox.Venom
                 if (!walkable[i]) continue;
                 float d = (Point(i)-p).sqrMagnitude;
                 if (d >= best) continue;
-                if (!Clear(p,Point(i),Mathf.Min(clearance,level.MatterProfile.ParticleRadius+.001f),allowOutlet)) continue;
+                // A one-particle offcut may rest directly on the knife. Its
+                // initial escape segment uses the actual collision radius;
+                // inflating this start traps it permanently against the blade.
+                float startRadius=level.MatterProfile.ParticleRadius+(level.SplitVault!=null?-.0003f:.001f);
+                if (!Clear(p,Point(i),Mathf.Min(clearance,startRadius),allowOutlet)) continue;
                 best = d; result = i;
             }
             return result;

@@ -15,6 +15,7 @@ namespace GravityBox.Venom
         public void Step(VenomLevelController level, int group, Vector3 centre, Vector3 command, float dt)
         {
             float time = level.Organism.SimulationTime;
+            bool allowOutlet=level.SplitVault!=null;
             bool moving = command.sqrMagnitude > .04f;
             if (!moving || Vector3.Dot(Axis,command.normalized) < .75f) { keepUntil = 0; threading = false; }
             if (threading)
@@ -29,13 +30,13 @@ namespace GravityBox.Venom
             if (moving && !threading && time >= probeAt)
             {
                 probeAt = time + .12f;
-                Vector3 axis = command.normalized, side = Vector3.Cross(Vector3.up,axis);
+                Vector3 axis = command.normalized, side = Vector3.Cross(level.NavigationUp,axis);
                 float radius = level.MatterProfile.ParticleRadius + .002f;
                 float best = float.PositiveInfinity;
                 for (int offset = -9; offset <= 9; offset++)
                 {
                     Vector3 lane = centre + side*(offset*.005f);
-                    if (!level.Locomotion.Navigator.Clear(lane-axis*.025f,lane+axis*.05f,radius)) continue;
+                    if (!level.Locomotion.Navigator.Clear(lane-axis*.025f,lane+axis*.05f,radius,allowOutlet)) continue;
                     for (int step = -2; step <= 4; step++)
                     {
                         Vector3 throat = lane + axis*(step*.0125f);
@@ -43,7 +44,7 @@ namespace GravityBox.Venom
                         // single wall or the edge of the round exit.
                         if (level.NavigationFree(throat+side*.03f,radius,true) ||
                             level.NavigationFree(throat-side*.03f,radius,true)) continue;
-                        if (!level.Locomotion.Navigator.Clear(throat-axis*.02f,throat+axis*.03f,radius)) continue;
+                        if (!level.Locomotion.Navigator.Clear(throat-axis*.02f,throat+axis*.03f,radius,allowOutlet)) continue;
                         float score = Mathf.Abs(offset)*.005f + Mathf.Abs(step)*.001f;
                         if (score >= best) continue;
                         best = score; Axis = axis; Throat = throat; keepUntil = time + .25f; threading=true;
@@ -55,7 +56,7 @@ namespace GravityBox.Venom
 
         public Vector3 Velocity(VenomLevelController level, Vector3 position, Vector3 command, float speed)
         {
-            Vector3 side = Vector3.Cross(Vector3.up,Axis);
+            Vector3 side = Vector3.Cross(level.NavigationUp,Axis);
             float error = Vector3.Dot(Throat-position,side);
             // Leave room for staggered particles. Forcing every centre onto the
             // exact same line creates a granular arch against the outer wall.

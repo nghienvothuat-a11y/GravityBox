@@ -99,7 +99,10 @@ namespace GravityBox.Venom
                 if (largest == null || fragment.Count > largest.Count || fragment.Count == largest.Count && fragment.Group == matter.Groups[SelectedParticle]) largest = fragment;
                 if (!matter.Escaped[SelectedParticle] && fragment.Group == matter.Groups[SelectedParticle]) Selected = fragment;
             }
-            if (level.ControlMode == VenomControlMode.FollowLargest || Selected == null) Selected = largest;
+            bool chooseLargest=level.ControlMode==VenomControlMode.FollowLargest || level.SplitVault!=null && level.SplitVault.Captain<0;
+            if(chooseLargest || Selected==null)Selected=largest;
+            if(level.SplitVault!=null && level.SplitVault.Captain>=0)
+                foreach(var fragment in fragments)if(fragment.Group==matter.Groups[level.SplitVault.Captain])Selected=fragment;
             if (Selected != null)
             {
                 Selected.Selected = true;
@@ -111,6 +114,7 @@ namespace GravityBox.Venom
         public void Step(float dt)
         {
             Refresh();
+            level.SplitVault?.ObserveLeader();
             if (Selected == null) return;
             for (int i = 0; i < 32; i++)
             {
@@ -123,6 +127,10 @@ namespace GravityBox.Venom
                 Vector3 command = fragment.Selected ? input : Vector3.zero;
                 if(level.WallCrawl)
                 {
+                    if(level.SplitVault!=null && level.SplitVault.AutoFollow(fragment))
+                    {
+                        fragment.Following=true;command=Follow(fragment,level.Outlet.position);
+                    }
                     fragment.Intent=level.Climbing.Step(fragment,command,dt);continue;
                 }
                 float speed = profile.CrawlSpeed;
@@ -142,18 +150,19 @@ namespace GravityBox.Venom
                 ApplyTraction(fragment,command,speed);
             }
         }
-        private Vector3 Follow(Fragment fragment)
+        private Vector3 Follow(Fragment fragment)=>Follow(fragment,Selected.Centre);
+        private Vector3 Follow(Fragment fragment,Vector3 target)
         {
             if (matter.SimulationTime >= fragment.RepathAt)
             {
                 PathSearches++;
-                if (!Navigator.FindPath(fragment.Centre,Selected.Centre,profile.NavigationClearance,fragment.Path))
-                    Navigator.FindPath(fragment.Centre,Selected.Centre,matter.Profile.ParticleRadius+.002f,fragment.Path);
+                if (!Navigator.FindPath(fragment.Centre,target,profile.NavigationClearance,fragment.Path))
+                    Navigator.FindPath(fragment.Centre,target,matter.Profile.ParticleRadius+.002f,fragment.Path);
                 fragment.Waypoint = 0; fragment.RepathAt = matter.SimulationTime+profile.RepathSeconds;
             }
-            while (fragment.Waypoint < fragment.Path.Count-1 && Vector3.ProjectOnPlane(fragment.Path[fragment.Waypoint]-fragment.Centre,Vector3.up).magnitude < .016f) fragment.Waypoint++;
+            while (fragment.Waypoint < fragment.Path.Count-1 && Vector3.ProjectOnPlane(fragment.Path[fragment.Waypoint]-fragment.Centre,level.NavigationUp).magnitude < .016f) fragment.Waypoint++;
             if (fragment.Path.Count == 0) { fragment.Blocked = true; return Vector3.zero; }
-            Vector3 delta = Vector3.ProjectOnPlane(fragment.Path[fragment.Waypoint]-fragment.Centre,Vector3.up);
+            Vector3 delta = Vector3.ProjectOnPlane(fragment.Path[fragment.Waypoint]-fragment.Centre,level.NavigationUp);
             return Vector3.ClampMagnitude(delta/.028f,1);
         }
         private void ApplyTraction(Fragment fragment, Vector3 command, float speed)

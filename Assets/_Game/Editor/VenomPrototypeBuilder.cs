@@ -16,7 +16,7 @@ namespace GravityBox.Editor
     {
         public const string Folder = "Assets/_Game/Venom";
         public const string ScenePath = Folder + "/Venom01.unity";
-        public static readonly string[] Scenes = { ScenePath, Folder+"/Venom02.unity", Folder+"/Venom03.unity", Folder+"/Venom04.unity" };
+        public static readonly string[] Scenes = { ScenePath, Folder+"/Venom02.unity", Folder+"/Venom03.unity", Folder+"/Venom04.unity", Folder+"/Venom05.unity" };
         private static PhysicsMaterial contact;
         private static Material floor, glass, frame, glow, bladeMaterial;
         [MenuItem("Gravity Box/Venom/Generate Experiment 01")]
@@ -214,6 +214,51 @@ namespace GravityBox.Editor
             EditorSceneManager.SaveScene(scene,Scenes[3]);
             EditorBuildSettings.scenes=Array.ConvertAll(Scenes,path=>new EditorBuildSettingsScene(path,true));
             AssetDatabase.SaveAssets();Debug.Log("VENOM 04 GENERATED: transparent cube, adhesive six-face crawl and independent rotation.");
+        }
+
+        [MenuItem("Gravity Box/Venom/Generate Experiment 05")]
+        public static void GenerateVault()
+        {
+            contact=AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(Folder+"/Materials/Soft contact.physicMaterial");
+            glow=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Materials/Mint inlay.mat");
+            glass=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Materials/Climbing crystal.mat");
+            var vaultGlass=Material("Vault glass",new Color(.36f,.7f,.68f,.11f),.05f,.22f);Transparent(vaultGlass);
+            var steel=Material("Vault knife",new Color(.63f,.70f,.72f),.9f,.75f);
+            var amber=Material("Knife warning inlay",new Color(1,.60f,.22f),.2f,.5f);
+            amber.EnableKeyword("_EMISSION");amber.SetColor("_EmissionColor",new Color(.7f,.28f,.04f));
+            var scene=EditorSceneManager.OpenScene(Scenes[3],OpenSceneMode.Single);
+            var owner=Object.FindFirstObjectByType<VenomLevelController>();owner.name="Venom 05 — split and thread the vault";
+            owner.LevelNumber=5;owner.ControlMode=VenomControlMode.SplitVault;
+            var motion=Asset<VenomLocomotionProfile>(Folder+"/Vault locomotion.asset",()=>ScriptableObject.CreateInstance<VenomLocomotionProfile>());
+            motion.CrawlSpeed=.28f;motion.FollowSpeed=.20f;motion.AdhesionReach=.055f;owner.LocomotionProfile=motion;EditorUtility.SetDirty(motion);
+            var vault=owner.gameObject.AddComponent<VenomSplitVault>();owner.SplitVault=vault;
+            var root=owner.Rotation.transform;var obstacles=new List<Collider>();
+            Collider Wall(string name,Vector3 p,Vector3 size)
+            {
+                var go=Block(name,root,p,size,vaultGlass);go.GetComponent<Renderer>().shadowCastingMode=ShadowCastingMode.Off;
+                var shape=go.GetComponent<Collider>();obstacles.Add(shape);return shape;
+            }
+            Wall("Vault left",new Vector3(-.104f,.20f,0),new Vector3(.008f,.10f,.166f));
+            Wall("Vault right",new Vector3(.104f,.20f,0),new Vector3(.008f,.10f,.166f));
+            Wall("Vault back",new Vector3(0,.20f,-.079f),new Vector3(.2f,.10f,.008f));
+            Wall("Vault closed underside",new Vector3(0,.147f,0),new Vector3(.216f,.006f,.166f));
+            foreach(float sign in new[]{-1f,1f})
+            {
+                Wall("Vault narrow doorway",new Vector3(sign*.0585f,.20f,.079f),new Vector3(.083f,.10f,.008f));
+                Block("Door lip inlay",root,new Vector3(sign*.017f,.238f,.0833f),new Vector3(.0012f,.024f,.0012f),glow,false);
+            }
+            var knife=Block("Sharp splitting knife",root,new Vector3(.145f,.20f,.116f),new Vector3(.003f,.094f,.042f),steel);
+            // The collision blade stays thin; its sharp amber leading edge reads
+            // clearly at the approach side, and bond cutting uses the actual plane.
+            Block("Knife cutting edge",root,new Vector3(.145f,.20f,.1372f),new Vector3(.001f,.094f,.001f),amber,false);
+            vault.Knife=new GameObject("Knife cutting plane").transform;vault.Knife.SetParent(root,false);vault.Knife.localPosition=new Vector3(.145f,.20f,.116f);
+            obstacles.Add(knife.GetComponent<Collider>());vault.Obstacles=obstacles.ToArray();
+            // A flush trace points from the knife bay to the real narrow door.
+            foreach(float sign in new[]{-1f,1f})
+                Block("Vault rim",root,new Vector3(sign*.104f,.249f,0),new Vector3(.001f,.001f,.16f),glow,false);
+            VenomCameraFraming.Frame(owner,540,960);EditorSceneManager.SaveScene(scene,Scenes[4]);
+            EditorBuildSettings.scenes=Array.ConvertAll(Scenes,path=>new EditorBuildSettingsScene(path,true));AssetDatabase.SaveAssets();
+            Debug.Log("VENOM 05 GENERATED: physical knife, narrow ceiling vault, largest leader and entry-triggered followers.");
         }
 
         private static Mesh SolidClimbingFloor()
