@@ -25,7 +25,7 @@ namespace GravityBox.Venom
         private readonly Vector3Int[] offsets = { new Vector3Int(0,0,0),new Vector3Int(1,0,0),new Vector3Int(1,1,0),new Vector3Int(0,1,0),new Vector3Int(0,0,1),new Vector3Int(1,0,1),new Vector3Int(1,1,1),new Vector3Int(0,1,1) };
         private MaterialPropertyBlock block;
         private VenomLifeAnimation life;
-        private VenomFloorBoundary floor;
+        private VenomFloorBoundary floor,ceiling;
         private Matrix4x4 toFloor,fromFloor;
         private readonly Vector3[] floorPoints = new Vector3[CohesiveOrganism.ParticleCount+6];
         private int sourceCount;
@@ -35,6 +35,11 @@ namespace GravityBox.Venom
         public void Initialize(CohesiveOrganism source, VenomLevelController owner)
         {
             organism = source; floor = owner.FloorBoundary;climbing=owner.WallCrawl; block = new MaterialPropertyBlock();
+            if(climbing)
+            {
+                var slab=(MeshCollider)owner.CrawlFaces[5];ceiling=slab.gameObject.AddComponent<VenomFloorBoundary>();
+                ceiling.Initialize(slab,owner.Outlet,owner.ApertureRadius);
+            }
             var go = new GameObject("Continuous wet skin",typeof(MeshFilter),typeof(MeshRenderer)); go.transform.SetParent(transform,false);
             mesh = new Mesh { name = "Living isosurface", indexFormat = IndexFormat.UInt32 }; mesh.MarkDynamic();
             go.GetComponent<MeshFilter>().sharedMesh = mesh; skin = go.GetComponent<MeshRenderer>(); skin.sharedMaterial = source.Profile.Skin;
@@ -143,10 +148,25 @@ namespace GravityBox.Venom
             Vector3 local=toFloor.MultiplyPoint3x4(point);
             if(climbing && local.y>floor.Top)
             {
-                // Clip decorative tissue to the five solid crystal panes.
-                // The floor keeps its true aperture logic below.
-                Vector3 clamped=new Vector3(Mathf.Clamp(local.x,-.2498f,.2498f),Mathf.Min(local.y,.2498f),Mathf.Clamp(local.z,-.2498f,.2498f));
-                if(clamped!=local){normal=fromFloor.MultiplyVector((local-clamped).normalized);local=clamped;point=fromFloor.MultiplyPoint3x4(local);}
+                // Side panes contain the in-box skin. The ceiling has a real
+                // opening; material outside that opening can emerge above it.
+                if(local.y>ceiling.Bottom-.0002f && ceiling.OverSolid(new Vector3(Mathf.Clamp(local.x,-.2498f,.2498f),local.y,Mathf.Clamp(local.z,-.2498f,.2498f))))
+                {
+                    float nearest=float.PositiveInfinity;bool inside=true;
+                    for(int i=0;i<sourceCount;i++)
+                    {
+                        float distance=(local-floorPoints[i]).sqrMagnitude;
+                        if(distance<nearest){nearest=distance;inside=floorPoints[i].y<=ceiling.Bottom+.0005f;}
+                    }
+                    if(inside){local.y=ceiling.Bottom-.0002f;normal=fromFloor.MultiplyVector(Vector3.up).normalized;}
+                    else if(local.y<ceiling.Top+.0002f){local.y=ceiling.Top+.0002f;normal=fromFloor.MultiplyVector(Vector3.down).normalized;}
+                }
+                if(local.y<ceiling.Bottom)
+                {
+                    Vector3 clamped=new Vector3(Mathf.Clamp(local.x,-.2498f,.2498f),local.y,Mathf.Clamp(local.z,-.2498f,.2498f));
+                    if(clamped!=local){normal=fromFloor.MultiplyVector((local-clamped).normalized);local=clamped;}
+                }
+                point=fromFloor.MultiplyPoint3x4(local);
             }
             if(local.y>=floor.Top+.0002f || !floor.OverSolid(local)) return;
             bool above=allAboveFloor;

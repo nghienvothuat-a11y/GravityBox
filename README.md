@@ -7,11 +7,11 @@ Nhánh **`Venom`** có bốn màn thử nghiệm điều khiển sinh vật mề
 | 01 — Một cơ thể, hai ý chí | Nghiêng hộp | Cắt, hai nút, hợp thể, thoát |
 | 02 — Hai phần, một kế hoạch | Hộp đứng im; chọn từng phần | Bám giữ nút A, đổi phần sang nút B, mở cửa |
 | 03 — Tìm về chủ thể | Điều khiển phần lớn nhất | Phần nhỏ chờ 3 giây rồi tự tìm đường vòng về để nhập lại |
-| 04 — Bò khắp sáu mặt | Bò trên mặt hộp, xoay hộp độc lập | Hộp lập phương trong suốt; bò sàn → tường → trần và tìm về lỗ tròn |
+| 04 — Bò khắp sáu mặt | Bò trên mặt hộp, xoay hộp độc lập | Hộp lập phương trong suốt; bò sàn → tường → lỗ giữa trần; Zoom theo sinh vật |
 
 - Chạy macOS: `Builds/Venom/macOS/Venom.app`. Nút ở đầu HUD hoặc **1/2/3/4** chọn màn; **R** thử lại; **P/Esc** tạm dừng.
 - Màn 02/03: **giữ–kéo** để bò hoặc **WASD/mũi tên**. Màn 02 chạm phần muốn chọn, dùng nút A/B hoặc **Tab**. Màn 03 luôn chọn phần lớn nhất.
-- Màn 04: **giữ–kéo một ngón / chuột trái** hoặc **WASD/mũi tên** để bò; **kéo hai ngón / chuột phải** để xoay hộp. Giữ hướng để bò vòng qua mép; thả tay thì bám tại chỗ. Xoay hộp để nhìn rõ mặt đang bò.
+- Màn 04: **giữ–kéo một ngón / chuột trái** hoặc **WASD/mũi tên** để bò; **kéo hai ngón / chuột phải** để xoay hộp. Giữ hướng để bò vòng qua mép; thả tay thì bám tại chỗ. Xoay hộp để nhìn rõ mặt đang bò. Lỗ thoát ở **giữa trần**; nút **Zoom In / Z** tiến gần và theo sinh vật, bấm lại để về góc toàn hộp.
 - Chạy Unity **6000.3.19f1**: mở `Assets/_Game/Venom/Venom01.unity`, `Venom02.unity`, `Venom03.unity` hoặc `Venom04.unity`, Game View **9:16**, Play.
 - Build lại: `bash Tools/build-venom.sh` (đóng Unity đang mở project trước). Build macOS có cả bốn màn; chưa xuất APK cho biến thể Venom.
 - [Thiết kế màn 01](Docs/VENOM_PROTOTYPE_01.md) · [Điều khiển, navigation và kiến trúc màn 02–03](Docs/VENOM_CONTROLS_02_03.md) · [Bò tường và xoay hộp màn 04](Docs/VENOM_CONTROLS_04.md).

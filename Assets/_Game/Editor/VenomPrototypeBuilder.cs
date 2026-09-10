@@ -178,20 +178,26 @@ namespace GravityBox.Editor
             owner.RotationProfile=rotation;EditorUtility.SetDirty(rotation);
             var motion=Asset<VenomLocomotionProfile>(Folder+"/Climbing locomotion.asset",()=>ScriptableObject.CreateInstance<VenomLocomotionProfile>());
             motion.CrawlSpeed=.28f;owner.LocomotionProfile=motion;EditorUtility.SetDirty(motion);
-            Vector2 hole=new Vector2(0,-.12f);
-            var floorGo=new GameObject("Crystal floor — circular through hole",typeof(MeshFilter),typeof(MeshRenderer),typeof(MeshCollider));
+            Vector2 hole=Vector2.zero;
+            var floorGo=new GameObject("Crystal floor — solid starting face",typeof(MeshFilter),typeof(MeshRenderer),typeof(MeshCollider));
             floorGo.transform.SetParent(root,false);
-            var mesh=FloorMesh(hole,.035f,-.253f,.003f,.25f,"Climbing floor");
+            var mesh=SolidClimbingFloor();
             floorGo.GetComponent<MeshFilter>().sharedMesh=mesh;floorGo.GetComponent<MeshRenderer>().sharedMaterial=glass;
             var floorCollider=floorGo.GetComponent<MeshCollider>();floorCollider.sharedMesh=mesh;floorCollider.sharedMaterial=contact;floorCollider.contactOffset=.0003f;
             floorGo.GetComponent<Renderer>().shadowCastingMode=ShadowCastingMode.Off;
+            var ceiling=new GameObject("Crystal ceiling — central circular exit",typeof(MeshFilter),typeof(MeshRenderer),typeof(MeshCollider));
+            ceiling.transform.SetParent(root,false);
+            var ceilingMesh=FloorMesh(hole,.035f,.253f,.003f,.25f,"Climbing ceiling");
+            ceiling.GetComponent<MeshFilter>().sharedMesh=ceilingMesh;ceiling.GetComponent<MeshRenderer>().sharedMaterial=glass;
+            ceiling.GetComponent<Renderer>().shadowCastingMode=ShadowCastingMode.Off;
+            var ceilingCollider=ceiling.GetComponent<MeshCollider>();ceilingCollider.sharedMesh=ceilingMesh;ceilingCollider.sharedMaterial=contact;ceilingCollider.contactOffset=.0003f;
             owner.CrawlFaces=new Collider[] {
                 floorCollider,
                 Block("Left crystal",root,new Vector3(-.254f,0,0),new Vector3(.008f,.5f,.516f),glass).GetComponent<Collider>(),
                 Block("Right crystal",root,new Vector3(.254f,0,0),new Vector3(.008f,.5f,.516f),glass).GetComponent<Collider>(),
                 Block("Near crystal",root,new Vector3(0,0,-.254f),new Vector3(.5f,.5f,.008f),glass).GetComponent<Collider>(),
                 Block("Far crystal",root,new Vector3(0,0,.254f),new Vector3(.5f,.5f,.008f),glass).GetComponent<Collider>(),
-                Block("Crystal ceiling",root,new Vector3(0,.254f,0),new Vector3(.516f,.008f,.516f),glass).GetComponent<Collider>()
+                ceilingCollider
             };
             foreach(float a in new[]{-.253f,.253f})foreach(float b in new[]{-.253f,.253f})
             {
@@ -201,13 +207,24 @@ namespace GravityBox.Editor
             }
             owner.Spawn=new GameObject("Crawling spawn").transform;owner.Spawn.SetParent(root,false);owner.Spawn.localPosition=new Vector3(-.1f,-.205f,.1f);
             owner.Outlet=new GameObject("Round exit — whole material traversal").transform;owner.Outlet.SetParent(root,false);
-            owner.Outlet.localPosition=new Vector3(hole.x,-.253f,hole.y);owner.Outlet.localRotation=Quaternion.LookRotation(Vector3.down,Vector3.forward);
-            Ring(root,new Vector3(hole.x,-.2498f,hole.y),.035f,.0012f);
+            owner.Outlet.localPosition=new Vector3(0,.253f,0);owner.Outlet.localRotation=Quaternion.LookRotation(Vector3.up,Vector3.forward);
+            Ring(root,new Vector3(0,.2498f,0),.035f,.0012f);
             owner.gameObject.AddComponent<VenomGlassVisibility>().Level=owner;
             VenomCameraFraming.Frame(owner,540,960);
             EditorSceneManager.SaveScene(scene,Scenes[3]);
             EditorBuildSettings.scenes=Array.ConvertAll(Scenes,path=>new EditorBuildSettingsScene(path,true));
             AssetDatabase.SaveAssets();Debug.Log("VENOM 04 GENERATED: transparent cube, adhesive six-face crawl and independent rotation.");
+        }
+
+        private static Mesh SolidClimbingFloor()
+        {
+            var primitive=GameObject.CreatePrimitive(PrimitiveType.Cube);
+            var source=primitive.GetComponent<MeshFilter>().sharedMesh;
+            var mesh=Asset<Mesh>(Folder+"/Meshes/Climbing floor.asset",()=>new Mesh());
+            var vertices=source.vertices;
+            for(int i=0;i<vertices.Length;i++)vertices[i]=Vector3.Scale(vertices[i],new Vector3(.5f,.006f,.5f))+Vector3.down*.253f;
+            mesh.Clear();mesh.vertices=vertices;mesh.triangles=source.triangles;mesh.RecalculateNormals();mesh.RecalculateBounds();
+            Object.DestroyImmediate(primitive);EditorUtility.SetDirty(mesh);return mesh;
         }
 
         [MenuItem("Gravity Box/Venom/Update Control Cameras")]

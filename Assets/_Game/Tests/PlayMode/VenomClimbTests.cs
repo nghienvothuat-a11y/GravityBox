@@ -58,7 +58,7 @@ namespace GravityBox.Tests
                 level.Locomotion.SetInput(level.Climbing.ScreenDirection(stick));Steps(1);Contained();
                 if(i%600==0)Debug.Log($"CLIMB {i*Dt:F1}s centre={Centre:F3} face={level.Climbing.SurfaceName} mask={level.Climbing.VisitedMask}");
                 if(!wall && Centre.y>-.08f && Centre.x>.19f){wall=true;Capture("04-wall");}
-                if(Centre.y>.19f && Centre.x<.08f){ceiling=true;break;}
+                if(Centre.y>.20f && Centre.x<.14f){ceiling=true;break;}
             }
             Assert.That(wall,Is.True,"Body must climb the wall from the floor without repositioning.");
             Assert.That(ceiling,Is.True,"Held input must wrap around the wall-ceiling corner.");
@@ -101,18 +101,57 @@ namespace GravityBox.Tests
             Assert.That(input.Holding,Is.True);Assert.That(level.Locomotion.Input.magnitude,Is.GreaterThan(.1f));
             input.ApplyClimbTouch(0,Vector2.zero,Vector2.zero);
         }
-        [Test] public void EveryNodeTraversesTheRealExit()
+        [Test] public void EveryNodeClimbsAndTraversesTheCeilingExit()
         {
             Steps(120);
+            Assert.That(level.Outlet.localPosition,Is.EqualTo(new Vector3(0,.253f,0)));
+            Assert.That(Vector3.Dot(level.Outlet.forward,Vector3.up),Is.GreaterThan(.99f));
+            Assert.That(level.CrawlFaces[0].Raycast(new Ray(new Vector3(0,-.18f,0),Vector3.down),out _, .1f),Is.True,"The old floor opening must be physically sealed.");
+            Assert.That(level.CrawlFaces[5].Raycast(new Ray(new Vector3(0,.18f,0),Vector3.up),out _, .1f),Is.False,"The centre of the ceiling must really be open.");
+            Assert.That(level.CrawlFaces[5].Raycast(new Ray(new Vector3(.10f,.18f,0),Vector3.up),out _, .1f),Is.True);
+            level.Locomotion.SetInput(Vector3.right);
+            for(int i=0;i<3000 && !(Centre.y>.20f && Centre.x<.14f);i++)Steps(1);
+            Assert.That(Centre.y,Is.GreaterThan(.20f));
+            Assert.That(level.Climbing.VisitedMask&(1<<2),Is.Not.Zero,"The route must first climb the right wall.");
             for(int i=0;i<2600&&!level.Completed&&!level.Lost;i++)
             {
                 if(level.Locomotion.Selected!=null)
-                    level.Locomotion.SetInput(Vector3.ClampMagnitude(Vector3.ProjectOnPlane(new Vector3(0,0,-.12f)-Centre,Vector3.up)/.025f,1));
+                    level.Locomotion.SetInput(Vector3.ClampMagnitude(Vector3.ProjectOnPlane(level.Outlet.position-Centre,Vector3.up)/.025f,1));
                 Steps(1);
             }
-            Debug.Log($"CLIMB EXIT {level.Organism.EscapedCount}/32 lost={level.Lost}");
+            Debug.Log($"CEILING EXIT {level.Organism.EscapedCount}/32 lost={level.Lost}");
+            if(!level.Completed)Debug.Log(string.Join("; ",level.Organism.Bodies.Select((body,i)=>$"{i}:out={level.Organism.Escaped[i]} p={body.position:F4}")));
             Assert.That(level.Completed,Is.True);Assert.That(level.Organism.EscapedCount,Is.EqualTo(32));
+            Steps(360);
+            Assert.That(level.Organism.Bodies.All(body=>body.position.y>.265f),Is.True,"Escaped tissue stays visibly outside the upward-facing hole.");
             Assert.That(level.Organism.TotalMass,Is.EqualTo(.096f).Within(.000001f));
+            Capture("04-ceiling-escaped");
+        }
+        [Test] public void ZoomFollowsMovingCreatureAndReturnsToOverview()
+        {
+            Steps(120);var hud=level.GetComponent<VenomHud>();
+            hud.FrameChamber(540,960,.02f);Vector3 overview=level.View.transform.position;float wide=level.View.orthographicSize;
+            Vector3[] particles=level.Organism.Bodies.Select(b=>b.position).ToArray();Quaternion heading=level.View.transform.rotation;
+            level.ToggleZoom();hud.FrameChamber(540,960,1f/60);
+            Assert.That(Vector3.Distance(level.View.transform.position,overview),Is.LessThan(.03f),"Zoom eases in, rather than cutting instantly.");
+            for(int i=0;i<90;i++)hud.FrameChamber(540,960,1f/60);
+            Assert.That(level.FollowView.Zoomed,Is.True);Assert.That(level.View.orthographicSize,Is.LessThan(wide*.4f));
+            Assert.That(Vector3.Distance(level.View.transform.position,Centre),Is.LessThan(.5f),"The camera physically approaches the creature.");
+            Assert.That(Quaternion.Angle(level.View.transform.rotation,heading),Is.LessThan(.01f));
+            for(int i=0;i<32;i++)Assert.That(level.Organism.Bodies[i].position,Is.EqualTo(particles[i]),"Camera changes cannot move physics bodies.");
+            Capture("04-zoom-floor");
+            Vector3 start=level.View.transform.position;
+            level.Locomotion.SetInput(Vector3.forward);
+            for(int i=0;i<180;i++){Steps(1);hud.FrameChamber(540,960,Dt);}
+            Assert.That(Vector3.Distance(level.View.transform.position,start),Is.GreaterThan(.15f));
+            Vector3 viewport=level.View.WorldToViewportPoint(Centre);
+            Assert.That(viewport.x,Is.InRange(.35f,.65f));Assert.That(viewport.y,Is.InRange(.42f,.68f));
+            Assert.That(Quaternion.Angle(level.View.transform.rotation,heading),Is.LessThan(.01f));
+            level.Locomotion.SetInput(Vector3.zero);Capture("04-zoom-wall");
+            level.TogglePause();level.ToggleZoom();for(int i=0;i<90;i++)hud.FrameChamber(540,960,1f/60);
+            Assert.That(level.View.orthographicSize,Is.EqualTo(wide).Within(.0001f));
+            Assert.That(Vector3.Distance(level.View.transform.position,overview),Is.LessThan(.0001f));
+            level.ToggleZoom();level.ResetExperiment();Assert.That(level.FollowView.Zoomed,Is.False);
         }
         private void Capture(string name)
         {

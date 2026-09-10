@@ -123,7 +123,7 @@ namespace GravityBox.Venom
             {
                 if(matter.Escaped[i] || matter.Groups[i]!=fragment.Group || supports[i]==null)continue;
                 Vector3 outlet=level.Outlet.InverseTransformPoint(matter.Bodies[i].position);
-                if(outlet.z>-.06f && new Vector2(outlet.x,outlet.y).magnitude<.057f)continue;
+                if(outlet.z>-.06f && outlet.z<.025f && new Vector2(outlet.x,outlet.y).magnitude<.055f && level.ExitAssistClear(matter.Bodies[i].position))continue;
                 TryGetSupport(i,out var surface,out var point,out var normal);
                 Vector3 relative=matter.Bodies[i].linearVelocity-box.GetPointVelocity(matter.Bodies[i].position);
                 Vector3 desired;

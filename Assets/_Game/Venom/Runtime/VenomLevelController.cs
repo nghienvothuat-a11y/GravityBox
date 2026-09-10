@@ -14,6 +14,7 @@ namespace GravityBox.Venom
         public VenomLocomotionProfile LocomotionProfile;
         public VenomLocomotion Locomotion { get; private set; }
         public VenomWallClimb Climbing { get; private set; }
+        public VenomFollowCamera FollowView { get; private set; }
         public bool WallCrawl => ControlMode == VenomControlMode.SurfaceCrawl;
         public Collider[] CrawlFaces;
         public Material IndicatorMaterial;
@@ -50,9 +51,9 @@ namespace GravityBox.Venom
             PhysicsTiming.Apply(); Application.targetFrameRate = 60;
             Rotation.Configure(RotationProfile, RotationMode.Free); Rotation.CaptureInitialState();
             initialRootPosition = Rotation.transform.position;
-            var floor = Rotation.GetComponentInChildren<MeshCollider>();
+            var floor = WallCrawl ? (MeshCollider)CrawlFaces[0] : Rotation.GetComponentInChildren<MeshCollider>();
             FloorBoundary = floor.gameObject.AddComponent<VenomFloorBoundary>();
-            FloorBoundary.Initialize(floor,Outlet,ApertureRadius);
+            FloorBoundary.Initialize(floor,Outlet,ApertureRadius,!WallCrawl);
             boundaries = Rotation.GetComponentsInChildren<Collider>();
             navigationObstacles = System.Array.FindAll(boundaries,c => c.gameObject != floor.gameObject && c.GetComponentInParent<VenomPressurePlate>() == null && !c.isTrigger);
             if(!WallCrawl)
@@ -65,6 +66,7 @@ namespace GravityBox.Venom
             Organism = matter.AddComponent<CohesiveOrganism>(); Organism.Initialize(MatterProfile, Spawn, this);
             if(WallCrawl)Climbing=new VenomWallClimb(this);
             if (DirectControl) Locomotion = new VenomLocomotion(this);
+            if(WallCrawl)FollowView=new VenomFollowCamera(this);
             matter.AddComponent<VenomSurface>().Initialize(Organism, this);
             gameObject.AddComponent<VenomInput>().Initialize(this);
             gameObject.AddComponent<VenomHud>().Initialize(this);
@@ -196,6 +198,11 @@ namespace GravityBox.Venom
             return found;
         }
 
+        public bool ExitAssistClear(Vector3 position)
+        {
+            Vector3 toward=Outlet.TransformPoint(new Vector3(0,0,.012f))-position;
+            return !SegmentBlocked(position,position+toward.normalized*Mathf.Min(toward.magnitude,.016f));
+        }
         private void EvaluateEscape(float dt)
         {
             float radius = MatterProfile.ParticleRadius;
@@ -203,17 +210,30 @@ namespace GravityBox.Venom
             {
                 Rigidbody body = Organism.Bodies[i]; Vector3 local = Outlet.InverseTransformPoint(body.position);
                 Vector3 old = previous[i]; previous[i] = local;
-                if (Organism.Escaped[i]) continue;
+                if (Organism.Escaped[i])
+                {
+                    if(WallCrawl)
+                    {
+                        // Keep the escaped tissue clear of an upward-facing exit
+                        // while the rest crawls through; collect one visible body outside.
+                        Vector3 target=Outlet.TransformPoint(new Vector3(0,0,.10f));
+                        Vector3 desired=Vector3.ClampMagnitude((target-body.position)*5,.18f);
+                        Vector3 relative=body.linearVelocity-Rotation.GetComponent<Rigidbody>().GetPointVelocity(body.position);
+                        body.AddForce(Vector3.up*9.81f+Vector3.ClampMagnitude((desired-relative)*24,4.5f),ForceMode.Acceleration);
+                    }
+                    continue;
+                }
                 float radial = new Vector2(local.x,local.y).magnitude;
                 // Support acts only at the final, unobstructed aperture; particles keep their colliders.
                 if (GateLatched && local.z > -.06f && local.z < .025f && radial < .055f)
                 {
-                    Vector3 toward = Outlet.TransformPoint(new Vector3(0,0,.012f)) - body.position;
-                    if (!SegmentBlocked(body.position, body.position + toward.normalized * Mathf.Min(toward.magnitude, .016f)))
+                    if (ExitAssistClear(body.position))
                     {
-                        Vector3 desired = Outlet.TransformDirection(new Vector3(-local.x * 9, -local.y * 9, .14f));
+                        Vector3 desired = Outlet.TransformDirection(new Vector3(-local.x * 9, -local.y * 9, WallCrawl ? .22f : .14f));
                         Vector3 relative = body.linearVelocity - Rotation.GetComponent<Rigidbody>().GetPointVelocity(body.position);
-                        body.AddForce(Vector3.ClampMagnitude((desired-relative)*7, 4.5f), ForceMode.Acceleration);
+                        Vector3 assist=Vector3.ClampMagnitude((desired-relative)*(WallCrawl?24:7),4.5f);
+                        if(WallCrawl)assist+=Vector3.up*9.81f;
+                        body.AddForce(assist,ForceMode.Acceleration);
                     }
                 }
                 if (old.z < -.003f && local.z >= -.003f)
@@ -249,6 +269,7 @@ namespace GravityBox.Venom
             else GateLatched=true;
             Organism.ResetMatter();
             Climbing?.Reset();
+            FollowView?.Reset();
             Locomotion?.Reset();
             Rotation.InputEnabled = !DirectControl || WallCrawl;
             for (int i = 0; i < previous.Length; i++)
@@ -264,6 +285,11 @@ namespace GravityBox.Venom
         {
             Paused = !Paused; Time.timeScale = Paused ? 0 : 1;
             Rotation.InputEnabled = CanControl && (!DirectControl || WallCrawl); Locomotion?.SetInput(Vector3.zero);
+        }
+        public void ToggleZoom()
+        {
+            if(!WallCrawl)return;
+            GetComponent<VenomInput>().CancelGesture();FollowView.Toggle();
         }
         public void LoadExperiment(int number)
         {

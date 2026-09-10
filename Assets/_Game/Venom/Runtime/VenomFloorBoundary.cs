@@ -11,12 +11,13 @@ namespace GravityBox.Venom
         private Bounds slab;
         private Vector2 hole;
         private float apertureSquared;
+        private bool hasOpening;
         public float Top => slab.max.y;
         public float Bottom => slab.min.y;
 
-        public void Initialize(MeshCollider source,Transform outlet,float radius)
+        public void Initialize(MeshCollider source,Transform outlet,float radius,bool opening=true)
         {
-            slab=source.sharedMesh.bounds;
+            slab=source.sharedMesh.bounds;hasOpening=opening;
             Vector3 localOutlet=transform.InverseTransformPoint(outlet.position);
             hole=new Vector2(localOutlet.x,localOutlet.z);
             // The rendered circle is inscribed; keep the cap just inside its rim.
@@ -25,7 +26,7 @@ namespace GravityBox.Venom
         public bool OverSolid(Vector3 local)
         {
             if(local.x<slab.min.x || local.x>slab.max.x || local.z<slab.min.z || local.z>slab.max.z) return false;
-            return new Vector2(local.x-hole.x,local.z-hole.y).sqrMagnitude>apertureSquared;
+            return !hasOpening || new Vector2(local.x-hole.x,local.z-hole.y).sqrMagnitude>apertureSquared;
         }
     }
 }

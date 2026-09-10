@@ -36,6 +36,7 @@ namespace GravityBox.Venom
                 if (keys.digit2Key.wasPressedThisFrame) { End(); level.LoadExperiment(2); return; }
                 if (keys.digit3Key.wasPressedThisFrame) { End(); level.LoadExperiment(3); return; }
                 if (keys.digit4Key.wasPressedThisFrame) { End(); level.LoadExperiment(4); return; }
+                if (keys.zKey.wasPressedThisFrame && level.WallCrawl) level.ToggleZoom();
                 if (keys.tabKey.wasPressedThisFrame) level.Locomotion?.SelectNext();
             }
             if (!level.CanControl) { End(); return; }
@@ -152,6 +153,7 @@ namespace GravityBox.Venom
             Vector2 delta=(p-previous)/Mathf.Max(1,Mathf.Min(Screen.width,Screen.height));previous=p;
             level.Rotation.Drag(delta,level.View.transform.up,level.View.transform.right);
         }
+        public void CancelGesture()=>End();
         private void End()
         {
             if (level != null) { if (dragging || rotating) level.Rotation.EndDrag(); level.Locomotion?.SetInput(Vector3.zero); level.Climbing?.ScreenDirection(Vector2.zero); }

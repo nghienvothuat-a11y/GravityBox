@@ -22,10 +22,14 @@ namespace GravityBox.Venom
         }
         private void LateUpdate()
         {
-            if (level != null && level.DirectControl) FrameChamber(Screen.width,Screen.height);
+            if (level != null && level.DirectControl) FrameChamber(Screen.width,Screen.height,Time.unscaledDeltaTime);
             RefreshSelection();
         }
-        public void FrameChamber(int width, int height) => VenomCameraFraming.Frame(level,width,height);
+        public void FrameChamber(int width,int height,float dt=0)
+        {
+            VenomCameraFraming.Frame(level,width,height);
+            level.FollowView?.Frame(width,height,dt);
+        }
         public void RefreshSelection()
         {
             if (selection == null) return;
@@ -73,7 +77,7 @@ namespace GravityBox.Venom
             }
             GUI.backgroundColor = Color.white;
             string name = level.WallCrawl ? "04   Bò khắp sáu mặt" : level.LevelNumber == 2 ? "02   Hai phần, một kế hoạch" : level.LevelNumber == 3 ? "03   Tìm về chủ thể" : "01   Một cơ thể, hai ý chí";
-            string hint = level.WallCrawl ? "Giữ–kéo để bò. Hai ngón / chuột phải xoay hộp.\nBám sàn, tường và trần. Tìm về lỗ tròn." : level.LevelNumber == 2 ? "Chạm chọn một phần, giữ–kéo để bò.\nĐặt hai phần lên hai nút sáng để mở cửa." : level.LevelNumber == 3 ?
+            string hint = level.WallCrawl ? "Giữ–kéo để bò. Hai ngón / chuột phải xoay hộp.\nBò lên tường để tới lỗ tròn ở giữa trần." : level.LevelNumber == 2 ? "Chạm chọn một phần, giữ–kéo để bò.\nĐặt hai phần lên hai nút sáng để mở cửa." : level.LevelNumber == 3 ?
                 "Điều khiển phần lớn nhất bằng giữ–kéo.\nPhần nhỏ chờ 3 giây rồi tìm đường về với bạn." : "Nghiêng hộp. Để sinh vật chảy qua lưỡi chém.\nHai phần giữ hai nút, rồi tìm về với nhau.";
             GUI.Label(new Rect(30,104,490,44),name,title);
             GUI.Label(new Rect(30,150,480,48),hint,body);
@@ -90,7 +94,7 @@ namespace GravityBox.Venom
                     Vector3 p = level.View.WorldToScreenPoint(fragment.Centre);
                     string label = level.WallCrawl ? "BÁM · " + level.Climbing.SurfaceName : fragment.Selected ? (level.LevelNumber == 3 ? "CHỦ THỂ" : "ĐANG CHỌN") :
                         level.LevelNumber == 2 ? "ĐANG BÁM" : fragment.WaitRemaining > 0 ? $"CHỜ {fragment.WaitRemaining:0.0}s" : fragment.Blocked ? "CHỜ LỐI MỞ" : "ĐANG TÌM VỀ";
-                    if (p.z > 0) GUI.Label(new Rect((p.x-offsetX)/scale-70,(Screen.height-p.y)/scale-55,140,24),label,badge);
+                    if (p.z > 0 && !(level.WallCrawl && level.FollowView.Zoomed)) GUI.Label(new Rect((p.x-offsetX)/scale-70,(Screen.height-p.y)/scale-55,140,24),label,badge);
                     if (index < 4 && !level.WallCrawl)
                     {
                         GUI.backgroundColor = fragment.Selected ? new Color(.3f,.85f,.62f) : new Color(.27f,.35f,.33f);
@@ -113,8 +117,14 @@ namespace GravityBox.Venom
                     GUI.Label(new Rect(b.x-12,h-b.y-12,24,24),"●",body);
                 }
             }
+            if(level.WallCrawl)
+            {
+                GUI.backgroundColor=new Color(.28f,.55f,.5f);
+                if(GUI.Button(new Rect(30,h-268,480,38),level.FollowView.Zoomed?"ZOOM OUT · TOÀN HỘP  /  Z":"ZOOM IN · THEO SINH VẬT  /  Z",button))level.ToggleZoom();
+                GUI.backgroundColor=Color.white;
+            }
             GUI.Label(new Rect(30,h-213,480,42),state,body);
-            string puzzle = level.WallCrawl ? "BÒ TỚI LỖ TRÒN ĐỂ THOÁT" : level.LevelNumber == 3 ? (level.GateLatched ? "ĐÃ HỢP THỂ" : "NHẬP LẠI ĐỂ MỞ CỬA") :
+            string puzzle = level.WallCrawl ? "LỖ THOÁT Ở GIỮA TRẦN" : level.LevelNumber == 3 ? (level.GateLatched ? "ĐÃ HỢP THỂ" : "NHẬP LẠI ĐỂ MỞ CỬA") :
                 level.GateLatched ? "CỬA ĐÃ GIỮ MỞ" : "NÚT " + (level.LeftPad.Pressed ? "●" : "○") + " / " + (level.RightPad.Pressed ? "●" : "○");
             GUI.Label(new Rect(30,h-158,480,24),$"{matter.FragmentCount:00} PHẦN  ·  THOÁT {matter.EscapedCount*100/32}%  ·  {puzzle}",small);
             GUI.backgroundColor = new Color(.36f,.65f,.56f);
