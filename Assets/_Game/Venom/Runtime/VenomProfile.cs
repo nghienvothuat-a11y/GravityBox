@@ -17,6 +17,10 @@ namespace GravityBox.Venom
         public float SkinSupport = .026f;
         public float SkinThreshold = .48f;
         public float MeshCell = .0065f;
+        [Header("Living surface (visual only, metres)")]
+        public float IdleBulge = .0028f;
+        public float CuriousHeadLift = .034f;
+        public float TendrilReach = .028f;
         public PhysicsMaterial Contact;
         public Material Skin;
     }

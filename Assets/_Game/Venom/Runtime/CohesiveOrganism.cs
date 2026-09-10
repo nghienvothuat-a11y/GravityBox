@@ -30,6 +30,9 @@ namespace GravityBox.Venom
         private readonly int[] parents = new int[ParticleCount];
         private readonly int[] roots = new int[ParticleCount];
         private readonly Vector3[] start = new Vector3[ParticleCount];
+        private readonly Collider[] support = new Collider[ParticleCount];
+        private readonly Vector3[] supportPoint = new Vector3[ParticleCount], supportNormal = new Vector3[ParticleCount];
+        private readonly float[] supportTime = new float[ParticleCount], supportScore = new float[ParticleCount];
         private VenomLevelController level;
 
         public void Initialize(VenomProfile profile, Transform spawn, VenomLevelController owner)
@@ -68,6 +71,7 @@ namespace GravityBox.Venom
                 Bodies[i].position = start[i]; Bodies[i].rotation = Quaternion.identity;
                 Bodies[i].linearVelocity = Bodies[i].angularVelocity = Vector3.zero;
                 Escaped[i] = false; healAt[i] = 0;
+                support[i] = null; supportTime[i] = -100;
             }
             for (int i = 0; i < ParticleCount; i++) for (int j = i + 1; j < ParticleCount; j++)
                 if (Vector3.Distance(start[i], start[j]) < Profile.BondReach) Link(i, j, 1);
@@ -139,11 +143,28 @@ namespace GravityBox.Venom
             RefreshGroups();
         }
 
-        public void Contact(int particle, Collider collider, Vector3 normal)
+        public void Contact(int particle, Collider collider, Vector3 normal, Vector3 point, bool reportLoad = true)
         {
             if (Escaped[particle]) return;
             var pad = collider.GetComponentInParent<VenomPressurePlate>();
-            if (pad != null && Vector3.Dot(normal, pad.transform.up) > .45f) pad.Touch(particle, SimulationTime);
+            if (reportLoad && pad != null && Vector3.Dot(normal, pad.transform.up) > .45f) pad.Touch(particle, SimulationTime);
+            // Presentation reads real supporting contacts; particle/particle contacts
+            // cannot become feet. Store points in the contacted object's coordinates.
+            float score = Vector3.Dot(normal, Vector3.up);
+            if (score < .25f || level == null || !level.IsBoundary(collider)) return;
+            if (supportTime[particle] == SimulationTime && score <= supportScore[particle]) return;
+            support[particle] = collider; supportTime[particle] = SimulationTime; supportScore[particle] = score;
+            supportPoint[particle] = collider.transform.InverseTransformPoint(point);
+            supportNormal[particle] = collider.transform.InverseTransformDirection(normal);
+        }
+
+        public bool TryGetSupport(int particle, out Collider collider, out Vector3 point, out Vector3 normal)
+        {
+            collider = support[particle]; point = normal = Vector3.zero;
+            if (Escaped[particle] || collider == null || !collider.enabled || SimulationTime-supportTime[particle] > .08f) return false;
+            point = collider.transform.TransformPoint(supportPoint[particle]);
+            normal = collider.transform.TransformDirection(supportNormal[particle]).normalized;
+            return true;
         }
 
         private int Root(int x) { while (parents[x] != x) { parents[x] = parents[parents[x]]; x = parents[x]; } return x; }

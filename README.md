@@ -9,6 +9,8 @@ Nhánh **`Venom`** có một prototype riêng: **01 — Một cơ thể, hai ý 
 
 Sinh vật dùng hạt vật lý liên kết nhớt/dẻo và bề mặt metaball liên tục. Đây là mô hình vật chất mềm phục vụ thử gameplay, chưa phải solver chất lỏng bảo toàn thể tích. Nội dung 23 bàn bi thép bên dưới vẫn có thể mở qua scene `Gameplay.unity`; build Venom dùng scene riêng.
 
+Sinh vật có animation sống: khi yên, bề mặt nhấp nhô và thỉnh thoảng mọc một đầu nhỏ nhìn quanh; khi trượt, các xúc tua ngoài rìa vươn ra, bám sàn rồi nhả. Mỗi phần bị tách có nhịp riêng. Animation đọc vận tốc và tiếp xúc thật, không thêm lực kéo hoặc thay đổi lượng vật chất cần thoát.
+
 ## Gravity Box — Steel Ball Lab
 
 Prototype Unity tập trung vào cảm giác bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **23 bàn**: giữ 16 thí nghiệm trước và thêm bảy màn cơ khí 17–23. Hai môi trường chất lỏng dùng cùng hộp vuông/cube của bàn 02: bi chìm trong nước và nổi trong thủy ngân.

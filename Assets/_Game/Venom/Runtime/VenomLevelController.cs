@@ -40,7 +40,7 @@ namespace GravityBox.Venom
             LeftPad.transform.SetParent(Apparatus, true); RightPad.transform.SetParent(Apparatus, true);
             var matter = new GameObject("Living matter — world space"); matter.transform.SetParent(transform, false);
             Organism = matter.AddComponent<CohesiveOrganism>(); Organism.Initialize(MatterProfile, Spawn, this);
-            matter.AddComponent<VenomSurface>().Initialize(Organism);
+            matter.AddComponent<VenomSurface>().Initialize(Organism, this);
             gameObject.AddComponent<VenomInput>().Initialize(this);
             gameObject.AddComponent<VenomHud>().Initialize(this);
             ResetExperiment();
@@ -74,6 +74,18 @@ namespace GravityBox.Venom
             foreach (Collider collider in boundaries)
                 if (collider != null && collider.enabled && collider.Raycast(ray, out _, distance)) return true;
             return false;
+        }
+
+        public bool IsBoundary(Collider collider) => System.Array.IndexOf(boundaries, collider) >= 0;
+
+        public bool RaycastBoundary(Vector3 origin, Vector3 direction, float distance, out RaycastHit nearest)
+        {
+            nearest = default; bool found = false;
+            var ray = new Ray(origin, direction);
+            foreach (Collider collider in boundaries)
+                if (collider != null && collider.enabled && collider.Raycast(ray, out var hit, distance))
+                { nearest = hit; distance = hit.distance; found = true; }
+            return found;
         }
 
         private void EvaluateEscape(float dt)

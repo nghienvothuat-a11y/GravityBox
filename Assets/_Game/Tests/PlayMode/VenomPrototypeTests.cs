@@ -86,6 +86,12 @@ namespace GravityBox.Tests
             Directory.CreateDirectory(directory);level.Organism.GetComponent<VenomSurface>().Rebuild(false);
             var target=new RenderTexture(720,1280,24){antiAliasing=4};target.Create();
             var old=RenderTexture.active;float oldAspect=level.View.aspect;level.View.aspect=720f/1280;
+            float oldSize=level.View.orthographicSize;Vector3 oldPosition=level.View.transform.position;
+            if(name.StartsWith("life-"))
+            {
+                Vector3 centre=level.Organism.Bodies.Aggregate(Vector3.zero,(sum,b)=>sum+b.position)/32;
+                level.View.orthographicSize=.17f;level.View.transform.position=centre-level.View.transform.forward*.5f;
+            }
             var picture=new Texture2D(720,1280,TextureFormat.RGBA32,false);
             try
             {
@@ -95,7 +101,7 @@ namespace GravityBox.Tests
                 File.WriteAllBytes(Path.Combine(directory,name+".png"),picture.EncodeToPNG());
                 Debug.Log($"VENOM CAPTURE {name}: vertices={level.Organism.GetComponent<VenomSurface>().VertexCount}");
             }
-            finally{RenderTexture.active=old;level.View.aspect=oldAspect;target.Release();Object.DestroyImmediate(target);Object.DestroyImmediate(picture);}
+            finally{RenderTexture.active=old;level.View.aspect=oldAspect;level.View.orthographicSize=oldSize;level.View.transform.position=oldPosition;target.Release();Object.DestroyImmediate(target);Object.DestroyImmediate(picture);}
         }
         [Test] public void ResetRestoresParticlesConnectionsMechanismsAndMass()
         {
@@ -149,6 +155,73 @@ namespace GravityBox.Tests
             Assert.That(level.SegmentBlocked(box.TransformPoint(new Vector3(-.012f,0,0)),box.TransformPoint(new Vector3(.012f,0,0))),Is.True);
             for(int i=0;i<31;i++)level.Organism.RecordEscape(i);
             level.Step(Dt);Assert.That(level.Completed,Is.False);
+        }
+
+        [Test] public void IdleHeadLooksAroundThenRetractsWithoutMovingPhysics()
+        {
+            var matter=level.Organism;var surface=matter.GetComponent<VenomSurface>();var life=matter.GetComponent<VenomLifeAnimation>();
+            bool raised=false,retracted=false;float peak=0;
+            for(int frame=0;frame<300;frame++)
+            {
+                Steps(4);
+                var positions=matter.Bodies.Select(b=>b.position).ToArray();
+                var velocities=matter.Bodies.Select(b=>b.linearVelocity).ToArray();
+                surface.Rebuild(false);
+                CollectionAssert.AreEqual(positions,matter.Bodies.Select(b=>b.position).ToArray(),"Curiosity must not move physical nodes.");
+                CollectionAssert.AreEqual(velocities,matter.Bodies.Select(b=>b.linearVelocity).ToArray(),"No decorative animation force.");
+                if(life.HeadHeight>peak)
+                {
+                    peak=life.HeadHeight;
+                    if(peak>.030f&&!raised){raised=true;Capture("life-01-curious");}
+                }
+                if(raised&&life.HeadAmount<.01f)retracted=true;
+            }
+            Assert.That(peak,Is.GreaterThan(.025f),"An idle creature should visibly lift a small head.");
+            Assert.That(retracted,Is.True,"The head must return to the body between looks.");
+            Assert.That(matter.FragmentCount,Is.EqualTo(1));Assert.That(matter.TotalMass,Is.EqualTo(.096f).Within(.000001f));
+        }
+
+        [Test] public void MovingTendrilsPlantOnRealSurfacesAndReleaseInAir()
+        {
+            var matter=level.Organism;var surface=matter.GetComponent<VenomSurface>();var life=matter.GetComponent<VenomLifeAnimation>();
+            Steps(120);surface.Rebuild(false);level.Rotation.SetTargetOrientation(Quaternion.Euler(-18,0,0));
+            int peakFeet=0;bool captured=false;float peakCrawl=0;
+            var previousPlants=new System.Collections.Generic.Dictionary<(int,int),VenomLifeAnimation.Plant>();
+            int retained=0;
+            for(int frame=0;frame<100;frame++)
+            {
+                Steps(4);surface.Rebuild(false);peakFeet=Mathf.Max(peakFeet,life.PlantedFeet.Count);
+                peakCrawl=Mathf.Max(peakCrawl,life.CrawlAmount);
+                foreach(var plant in life.PlantedFeet)
+                {
+                    Assert.That(Vector3.Distance(plant.Tip,plant.Surface.ClosestPoint(plant.Tip)),Is.LessThan(.002f),"Planted tips must touch geometry.");
+                    var key=(plant.Fragment,plant.Limb);
+                    if(previousPlants.TryGetValue(key,out var old)&&old.Id==plant.Id&&old.Surface==plant.Surface)
+                    {Assert.That(Vector3.Distance(old.LocalPoint,plant.LocalPoint),Is.LessThan(.00001f));retained++;}
+                    previousPlants[key]=plant;
+                }
+                if(life.TendrilCount>=4&&life.CrawlAmount>.7f&&!captured){captured=true;Capture("life-02-gripping");}
+            }
+            Assert.That(peakFeet,Is.GreaterThan(0));Assert.That(retained,Is.GreaterThan(0),"Feet should hold a local surface anchor across frames.");
+            Debug.Log($"VENOM LIFE peak crawl={peakCrawl:F3}, planted={peakFeet}");
+            Assert.That(captured,Is.True,"Exercise fully developed tendrils, not just their first growth frame.");
+            // A separation from every box surface must remove the ground attachments.
+            foreach(var body in matter.Bodies){body.position+=Vector3.up;body.linearVelocity=Vector3.zero;}
+            Physics.SyncTransforms();
+            for(int frame=0;frame<12;frame++){Steps(4);surface.Rebuild(false);}
+            Assert.That(life.PlantedFeet.Count,Is.Zero);Assert.That(life.TendrilCount,Is.Zero);
+        }
+
+        [Test] public void LifeAnimationFreezesWithSimulationAndClearsOnRetry()
+        {
+            var surface=level.Organism.GetComponent<VenomSurface>();var life=level.Organism.GetComponent<VenomLifeAnimation>();
+            for(int frame=0;frame<180&&life.HeadAmount<.9f;frame++){Steps(4);surface.Rebuild(false);}
+            Assert.That(life.HeadAmount,Is.GreaterThan(.8f));
+            level.TogglePause();float head=life.HeadAmount,height=life.HeadHeight;
+            for(int frame=0;frame<10;frame++)surface.Rebuild(false);
+            Assert.That(life.HeadAmount,Is.EqualTo(head));Assert.That(life.HeadHeight,Is.EqualTo(height));
+            level.ResetExperiment();surface.Rebuild(false);
+            Assert.That(life.HeadAmount,Is.Zero);Assert.That(life.TendrilCount,Is.Zero);Assert.That(life.PlantedFeet.Count,Is.Zero);
         }
     }
 }
