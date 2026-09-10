@@ -34,7 +34,7 @@ Lưỡi cắt lệch tâm tạo khối chính lớn hơn. Người chơi luôn �
 
 Các phần ngoài chủ thể chờ **3 giây mô phỏng** kể từ khi tách khỏi chủ thể, sau đó tự tìm đường về. Đồng hồ không khởi động lại theo từng frame hay mỗi lần tìm đường. Trong thời gian chờ chúng vẫn có trọng lực, va chạm và bám sàn hữu hạn. Khi hợp thể, các hạt trở về nhóm chủ thể và xóa trạng thái chờ.
 
-Một vách ngăn tách hai phía của trạm cắt; một vách ngang phía dưới buộc cả khối đi vòng tới cửa ra. Có vùng chờ rộng để người chơi đứng quan sát phần nhỏ vòng qua đầu vách rồi tiếp xúc, nhập lại. Cửa chỉ chốt mở sau một lần cắt thật và một lần hợp thể hoàn chỉnh, không yêu cầu một follower tự bỏ nhiệm vụ để đứng lâu trên nút.
+Một vách ngăn tách hai phía của trạm cắt; một vách ngang phía dưới có đường vòng rộng ở bên phải và khe hẹp 32 mm ở bên trái. Khe hẹp thay thế chỗ nối kín với thành hộp, cho phép thử luồn mô; cửa ra phía sau vẫn đóng cho đến khi giải đúng điều kiện cắt–hợp thể. Có vùng chờ rộng để người chơi đứng quan sát phần nhỏ vòng qua đầu vách rồi tiếp xúc, nhập lại. Cửa chỉ chốt mở sau một lần cắt thật và một lần hợp thể hoàn chỉnh, không yêu cầu một follower tự bỏ nhiệm vụ để đứng lâu trên nút.
 
 ## Kiến trúc và lực di chuyển
 
@@ -42,6 +42,7 @@ Một vách ngăn tách hai phía của trạm cắt; một vách ngang phía d�
 | --- | --- |
 | `VenomLocomotionProfile` | Tốc độ bò/đi theo, giới hạn gia tốc, lực bám, chờ 3 giây, chu kỳ tìm đường |
 | `VenomLocomotion` | Snapshot nhóm theo ID hạt, selection/chủ thể lớn nhất, trạng thái chờ và bám, tác động lực ở tiếp xúc |
+| `VenomSqueeze` | Dò khe ở gần theo hướng giữ, căn mô vào khe và giảm tốc phần đầu để đuôi theo qua |
 | `VenomNavigator` | A* trên lưới mặt sàn, khoảng tránh vách, đường vòng và làm thẳng đoạn đi có kiểm tra vật cản |
 | `VenomLevelController` | Chế độ điều khiển, trạm cắt, luật cửa riêng từng màn, pause/reset/thoát/chuyển scene |
 | `VenomInput` / `VenomHud` | Joystick, phím điều hướng, chọn phần, dấu chủ thể và thông tin thời gian chờ |
@@ -52,9 +53,25 @@ Locomotion không ghi transform hoặc gán vận tốc hạt. Vận tốc yêu 
 
 Thông số ban đầu: bò 0,14 m/s, follower 0,16 m/s; gia tốc cơ thể tối đa 5 m/s², bám 3 m/s²; phản hồi vận tốc 16/s; bù ma sát chủ động 1,3 m/s². Tải lực được phân bổ lên hạt có tiếp xúc, tối đa 2,5 lần phần khối lượng một hạt. Đây là động lực học của sinh vật giả tưởng có thể tự tạo công, không phải chất lỏng thụ động.
 
-A* dùng ô 12,5 mm và khoảng tránh vách 29 mm. Nó xét collider thật của hộp, cửa/lưỡi hiện tại và lỗ sàn, không xét thân các phần như vách tĩnh. Replan mỗi 0,35 giây trong lúc theo; các cạnh chéo và đoạn rút gọn được kiểm tra để tránh cắt góc vách. Đích ở sát vách có thể cần một đoạn tiếp cận bằng khoảng hở cỡ hạt. Không tìm được đường thì phần nhỏ bám/chờ và thử lại, không xuyên vách hay dịch chuyển tức thời. Vật chất vẫn phải đi qua khoảng trống bằng PhysX.
+A* dùng ô 12,5 mm và ưu tiên khoảng tránh vách 29 mm. Nếu không có đường rộng, nó thử lại với bán kính hạt + 2 mm (11 mm), để phần nhỏ có thể tự luồn khe. Nó xét collider thật của hộp, cửa/lưỡi hiện tại và lỗ sàn, không xét thân các phần như vách tĩnh. Replan mỗi 0,35 giây trong lúc theo; các cạnh chéo và đoạn rút gọn được kiểm tra để tránh cắt góc vách. Đích ở sát vách có thể cần một đoạn tiếp cận bằng khoảng hở cỡ hạt. Không tìm được đường thì phần nhỏ bám/chờ và thử lại, không xuyên vách hay dịch chuyển tức thời. Vật chất vẫn phải đi qua khoảng trống bằng PhysX.
 
-Giới hạn: đây là navigation trên mặt sàn phẳng trong môi trường 3D, chưa hỗ trợ leo tường/trần hoặc đường đi nhiều tầng. Mesh và sợi xúc tua vẫn là biểu diễn hình ảnh, không phải từng cơ riêng có solver lực. Khoảng tránh vách cố định phù hợp với hai phần trong thí nghiệm; chưa có bộ chọn đường tối ưu theo mọi hình dạng biến dạng của khối lớn.
+Giới hạn: đây là navigation trên mặt sàn phẳng trong môi trường 3D, chưa hỗ trợ leo tường/trần hoặc đường đi nhiều tầng. Mesh và sợi xúc tua vẫn là biểu diễn hình ảnh, không phải từng cơ riêng có solver lực. Navigation thử hai mức khoảng hở; chưa có bộ chọn đường tối ưu theo mọi hình dạng biến dạng hoặc thể tích của khối lớn.
+
+## Luồn khe hẹp
+
+Giữ hướng vào khe gần cơ thể để tự luồn; không có nút chuyển dạng. `VenomSqueeze` dò một làn ngắn theo hướng đang giữ, kiểm tra hai mép đối diện và khoảng hở xuyên qua cả mép trước lẫn mép sau. Nó chỉ hỗ trợ khe ở gần, không tự giải mê cung cho người chơi. Mỗi phần được chọn hoặc đang tự tìm về dùng cùng cơ chế.
+
+- Mô chạm mép đặc trượt ngang vào làn trước khi kéo tới. Các hạt có tiếp xúc sàn nhận lực riêng, giới hạn theo locomotion; hạt đang bay không nhận lực bò.
+- Liên kết mềm hơn, thay đổi độ dài nghỉ nhanh hơn khi luồn. Những liên kết dài dư thừa được thay bằng liên kết lân cận; chỉ bỏ liên kết cũ khi còn một đường nối khác, nên việc thu hẹp không tự tính thành một lần chém.
+- Tiếp xúc **giữa các hạt mô trong cùng phần** chuyển sang lực áp suất đàn hồi có damping, tránh hiện tượng hạt cứng chen nhau thành vòm bị kẹt. Lực áp suất tác động bằng cặp lực bằng nhau và ngược chiều. Chỉ cặp collider nội bộ này được bỏ tiếp xúc cứng tạm thời; collider với sàn, vách, lưỡi và cửa vẫn giữ nguyên bán kính 9 mm và CCD. Khi mô hết chịu nén, tiếp xúc cứng trở lại sau khi cặp hạt đã tách đủ, tránh bật tung vì bật collider trong trạng thái chồng lấn.
+- Làn được giữ đến khi phần đuôi qua mép. Phần đầu giảm tốc để mô phía sau theo kịp nhưng vẫn tiến để chừa chỗ cho mô mới. Khi ra khỏi khe, đặc tính kết dính bình thường trở lại. Thả tay hủy kéo chủ động; đổi hướng có thể rút lại. Reset phục hồi toàn bộ liên kết và tiếp xúc.
+- Không tạo/xóa hạt: luôn 32 hạt, tổng 96 g. Mesh đi theo biến dạng thật của các hạt.
+
+Màn 03: vách ngang dài 318 mm, từ x = −218 mm đến +100 mm; thành trái ở −250 mm nên có khe 32 mm. Đường vòng bên phải giữ nguyên. Generator và scene đã author có cùng kích thước. Khe chỉ giúp vượt vách ngang; nó không đi vòng qua cửa khóa ở phía sau.
+
+Thông số trong `Living matter.asset`: `FlowStiffness` = 0,16 lần độ cứng thường, `FlowPlasticity` = 12/s, `TissuePressure` = 8 N/m, `TissueDamping` = 0,06 N·s/m. Các lực bò vẫn bị giới hạn 5 m/s² trước khi phân bổ tải tiếp xúc. Màn 01 nghiêng hộp giữ mô hình trước đó vì không có điều khiển bò chủ động.
+
+Giới hạn mô hình: đây là mô mềm có thể chịu nén, chưa phải SPH bảo toàn thể tích hoặc chất lỏng liên tục. Bán kính collider với môi trường không thu nhỏ: khe hẹp hơn đường kính hạt 18 mm vẫn không thể đi qua; bộ dò còn dành 2 mm dự phòng mỗi bên. Khe đang kiểm chứng cho cả cơ thể là 32 mm. Muốn chảy qua vết nứt vài mm cần tăng độ phân giải vật chất hoặc thay solver, không tắt va chạm với vách.
 
 ## Build và kiểm chứng
 
@@ -64,7 +81,7 @@ Giới hạn: đây là navigation trên mặt sàn phẳng trong môi trường
 
 Kết quả ngày 10/09/2026:
 
-- 19/19 kiểm tra Venom qua trong lần chạy có đồ họa: 12 kiểm tra màn 01 và 7 kiểm tra điều khiển mới. Sau khi bổ sung khả năng quay lại trạm cắt, chạy lại đủ **8/8 kiểm tra điều khiển** thành công; tổng hiện có 20 trường hợp Venom.
+- 19/19 kiểm tra Venom qua trong lần chạy có đồ họa: 12 kiểm tra màn 01 và 7 kiểm tra điều khiển mới. Sau khi bổ sung khả năng quay lại trạm cắt, chạy lại đủ **8/8 kiểm tra điều khiển** thành công; tổng ở thời điểm đó là 20 trường hợp Venom.
 - Hai đường giải thực đều cắt thành nhiều nhóm, mở cửa đúng luật, nhập lại và thoát đủ 32/32 hạt. Màn 02 giữ được công tắc khi điều khiển phần khác; màn 03 thực sự đi vòng qua vách.
 - Kiểm tra riêng mốc 3 giây: chưa tìm đường ở thời điểm ngay trước 3 giây, bắt đầu sau mốc đó, pause không tiêu hao thời gian. Có thêm kiểm tra chọn chủ thể lớn nhất sau nhiều lần tách và khi chủ thể cũ đã thoát.
 - Build macOS gồm đủ ba scene thành công. Đã mở bản native và kiểm tra bố cục; vòng chọn dùng material được tham chiếu để shader không bị loại khi build. Camera màn 02/03 dành khoảng trống cho HUD ở cửa sổ thấp. Sửa lỗi thay đổi danh sách nhóm ngay khi đang vẽ nút A/B bằng cách áp dụng selection sau vòng lặp GUI.
@@ -77,3 +94,17 @@ Kết quả ngày 10/09/2026:
 ### Màn 03: thử góc nhìn 3/4
 
 Theo yêu cầu tiếp theo, đổi riêng màn 03 sang camera 3/4 từ góc trái đầu xuất phát: cao 45°, chéo 45° (rotation Unity 45°, 135°, 0°). Góc này cho thấy mặt sàn và độ sâu hai thành hộp, đồng thời đưa lưỡi chém sang bên trong ảnh quan sát cảnh hợp thể. Đã xem ảnh tìm về/nhập lại và chạy lại đường giải đầy đủ: 1/1 qua, đủ 32/32 hạt thoát. Capture/XML/log tại `Artifacts/VenomCamera/ThreeQuarter` và `Artifacts/VenomCamera/three-quarter.*`.
+
+### Kiểm chứng luồn khe — 10/09/2026
+
+**25/25 trường hợp qua**, trong hai lượt có đồ họa: 12 kiểm tra điều khiển (`Artifacts/VenomSqueeze/controls-final.xml`), rồi 12 kiểm tra màn 01 và 1 bài follower qua khe (`Artifacts/VenomSqueeze/regression.xml`).
+
+- Cắt bằng lưỡi thật, nhập lại, mở cửa, luồn đủ 32/32 hạt qua khe 32 mm trong khoảng **3,37 giây** ở lượt thử, rồi thoát đủ qua lỗ. Test theo dõi từng hạt khi cắt qua mặt phẳng khe và vị trí so với sàn; không đặt vị trí hạt trong đường giải.
+- Thả tay lúc đang luồn: dừng kéo và hạ trạng thái mềm; đổi hướng rút được thân ra, reset khôi phục tiếp xúc nội bộ.
+- Khe 12 mm vẫn chặn các hạt đường kính 18 mm. Cửa khóa vẫn chặn cả navigation với khoảng hở nhỏ.
+- Khi đóng riêng đường vòng rộng trong bài thử, follower tìm đường qua khe, biến dạng và tiếp xúc nhập lại với chủ thể. Bài này thiết lập hai nhóm ban đầu ở hai phía để kiểm tra độc lập; sau đó chỉ mô phỏng bằng lực và đường tìm tự động.
+- Toàn bộ kiểm tra cũ về sàn, lật hộp, chém, hợp thể, giữ công tắc, chờ 3 giây và thoát vẫn qua.
+
+[Ảnh trước/trong/sau khe](Images/VenomControls/README.md). Feeling với thao tác tay cần thử trong app; các bài tự động không đánh giá được cảm giác điều khiển.
+
+Bản macOS đã build thành công với cơ chế luồn khe; đóng app đang chạy rồi mở lại `Builds/Venom/macOS/Venom.app` để thử. Không xuất APK trong lượt cập nhật này.

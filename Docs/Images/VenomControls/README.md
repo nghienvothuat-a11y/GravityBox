@@ -13,3 +13,13 @@
 ## Màn 03: nhập lại
 
 ![Cơ thể hợp nhất](03-reunion.png)
+
+## Màn 03: luồn qua khe 32 mm
+
+Chạy đường cắt–nhập thật rồi giữ hướng qua khe ở đầu trái vách ngang. 32/32 hạt qua khe trong khoảng 3,4 giây ở lượt kiểm chứng, sau đó thoát đủ qua lỗ tròn. Ảnh camera chỉ ghi bề mặt cơ thể theo mô phỏng, không có HUD native.
+
+![Trước khi luồn khe](03-slit-before.png)
+
+![Thân thu hẹp khi qua khe](03-slit-flow.png)
+
+![Cơ thể sau khi qua khe và thả điều khiển](03-slit-after.png)

@@ -141,8 +141,10 @@ namespace GravityBox.Editor
                     owner.Gate.GetComponent<ConfigurableJoint>().connectedAnchor=owner.GateRest;
                     var upperCover=root.Find("Upper observation cover");upperCover.localPosition=new Vector3(0,.075f,.0705f);upperCover.localScale=new Vector3(.5f,.004f,.499f);
                     var lowerCover=root.Find("Lower observation cover");lowerCover.localPosition=new Vector3(0,.075f,-.2555f);lowerCover.localScale=new Vector3(.5f,.004f,.129f);
-                    Block("Detour wall",root,new Vector3(-.075f,.002f,-.105f),new Vector3(.35f,.138f,.008f),glass);
-                    Block("Detour inlay",root,new Vector3(-.075f,-.064f,-.105f),new Vector3(.35f,.001f,.002f),glow,false);
+                    // A 32 mm slit at the left end tests active liquid squeezing;
+                    // the broad route around the right end remains available.
+                    Block("Detour wall",root,new Vector3(-.059f,.002f,-.105f),new Vector3(.318f,.138f,.008f),glass);
+                    Block("Detour inlay",root,new Vector3(-.059f,-.064f,-.105f),new Vector3(.318f,.001f,.002f),glow,false);
                     Ring(root,new Vector3(-.115f,-.063f,-.012f),.042f,.001f);
                 }
                 VenomCameraFraming.Frame(owner,540,960);

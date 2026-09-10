@@ -202,6 +202,116 @@ namespace GravityBox.Tests
             Assert.That(path.Any(p=>p.z<-.01f),Is.True,"Route must go around the bottom of the spine.");
             path.Clear();Assert.That(nav.FindPath(new Vector3(.17f,-.042f,-.14f),new Vector3(0,-.042f,-.235f),r,path),Is.False,"Closed gate must block route; no straight-line fallback.");
         }
+        [UnityTest] public IEnumerator WholeBodySqueezesThroughSlitThenEscapes()
+        {
+            yield return Load(3);ApproachBlade();
+            Go(-.11f,.19f);Go(-.11f,-.018f);
+            for(int i=0;i<3600&&level.Organism.FragmentCount>1;i++)Steps(1);
+            Steps(180);Assert.That(level.GateLatched,Is.True);
+            Go(-.215f,-.035f);
+            Capture("03-slit-before");
+            int crossed=0,ticks=0;float maxFlow=0;bool captured=false;
+            var prior=level.Organism.Bodies.Select(b=>b.position).ToArray();
+            level.Locomotion.SetInput(Vector3.back);
+            for(int tick=0;tick<1800;tick++)
+            {
+                Steps(1);maxFlow=Mathf.Max(maxFlow,level.Locomotion.Selected.Squeeze.Amount);
+                ticks++;
+                crossed=0;
+                for(int p=0;p<32;p++)
+                {
+                    Vector3 position=level.Organism.Bodies[p].position;
+                    if(prior[p].z>-.105f&&position.z<=-.105f)
+                        Assert.That(position.x,Is.InRange(-.242f,-.226f),"Each physical node must pass inside the actual slit.");
+                    if(position.z<-.13f)crossed++;
+                    Assert.That(position.y,Is.GreaterThan(level.FloorBoundary.Top+.006f),"No floor tunnelling while compressed.");
+                    prior[p]=position;
+                }
+                if(!captured && crossed>=8) { Capture("03-slit-flow");captured=true; }
+                if(crossed==32)break;
+            }
+            Debug.Log($"SLIT crossed={crossed}/32 in {ticks*Dt:F2}s flow={maxFlow} centre={Centre:F4}");
+            Assert.That(maxFlow,Is.GreaterThan(.8f));Assert.That(crossed,Is.EqualTo(32));
+            Assert.That(level.Organism.FragmentCount,Is.EqualTo(1));
+            Assert.That(level.Organism.TotalMass,Is.EqualTo(.096f).Within(.000001f));
+            level.Locomotion.SetInput(Vector3.zero);Steps(240);
+            Assert.That(level.Locomotion.Selected.Squeeze.Amount,Is.Zero);
+            Capture("03-slit-after");
+            Go(-.12f,-.235f);ExitAll();
+        }
+        [UnityTest] public IEnumerator SlitCanBeCancelledAndBackedOutOf()
+        {
+            yield return Load(3);Steps(120);Go(-.19f,.245f);Go(-.215f,-.035f);
+            level.Locomotion.SetInput(Vector3.back);Steps(100);
+            Assert.That(level.Locomotion.Selected.Squeeze.Amount,Is.GreaterThan(.5f));
+            level.Locomotion.SetInput(Vector3.zero);Steps(180);
+            Assert.That(level.Locomotion.Selected.Squeeze.Amount,Is.Zero);
+            Assert.That(level.Locomotion.Selected.Velocity.magnitude,Is.LessThan(.04f));
+            Go(-.2f,.045f);
+            Assert.That(level.Organism.FragmentCount,Is.EqualTo(1));Assert.That(level.Lost,Is.False);
+            level.ResetExperiment();Steps(120);
+            Assert.That(level.Locomotion.Selected.Squeeze.Amount,Is.Zero);
+            foreach(var a in level.Organism.Bodies)foreach(var b in level.Organism.Bodies)
+                if(a!=b)Assert.That(Physics.GetIgnoreCollision(a.GetComponent<Collider>(),b.GetComponent<Collider>()),Is.False);
+        }
+        [UnityTest] public IEnumerator SubParticleSlitRemainsSolid()
+        {
+            yield return Load(3);
+            var wall=level.Rotation.transform.Find("Detour wall");
+            wall.localPosition=new Vector3(-.069f,.002f,-.105f);wall.localScale=new Vector3(.338f,.138f,.008f);
+            Physics.SyncTransforms();Steps(120);Go(-.19f,.245f);Go(-.215f,-.035f);
+            level.Locomotion.SetInput(Vector3.back);Steps(600);
+            Assert.That(level.Locomotion.Selected.Squeeze.Amount,Is.Zero,"A 12 mm slit cannot admit an 18 mm collision particle.");
+            Assert.That(level.Organism.Bodies.All(b=>b.position.z>-.11f),Is.True);
+            Assert.That(level.GateLatched,Is.False);Assert.That(level.Lost,Is.False);
+        }
+        [UnityTest] public IEnumerator NavigationCanUseParticleWidthSlitWithoutCrossingGate()
+        {
+            yield return Load(3);
+            // Close only the broad route so a follower must use the real slit.
+            var wall=level.Rotation.transform.Find("Detour wall");
+            wall.localPosition=new Vector3(.016f,.002f,-.105f);wall.localScale=new Vector3(.468f,.138f,.008f);
+            Physics.SyncTransforms();Steps(120);
+            var path=new List<Vector3>();var nav=level.Locomotion.Navigator;
+            Vector3 from=new Vector3(-.18f,-.042f,-.025f),to=new Vector3(-.18f,-.042f,-.145f);
+            Assert.That(nav.FindPath(from,to,.029f,path),Is.False);
+            Assert.That(nav.FindPath(from,to,.011f,path),Is.True);
+            Vector3 previous=from;
+            foreach(var p in path) { Assert.That(nav.Clear(previous,p,.011f),Is.True);previous=p; }
+            Assert.That(path.Any(p=>p.x<-.229f),Is.True);
+            Assert.That(nav.FindPath(from,new Vector3(0,-.042f,-.235f),.011f,path),Is.False);
+        }
+        [UnityTest] public IEnumerator FollowerUsesSlitWhenBroadRouteIsClosed()
+        {
+            yield return Load(3);
+            var wall=level.Rotation.transform.Find("Detour wall");
+            wall.localPosition=new Vector3(.016f,.002f,-.105f);wall.localScale=new Vector3(.468f,.138f,.008f);
+            // Controlled starting state: a leader beyond the divider, a small
+            // detached fragment above it, and only the narrow route between them.
+            level.Gate.GetComponentInChildren<Collider>().enabled=false;
+            var cutter=new GameObject("Slit test initial split").transform;
+            cutter.position=level.Spawn.position+Vector3.right*.012f;
+            level.Organism.Cut(cutter,new Vector3(.003f,.2f,.2f));
+            var groups=Enumerable.Range(0,32).GroupBy(i=>level.Organism.Groups[i]).OrderByDescending(g=>g.Count()).ToArray();
+            Assert.That(groups.Length,Is.EqualTo(2));
+            for(int g=0;g<2;g++)
+            {
+                Vector3 centre=groups[g].Aggregate(Vector3.zero,(p,i)=>p+level.Organism.Bodies[i].position)/groups[g].Count();
+                Vector3 target=new Vector3(-.18f,-.025f,g==0?-.163f:-.025f);
+                foreach(int i in groups[g])level.Organism.Bodies[i].position+=target-centre;
+            }
+            Object.Destroy(cutter.gameObject);Physics.SyncTransforms();Steps(1);
+            float flow=0;
+            for(int tick=0;tick<2400 && level.Organism.FragmentCount>1;tick++)
+            {
+                Steps(1);
+                foreach(var fragment in level.Locomotion.Fragments)
+                    if(!fragment.Selected)flow=Mathf.Max(flow,fragment.Squeeze.Amount);
+            }
+            Debug.Log($"SLIT FOLLOWER: parts={level.Organism.FragmentCount}, flow={flow}, searches={level.Locomotion.PathSearches}");
+            Assert.That(flow,Is.GreaterThan(.5f));Assert.That(level.Organism.MergeCount,Is.GreaterThan(0));
+            Assert.That(level.Organism.FragmentCount,Is.EqualTo(1));Assert.That(level.Lost,Is.False);
+        }
         private void Capture(string name)
         {
             string directory=Environment.GetEnvironmentVariable("VENOM_CAPTURE_DIR");

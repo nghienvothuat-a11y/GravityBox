@@ -17,6 +17,11 @@ namespace GravityBox.Venom
         public float SkinSupport = .026f;
         public float SkinThreshold = .48f;
         public float MeshCell = .0065f;
+        [Header("Squeezing tissue (direct control)")]
+        [Range(.02f,1)] public float FlowStiffness = .16f;
+        [Min(.1f)] public float FlowPlasticity = 12f;
+        [Min(.1f)] public float TissuePressure = 8f;
+        [Min(0)] public float TissueDamping = .06f;
         [Header("Living surface (visual only)")]
         [Range(.25f,3f)] public float AnimationSpeed = 1.5f;
         public float IdleBulge = .0036f;

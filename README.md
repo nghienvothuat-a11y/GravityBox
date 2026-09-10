@@ -16,6 +16,8 @@ Nhánh **`Venom`** có ba màn thử nghiệm điều khiển sinh vật mềm. 
 
 Camera màn 02 nhìn gần thẳng từ trên xuống (**88°**) để dễ chọn hai phần/căn công tắc; màn 03 nhìn **3/4 từ góc trái đầu xuất phát**, cao **45°** và chéo **45°** để thấy rõ chuyển động thân và phần đi theo. Cả hộp nằm trong khung hình; giữ–kéo được căn theo hướng nhìn mới.
 
+Màn 02/03 có **luồn khe chủ động**: giữ hướng vào khe để mô thu hẹp, kéo dài và chảy qua; thả tay để dừng, đổi hướng để rút lại. Màn 03 có khe thật **32 mm** ở đầu trái vách ngang để thử tính năng này, bên cạnh đường vòng rộng ở đầu phải. Cửa ra vẫn yêu cầu cắt rồi hợp thể. [Cách hoạt động và giới hạn](Docs/VENOM_CONTROLS_02_03.md#luồn-khe-hẹp).
+
 Sinh vật dùng hạt vật lý liên kết nhớt/dẻo và bề mặt metaball liên tục. Đây là mô hình vật chất mềm phục vụ thử gameplay, chưa phải solver chất lỏng bảo toàn thể tích. Nội dung 23 bàn bi thép bên dưới vẫn có thể mở qua scene `Gameplay.unity`; build Venom dùng scene riêng.
 
 Sinh vật có animation theo hướng symbiote: thân dồn và cuộn lệch, mô phía trên có độ trễ khi trượt, thỉnh thoảng dựng một đỉnh mềm để thăm dò. Các sợi bám mọc độc lập và căng mảnh rồi thu lại. Animation đọc vận tốc, tiếp xúc thật và ý định bò ở màn 02/03. Lực bám–kéo do hệ locomotion riêng tạo ở các hạt có tiếp xúc; mesh/xúc tua chỉ biểu diễn hình ảnh, không thay đổi lượng vật chất cần thoát. [Tư liệu và cách áp dụng](Docs/VENOM_MOTION_STUDY.md) · [Ảnh/animation cận cảnh](Docs/Images/VenomLife/README.md).

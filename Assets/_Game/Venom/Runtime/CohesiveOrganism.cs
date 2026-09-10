@@ -27,8 +27,13 @@ namespace GravityBox.Venom
         private readonly List<Bond> bonds = new List<Bond>(200);
         private readonly bool[,] connected = new bool[ParticleCount, ParticleCount];
         private readonly float[] healAt = new float[ParticleCount];
+        private readonly float[] flow = new float[ParticleCount];
+        private readonly SphereCollider[] shapes = new SphereCollider[ParticleCount];
+        private readonly bool[,] softContacts = new bool[ParticleCount,ParticleCount];
         private readonly int[] parents = new int[ParticleCount];
         private readonly int[] roots = new int[ParticleCount];
+        private readonly int[] search = new int[ParticleCount];
+        private readonly bool[] visited = new bool[ParticleCount];
         private readonly Vector3[] start = new Vector3[ParticleCount];
         private readonly Collider[] support = new Collider[ParticleCount];
         private readonly Vector3[] supportPoint = new Vector3[ParticleCount], supportNormal = new Vector3[ParticleCount];
@@ -57,6 +62,7 @@ namespace GravityBox.Venom
                 body.maxDepenetrationVelocity = 2f; body.solverIterations = 20; body.solverVelocityIterations = 8;
                 body.sleepThreshold = 0;
                 var shape = node.GetComponent<SphereCollider>(); shape.radius = profile.ParticleRadius;
+                shapes[index] = shape;
                 shape.sharedMaterial = profile.Contact; shape.contactOffset = .0003f;
                 node.GetComponent<VenomContact>().Initialize(this, index);
                 index++;
@@ -67,12 +73,14 @@ namespace GravityBox.Venom
         public void ResetMatter()
         {
             SimulationTime = 0; CutCount = MergeCount = EscapedCount = 0; FusionGlow = 0;
+            for(int i=0;i<ParticleCount;i++)for(int j=i+1;j<ParticleCount;j++)
+                if(softContacts[i,j]) { Physics.IgnoreCollision(shapes[i],shapes[j],false);softContacts[i,j]=false; }
             bonds.Clear(); Array.Clear(connected, 0, connected.Length);
             for (int i = 0; i < ParticleCount; i++)
             {
                 Bodies[i].position = start[i]; Bodies[i].rotation = Quaternion.identity;
                 Bodies[i].linearVelocity = Bodies[i].angularVelocity = Vector3.zero;
-                Escaped[i] = false; healAt[i] = 0;
+                Escaped[i] = false; healAt[i] = flow[i] = 0;
                 support[i] = null; supportTime[i] = -100;
             }
             for (int i = 0; i < ParticleCount; i++) for (int j = i + 1; j < ParticleCount; j++)
@@ -84,6 +92,7 @@ namespace GravityBox.Venom
         {
             SimulationTime += dt; FusionGlow = Mathf.MoveTowards(FusionGlow, 0, dt);
             for (int i = 0; i < ParticleCount; i++) Bodies[i].AddForce(Vector3.down * 9.81f, ForceMode.Acceleration);
+            ApplySoftContacts();
             for (int k = bonds.Count - 1; k >= 0; k--)
             {
                 Bond bond = bonds[k];
@@ -93,9 +102,19 @@ namespace GravityBox.Venom
                 Vector3 axis = delta / distance;
                 bond.Strength = Mathf.MoveTowards(bond.Strength, 1, dt / Profile.FusionSeconds);
                 // Plastic rest lengths let the aggregate flatten/flow without restoring a rigid lattice.
-                bond.Rest = Mathf.Lerp(bond.Rest, Mathf.Clamp(distance, Profile.Spacing, Profile.BondReach), Profile.Plasticity * dt);
+                float yielding = Mathf.Max(flow[bond.A],flow[bond.B]);
+                // Liquid tissue exchanges neighbours as it threads a slit. An
+                // obsolete cross-body spring must not tie both shoulders into
+                // a permanent cage. Keep every bridge until a local path exists.
+                if (yielding > .25f && distance > Profile.BondReach*1.35f && AlternatePath(bond.A,bond.B))
+                {
+                    connected[bond.A,bond.B] = connected[bond.B,bond.A] = false;
+                    bonds.RemoveAt(k); continue;
+                }
+                bond.Rest = Mathf.Lerp(bond.Rest, Mathf.Clamp(distance, Profile.Spacing,
+                    Mathf.Lerp(Profile.BondReach,.075f,yielding)), Mathf.Lerp(Profile.Plasticity,Profile.FlowPlasticity,yielding) * dt);
                 Vector3 relative = Bodies[bond.B].linearVelocity - Bodies[bond.A].linearVelocity;
-                Vector3 force = axis * ((distance - bond.Rest) * Profile.Stiffness) + relative * Profile.Viscosity;
+                Vector3 force = axis * ((distance - bond.Rest) * Profile.Stiffness * Mathf.Lerp(1,Profile.FlowStiffness,yielding)) + relative * Profile.Viscosity;
                 force = Vector3.ClampMagnitude(force, .16f) * bond.Strength;
                 Bodies[bond.A].AddForce(force); Bodies[bond.B].AddForce(-force);
             }
@@ -116,6 +135,48 @@ namespace GravityBox.Venom
         {
             connected[a,b] = connected[b,a] = true;
             bonds.Add(new Bond { A = a, B = b, Rest = Vector3.Distance(Bodies[a].position, Bodies[b].position), Strength = strength });
+        }
+
+        public void SetFlow(int particle, float amount) => flow[particle] = Mathf.Clamp01(amount);
+
+        private void ApplySoftContacts()
+        {
+            float diameter=Profile.ParticleRadius*2;
+            for(int i=0;i<ParticleCount;i++)for(int j=i+1;j<ParticleCount;j++)
+            {
+                Vector3 delta=Bodies[j].position-Bodies[i].position;
+                float distance=delta.magnitude;
+                bool yielding=Groups[i]==Groups[j] && Mathf.Max(flow[i],flow[j])>.05f;
+                // Tissue inside a squeezing fragment has compliant pressure,
+                // not hard grain contacts that can form an immovable arch.
+                // World, floor, blade and gate collisions remain full-size CCD.
+                bool soft=yielding || softContacts[i,j] && distance<diameter+.0005f;
+                if(soft!=softContacts[i,j])
+                { Physics.IgnoreCollision(shapes[i],shapes[j],soft);softContacts[i,j]=soft; }
+                if(!soft || distance>=diameter || distance<.00001f)continue;
+                Vector3 axis=delta/distance;
+                float separation=Vector3.Dot(Bodies[j].linearVelocity-Bodies[i].linearVelocity,axis);
+                float pressure=Mathf.Clamp((diameter-distance)*Profile.TissuePressure-separation*Profile.TissueDamping,0,.05f);
+                Vector3 force=axis*pressure;
+                Bodies[i].AddForce(-force);Bodies[j].AddForce(force);
+            }
+        }
+
+        private bool AlternatePath(int from, int to)
+        {
+            Array.Clear(visited,0,visited.Length);
+            int head=0,tail=0;search[tail++]=from;visited[from]=true;
+            while(head<tail)
+            {
+                int node=search[head++];
+                for(int next=0;next<ParticleCount;next++)
+                {
+                    if(visited[next] || !connected[node,next] || node==from && next==to)continue;
+                    if(next==to)return true;
+                    visited[next]=true;search[tail++]=next;
+                }
+            }
+            return false;
         }
 
         public int Cut(Transform blade, Vector3 halfSize)

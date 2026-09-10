@@ -19,6 +19,7 @@ namespace GravityBox.Venom
             internal int PreviousCount, Waypoint;
             internal float RepathAt;
             internal readonly List<Vector3> Path = new List<Vector3>(32);
+            public readonly VenomSqueeze Squeeze = new VenomSqueeze();
         }
         private readonly VenomLevelController level;
         private readonly CohesiveOrganism matter;
@@ -133,6 +134,7 @@ namespace GravityBox.Venom
                     }
                 }
                 fragment.Intent = command;
+                fragment.Squeeze.Step(level,fragment.Group,fragment.Centre,command,dt);
                 ApplyTraction(fragment,command,speed);
             }
         }
@@ -141,7 +143,8 @@ namespace GravityBox.Venom
             if (matter.SimulationTime >= fragment.RepathAt)
             {
                 PathSearches++;
-                Navigator.FindPath(fragment.Centre,Selected.Centre,profile.NavigationClearance,fragment.Path);
+                if (!Navigator.FindPath(fragment.Centre,Selected.Centre,profile.NavigationClearance,fragment.Path))
+                    Navigator.FindPath(fragment.Centre,Selected.Centre,matter.Profile.ParticleRadius+.002f,fragment.Path);
                 fragment.Waypoint = 0; fragment.RepathAt = matter.SimulationTime+profile.RepathSeconds;
             }
             while (fragment.Waypoint < fragment.Path.Count-1 && Vector3.ProjectOnPlane(fragment.Path[fragment.Waypoint]-fragment.Centre,Vector3.up).magnitude < .016f) fragment.Waypoint++;
@@ -151,6 +154,8 @@ namespace GravityBox.Venom
         }
         private void ApplyTraction(Fragment fragment, Vector3 command, float speed)
         {
+            for (int i = 0; i < 32; i++)
+                if (matter.Groups[i] == fragment.Group) matter.SetFlow(i,fragment.Squeeze.Amount);
             int supported = 0;
             for (int i = 0; i < 32; i++)
                 if (!matter.Escaped[i] && matter.Groups[i] == fragment.Group && matter.TryGetSupport(i,out _,out _,out var n) && n.y > .65f) supported++;
@@ -178,7 +183,15 @@ namespace GravityBox.Venom
                 if (matter.Escaped[i] || matter.Groups[i] != fragment.Group || !matter.TryGetSupport(i,out var surface,out var point,out var normal) || normal.y <= .65f) continue;
                 Vector3 outlet = level.Outlet.InverseTransformPoint(matter.Bodies[i].position);
                 if (level.GateLatched && outlet.z > -.06f && new Vector2(outlet.x,outlet.y).magnitude < .057f) continue;
-                Vector3 force = Vector3.ProjectOnPlane(acceleration,normal)*matter.Bodies[i].mass*weight;
+                Vector3 localAcceleration = acceleration;
+                if (command.sqrMagnitude > .001f && fragment.Squeeze.Amount > 0)
+                {
+                    Vector3 desired = fragment.Squeeze.Velocity(level,matter.Bodies[i].position,command,speed);
+                    Vector3 individual = Vector3.ProjectOnPlane(matter.Bodies[i].linearVelocity,Vector3.up);
+                    localAcceleration = Vector3.ClampMagnitude((desired-individual)*profile.VelocityResponse +
+                        desired.normalized*profile.FrictionCompensation,profile.MaxAcceleration);
+                }
+                Vector3 force = Vector3.ProjectOnPlane(localAcceleration,normal)*matter.Bodies[i].mass*weight;
                 matter.Bodies[i].AddForce(force);
                 Rigidbody supportBody = surface.attachedRigidbody;
                 if (supportBody != null && !supportBody.isKinematic) supportBody.AddForceAtPosition(-force,point);
