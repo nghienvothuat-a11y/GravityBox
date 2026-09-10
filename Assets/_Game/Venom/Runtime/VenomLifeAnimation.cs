@@ -91,6 +91,7 @@ namespace GravityBox.Venom
         // Up to six extra field sources form a crest, not another simulated body.
         public int Decorate(Vector3[] points, float[] supports, float[] weights, int[] ids, int count)
         {
+            if(level.Celebration.Active)return Celebrate(points,supports,weights,count);
             int key = ids[0];
             var state = fragments[key] ?? (fragments[key] = new Fragment(key,clock));
             state.Seen = true;
@@ -241,6 +242,61 @@ namespace GravityBox.Venom
             }
             if(grounded)DrawGestures(state,key,points,physicalCount,centre,up,floorPoint,lift*state.Dance);
             return count;
+        }
+
+        private int Celebrate(Vector3[] points,float[] supports,float[] weights,int count)
+        {
+            var victory=level.Celebration;
+            float time=victory.Elapsed;
+            float energy=Smooth(.12f,.7f,time);
+            float scale=Mathf.Pow(count/(float)CohesiveOrganism.ParticleCount,1f/3f);
+            Vector3 up=victory.Up,right=victory.Right,forward=-victory.Forward;
+            Vector3 centre=Vector3.zero;
+            for(int i=0;i<count;i++)centre+=transform.TransformPoint(points[i])/count;
+            float beat=(time-.12f)*Mathf.PI*3.2f;
+            float hop=Mathf.Pow(Mathf.Max(0,Mathf.Sin(beat)),1.5f);
+            float stretch=1+energy*(.14f*Mathf.Sin(beat)+.1f*hop);
+            Quaternion sway=Quaternion.AngleAxis(Mathf.Sin(beat*.5f)*14*energy,forward);
+            Vector3 lifted=centre+up*(hop*.015f*scale*energy)+right*(Mathf.Sin(beat*.5f)*.005f*energy);
+            float top=0;
+            for(int i=0;i<count;i++)
+            {
+                Vector3 offset=transform.TransformPoint(points[i])-centre;
+                float y=Vector3.Dot(offset,up);
+                // Approximate volume-preserving squash/stretch of the displayed skin.
+                Vector3 shape=Vector3.ProjectOnPlane(offset,up)/Mathf.Sqrt(stretch)+up*(y*stretch);
+                points[i]=transform.InverseTransformPoint(lifted+sway*shape);
+                top=Mathf.Max(top,Vector3.Dot(sway*shape,up));
+            }
+            DanceAmount=energy;HeadAmount=energy;
+            float lift=.043f*scale*energy;
+            HeadHeight=lift;
+            Vector3 shoulder=lifted+up*(top*.5f)+forward*(.007f*scale);
+            for(int j=0;j<6;j++)
+            {
+                float t=j/5f;
+                Vector3 crest=shoulder+up*(lift*t)+forward*(.012f*scale*t*t*energy)
+                    +right*(Mathf.Sin(beat*.5f-t*1.1f)*.012f*scale*t*t*energy);
+                points[count+j]=transform.InverseTransformPoint(crest);
+                supports[count+j]=Mathf.Lerp(.030f,.018f,t)*scale;
+                weights[count+j]=energy*Mathf.Lerp(.85f,.7f,t);
+            }
+            // Four soft arms fan upwards and wave with offset phases. They remain
+            // attached to the animated shoulders, facing the player in every box orientation.
+            if(energy>.01f)for(int arm=0;arm<4;arm++)
+            {
+                float sign=arm%2==0?-1:1;
+                float phase=beat*.5f+arm*.85f;
+                Vector3 root=lifted+right*(sign*.015f*scale)+up*(top*.3f)+forward*((arm/2-.5f)*.018f*scale);
+                float reach=(arm<2?.070f:.055f)*scale*energy;
+                Vector3 p1=root+right*(sign*reach*.45f)+up*(reach*.10f);
+                Vector3 p2=root+right*(sign*reach*(.72f+Mathf.Sin(phase)*.15f))+up*(reach*.95f);
+                Vector3 tip=root+right*(sign*reach*(.55f+Mathf.Sin(phase)*.28f))
+                    +up*(reach*(.9f+Mathf.Cos(phase)*.15f))+forward*(Mathf.Sin(phase+arm)*reach*.16f);
+                Tube(root,p1,p2,tip,up,lifted-up*.12f,scale*energy*1.3f);
+                TendrilCount++;RaisedTendrilCount++;
+            }
+            return count+6;
         }
 
         private Vector3 FindProbeDirection(Vector3 centre, Vector3 up, Vector3 forward, int seed)

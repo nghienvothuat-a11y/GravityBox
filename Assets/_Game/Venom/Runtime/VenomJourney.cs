@@ -51,7 +51,7 @@ namespace GravityBox.Venom
         private readonly VenomJourneyRoute floorRoute=new VenomJourneyRoute();
         private readonly VenomSurfaceRoute ceilingRoute=new VenomSurfaceRoute();
         private readonly List<LineRenderer> markers=new List<LineRenderer>();
-        private float cutAt=-1,splitUntil,finishedAt=-1,stationLessonHold;
+        private float cutAt=-1,splitUntil,stationLessonHold;
         private int cutAnchor=-1;
         private bool cutPerformed,recorded;
 
@@ -69,7 +69,7 @@ namespace GravityBox.Venom
         public void ResetState()
         {
             System.Array.Clear(orders,0,32);System.Array.Clear(cueUntil,0,32);
-            cutAt=finishedAt=-1;splitUntil=0;cutAnchor=-1;cutPerformed=recorded=false;
+            cutAt=-1;splitUntil=0;cutAnchor=-1;cutPerformed=recorded=false;
             Solved=Chapter<=2;AActive=BActive=false;HoldProgress=MassA=MassB=stationLessonHold=0;CommandCount=0;
             Status="CHẠM ĐỂ HƯỚNG DẪN BẠN NHỎ";Learning=Progress.Familiarity>0?"Bạn nhỏ nhận ra người bạn quen.":"Một người bạn mới đang làm quen với bạn.";
             PadA?.ResetPlate(level.Rotation.transform);PadB?.ResetPlate(level.Rotation.transform);
@@ -195,6 +195,7 @@ namespace GravityBox.Venom
         }
         public bool CanFuse(int a,int b)
         {
+            if(level.Completed)return true;
             if(level.Organism.Groups[a]==level.Organism.Groups[b])return true;
             if(level.Organism.SimulationTime<splitUntil||Cutting||Busy(a)||Busy(b))return false;
             var x=TaskFor(a);var y=TaskFor(b);
@@ -223,7 +224,11 @@ namespace GravityBox.Venom
             if(Solved&&(ExitCover==null||Local(ExitCover.position).x-ExitCoverRest.x>.105f))level.LatchGuidedGate();
             StepKnife(dt);
             if(level.Climbing.VisitedCount>=2)Learn(VenomSkill.Climb);
-            if(level.Completed&&!recorded){recorded=true;Progress.Learn(VenomSkill.Arrive);Progress.Finish(Chapter);finishedAt=level.Organism.SimulationTime;Learning="Chúng mình làm được rồi!";}
+        }
+        public void ObserveCompletion()
+        {
+            if(!level.Completed||recorded)return;
+            recorded=true;Progress.Learn(VenomSkill.Arrive);Progress.Finish(Chapter);Learning="Chúng mình làm được rồi!";
         }
         private float StationMass(VenomPressurePlate pad,Vector3 target)
         {
@@ -366,7 +371,7 @@ namespace GravityBox.Venom
                 for(int i=0;i<40;i++)line.SetPosition(i,order.Target+n*.002f+(u*Mathf.Cos(i*Mathf.PI/20)+v*Mathf.Sin(i*Mathf.PI/20))*radius);
             }
             for(;index<markers.Count;index++)markers[index].enabled=false;
-            if(AutoAdvance&&finishedAt>=0&&Chapter<5&&level.Organism.SimulationTime-finishedAt>3)Load(Chapter+1);
+            if(AutoAdvance&&recorded&&!level.Paused&&Chapter<5&&level.Celebration.ReadyForNext)Load(Chapter+1);
         }
         public void Load(int chapter)
         {

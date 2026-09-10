@@ -5,12 +5,14 @@ namespace GravityBox.Venom
     {
         private VenomLevelController level;
         private VenomJourneyHud journeyHud;
+        private VenomCelebrationHud celebrationHud;
         private GUIStyle small, title, body, button, badge;
         private LineRenderer selection;
         private Material selectionMaterial;
         public void Initialize(VenomLevelController controller)
         {
             level = controller;
+            celebrationHud=new VenomCelebrationHud(level);
             if(level.Journey!=null)journeyHud=new VenomJourneyHud(level);
             if (!level.DirectControl) return;
             selection = new GameObject("Selected fragment contact ring",typeof(LineRenderer)).GetComponent<LineRenderer>();
@@ -24,11 +26,12 @@ namespace GravityBox.Venom
         }
         private void LateUpdate()
         {
-            if (level != null && level.DirectControl) FrameChamber(Screen.width,Screen.height,Time.unscaledDeltaTime);
+            if (level != null) FrameChamber(Screen.width,Screen.height,Time.unscaledDeltaTime);
             RefreshSelection();
         }
         public void FrameChamber(int width,int height,float dt=0)
         {
+            if(level.Celebration.Active){level.Celebration.Frame(width,height);return;}
             VenomCameraFraming.Frame(level,width,height);
             level.FollowView?.Frame(width,height,dt);
         }
@@ -59,6 +62,7 @@ namespace GravityBox.Venom
         private void OnGUI()
         {
             if (level == null || level.Organism == null) return;
+            if(level.Celebration.Active){celebrationHud.Draw();return;}
             if(journeyHud!=null){journeyHud.Draw();return;}
             float scale = VenomCameraFraming.UiScale(level,Screen.width,Screen.height), h = Screen.height / scale;
             float offsetX=(Screen.width-540*scale)*.5f;

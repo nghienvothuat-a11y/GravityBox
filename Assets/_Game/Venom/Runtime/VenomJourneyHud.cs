@@ -69,7 +69,7 @@ namespace GravityBox.Venom
             if(GUI.Button(new Rect(28,h-85,235,40),"THỬ LẠI / R",button))level.ResetExperiment();
             if(GUI.Button(new Rect(282,h-85,236,40),level.Paused?"TIẾP TỤC":"TẠM DỪNG / P",button))level.TogglePause();
             GUI.backgroundColor=Color.white;
-            GUI.Label(new Rect(28,h-34,490,25),level.Completed?(journey.Chapter<5?"TỰ SANG MÀN TIẾP SAU 3 GIÂY":"HẾT 5 BÀI · BẠN CÓ THỂ CHỌN MÀN ĐỂ THỬ LẠI"):"CHẠM: GIAO VIỆC · KÉO: XOAY HỘP · 1–5: CHỌN MÀN",small);
+            GUI.Label(new Rect(28,h-34,490,25),"CHẠM: GIAO VIỆC · KÉO: XOAY HỘP · 1–5: CHỌN MÀN",small);
         }
     }
 }

@@ -30,10 +30,12 @@ namespace GravityBox.Venom
         private readonly Vector3[] floorPoints = new Vector3[CohesiveOrganism.ParticleCount+6];
         private int sourceCount;
         private bool allAboveFloor,climbing;
+        private VenomLevelController level;
         public int VertexCount => mesh != null ? mesh.vertexCount : 0;
 
         public void Initialize(CohesiveOrganism source, VenomLevelController owner)
         {
+            level=owner;
             organism = source; floor = owner.FloorBoundary;climbing=owner.WallCrawl; block = new MaterialPropertyBlock();
             if(climbing)
             {
@@ -145,6 +147,7 @@ namespace GravityBox.Venom
         }
         private void ConstrainFloor(ref Vector3 point,ref Vector3 normal)
         {
+            if(level.Celebration.Active)return;
             Vector3 local=toFloor.MultiplyPoint3x4(point);
             if(climbing && local.y>floor.Top)
             {

@@ -1,6 +1,6 @@
 # Venom — Living Matter Prototype
 
-Bản macOS mặc định chuyển sang **Venom Journey — 5 màn đầu**: người chơi chạm để hướng dẫn sinh vật, kéo để xoay hộp. Chỉ thắng khi **100% vật chất** đi qua lỗ tròn thật; tự sang màn tiếp sau 3 giây.
+Bản macOS mặc định chuyển sang **Venom Journey — 5 màn đầu**: người chơi chạm để hướng dẫn sinh vật, kéo để xoay hộp. Chỉ thắng khi **100% vật chất** đi qua lỗ tròn thật; camera tiến sát sinh vật, ẩn hộp/cơ quan và ăn mừng 4,8 giây rồi tự sang màn tiếp.
 
 | Bài | Nội dung |
 | --- | --- |
@@ -16,7 +16,7 @@ Mở `Builds/Venom/macOS/Venom.app`. **1–5** chọn bài, **R** thử lại, *
 
 Build: `bash Tools/build-venom.sh`. Các scene mới nằm ở `Assets/_Game/Venom/VenomJourney01.unity` đến `VenomJourney05.unity`. Kỹ năng và bài đã hoàn thành được nhớ giữa các lần mở app; retry chỉ reset cơ quan và nhiệm vụ. AI hiện học theo sự kiện và phản hồi theo ngữ cảnh, chưa triển khai toàn bộ hệ cảm xúc của thiết kế dài hạn.
 
-Kiểm chứng: **64/64 PlayMode Venom đạt**, gồm **10 trường hợp Journey**; đã kiểm tra trực tiếp đường chơi macOS ở bài 1 và 4 cùng chuyển màn tự động. Chi tiết trong [báo cáo năm bài](Docs/VENOM_JOURNEY_01_05.md#kết-quả-kiểm-chứng).
+Kiểm chứng: **66/66 PlayMode Venom đạt**, gồm **12 trường hợp Journey**; đã kiểm tra trực tiếp đường chơi macOS ở bài 1 và 4 cùng chuyển màn tự động. Chi tiết trong [báo cáo năm bài](Docs/VENOM_JOURNEY_01_05.md#kết-quả-kiểm-chứng).
 
 ## Bộ thí nghiệm điều khiển trước campaign
 

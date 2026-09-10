@@ -4,7 +4,7 @@ Ngày: 10/09/2026. Campaign thử nghiệm riêng, sử dụng một cách đi�
 
 ## Chơi trên macOS
 
-Mở `Builds/Venom/macOS/Venom.app`. Phím 1–5 hoặc hàng nút đầu màn chọn bài. R thử lại; P/Esc tạm dừng; Z phóng gần và theo sinh vật. Sau khi toàn bộ 32 hạt thoát thật qua lỗ, chờ 3 giây để sang bài tiếp theo. Bài 5 kết thúc chuỗi thử nghiệm.
+Mở `Builds/Venom/macOS/Venom.app`. Phím 1–5 hoặc hàng nút đầu màn chọn bài. R thử lại; P/Esc tạm dừng; Z phóng gần và theo sinh vật. Sau khi toàn bộ 32 hạt thoát thật qua lỗ, camera tiến gần và theo sinh vật ăn mừng 4,8 giây rồi sang bài tiếp theo. Bài 5 kết thúc chuỗi thử nghiệm.
 
 - Chạm một điểm nhìn thấy trên mặt trong: sinh vật bò đến rồi chờ.
 - Chạm nút A/B: giao việc tới giữ nút, không cần giữ ngón tay.
@@ -36,6 +36,14 @@ Nhận lệnh làm sinh vật hướng phần đầu/xúc tu về mục tiêu. �
 
 Đây là bước đầu của hành vi học có trạng thái: kỹ năng và phản hồi theo sự kiện, chưa có hệ học máy tự suy luận cơ quan tùy ý hay đầy đủ thư viện cảm xúc của thiết kế dài hạn. Phần đang giữ việc không tự nhập hoặc tự đi theo phần khác sau 3 giây.
 
+## Ăn mừng khi thoát
+
+Khi đủ 100% vật chất đã qua lỗ, camera chuyển liên tục từ góc đang chơi sang cận cảnh trong khoảng 1 giây. Hộp, kính, cơ quan, viền chỉ dẫn và HUD puzzle được ẩn để chỉ còn sinh vật trên nền tối. Sinh vật nhún, kéo giãn thân, dựng đầu và vẫy bốn xúc tu về phía người chơi. Các phần còn tách được lấy chung vào khung hình và có thể nhập lại sau khi thoát.
+
+`VenomCelebration` quản lý camera, thời gian và trạng thái hiển thị; `VenomCelebrationHud` giữ thông báo ngắn ở rìa màn hình. `VenomLifeAnimation` biến dạng skin cho điệu nhảy, không thay vị trí hạt hoặc tạo vật chất mới. Lực gom sẵn có ở cửa thoát tiếp tục giữ mô động lực học ngoài hộp cho đoạn ăn mừng; đây là hỗ trợ trình diễn sau chiến thắng. Collider vẫn hoạt động, không đổi điều kiện thắng.
+
+Tạm dừng dừng cả animation và thời gian chuyển màn; R khôi phục hộp/cơ quan và camera chơi. Z không ghi đè camera ăn mừng. Cơ chế này dùng chung cho Journey và các thí nghiệm Venom cũ; chỉ Journey 01–04 tự chuyển tiếp, bài 05 giữ đoạn ăn mừng để xem hoặc thử lại.
+
 ## Cơ quan và vật lý
 
 - Giữ 32 hạt động lực học, mỗi hạt 3 g, tổng 96 g. Lực bám và di chuyển tác dụng lên tiếp xúc bề mặt, mô mềm tiếp tục dùng liên kết có độ nhớt/dẻo.
@@ -59,10 +67,14 @@ Kiểm chứng tự động: `GravityBox.Tests.VenomJourneyTests`. Kết quả v
 
 ## Kết quả kiểm chứng
 
-Lần chạy cuối bật đồ họa đạt **64/64 PlayMode Venom**, gồm **10 trường hợp Journey**: đường giải đủ năm bài; giữ/rời nút, thay lệnh, lựa chọn phần, xoay khi đang giữ; chia giữa chưa đủ tải → hợp thể → chia lệch → giải bài 5; lưu kỹ năng qua scene mà không phát lại lệnh cũ; chuột kéo nhanh rồi trả con trỏ về chỗ cũ; cảm ứng kết thúc một lần vuốt ở vị trí mới. Đuôi cơ thể vẫn giữ lệnh thoát khi hạt đại diện đã đi qua lỗ.
+Lần chạy cuối bật đồ họa đạt **66/66 PlayMode Venom**, gồm **12 trường hợp Journey**: đường giải đủ năm bài; giữ/rời nút, thay lệnh, lựa chọn phần, xoay khi đang giữ; chia giữa chưa đủ tải → hợp thể → chia lệch → giải bài 5; lưu kỹ năng qua scene mà không phát lại lệnh cũ; chuột kéo nhanh rồi trả con trỏ về chỗ cũ; cảm ứng kết thúc một lần vuốt ở vị trí mới. Đuôi cơ thể vẫn giữ lệnh thoát khi hạt đại diện đã đi qua lỗ.
 
-XML: `Artifacts/Venom01/journey-final-full-tests.xml`; log cùng tên; ảnh hình học và trạng thái cơ quan trong `Artifacts/VenomJourney`.
+XML: `Artifacts/Venom01/celebration-full-tests.xml`; log cùng tên. Kiểm tra Journey cuối sau khi bổ sung chặn chuyển scene lúc tạm dừng: `Artifacts/Venom01/celebration-final-journey-tests.xml`. Ảnh đoạn thắng tại lỗ sàn, lỗ trần xoay nghiêng và bài phối hợp: `Artifacts/VenomCelebration/victory-*.png`.
 
-Đã chơi trực tiếp bản macOS: chạm một điểm ở bài 1, chạm lỗ và tự sang bài 2; ở bài 4 chạm lưỡi dao đang nâng, chọn từng phần, giữ A mở B, chốt cửa rồi cả hai thoát và tự sang bài 5. Bản sửa đầu vào xử lý từng sự kiện theo thứ tự để tránh gom một lần kéo nhanh thành một lần chạm.
+Kiểm tra đoạn thắng bao gồm: phần đầu qua lỗ chưa được kích hoạt ăn mừng; đủ 32/32 mới bắt đầu; camera cận cảnh giữ mọi phần trong khung; skin vẫy ít nhất bốn xúc tu mà không sửa vị trí vật lý; kính/cơ quan/marker bị ẩn nhưng collider giữ nguyên; pause giữ nhịp và hoãn chuyển scene kể cả ở nhịp cuối; retry trả lại cả renderer đã bị ẩn sẵn trước đó và camera; không chuyển scene ở mốc 3 giây cũ, sang bài mới sau 4,8 giây và không mang trạng thái ẩn sang bài sau.
+
+Bản macOS cập nhật ăn mừng đã được kiểm tra trực tiếp: chạm lỗ bài 1, camera tiến gần, toàn bộ kính/cơ quan biến mất, thân và bốn xúc tu đổi nhịp nhảy; tạm dừng/tiếp tục giữa đoạn thắng rồi tự sang bài 2 với hộp hiện đầy đủ. Kết quả kiểm tra Journey cuối: **12/12 đạt**.
+
+Đã chơi trực tiếp bản macOS trước đó: chạm một điểm ở bài 1, chạm lỗ và tự sang bài 2; ở bài 4 chạm lưỡi dao đang nâng, chọn từng phần, giữ A mở B, chốt cửa rồi cả hai thoát và tự sang bài 5. Bản sửa đầu vào xử lý từng sự kiện theo thứ tự để tránh gom một lần kéo nhanh thành một lần chạm.
 
 Giới hạn QA thao tác kéo cửa sổ Mac: công cụ UI tự động đã gửi sự kiện nhấn và nhả cùng ở điểm cuối, không có sự kiện giữ–di chuyển. Trace F9 trong Development Build xác nhận điều này; không coi lần diễn lại đó là kiểm chứng vuốt tay trên thiết bị. Các test thiết bị Input System đã kiểm tra chuỗi nhấn → di chuyển → nhả, cả trường hợp toàn bộ chuỗi nằm giữa hai frame và cảm ứng đổi vị trí ở frame nhả. Cần playtest vuốt tay trên máy/điện thoại để đánh giá feeling.

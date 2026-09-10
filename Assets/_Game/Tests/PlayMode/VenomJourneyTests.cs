@@ -109,6 +109,54 @@ namespace GravityBox.Tests
             Assert.That(level.Organism.EscapedCount,Is.Zero);ExitAll();Capture("01-escaped");
             Assert.That(Journey.Progress.Completed&1,Is.EqualTo(1));
         }
+        [UnityTest] public IEnumerator VictoryWaitsForEveryParticleThenFramesDancingTissueAndRestoresSceneryOnRetry()
+        {
+            yield return Load(1);
+            var scenery=SceneManager.GetActiveScene().GetRootGameObjects().SelectMany(root=>root.GetComponentsInChildren<Renderer>(true))
+                .Where(r=>!r.transform.IsChildOf(level.Organism.transform)).ToArray();
+            scenery[0].forceRenderingOff=true;
+            var hidden=scenery.Select(r=>r.forceRenderingOff).ToArray();
+            var colliders=level.Rotation.GetComponentsInChildren<Collider>().ToArray();
+            var enabled=colliders.Select(c=>c.enabled).ToArray();
+            float overview=level.View.orthographicSize;
+            Journey.GuideAllOut();Until(()=>level.Organism.EscapedCount>0,2400,"First tissue crosses outlet");
+            Assert.That(level.Completed,Is.False);Assert.That(level.Celebration.Active,Is.False);
+            CollectionAssert.AreEqual(hidden,scenery.Select(r=>r.forceRenderingOff).ToArray());
+            Until(()=>level.Completed,2400,"Tail clears outlet");Steps(150);
+            var hud=level.GetComponent<VenomHud>();hud.FrameChamber(Screen.width,Screen.height);
+            var skin=level.Organism.GetComponent<VenomSurface>();skin.Rebuild(false);
+            var life=level.Organism.GetComponent<VenomLifeAnimation>();
+            Assert.That(life.DanceAmount,Is.GreaterThan(.9f));Assert.That(life.RaisedTendrilCount,Is.GreaterThanOrEqualTo(4));
+            Assert.That(scenery.All(r=>r.forceRenderingOff),Is.True,"Hide glass, opaque mechanisms and markers alike.");
+            CollectionAssert.AreEqual(enabled,colliders.Select(c=>c.enabled).ToArray(),"No collision changes for the shot.");
+            Assert.That(level.View.orthographicSize,Is.LessThan(overview*.6f));
+            Assert.That(level.Organism.GetComponentsInChildren<Renderer>().All(r=>!r.forceRenderingOff),Is.True);
+            var positions=level.Organism.Bodies.Select(b=>b.position).ToArray();skin.Rebuild(false);
+            CollectionAssert.AreEqual(positions,level.Organism.Bodies.Select(b=>b.position).ToArray(),"Dance only deforms the rendered skin.");
+            Capture("victory-floor-dance");
+            level.TogglePause();float time=level.Celebration.Elapsed;Vector3 camera=level.View.transform.position;
+            for(int i=0;i<600;i++)level.Step(Dt);
+            hud.FrameChamber(Screen.width,Screen.height);
+            Assert.That(level.Celebration.Elapsed,Is.EqualTo(time));Assert.That(Vector3.Distance(camera,level.View.transform.position),Is.LessThan(.00001f));
+            Assert.That(level.Celebration.ReadyForNext,Is.False);
+            level.ResetExperiment();hud.FrameChamber(Screen.width,Screen.height);
+            Assert.That(level.Celebration.Active,Is.False);Assert.That(level.Organism.EscapedCount,Is.Zero);
+            CollectionAssert.AreEqual(hidden,scenery.Select(r=>r.forceRenderingOff).ToArray());
+            Assert.That(level.View.orthographicSize,Is.EqualTo(overview).Within(.001f));
+        }
+        [UnityTest] public IEnumerator CelebrationFinishesBeforeAutomaticAdvanceAndDoesNotLeakIntoTheNextLesson()
+        {
+            yield return Load(1);ExitAll();Steps(390);Journey.AutoAdvance=true;
+            yield return null;
+            Assert.That(SceneManager.GetActiveScene().name,Is.EqualTo("VenomJourney01"),"The old three-second timer must not cut the dance short.");
+            Steps(220);level.TogglePause();yield return null;
+            Assert.That(SceneManager.GetActiveScene().name,Is.EqualTo("VenomJourney01"),"Pausing on the final beat still defers the scene change.");
+            level.TogglePause();yield return null;yield return null;
+            Assert.That(SceneManager.GetActiveScene().name,Is.EqualTo("VenomJourney02"));
+            level=Object.FindFirstObjectByType<VenomLevelController>();level.enabled=false;level.Rotation.enabled=false;
+            Assert.That(level.Celebration.Active,Is.False);Assert.That(level.Completed,Is.False);
+            Assert.That(level.CrawlFaces.All(c=>!c.GetComponent<Renderer>().forceRenderingOff),Is.True);
+        }
         [UnityTest] public IEnumerator SecondLessonRetainsLocalDestinationAcrossRotationAndClimbsToCeiling()
         {
             yield return Load(2);Capture("02-overview");
@@ -116,7 +164,7 @@ namespace GravityBox.Tests
             Assert.That(Journey.Progress.Knows(VenomSkill.Climb),Is.True);
             level.Rotation.SetTargetOrientation(Quaternion.Euler(15,25,-12));Steps(240);
             Assert.That(Vector3.Distance(Local(level.Locomotion.Selected.Centre),new Vector3(-.225f,.08f,-.1f)),Is.LessThan(.05f));
-            ExitAll();Capture("02-escaped");
+            ExitAll();Capture("02-escaped");Steps(180);Capture("victory-rotated-ceiling-dance");
         }
         [UnityTest] public IEnumerator ThirdLessonRequiresRealSustainedContactAndDoesNotAutoSolveExit()
         {
@@ -145,6 +193,13 @@ namespace GravityBox.Tests
             Hold(b,false);Until(()=>level.GateLatched,3200,"B latches while another fragment holds A");
             Assert.That(Journey.Progress.Knows(VenomSkill.Cooperate),Is.True);Assert.That(level.Organism.FragmentCount,Is.EqualTo(2));
             Capture("04-cooperate");ExitAll();Capture("04-escaped");
+            Steps(180);level.GetComponent<VenomHud>().FrameChamber(Screen.width,Screen.height);Capture("victory-cooperative-dance");
+            foreach(var body in level.Organism.Bodies)
+            {
+                Vector3 p=level.View.WorldToViewportPoint(body.position);
+                Assert.That(p.x,Is.InRange(.1f,.9f));Assert.That(p.y,Is.InRange(.15f,.85f));
+            }
+            Assert.That(level.Organism.TotalMass,Is.EqualTo(.096f).Within(.000001f));
         }
         [UnityTest] public IEnumerator FifthLessonEqualSplitFailsHeavyStationThenReunionAndUnequalSplitSolveIt()
         {

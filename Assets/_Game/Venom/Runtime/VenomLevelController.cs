@@ -15,6 +15,7 @@ namespace GravityBox.Venom
         public VenomLocomotion Locomotion { get; private set; }
         public VenomWallClimb Climbing { get; private set; }
         public VenomFollowCamera FollowView { get; private set; }
+        public VenomCelebration Celebration { get; private set; }
         public bool WallCrawl => ControlMode == VenomControlMode.SurfaceCrawl || ControlMode == VenomControlMode.SplitVault || ControlMode == VenomControlMode.TouchSurface;
         public VenomGuidance Guidance;
         public VenomJourney Journey;
@@ -76,6 +77,7 @@ namespace GravityBox.Venom
             Guidance?.Initialize(this);
             Journey?.Initialize(this);
             if(WallCrawl)FollowView=new VenomFollowCamera(this);
+            Celebration=new VenomCelebration(this);
             matter.AddComponent<VenomSurface>().Initialize(Organism, this);
             gameObject.AddComponent<VenomInput>().Initialize(this);
             gameObject.AddComponent<VenomHud>().Initialize(this);
@@ -110,6 +112,7 @@ namespace GravityBox.Venom
         {
             if (Paused || Lost || dt <= 0) return;
             Organism.Step(dt);
+            if (Completed) { Celebration.Step(); return; }
             if(WallCrawl)
             {
                 SplitVault?.Cut();Guidance?.StepMechanisms(dt);Locomotion.Step(dt);EvaluateEscape(dt);Guidance?.ObserveCompletion();CheckLost();return;
@@ -279,11 +282,15 @@ namespace GravityBox.Venom
                 }
             }
             if (Organism.EscapedCount == CohesiveOrganism.ParticleCount)
-            { Completed = true; Rotation.InputEnabled = false; }
+            {
+                Completed = true; Rotation.InputEnabled = false;
+                Celebration.Begin(); Journey?.ObserveCompletion();
+            }
         }
 
         public void ResetExperiment()
         {
+            Celebration?.Reset();
             Time.timeScale = 1; Paused = Completed = GateLatched = Lost = BladeReleased = false; PairedHold = bladeCycle = 0;
             Rotation.GetComponent<Rigidbody>().position = initialRootPosition; Rotation.ResetState();
             if(!WallCrawl)
@@ -316,7 +323,7 @@ namespace GravityBox.Venom
         }
         public void ToggleZoom()
         {
-            if(!WallCrawl)return;
+            if(!WallCrawl || Completed)return;
             GetComponent<VenomInput>().CancelGesture();FollowView.Toggle();
         }
         public void LoadExperiment(int number)
@@ -328,6 +335,6 @@ namespace GravityBox.Venom
         }
         internal void LatchGuidedGate()=>GateLatched=true;
         private void OnApplicationPause(bool pause) { if (pause && !Paused) TogglePause(); }
-        private void OnDestroy() { Time.timeScale = 1; }
+        private void OnDestroy() { Celebration?.Reset(); Time.timeScale = 1; }
     }
 }
