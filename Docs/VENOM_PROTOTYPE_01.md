@@ -2,12 +2,12 @@
 
 Prototype trên nhánh `Venom`, phát triển từ bản 23 thí nghiệm trước campaign 100. Scene riêng tại `Assets/_Game/Venom/Venom01.unity`. Mục tiêu là kiểm tra một sinh vật mềm có thể tách để phối hợp rồi nhập lại dưới cùng một thao tác nghiêng hộp.
 
-Màn 01 giữ cơ chế nghiêng hộp. Hai biến thể hộp đứng yên nằm ở [màn 02–03](VENOM_CONTROLS_02_03.md); app macOS có nút chọn cả ba màn.
+Màn 01 giữ cơ chế nghiêng hộp. Hai biến thể hộp đứng yên nằm ở [màn 02–03](VENOM_CONTROLS_02_03.md); app macOS hiện có năm màn, gồm thêm bò tường ở màn 04 và cắt để chui khe ở màn 05.
 
 ## Vòng chơi
 
 1. Khối vật chất ở đầu hộp. Nghiêng nhẹ về phía máy chém; quan sát khối chảy, bẹp và kéo dài.
-2. Lưỡi chém trượt trên ray theo trọng lực, cắt các liên kết đi qua mặt lưỡi. Vách giữa giữ hai phần cách nhau khi đi vào khu vực nút A/B.
+2. Dao chờ ở vị trí nâng cho cơ thể trượt vào bên dưới, rồi nhả và trượt trên ray theo trọng lực, cắt các liên kết đi qua mặt lưỡi. Vách giữa giữ hai phần cách nhau khi đi vào khu vực nút A/B.
 3. Hai phần khác nhau phải cùng đè đủ vật chất lên hai nút trong 0,22 giây. Cửa có motor trượt lên và chốt giữ mở. Người chơi có thể tập trung đưa cả hai ra sau cửa.
 4. Nghiêng để đưa hai phần sát nhau trong khoang thu hẹp sau cửa. Hai vách kính có viền mảnh dẫn các phần về cùng một chỗ bằng lực tiếp xúc. Bề mặt nối lại, lực liên kết tăng dần trong 0,65 giây, có ánh xanh rất nhẹ tại thời điểm nhập.
 5. Đưa khối tới lỗ tròn có viền sáng mảnh. Hỗ trợ cục bộ căn khối vào cửa; hạt vẫn có collider và phải đi qua lỗ thật. Hoàn thành khi cả 32 hạt đã thoát.
@@ -66,7 +66,7 @@ Mỗi nút nhận tải từ các hạt thực sự có tiếp xúc trên mặt 
 
 ## Tạo lại, build và kiểm chứng
 
-Scene/profile/mesh đã được lưu trong Git; không cần Generate để chơi. **Gravity Box → Venom → Generate Experiment 01** sẽ tạo lại nội dung, ghi đè thay đổi author trong scene và thông số builder quản lý. **Gravity Box → Venom → Build macOS** hoặc `bash Tools/build-venom.sh` xuất app Venom gồm cả ba màn. `Tools/build.sh` vẫn dành cho lab bi thép.
+Scene/profile/mesh đã được lưu trong Git; không cần Generate để chơi. **Gravity Box → Venom → Generate Experiment 01** sẽ tạo lại nội dung, ghi đè thay đổi author trong scene và thông số builder quản lý. **Gravity Box → Venom → Build macOS** hoặc `bash Tools/build-venom.sh` xuất app Venom gồm cả năm màn. `Tools/build.sh` vẫn dành cho lab bi thép.
 
 `VenomPrototypeTests` kiểm tra khối nghỉ ổn định, khối lượng qua cắt, vùng cắt, ngăn hàn ngay lập tức, đường giải bằng rotation/PhysX thực, hai nút không thể được giải bởi một nhóm, không thắng khi mới thoát một phần và reset. Đường giải tự động không đặt vị trí sinh vật: chỉ đổi orientation mục tiêu của hộp, gồm đoạn nghiêng ban đầu rồi phản hồi vị trí/vận tốc để đưa khối về khoang nhập và lỗ.
 
@@ -91,3 +91,15 @@ Log/XML/ảnh QA đặt trong `Artifacts/Venom01`, build trong `Builds/Venom`; c
 - Nhịp animation có hệ số riêng 1,5; vẫn đóng băng khi pause, xóa khi reset và không ghi vị trí/vận tốc vật lý.
 
 Kiểm tra hiện tại gồm 12 trường hợp Venom: bổ sung rơi hai phần với tốc độ 2/5/10 m/s, đo riêng hạt/skin, lật nhiều trục trong 32 giây và giới hạn đáy cơ cấu. Đường giải vẫn dùng thao tác xoay và PhysX, giữ nghiêng 26° qua đoạn thu hẹp trước khi giảm góc ở miệng lỗ; hoàn thành đủ 32/32 hạt, mesh vẫn hiện phần thoát. Log/XML và capture nằm trong `Artifacts/VenomCollision`. Đây là kiểm tra các tình huống cụ thể, không phải chứng minh mọi va chạm có thể xảy ra đều không xuyên.
+
+## Dễ cắt khi nghiêng — 10/09/2026
+
+Màn 01 nay bắt đầu với dao nâng thêm 64 mm. Chốt giữ mở cho tới khi tâm cơ thể nằm trong vùng ±45 mm dọc lưỡi và ±40 mm ngang lưỡi. Khi nhả, dao vẫn có khối lượng 40 g, rơi với trọng lực thế giới 9,81 m/s² và chịu giới hạn hành trình thật. Vùng này chỉ kích hoạt chuyển động dao; việc cắt vẫn yêu cầu liên kết vật chất giao với mặt lưỡi. Không mở rộng mặt cắt hoặc tự chia từ xa.
+
+Sau ít nhất 1,8 giây, nếu chém hụt hoặc thân đã nhập lại và đi ra khỏi vùng dao hơn 75 mm theo chiều dọc, cơ cấu nâng dao bằng lực lò xo để có thể thử lại. Dao không tự nâng khi hai phần đang tách hoặc cửa đã chốt mở. Màn 02/03 giữ vùng nhả và lực ép cũ; màn 04/05 giữ cơ chế riêng.
+
+Giới hạn hành trình của dao màn 01 kích hoạt trong khoảng tiếp cận 15 mm để solver kịp chặn cú rơi nhanh ở 120 Hz; vị trí chặn cuối vẫn dựa trên mặt sàn thật. Kiểm tra chặn sàn nay cho sinh vật đi vào để thực sự thả dao, thay vì chỉ quan sát cơ cấu lúc chờ.
+
+Trước thay đổi, hai phép thử lệch trái/phải 18 mm ở góc nghiêng 14° không cắt được sau 8 giây. Sau thay đổi, năm lượt tiếp cận (thẳng 12°, lệch ±18 mm ở 14°, lệch ±25 mm ở 16°) xuất hiện vết tách sau khoảng 0,65–0,85 giây kể từ lúc bắt đầu nghiêng. Tỷ lệ phần tách vẫn phụ thuộc vị trí đi qua dao; không ép thành hai nửa bằng nhau.
+
+**42/42 kiểm tra PlayMode Venom qua**, gồm đường giải cắt → hai nút → nhập lại → thoát 32/32 hạt và chém hụt → tự nâng lại. XML/log: `Artifacts/Venom01/cut-easier-all-tests.*`. Kiểm tra này xác minh cơ chế và các tình huống tiếp cận nêu trên; feeling tiếp tục được đánh giá bằng bản macOS.

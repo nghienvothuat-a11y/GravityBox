@@ -94,7 +94,10 @@ namespace GravityBox.Venom
             float upper=rest.y+joint.linearLimit.limit;
             float lower=FloorBoundary.Top-bottom+.0005f;
             joint.connectedAnchor=new Vector3(rest.x,(upper+lower)*.5f,rest.z);
-            joint.linearLimit=new SoftJointLimit{limit=(upper-lower)*.5f,bounciness=0,contactDistance=.0005f};
+            // A gravity drop from the raised latch can cover about 12 mm in one
+            // tick. Activate the limit early enough to catch that arrival.
+            float contactDistance = body == Blade && !DirectControl ? .015f : .0005f;
+            joint.linearLimit=new SoftJointLimit{limit=(upper-lower)*.5f,bounciness=0,contactDistance=contactDistance};
         }
 
         private void FixedUpdate() { if (!Paused && !Lost) Step(Time.fixedDeltaTime); }
@@ -106,21 +109,29 @@ namespace GravityBox.Venom
             {
                 SplitVault?.Cut();Locomotion.Step(dt);EvaluateEscape(dt);CheckLost();return;
             }
-            if (DirectControl && !BladeReleased)
+            if (!BladeReleased)
             {
                 Vector3 centre = Vector3.zero;
                 foreach (var body in Organism.Bodies) centre += Rotation.transform.InverseTransformPoint(body.position)/32;
-                BladeReleased = Mathf.Abs(centre.z-BladeRest.z) < .018f && Mathf.Abs(centre.x-BladeRest.x) < .035f;
+                // In the tilt experiment, let the soft body slide beneath a
+                // raised knife before releasing its weight. A knife already on
+                // the floor mostly deflects an off-centre body around its tip.
+                float approach = DirectControl ? .018f : .045f;
+                float alignment = DirectControl ? .035f : .04f;
+                BladeReleased = Mathf.Abs(centre.z-BladeRest.z) < approach && Mathf.Abs(centre.x-BladeRest.x) < alignment;
                 if (!BladeReleased)
                 {
                     Vector3 parked = Rotation.transform.TransformPoint(BladeRest+Vector3.up*.064f);
                     Blade.AddForce(Rotation.transform.up*Mathf.Clamp(Vector3.Dot(parked-Blade.position,Rotation.transform.up)*65-Vector3.Dot(Blade.linearVelocity,Rotation.transform.up)*2,-2,2));
                 }
             }
-            if (!DirectControl || BladeReleased) Blade.AddForce(Vector3.down * 9.81f, ForceMode.Acceleration);
-            if (DirectControl && BladeReleased)
+            if (BladeReleased)
             {
                 bladeCycle += dt;
+                Blade.AddForce(Vector3.down * 9.81f, ForceMode.Acceleration);
+            }
+            if (DirectControl && BladeReleased)
+            {
                 // A powered press is necessary in a stationary chamber: gravity
                 // alone can leave the blade supported on top of the soft body.
                 float downSpeed = Vector3.Dot(Blade.linearVelocity,Rotation.transform.up);
@@ -131,12 +142,14 @@ namespace GravityBox.Venom
                     drive = height*65-downSpeed*2+Blade.mass*9.81f;
                 }
                 Blade.AddForce(Rotation.transform.up*Mathf.Clamp(drive,-1.5f,1.5f));
-                if (bladeCycle > 1.8f && !GateLatched && Organism.FragmentCount == 1)
-                {
-                    float z = 0;
-                    foreach (var body in Organism.Bodies) z += Rotation.transform.InverseTransformPoint(body.position).z/32;
-                    if (Mathf.Abs(z-BladeRest.z) > .075f) { BladeReleased = false; bladeCycle = 0; }
-                }
+            }
+            // Re-arm after a missed pass or a reunited body has moved clear.
+            // The raised position is reached by the same physical return spring.
+            if (BladeReleased && bladeCycle > 1.8f && !GateLatched && Organism.FragmentCount == 1)
+            {
+                float z = 0;
+                foreach (var body in Organism.Bodies) z += Rotation.transform.InverseTransformPoint(body.position).z/32;
+                if (Mathf.Abs(z-BladeRest.z) > .075f) { BladeReleased = false; bladeCycle = 0; }
             }
             Organism.Cut(Blade.transform, BladeHalfSize);
             Locomotion?.Step(dt);
@@ -267,8 +280,7 @@ namespace GravityBox.Venom
             Rotation.GetComponent<Rigidbody>().position = initialRootPosition; Rotation.ResetState();
             if(!WallCrawl)
             {
-                ResetBody(Blade, BladeRest); ResetBody(Gate, GateRest);
-                if (DirectControl) ResetBody(Blade,BladeRest+Vector3.up*.064f);
+                ResetBody(Blade,BladeRest+Vector3.up*.064f); ResetBody(Gate,GateRest);
                 LeftPad.ResetPlate(Rotation.transform); RightPad.ResetPlate(Rotation.transform);
             }
             else GateLatched=true;

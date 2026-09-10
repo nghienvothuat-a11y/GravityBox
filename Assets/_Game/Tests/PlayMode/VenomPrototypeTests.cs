@@ -101,6 +101,7 @@ namespace GravityBox.Tests
         }
         [Test] public void ClosedMechanismsStopAboveFloor()
         {
+            Steps(60);level.Rotation.SetTargetOrientation(Quaternion.Euler(-16,0,0));
             for(int tick=0;tick<360;tick++)
             {
                 Steps(1);
@@ -116,6 +117,54 @@ namespace GravityBox.Tests
                     }
                 }
             }
+            Assert.That(level.BladeReleased,Is.True,"Exercise the dropped knife as well as its raised waiting position.");
+        }
+        [TestCase(0f,12f)]
+        [TestCase(-.018f,14f)]
+        [TestCase(.018f,14f)]
+        [TestCase(-.025f,16f)]
+        [TestCase(.025f,16f)]
+        public void GentleTiltCutsWithoutPreciseAlignment(float offset,float angle)
+        {
+            var matter=level.Organism;
+            foreach(var body in matter.Bodies)body.position+=Vector3.right*offset;
+            Physics.SyncTransforms();Steps(60);
+            level.Rotation.SetTargetOrientation(Quaternion.Euler(-angle,0,0));
+            int peak=1;
+            for(int tick=0;tick<360;tick++)
+            {
+                Steps(1);peak=Mathf.Max(peak,matter.FragmentCount);
+                if(matter.CutCount>0&&matter.FragmentCount>1)
+                {
+                    Debug.Log($"GENTLE CUT offset={offset:F3} tilt={angle} time={tick*Dt:F2} groups={string.Join(",",matter.Groups.GroupBy(g=>g).Select(g=>g.Count()))}");
+                    break;
+                }
+            }
+            Assert.That(peak,Is.GreaterThan(1),$"A {angle} degree tilt, offset {offset*1000} mm, should divide matter at the knife without rocking the box repeatedly.");
+            Assert.That(matter.CutCount,Is.GreaterThan(0));
+            Assert.That(matter.TotalMass,Is.EqualTo(.096f).Within(.000001f));
+            Assert.That(level.Lost,Is.False);
+        }
+        [Test] public void TiltKnifeWaitsForMatterAndRearmsAfterAMissedPass()
+        {
+            Steps(180);
+            Assert.That(level.BladeReleased,Is.False,"Do not drop the blade before the player approaches.");
+            Assert.That(level.Blade.position.y-.06f,Is.GreaterThan(0),"The raised knife must leave room to slide beneath it.");
+            Assert.That(level.Organism.CutCount,Is.Zero);
+
+            // A glancing pass lies entirely on one side of the cutting plane.
+            // It may release the knife, but must not split matter at a distance.
+            var matter=level.Organism;
+            level.ResetExperiment();
+            foreach(var body in matter.Bodies)body.position+=new Vector3(.037f,0,-.08f);
+            Physics.SyncTransforms();Steps(1);
+            Assert.That(level.BladeReleased,Is.True);
+            foreach(var body in matter.Bodies)
+            {body.position+=new Vector3(.09f,0,.08f);body.linearVelocity=Vector3.zero;}
+            Physics.SyncTransforms();Steps(360);
+            Assert.That(matter.FragmentCount,Is.EqualTo(1));Assert.That(matter.CutCount,Is.Zero);
+            Assert.That(level.BladeReleased,Is.False,"A missed pass should leave another chance without resetting the level.");
+            Assert.That(level.Blade.position.y-.06f,Is.GreaterThan(0));
         }
         [Test] public void NaturalTiltCutsOpensMergesAndEscapes()
         {

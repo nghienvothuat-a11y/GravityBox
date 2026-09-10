@@ -11,6 +11,7 @@ Nhánh **`Venom`** có năm màn thử nghiệm điều khiển sinh vật mềm
 | 05 — Chia ra để lọt vào | Điều khiển mảnh lớn sau khi cắt | Dao cắt theo vị trí; phần lớn luồn vào hộp nhỏ, phần còn lại tự chui theo qua khe |
 
 - Chạy macOS: `Builds/Venom/macOS/Venom.app`. Nút ở đầu HUD hoặc **1/2/3/4/5** chọn màn; **R** thử lại; **P/Esc** tạm dừng.
+- Màn 01: dao chờ ở vị trí nâng, tự thả xuống theo trọng lực khi sinh vật trượt vào dưới lưỡi. Vùng nhả dao rộng hơn để dễ cắt khi nghiêng nhẹ hoặc căn hơi lệch; chém hụt thì dao tự nâng lại sau khi thân rời vùng dao.
 - Màn 02/03: **giữ–kéo** để bò hoặc **WASD/mũi tên**. Màn 02 chạm phần muốn chọn, dùng nút A/B hoặc **Tab**. Màn 03 luôn chọn phần lớn nhất.
 - Màn 04: **giữ–kéo một ngón / chuột trái** hoặc **WASD/mũi tên** để bò; **kéo hai ngón / chuột phải** để xoay hộp. Giữ hướng để bò vòng qua mép; thả tay thì bám tại chỗ. Xoay hộp để nhìn rõ mặt đang bò. Lỗ thoát ở **giữa trần**; nút **Zoom In / Z** tiến gần và theo sinh vật, bấm lại để về góc toàn hộp.
 - Màn 05 giữ điều khiển bò/xoay/Zoom của màn 04. Đưa cơ thể tới dao trên trần, dẫn mảnh lớn vào khe hộp nhỏ; mảnh còn lại bám chờ đến khi chủ thể vào hẳn mới tự chui theo.
