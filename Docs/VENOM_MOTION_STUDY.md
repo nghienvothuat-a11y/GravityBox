@@ -43,7 +43,7 @@ Hướng phát triển tiếp nếu cảm giác này phù hợp: thêm màng n�
 
 ## Kiểm chứng
 
-- 9/9 `VenomPrototypeTests` qua trên Unity 6000.3.19f1, có graphics.
+- 12/12 `VenomPrototypeTests` qua trên Unity 6000.3.19f1, có graphics.
 - Kiểm tra vị trí/vận tốc hạt không đổi qua render ở cả lúc yên và chuyển động; đầu bám nằm trên collider và giữ tọa độ cục bộ; nhả khi rời mặt đỡ.
 - Pause đóng băng cả các đỉnh mesh. Dịch chuyển camera trong lúc pause không đổi tư thế. Reset xóa trạng thái animation.
 - Đường giải PhysX vẫn cắt, mở cửa bằng hai phần, nhập và thoát đủ 32 hạt.
@@ -51,3 +51,7 @@ Hướng phát triển tiếp nếu cảm giác này phù hợp: thêm màng n�
 - Build macOS cập nhật tại `Builds/Venom/macOS/Venom.app`. Chưa build Android cho lần này.
 
 [Ảnh và animation capture của prototype](Images/VenomLife/README.md). Feeling cần người chơi thử trực tiếp: kiểm tra cơ chế thành công không đồng nghĩa đã đạt chất lượng diễn xuất điện ảnh.
+
+### Tinh chỉnh sau phản hồi chơi
+
+Nhịp diễn xuất hiện là 1,5×; phồng thân 3,6 mm, đỉnh tò mò tối đa 41 mm, tầm vươn 34 mm. Mesh theo từng khung hình thay vì giữ tư thế thế giới ở 30 Hz. Skin được giới hạn ở sàn đặc, tôn trọng lỗ thật và các nguồn vật chất đã thoát. Chặn hành trình dưới của cửa/lưỡi chém được sửa cùng lúc để không ép khối vào sàn. [Chi tiết va chạm và kiểm chứng](VENOM_PROTOTYPE_01.md#sửa-tiếp-xúc-sàn-và-tăng-sức-sống--10092026).

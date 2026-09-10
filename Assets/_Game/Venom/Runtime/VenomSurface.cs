@@ -24,13 +24,17 @@ namespace GravityBox.Venom
         private readonly int[,] tetrahedra = { {0,5,1,6},{0,1,2,6},{0,2,3,6},{0,3,7,6},{0,7,4,6},{0,4,5,6} };
         private readonly Vector3Int[] offsets = { new Vector3Int(0,0,0),new Vector3Int(1,0,0),new Vector3Int(1,1,0),new Vector3Int(0,1,0),new Vector3Int(0,0,1),new Vector3Int(1,0,1),new Vector3Int(1,1,1),new Vector3Int(0,1,1) };
         private MaterialPropertyBlock block;
-        private float nextRefresh;
         private VenomLifeAnimation life;
+        private VenomFloorBoundary floor;
+        private Matrix4x4 toFloor,fromFloor;
+        private readonly Vector3[] floorPoints = new Vector3[CohesiveOrganism.ParticleCount+6];
+        private int sourceCount;
+        private bool allAboveFloor;
         public int VertexCount => mesh != null ? mesh.vertexCount : 0;
 
         public void Initialize(CohesiveOrganism source, VenomLevelController owner)
         {
-            organism = source; block = new MaterialPropertyBlock();
+            organism = source; floor = owner.FloorBoundary; block = new MaterialPropertyBlock();
             var go = new GameObject("Continuous wet skin",typeof(MeshFilter),typeof(MeshRenderer)); go.transform.SetParent(transform,false);
             mesh = new Mesh { name = "Living isosurface", indexFormat = IndexFormat.UInt32 }; mesh.MarkDynamic();
             go.GetComponent<MeshFilter>().sharedMesh = mesh; skin = go.GetComponent<MeshRenderer>(); skin.sharedMaterial = source.Profile.Skin;
@@ -40,14 +44,18 @@ namespace GravityBox.Venom
         }
         private void LateUpdate()
         {
-            if (organism == null || Time.unscaledTime < nextRefresh) return;
-            nextRefresh = Time.unscaledTime + 1f/30; Rebuild();
+            if (organism == null) return;
+            // Match the interpolated chamber every displayed frame. A cached
+            // world-space skin otherwise trails a fast-turning floor by 33 ms.
+            Rebuild();
             block.SetColor("_EmissionColor", new Color(.02f,.22f,.15f) * organism.FusionGlow * .2f);
             skin.SetPropertyBlock(block);
         }
         public void Rebuild(bool interpolate = true)
         {
             vertices.Clear(); normals.Clear(); triangles.Clear(); int seenCount = 0;
+            toFloor = floor.transform.worldToLocalMatrix*transform.localToWorldMatrix;
+            fromFloor = transform.worldToLocalMatrix*floor.transform.localToWorldMatrix;
             life.BeginFrame();
             for (int i = 0; i < CohesiveOrganism.ParticleCount; i++)
             {
@@ -66,6 +74,12 @@ namespace GravityBox.Venom
         }
         private void BuildFragment(int count)
         {
+            sourceCount = count; allAboveFloor = true;
+            for (int i=0;i<count;i++)
+            {
+                floorPoints[i] = toFloor.MultiplyPoint3x4(points[i]);
+                allAboveFloor &= floorPoints[i].y >= floor.Top-.0005f;
+            }
             float threshold=organism.Profile.SkinThreshold;
             Vector3 min=points[0]-Vector3.one*supports[0], max=points[0]+Vector3.one*supports[0];
             for(int i=1;i<count;i++){min=Vector3.Min(min,points[i]-Vector3.one*supports[i]);max=Vector3.Max(max,points[i]+Vector3.one*supports[i]);}
@@ -119,8 +133,39 @@ namespace GravityBox.Venom
         }
         private void Triangle(Vector3 a,Vector3 b,Vector3 c,Vector3 an,Vector3 bn,Vector3 cn)
         {
+            ConstrainFloor(ref a,ref an); ConstrainFloor(ref b,ref bn); ConstrainFloor(ref c,ref cn);
+            if (Vector3.Cross(b-a,c-a).sqrMagnitude < 1e-18f) return;
             if(Vector3.Dot(Vector3.Cross(b-a,c-a),an+bn+cn)<0){(b,c)=(c,b);(bn,cn)=(cn,bn);}
             int i=vertices.Count;vertices.Add(a);vertices.Add(b);vertices.Add(c);normals.Add(an);normals.Add(bn);normals.Add(cn);triangles.Add(i);triangles.Add(i+1);triangles.Add(i+2);
+        }
+        private void ConstrainFloor(ref Vector3 point,ref Vector3 normal)
+        {
+            Vector3 local=toFloor.MultiplyPoint3x4(point);
+            if(local.y>=floor.Top+.0002f || !floor.OverSolid(local)) return;
+            bool above=allAboveFloor;
+            if(!above)
+            {
+                // During real aperture traversal one connected skin can have
+                // sources on both sides. Only the in-box tissue gets a top cap.
+                float nearest=float.PositiveInfinity;
+                for(int i=0;i<sourceCount;i++)
+                {
+                    float distance=(local-floorPoints[i]).sqrMagnitude;
+                    if(distance<nearest){nearest=distance;above=floorPoints[i].y>=floor.Top-.0005f;}
+                }
+            }
+            if(above)
+            {
+                local.y=floor.Top+.0002f;
+                normal=fromFloor.MultiplyVector(Vector3.down).normalized;
+            }
+            else if(local.y>floor.Bottom-.0002f)
+            {
+                local.y=floor.Bottom-.0002f;
+                normal=fromFloor.MultiplyVector(Vector3.up).normalized;
+            }
+            else return;
+            point=fromFloor.MultiplyPoint3x4(local);
         }
         private void OnDestroy(){if(mesh!=null)Destroy(mesh);}
     }

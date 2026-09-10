@@ -33,7 +33,8 @@ Assembly `GravityBox.Venom` dùng lại rotation/timing của nền tảng, khô
 | `VenomContact` / `VenomPressurePlate` | Nhận tiếp xúc PhysX, lượng vật chất trên nút, chuyển động nút lò xo |
 | `VenomLevelController` | Quy tắc hai nút, cửa, đường thoát, reset và hoàn thành |
 | `VenomSurface` | Metaball + marching tetrahedra; chỉ dựng hình, không điều khiển vị trí hạt |
-| `VenomLifeAnimation` | Bề mặt nhấp nhô, đầu tò mò, xúc tua bám/nhả và chuyển trạng thái theo chuyển động/tiếp xúc |
+| `VenomLifeAnimation` | Nếp khối, đầu tò mò, xúc tua bám/nhả; tốc độ diễn xuất riêng với tốc độ vật lý |
+| `VenomFloorBoundary` | Giới hạn sàn/lỗ thật dùng cho chặn hành trình cơ cấu và vùng tiếp xúc của skin |
 | `VenomInput` / `VenomHud` | Một nguồn input nghiêng, trạng thái chia/nhập/thoát |
 | `VenomPrototypeBuilder` | Tạo scene, mesh lỗ tròn, profile và build macOS riêng |
 
@@ -47,13 +48,13 @@ Mỗi phần có ngân sách tối đa 5 xúc tua trang trí (3 với mảnh nh�
 
 Animation **không tạo lực, không có collider, không đè nút và không bổ sung khối lượng**. Vẫn có đúng 32 hạt vật lý/96 g. Tất cả nhịp dùng đồng hồ mô phỏng, đóng băng khi pause và xóa khi reset. Biến dạng hình ảnh có giới hạn, xét khoảng trống quanh cơ cấu; chưa bảo toàn thể tích mesh hay mô phỏng tương tác cơ học riêng cho từng sợi.
 
-Các tham số nằm trong `Living matter.asset`: `IdleBulge`, `CuriousHeadLift`, `TendrilReach`. [Nghiên cứu tư liệu phim, chẩn đoán và lựa chọn animation](VENOM_MOTION_STUDY.md).
+Các tham số nằm trong `Living matter.asset`: `AnimationSpeed = 1.5`, `IdleBulge = 0.0036 m`, `CuriousHeadLift = 0.041 m`, `TendrilReach = 0.034 m`. So với lượt animation trước, nhịp nhanh hơn 50%, biên độ phồng tăng khoảng 29%, độ ngóc và tầm vươn tăng khoảng 21%. [Nghiên cứu tư liệu phim, chẩn đoán và lựa chọn animation](VENOM_MOTION_STUDY.md).
 
 Mỗi nút nhận tải từ các hạt thực sự có tiếp xúc trên mặt nút; lượng tiếp xúc tối thiểu 9 g. Logic hai nút kiểm tra nhóm vật chất khác nhau, không chỉ kiểm tra tổng tải. Motor/chốt cửa là cơ cấu có nguồn năng lượng được mô hình hoá chủ ý; sinh vật không nhận lực đẩy từ thao tác mở cửa ngoài tiếp xúc thông thường.
 
 ## Tham số và giới hạn
 
-- 1 Unity unit = 1 m; trọng lực 9,81 m/s²; mô phỏng 120 Hz; mesh làm mới tối đa 30 Hz.
+- 1 Unity unit = 1 m; trọng lực 9,81 m/s²; mô phỏng 120 Hz; mesh dựng lại mỗi khung hình hiển thị, mục tiêu 60 fps.
 - 32 hạt, bán kính collider 9 mm, mỗi hạt 3 g; tổng 96 g. Hộp bên trong rộng 50 × 64 cm, sâu khoảng 14 cm; lỗ thoát đường kính 7 cm.
 - Lực đàn hồi liên kết 2,6 N/m; cản vận tốc tương đối 0,009 N·s/m; chiều dài nghỉ biến đổi dẻo theo cấu hình. Lực cặp bằng nhau và ngược chiều; không điều khiển một tâm blob thay cho từng phần.
 - Hỗ trợ thoát trong phạm vi 5,5 cm theo phương mặt lỗ và 6 cm phía trong; gia tốc hỗ trợ tối đa 4,5 m/s². Đây là hỗ trợ gameplay theo yêu cầu trước đó, chỉ hoạt động sau khi cửa mở.
@@ -78,3 +79,13 @@ Log/XML/ảnh QA đặt trong `Artifacts/Venom01`, build trong `Builds/Venom`; c
 - [Ảnh trạng thái và nguồn ảnh](Images/Venom01/README.md).
 
 - Lần chỉnh theo nghiên cứu symbiote: 9/9 kiểm tra Venom chạy lại thành công, bổ sung kiểm tra render lúc trượt không đổi vật lý và toàn bộ mesh đứng yên khi pause/đổi camera. Các con số 130 PlayMode/8 EditMode phía trên là lần chạy toàn dự án trước đó.
+
+## Sửa tiếp xúc sàn và tăng sức sống — 10/09/2026
+
+- Joint của cửa/lưỡi chém giờ có chặn dưới dựa trên mặt sàn và đáy collider. Trước đó giới hạn đối xứng quanh vị trí nghỉ cho phép cơ cấu đi xuyên sàn; cửa còn hạ khoảng 1 cm dưới vị trí nghỉ do tải trọng. Giới hạn trên của cơ cấu được giữ nguyên. Không tạo một mặt sàn vô hình để bắt vật chất.
+- Các hạt vẫn dùng Continuous Dynamic CCD ở 120 Hz. Giới hạn tốc độ giải xuyên tiếp xúc tăng từ 0,6 lên 2 m/s để khối bị ép phục hồi sớm hơn; đây không phải giới hạn vận tốc chuyển động hay giảm trọng lực.
+- Skin có mặt tiếp xúc giới hạn theo sàn đặc. Trong phép thử va sàn, hạt thấp nhất nằm khoảng y = −0,058 m nhưng mesh cũ xuống khoảng −0,071 m, trong khi mặt sàn ở −0,067 m. Sau sửa, đáy skin trên sàn ở −0,0668 m. Mô ở lỗ thật và mô đã thoát vẫn được dựng phía dưới sàn.
+- Mesh dựng lại mỗi LateUpdate để theo đúng tư thế nội suy của hộp. Ngân sách làm mới 30 Hz trước đó có thể để bề mặt trong không gian thế giới chậm hơn hộp đang xoay.
+- Nhịp animation có hệ số riêng 1,5; vẫn đóng băng khi pause, xóa khi reset và không ghi vị trí/vận tốc vật lý.
+
+Kiểm tra hiện tại gồm 12 trường hợp Venom: bổ sung rơi hai phần với tốc độ 2/5/10 m/s, đo riêng hạt/skin, lật nhiều trục trong 32 giây và giới hạn đáy cơ cấu. Đường giải vẫn dùng thao tác xoay và PhysX, giữ nghiêng 26° qua đoạn thu hẹp trước khi giảm góc ở miệng lỗ; hoàn thành đủ 32/32 hạt, mesh vẫn hiện phần thoát. Log/XML và capture nằm trong `Artifacts/VenomCollision`. Đây là kiểm tra các tình huống cụ thể, không phải chứng minh mọi va chạm có thể xảy ra đều không xuyên.

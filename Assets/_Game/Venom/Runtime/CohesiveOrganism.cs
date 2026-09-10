@@ -52,7 +52,9 @@ namespace GravityBox.Venom
                 body.mass = profile.ParticleMass; body.useGravity = false; body.linearDamping = .08f; body.angularDamping = 2;
                 body.interpolation = RigidbodyInterpolation.Interpolate;
                 body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-                body.maxDepenetrationVelocity = .6f; body.solverIterations = 20; body.solverVelocityIterations = 8;
+                // Resolve a compressed contact before it can embed a 9 mm node
+                // in the thin slab. This is contact recovery, not a speed cap.
+                body.maxDepenetrationVelocity = 2f; body.solverIterations = 20; body.solverVelocityIterations = 8;
                 body.sleepThreshold = 0;
                 var shape = node.GetComponent<SphereCollider>(); shape.radius = profile.ParticleRadius;
                 shape.sharedMaterial = profile.Contact; shape.contactOffset = .0003f;

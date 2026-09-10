@@ -19,6 +19,7 @@ namespace GravityBox.Venom
         public float ApertureRadius = .035f;
         public Vector3 BladeHalfSize = new Vector3(.003f,.06f,.055f);
         public CohesiveOrganism Organism { get; private set; }
+        public VenomFloorBoundary FloorBoundary { get; private set; }
         public bool GateLatched { get; private set; }
         public bool Completed { get; private set; }
         public bool Paused { get; private set; }
@@ -35,7 +36,12 @@ namespace GravityBox.Venom
             PhysicsTiming.Apply(); Application.targetFrameRate = 60;
             Rotation.Configure(RotationProfile, RotationMode.Free); Rotation.CaptureInitialState();
             initialRootPosition = Rotation.transform.position;
+            var floor = Rotation.GetComponentInChildren<MeshCollider>();
+            FloorBoundary = floor.gameObject.AddComponent<VenomFloorBoundary>();
+            FloorBoundary.Initialize(floor,Outlet,ApertureRadius);
             boundaries = Rotation.GetComponentsInChildren<Collider>();
+            ConfigureFloorStop(Blade,BladeRest);
+            ConfigureFloorStop(Gate,GateRest);
             Blade.transform.SetParent(Apparatus, true); Gate.transform.SetParent(Apparatus, true);
             LeftPad.transform.SetParent(Apparatus, true); RightPad.transform.SetParent(Apparatus, true);
             var matter = new GameObject("Living matter — world space"); matter.transform.SetParent(transform, false);
@@ -44,6 +50,26 @@ namespace GravityBox.Venom
             gameObject.AddComponent<VenomInput>().Initialize(this);
             gameObject.AddComponent<VenomHud>().Initialize(this);
             ResetExperiment();
+        }
+
+        private void ConfigureFloorStop(Rigidbody body,Vector3 rest)
+        {
+            // These sliders disable collision with their connected chamber, so
+            // the joint itself must stop the blade/gate before it enters the floor.
+            // Keep the authored upper end; centre a symmetric joint limit between
+            // that end and the actual lower face of the mechanism.
+            var shape=body.GetComponentInChildren<BoxCollider>();
+            float bottom=float.PositiveInfinity;
+            for(int x=-1;x<=1;x+=2)for(int y=-1;y<=1;y+=2)for(int z=-1;z<=1;z+=2)
+            {
+                Vector3 corner=shape.center+Vector3.Scale(shape.size,new Vector3(x,y,z))*.5f;
+                bottom=Mathf.Min(bottom,body.transform.InverseTransformPoint(shape.transform.TransformPoint(corner)).y);
+            }
+            var joint=body.GetComponent<ConfigurableJoint>();
+            float upper=rest.y+joint.linearLimit.limit;
+            float lower=FloorBoundary.Top-bottom+.0005f;
+            joint.connectedAnchor=new Vector3(rest.x,(upper+lower)*.5f,rest.z);
+            joint.linearLimit=new SoftJointLimit{limit=(upper-lower)*.5f,bounciness=0,contactDistance=.0005f};
         }
 
         private void FixedUpdate() { if (!Paused && !Lost) Step(Time.fixedDeltaTime); }

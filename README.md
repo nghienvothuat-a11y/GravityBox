@@ -11,6 +11,9 @@ Sinh vật dùng hạt vật lý liên kết nhớt/dẻo và bề mặt metabal
 
 Sinh vật có animation theo hướng symbiote: thân dồn và cuộn lệch, mô phía trên có độ trễ khi trượt, thỉnh thoảng dựng một đỉnh mềm để thăm dò. Các sợi bám mọc độc lập và căng mảnh rồi thu lại. Animation đọc vận tốc và tiếp xúc thật, không thêm lực hoặc thay đổi lượng vật chất cần thoát. [Tư liệu và cách áp dụng](Docs/VENOM_MOTION_STUDY.md) · [Ảnh/animation cận cảnh](Docs/Images/VenomLife/README.md).
 
+Bản cập nhật tiếp xúc sàn: cửa và lưỡi chém có chặn dưới đúng mặt sàn; skin không phình xuyên phần sàn đặc và cập nhật theo từng frame. Animation nhanh hơn **1,5×**, biên độ tăng khoảng **20–30%**. Đóng bản macOS đang chạy rồi mở lại app để nhận bản build mới. Kiểm chứng: rơi 2/5/10 m/s, lật hộp nhiều trục, chặn cơ cấu và đường giải thoát đủ vật chất.
+
+
 ## Gravity Box — Steel Ball Lab
 
 Prototype Unity tập trung vào cảm giác bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **23 bàn**: giữ 16 thí nghiệm trước và thêm bảy màn cơ khí 17–23. Hai môi trường chất lỏng dùng cùng hộp vuông/cube của bàn 02: bi chìm trong nước và nổi trong thủy ngân.

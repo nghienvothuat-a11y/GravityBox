@@ -49,7 +49,7 @@ namespace GravityBox.Venom
         private readonly List<int> triangles = new List<int>(18000);
         private readonly List<Plant> plants = new List<Plant>(48);
         private Mesh tendrils;
-        private float clock = -1, dt;
+        private float clock, dt, previousSimulationTime = -1;
         public float HeadAmount { get; private set; }
         public float HeadHeight { get; private set; }
         public int TendrilCount { get; private set; }
@@ -68,9 +68,11 @@ namespace GravityBox.Venom
         public void BeginFrame()
         {
             float time = organism.SimulationTime;
-            if (time < clock) Array.Clear(fragments, 0, fragments.Length);
-            dt = clock < 0 || time < clock ? 0 : Mathf.Min(.05f,time-clock);
-            clock = time;
+            bool reset = time < previousSimulationTime;
+            if (reset) { Array.Clear(fragments,0,fragments.Length); clock = 0; }
+            dt = previousSimulationTime < 0 || reset ? 0 : Mathf.Min(.05f,time-previousSimulationTime)*organism.Profile.AnimationSpeed;
+            previousSimulationTime = time;
+            clock += dt;
             vertices.Clear(); normals.Clear(); triangles.Clear(); plants.Clear();
             HeadAmount = HeadHeight = CrawlAmount = 0; TendrilCount = 0;
             foreach (var fragment in fragments) if (fragment != null) fragment.Seen = false;
@@ -217,13 +219,13 @@ namespace GravityBox.Venom
                 float upper = Smooth(bottom-.003f,top+.003f,height);
                 float lobe = Mathf.Exp(-((x-front)*(x-front)/.0003f+(z-lateral)*(z-lateral)/.00045f))*wave;
                 float fold = organism.Profile.IdleBulge*activity*(lobe*2.8f-.7f)*upper;
-                float stretch = 1+state.Moving*.23f;
+                float stretch = 1+state.Moving*.28f;
                 Vector3 shape = forward*(x*(stretch-1)) + (side*z+up*height)*(1/Mathf.Sqrt(stretch)-1);
                 Vector3 shift = state.Lag*upper + up*fold - forward*(lobe*.003f*upper);
                 // A crest borrows its shoulder shape from the body rather than
                 // looking like a sphere on a separately inflated stalk.
                 shift += forward*(state.Head*.006f*upper)-up*(state.Head*.002f*(1-upper));
-                deformation[i] = Vector3.ClampMagnitude(shape+shift,.012f);
+                deformation[i] = Vector3.ClampMagnitude(shape+shift,.014f);
                 average += deformation[i];
             }
             average /= count;

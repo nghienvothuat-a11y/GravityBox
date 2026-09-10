@@ -32,7 +32,7 @@ namespace GravityBox.Tests
         }
         private void Steps(int count)
         {
-            for(int i=0;i<count;i++){level.Rotation.Step(Dt);level.Step(Dt);Physics.Simulate(Dt);}
+            for(int i=0;i<count;i++){level.Step(Dt);level.Rotation.Step(Dt);Physics.Simulate(Dt);}
         }
         [Test] public void MatterKeepsMassAndCohesionAtRest()
         {
@@ -44,6 +44,78 @@ namespace GravityBox.Tests
             Assert.That(matter.Bodies.Max(b=>b.linearVelocity.magnitude),Is.LessThan(.08f));
             Assert.That(matter.Bodies.Min(b=>b.position.y),Is.GreaterThan(-.069f));
             matter.GetComponent<VenomSurface>().Rebuild();Assert.That(matter.GetComponent<VenomSurface>().VertexCount,Is.GreaterThan(200));
+        }
+        [Test] public void FastFragmentsCannotCrossSolidFloor()
+        {
+            // Both game-scale falls and impacts beyond the energy of one box-height
+            // drop. Initial conditions only; subsequent movement is entirely PhysX.
+            foreach(float speed in new[]{2f,5f,10f})
+            {
+                level.ResetExperiment();
+                var matter=level.Organism;var box=level.Rotation.transform;
+                matter.Cut(level.Spawn,new Vector3(.003f,.06f,.055f));
+                Vector3 centre=matter.Bodies.Aggregate(Vector3.zero,(sum,b)=>sum+b.position)/32;
+                foreach(var body in matter.Bodies)
+                {
+                    body.position+=new Vector3(.115f,.018f,-.015f)-centre;
+                    body.linearVelocity=Vector3.down*speed;
+                }
+                Physics.SyncTransforms();
+                for(int frame=0;frame<120;frame++)
+                {
+                    Steps(1);
+                    for(int i=0;i<32;i++)
+                    {
+                        Vector3 p=box.InverseTransformPoint(matter.Bodies[i].position);
+                        Assert.That(p.y,Is.GreaterThan(-.073f),$"Floor crossed at {speed} m/s, step {frame}, particle {i}, p={p:F5}");
+                    }
+                    if(frame==20)
+                    {
+                        matter.GetComponent<VenomSurface>().Rebuild(false);
+                        var skin=matter.GetComponentsInChildren<MeshFilter>().First(m=>m.name=="Continuous wet skin");
+                        float lowestSkin=skin.sharedMesh.vertices.Min(v=>box.InverseTransformPoint(skin.transform.TransformPoint(v)).y);
+                        Debug.Log($"IMPACT {speed}m/s: lowest particle={matter.Bodies.Min(b=>box.InverseTransformPoint(b.position).y):F5}, skin={lowestSkin:F5}");
+                        Capture($"impact-{speed}");
+                        Assert.That(lowestSkin,Is.GreaterThanOrEqualTo(-.0671f),"The visible skin must stay above solid floor as well as the physical nodes.");
+                    }
+                }
+            }
+        }
+        [Test] public void RepeatedFullBoxTurnsKeepMatterInsideShell()
+        {
+            var matter=level.Organism;var box=level.Rotation.transform;
+            var orientations=new[]{new Vector3(180,0,0),Vector3.zero,new Vector3(0,0,180),Vector3.zero,
+                new Vector3(180,90,90),new Vector3(0,180,-90),new Vector3(180,0,-90),Vector3.zero};
+            for(int tick=0;tick<orientations.Length*480;tick++)
+            {
+                level.Rotation.SetTargetOrientation(Quaternion.Euler(orientations[tick/480]));
+                Steps(1);
+                for(int i=0;i<32;i++)
+                {
+                    Vector3 p=box.InverseTransformPoint(matter.Bodies[i].position);
+                    Assert.That(Mathf.Abs(p.x),Is.LessThan(.268f),$"Side crossed: tick {tick}, particle {i}, p={p:F5}");
+                    Assert.That(Mathf.Abs(p.z),Is.LessThan(.338f),$"End crossed: tick {tick}, particle {i}, p={p:F5}");
+                    Assert.That(p.y,Is.InRange(-.073f,.085f),$"Floor/cover crossed: tick {tick}, particle {i}, p={p:F5}");
+                }
+            }
+        }
+        [Test] public void ClosedMechanismsStopAboveFloor()
+        {
+            for(int tick=0;tick<360;tick++)
+            {
+                Steps(1);
+                if(tick<60)continue;
+                foreach(var mechanism in new[]{level.Blade,level.Gate})
+                {
+                    var shape=mechanism.GetComponentInChildren<BoxCollider>();
+                    for(int x=-1;x<=1;x+=2)for(int z=-1;z<=1;z+=2)
+                    {
+                        Vector3 corner=shape.center+Vector3.Scale(shape.size,new Vector3(x,-1,z))*.5f;
+                        Vector3 local=level.Rotation.transform.InverseTransformPoint(shape.transform.TransformPoint(corner));
+                        Assert.That(local.y,Is.GreaterThan(-.0675f),$"{mechanism.name} must not press through the floor: {local.y:F5}");
+                    }
+                }
+            }
         }
         [Test] public void NaturalTiltCutsOpensMergesAndEscapes()
         {
@@ -62,6 +134,10 @@ namespace GravityBox.Tests
                         var v=active.Aggregate(Vector3.zero,(sum,b)=>sum+box.InverseTransformDirection(b.linearVelocity-root.GetPointVelocity(b.position)))/active.Length;
                         float targetZ=level.Organism.MergeCount==0?-.205f:-.235f;
                         float pitch=level.Organism.MergeCount==0?-20:Mathf.Clamp((targetZ-p.z)*100-v.z*45,-16,16);
+                        // Keep tilting through the reunion cheeks. A proportional
+                        // angle alone decays below static friction before the
+                        // whole body reaches the short-range aperture assist.
+                        if(level.Organism.MergeCount>0&&p.z>-.205f) pitch=Mathf.Min(pitch,-26);
                         level.Rotation.SetTargetOrientation(Quaternion.Euler(pitch,0,Mathf.Clamp(p.x*80+v.x*40,-14,14)));
                     }
                     Steps(1);peak=Mathf.Max(peak,level.Organism.FragmentCount);
@@ -78,6 +154,10 @@ namespace GravityBox.Tests
             Assert.That(level.Organism.MergeCount,Is.GreaterThan(0),"Fragments should fuse after the divider.");
             Assert.That(level.Completed,Is.True,"All material must traverse the real round aperture.");
             Capture("06-escaped");
+            level.Organism.GetComponent<VenomSurface>().Rebuild(false);
+            var escapedSkin=level.Organism.GetComponentsInChildren<MeshFilter>().First(m=>m.name=="Continuous wet skin");
+            Assert.That(escapedSkin.sharedMesh.vertices.Min(v=>level.Rotation.transform.InverseTransformPoint(escapedSkin.transform.TransformPoint(v)).y),
+                Is.LessThan(-.083f),"Floor skin constraints must still show material emerging beneath the real aperture.");
         }
         private void Capture(string name)
         {
