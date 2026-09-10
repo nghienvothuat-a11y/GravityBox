@@ -41,13 +41,13 @@ Tách/nhập không tạo sinh vật thay thế và không teleport hạt. ID, k
 
 ### Animation sống
 
-Khi một phần có tiếp xúc đỡ và vận tốc trượt thấp, bề mặt phồng/lõm không đồng pha (biên độ cấu hình 2,8 mm). Sau khoảng 2–3 giây yên ban đầu, một cổ và đầu nhỏ nhô lên tối đa 3,4 cm, nhìn trái/phải rồi thu lại trong khoảng 3 giây. Những lần nhìn tiếp theo cách nhau lâu hơn, có lệch nhịp theo từng phần. Hai đốm mắt nhỏ giúp thấy hướng liếc; đầu và cổ là phần nối liền của field metaball.
+Bề mặt chính có nếp khối chạy chậm và bất đối xứng. Khi trượt, thân kéo theo hướng dòng chảy, mô phía trên có độ trễ. Lúc yên, thỉnh thoảng một vai dồn lên thành đỉnh mềm để thăm dò rồi thu lại; không còn cổ với hai mắt sáng hoặc hướng nhìn cố định về camera.
 
-Khi chuyển động tương đối với mặt đỡ tăng, đầu thu xuống và 4–6 xúc tua xuất hiện ở rìa mỗi phần. Mỗi xúc tua chạy vòng **vươn → giữ → co/nhả** lệch pha. Đầu bám được raycast lên collider hộp/cơ cấu thật và lưu trong tọa độ collider đó, nên nó theo đúng sàn khi người chơi xoay hộp hoặc nút trượt. Đầu bám đứng tại một điểm trong pha giữ, trong khi gốc tiếp tục theo khối; nhịp tăng khi trượt nhanh. Không đặt chân qua vách hoặc trên khoảng rỗng của lỗ. Khi rời mặt đỡ, bị kéo quá xa hoặc vào vùng thoát, xúc tua nhả ra.
+Mỗi phần có ngân sách tối đa 5 xúc tua trang trí (3 với mảnh nhỏ), không phải bộ chân cố định. Các lần mọc chọn góc mới thiên theo hướng chuyển động, có một số điểm giữ ở phía sau. Đầu sợi raycast lên collider thật và lưu trong tọa độ collider; khi khối dịch chuyển, sợi căng mảnh rồi thu về. Thời gian vươn, giữ, thu và chờ giữa các lần khác nhau. Khi rời mặt đỡ, gặp vật cản, kéo quá xa hoặc vào vùng thoát thì nhả.
 
-Những chi tiết này là animation thể hiện ý định sinh vật đang cố bò: **không tạo lực, không có collider, không đè nút và không tính là vật chất bổ sung**. Vẫn có đúng 32 hạt vật lý/96 g. Cổ, đầu và xúc tua chưa có tương tác cơ học độc lập. Animation dùng đồng hồ mô phỏng: pause đóng băng cả nhịp sống, reset xoá đầu/điểm bám, tách/nhập cập nhật animation theo nhóm hạt ổn định.
+Animation **không tạo lực, không có collider, không đè nút và không bổ sung khối lượng**. Vẫn có đúng 32 hạt vật lý/96 g. Tất cả nhịp dùng đồng hồ mô phỏng, đóng băng khi pause và xóa khi reset. Biến dạng hình ảnh có giới hạn, xét khoảng trống quanh cơ cấu; chưa bảo toàn thể tích mesh hay mô phỏng tương tác cơ học riêng cho từng sợi.
 
-Các tham số hình ảnh nằm trong `Living matter.asset`: `IdleBulge`, `CuriousHeadLift`, `TendrilReach`. Giới hạn khoảng trống được kiểm tra trước khi nhô đầu; kích thước và số xúc tua được giữ nhỏ để nhìn rõ đường đi của khối.
+Các tham số nằm trong `Living matter.asset`: `IdleBulge`, `CuriousHeadLift`, `TendrilReach`. [Nghiên cứu tư liệu phim, chẩn đoán và lựa chọn animation](VENOM_MOTION_STUDY.md).
 
 Mỗi nút nhận tải từ các hạt thực sự có tiếp xúc trên mặt nút; lượng tiếp xúc tối thiểu 9 g. Logic hai nút kiểm tra nhóm vật chất khác nhau, không chỉ kiểm tra tổng tải. Motor/chốt cửa là cơ cấu có nguồn năng lượng được mô hình hoá chủ ý; sinh vật không nhận lực đẩy từ thao tác mở cửa ngoài tiếp xúc thông thường.
 
@@ -76,3 +76,5 @@ Log/XML/ảnh QA đặt trong `Artifacts/Venom01`, build trong `Builds/Venom`; c
 - Build macOS thành công bằng Unity 6000.3.19f1. Đã mở app riêng, kiểm tra HUD, kéo chuột làm hộp và sinh vật di chuyển, reset và chụp ảnh native. Chưa kiểm thử cảm giác dài hạn, Android hoặc touchscreen cho biến thể này.
 - Bản cập nhật animation đã build lại macOS: kiểm tra đủ vòng ngóc đầu/thu xuống, đầu bám xúc tua giữ đúng điểm trên collider, nhả khi không còn mặt đỡ, pause/reset và bảo toàn vị trí/vận tốc vật lý qua bước dựng hình. [Ảnh cận cảnh animation](Images/VenomLife/README.md).
 - [Ảnh trạng thái và nguồn ảnh](Images/Venom01/README.md).
+
+- Lần chỉnh theo nghiên cứu symbiote: 9/9 kiểm tra Venom chạy lại thành công, bổ sung kiểm tra render lúc trượt không đổi vật lý và toàn bộ mesh đứng yên khi pause/đổi camera. Các con số 130 PlayMode/8 EditMode phía trên là lần chạy toàn dự án trước đó.

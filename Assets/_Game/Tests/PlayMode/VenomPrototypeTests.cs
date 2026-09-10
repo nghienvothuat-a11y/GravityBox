@@ -84,20 +84,21 @@ namespace GravityBox.Tests
             string directory=System.Environment.GetEnvironmentVariable("VENOM_CAPTURE_DIR");
             if(string.IsNullOrEmpty(directory)||SystemInfo.graphicsDeviceType==GraphicsDeviceType.Null)return;
             Directory.CreateDirectory(directory);level.Organism.GetComponent<VenomSurface>().Rebuild(false);
-            var target=new RenderTexture(720,1280,24){antiAliasing=4};target.Create();
-            var old=RenderTexture.active;float oldAspect=level.View.aspect;level.View.aspect=720f/1280;
+            int width=name.Contains("motion-")?360:720,height=name.Contains("motion-")?640:1280;
+            var target=new RenderTexture(width,height,24){antiAliasing=4};target.Create();
+            var old=RenderTexture.active;float oldAspect=level.View.aspect;level.View.aspect=width/(float)height;
             float oldSize=level.View.orthographicSize;Vector3 oldPosition=level.View.transform.position;
             if(name.StartsWith("life-"))
             {
                 Vector3 centre=level.Organism.Bodies.Aggregate(Vector3.zero,(sum,b)=>sum+b.position)/32;
                 level.View.orthographicSize=.17f;level.View.transform.position=centre-level.View.transform.forward*.5f;
             }
-            var picture=new Texture2D(720,1280,TextureFormat.RGBA32,false);
+            var picture=new Texture2D(width,height,TextureFormat.RGBA32,false);
             try
             {
                 var request=new RenderPipeline.StandardRequest{destination=target};
                 RenderPipeline.SubmitRenderRequest(level.View,request);RenderPipeline.SubmitRenderRequest(level.View,request);
-                RenderTexture.active=target;picture.ReadPixels(new Rect(0,0,720,1280),0,0);picture.Apply();
+                RenderTexture.active=target;picture.ReadPixels(new Rect(0,0,width,height),0,0);picture.Apply();
                 File.WriteAllBytes(Path.Combine(directory,name+".png"),picture.EncodeToPNG());
                 Debug.Log($"VENOM CAPTURE {name}: vertices={level.Organism.GetComponent<VenomSurface>().VertexCount}");
             }
@@ -175,6 +176,8 @@ namespace GravityBox.Tests
                     if(peak>.030f&&!raised){raised=true;Capture("life-01-curious");}
                 }
                 if(raised&&life.HeadAmount<.01f)retracted=true;
+                if(frame%3==0&&System.Environment.GetEnvironmentVariable("VENOM_CAPTURE_MOTION")=="1")
+                    Capture($"life-motion-idle-{frame/3:D3}");
             }
             Assert.That(peak,Is.GreaterThan(.025f),"An idle creature should visibly lift a small head.");
             Assert.That(retracted,Is.True,"The head must return to the body between looks.");
@@ -190,7 +193,12 @@ namespace GravityBox.Tests
             int retained=0;
             for(int frame=0;frame<100;frame++)
             {
-                Steps(4);surface.Rebuild(false);peakFeet=Mathf.Max(peakFeet,life.PlantedFeet.Count);
+                Steps(4);
+                var positions=matter.Bodies.Select(b=>b.position).ToArray();
+                var velocities=matter.Bodies.Select(b=>b.linearVelocity).ToArray();
+                surface.Rebuild(false);peakFeet=Mathf.Max(peakFeet,life.PlantedFeet.Count);
+                CollectionAssert.AreEqual(positions,matter.Bodies.Select(b=>b.position).ToArray(),"Flowing skin must not steer physical matter.");
+                CollectionAssert.AreEqual(velocities,matter.Bodies.Select(b=>b.linearVelocity).ToArray());
                 peakCrawl=Mathf.Max(peakCrawl,life.CrawlAmount);
                 foreach(var plant in life.PlantedFeet)
                 {
@@ -201,6 +209,8 @@ namespace GravityBox.Tests
                     previousPlants[key]=plant;
                 }
                 if(life.TendrilCount>=4&&life.CrawlAmount>.7f&&!captured){captured=true;Capture("life-02-gripping");}
+                if(frame%3==0&&System.Environment.GetEnvironmentVariable("VENOM_CAPTURE_MOTION")=="1")
+                    Capture($"life-motion-moving-{frame/3:D3}");
             }
             Assert.That(peakFeet,Is.GreaterThan(0));Assert.That(retained,Is.GreaterThan(0),"Feet should hold a local surface anchor across frames.");
             Debug.Log($"VENOM LIFE peak crawl={peakCrawl:F3}, planted={peakFeet}");
@@ -218,8 +228,20 @@ namespace GravityBox.Tests
             for(int frame=0;frame<180&&life.HeadAmount<.9f;frame++){Steps(4);surface.Rebuild(false);}
             Assert.That(life.HeadAmount,Is.GreaterThan(.8f));
             level.TogglePause();float head=life.HeadAmount,height=life.HeadHeight;
+            var meshes=level.Organism.GetComponentsInChildren<MeshFilter>();
+            var saved=meshes.Select(m=>m.sharedMesh.vertices).ToArray();
+            Vector3 cameraPosition=level.View.transform.position;
+            level.View.transform.position+=Vector3.right;
             for(int frame=0;frame<10;frame++)surface.Rebuild(false);
             Assert.That(life.HeadAmount,Is.EqualTo(head));Assert.That(life.HeadHeight,Is.EqualTo(height));
+            for(int m=0;m<meshes.Length;m++)
+            {
+                var actual=meshes[m].sharedMesh.vertices;
+                Assert.That(actual.Length,Is.EqualTo(saved[m].Length));
+                for(int v=0;v<actual.Length;v++)
+                    Assert.That(Vector3.Distance(actual[v],saved[m][v]),Is.LessThan(.000001f),"Pause freezes the whole skin; camera movement must not steer curiosity.");
+            }
+            level.View.transform.position=cameraPosition;
             level.ResetExperiment();surface.Rebuild(false);
             Assert.That(life.HeadAmount,Is.Zero);Assert.That(life.TendrilCount,Is.Zero);Assert.That(life.PlantedFeet.Count,Is.Zero);
         }
