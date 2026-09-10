@@ -211,6 +211,40 @@ namespace GravityBox.Tests
             }
             Assert.That(level.Organism.TotalMass,Is.EqualTo(.096f).Within(.000001f));
         }
+        [UnityTest] public IEnumerator FourthLessonKnifeLocksTurningAndKeepsBothPiecesInside()
+        {
+            yield return Load(4);
+            var turns=new[]{Quaternion.Euler(38,-31,24),Quaternion.Euler(-42,27,-35),Quaternion.Euler(58,44,16)};
+            foreach(var turn in turns)
+            {
+                level.ResetExperiment();Steps(120);
+                Assert.That(Journey.Touch(level.View.WorldToScreenPoint(Journey.Knife.position)),Is.True);
+                Until(()=>Journey.Cutting,2600,"Creature settles beneath raised knife");
+                Assert.That(level.Rotation.InputEnabled,Is.False);
+                level.TogglePause();level.TogglePause();
+                Assert.That(level.Rotation.InputEnabled,Is.False,"Resume must preserve the knife safety interlock.");
+                Quaternion locked=level.Rotation.Orientation;
+                level.Rotation.SetTargetOrientation(turn);
+                float worst=0;Vector3 worstAt=Vector3.zero;int worstParticle=-1,worstTick=-1;
+                for(int tick=0;tick<480;tick++)
+                {
+                    Steps(1);
+                    for(int i=0;i<32;i++)
+                    {
+                        Vector3 p=Local(level.Organism.Bodies[i].position);
+                        float edge=Mathf.Max(Mathf.Abs(p.x),Mathf.Abs(p.y),Mathf.Abs(p.z));
+                        if(edge>worst){worst=edge;worstAt=p;worstParticle=i;worstTick=tick;}
+                    }
+                }
+                Assert.That(worst,Is.LessThanOrEqualTo(.243f),
+                    $"Matter {worstParticle} crossed a solid chamber face during the cut at tick {worstTick}: {worstAt}");
+                Assert.That(Quaternion.Angle(locked,level.Rotation.Orientation),Is.LessThan(.05f),"The chamber stays still during the powered cut.");
+                Assert.That(level.Organism.FragmentCount,Is.EqualTo(2),Dump());
+                Assert.That(level.Locomotion.Fragments.Min(f=>f.Count),Is.GreaterThanOrEqualTo(10),"A centred cut must not shear off an unusable droplet.");
+                Assert.That(level.Rotation.InputEnabled,Is.True,"Rotation returns when the blade has cleared the body.");
+            }
+            Capture("04-contained-after-knife");
+        }
         [UnityTest] public IEnumerator FifthLessonEqualSplitFailsHeavyStationThenReunionAndUnequalSplitSolveIt()
         {
             yield return Load(5);Capture("05-overview");Cut(0);

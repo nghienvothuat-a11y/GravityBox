@@ -319,7 +319,7 @@ namespace GravityBox.Venom
         public void TogglePause()
         {
             Paused = !Paused; Time.timeScale = Paused ? 0 : 1;
-            Rotation.InputEnabled = CanControl && (!DirectControl || WallCrawl); Locomotion?.SetInput(Vector3.zero);
+            Rotation.InputEnabled = CanControl && (!DirectControl || WallCrawl) && !(Journey?.Cutting??false); Locomotion?.SetInput(Vector3.zero);
         }
         public void ToggleZoom()
         {

@@ -28,6 +28,8 @@ Kết quả cắt có thể lệch vài hạt vì cơ thể biến dạng thật
 
 Ở bài 04–05, đến B khi nắp chưa mở chỉ nhận phản hồi bị chặn. A phải tiếp tục có đủ vật chất khi B được kích hoạt để chốt cửa cuối. Nắp có bảo vệ khi còn cơ thể nằm bên dưới, tránh ép xuyên sàn; điều này không thay điều kiện giữ A để giải puzzle.
 
+Máy chém dùng phần sống dao có collider để cơ cấu vẫn có khối lượng hình học rõ ràng; đoạn mép sắc phía dưới cắt liên kết vật chất mà không hoạt động như một khối tù ép hạt vào sàn. Khi chu trình chém bắt đầu, xoay hộp được khóa trong 1,1 giây rồi tự mở lại. Việc này loại bỏ xung lực ngang giả khi một Rigidbody kinematic vừa chém vừa quay cùng hộp. Kiểm tra hồi quy chạy ba hướng xoay khác nhau, yêu cầu đủ hai phần, phần nhỏ nhất ít nhất 10/32 hạt và tâm của mọi hạt giữ trong mặt va chạm của hộp.
+
 ## Trí nhớ và phản ứng
 
 Các sự kiện tới đích, bò sang mặt khác, giữ đủ thời gian, chia và phối hợp thành công ghi nhận kỹ năng. Tiến trình được lưu trên thiết bị qua các lần mở app; retry giữ kiến thức nhưng xóa nhiệm vụ và trạng thái cơ quan.
@@ -67,11 +69,13 @@ Kiểm chứng tự động: `GravityBox.Tests.VenomJourneyTests`. Kết quả v
 
 ## Kết quả kiểm chứng
 
-Lần chạy cuối bật đồ họa đạt **66/66 PlayMode Venom**, gồm **12 trường hợp Journey**: đường giải đủ năm bài; giữ/rời nút, thay lệnh, lựa chọn phần, xoay khi đang giữ; chia giữa chưa đủ tải → hợp thể → chia lệch → giải bài 5; lưu kỹ năng qua scene mà không phát lại lệnh cũ; chuột kéo nhanh rồi trả con trỏ về chỗ cũ; cảm ứng kết thúc một lần vuốt ở vị trí mới. Đuôi cơ thể vẫn giữ lệnh thoát khi hạt đại diện đã đi qua lỗ.
+Lần chạy cuối đạt **67/67 PlayMode Venom**, gồm **13 trường hợp Journey**: đường giải đủ năm bài; giữ/rời nút, thay lệnh, lựa chọn phần, xoay khi đang giữ; chia giữa chưa đủ tải → hợp thể → chia lệch → giải bài 5; lưu kỹ năng qua scene mà không phát lại lệnh cũ; chuột kéo nhanh rồi trả con trỏ về chỗ cũ; cảm ứng kết thúc một lần vuốt ở vị trí mới. Máy chém màn 4 còn được kiểm tra ở ba hướng xoay, khóa xoay xuyên cả thao tác pause/resume, giữ mọi tâm hạt trong mặt va chạm và không tạo phần nhỏ hơn 10/32 hạt. Đuôi cơ thể vẫn giữ lệnh thoát khi hạt đại diện đã đi qua lỗ.
 
 XML: `Artifacts/Venom01/celebration-full-tests.xml`; log cùng tên. Kiểm tra Journey cuối sau khi bổ sung chặn chuyển scene lúc tạm dừng: `Artifacts/Venom01/celebration-final-journey-tests.xml`. Ảnh đoạn thắng tại lỗ sàn, lỗ trần xoay nghiêng và bài phối hợp: `Artifacts/VenomCelebration/victory-*.png`.
 
 Kiểm tra tổng thể sau khi thêm ba animation: `Artifacts/Venom01/three-celebrations-full-tests.xml`, **66/66 đạt**. Ba ảnh cùng thời điểm để so sánh silhouette nằm tại `Artifacts/VenomCelebrationVariants/victory-variant-1.png` đến `victory-variant-3.png`.
+
+Kiểm tra tổng thể sau sửa máy chém: `Artifacts/Venom01/knife-fix-full-tests.xml`, **67/67 đạt**. Kiểm tra đồ họa riêng và ảnh hai phần còn trong hộp: `Artifacts/Venom01/knife-fix-visual.xml` và `Artifacts/VenomKnifeFix/04-contained-after-knife.png`.
 
 Kiểm tra đoạn thắng bao gồm: phần đầu qua lỗ chưa được kích hoạt ăn mừng; đủ 32/32 mới bắt đầu; camera cận cảnh giữ mọi phần trong khung; cả ba biến thể có tên và pose riêng, skin vẫy ít nhất bốn xúc tu mà không sửa vị trí vật lý; kính/cơ quan/marker bị ẩn nhưng collider giữ nguyên; pause giữ nhịp và hoãn chuyển scene kể cả ở nhịp cuối; retry trả lại cả renderer đã bị ẩn sẵn trước đó và camera; không chuyển scene ở mốc 3 giây cũ, sang bài mới sau 4,8 giây và không mang trạng thái ẩn sang bài sau.
 

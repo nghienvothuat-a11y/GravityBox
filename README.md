@@ -16,7 +16,7 @@ Mở `Builds/Venom/macOS/Venom.app`. **1–5** chọn bài, **R** thử lại, *
 
 Build: `bash Tools/build-venom.sh`. Các scene mới nằm ở `Assets/_Game/Venom/VenomJourney01.unity` đến `VenomJourney05.unity`. Kỹ năng và bài đã hoàn thành được nhớ giữa các lần mở app; retry chỉ reset cơ quan và nhiệm vụ. AI hiện học theo sự kiện và phản hồi theo ngữ cảnh, chưa triển khai toàn bộ hệ cảm xúc của thiết kế dài hạn.
 
-Kiểm chứng: **66/66 PlayMode Venom đạt**, gồm **12 trường hợp Journey**; đã kiểm tra trực tiếp đường chơi macOS ở bài 1 và 4 cùng chuyển màn tự động. Chi tiết trong [báo cáo năm bài](Docs/VENOM_JOURNEY_01_05.md#kết-quả-kiểm-chứng).
+Kiểm chứng: **67/67 PlayMode Venom đạt**, gồm **13 trường hợp Journey**; máy chém màn 4 được thử ở ba hướng xoay và giữ đủ hai phần trong hộp. Chi tiết trong [báo cáo năm bài](Docs/VENOM_JOURNEY_01_05.md#kết-quả-kiểm-chứng).
 
 ## Bộ thí nghiệm điều khiển trước campaign
 

@@ -59,11 +59,27 @@ namespace GravityBox.Venom
         {
             level=owner;Progress=VenomJourneyProgress.Load();
             foreach(var body in new[]{ExitCover,ButtonCover,Knife,PadA?.Body,PadB?.Body})if(body!=null)body.transform.SetParent(level.Apparatus,true);
+            ConfigureSharpKnifeContact();
             for(int i=0;i<4;i++)
             {
                 var line=new GameObject("Assigned task "+i,typeof(LineRenderer)).GetComponent<LineRenderer>();
                 line.transform.SetParent(owner.Rotation.transform,false);line.useWorldSpace=false;line.loop=true;
                 line.positionCount=40;line.widthMultiplier=.0016f;line.sharedMaterial=owner.IndicatorMaterial;markers.Add(line);
+            }
+        }
+        private void ConfigureSharpKnifeContact()
+        {
+            if(Knife==null)return;
+            foreach(var shape in Knife.GetComponentsInChildren<BoxCollider>())
+            {
+                // The lower visual section is the cutting edge. Treating the
+                // entire 92 mm blade as a blunt kinematic box traps a 9 mm node
+                // between knife and floor, then fires it through the chamber.
+                // Keep a physical spine above the edge; bond intersection owns
+                // the actual cut through conserved material.
+                Vector3 size=shape.size,centre=shape.center;
+                size.y=.72f;centre.y=.14f;
+                shape.size=size;shape.center=centre;
             }
         }
         public void ResetState()
@@ -259,7 +275,7 @@ namespace GravityBox.Venom
                 foreach(var f in level.Locomotion.Fragments)
                 {
                     var order=TaskFor(f.Anchor);
-                    if(order!=null&&order.Task==VenomTask.Cut&&XZ(Local(f.Centre)-order.Target)<.009f&&Vector3.ProjectOnPlane(f.Velocity-level.Rotation.GetComponent<Rigidbody>().GetPointVelocity(f.Centre),level.Rotation.transform.up).magnitude<.055f)
+                    if(order!=null&&order.Task==VenomTask.Cut&&XZ(Local(f.Centre)-order.Target)<.025f&&Vector3.ProjectOnPlane(f.Velocity-level.Rotation.GetComponent<Rigidbody>().GetPointVelocity(f.Centre),level.Rotation.transform.up).magnitude<.055f)
                     {
                         // Centre a material cross-section, not the visual blob's COM.
                         // The body keeps its real shape after a reunion, so a fixed
@@ -270,7 +286,13 @@ namespace GravityBox.Venom
                         float plane=(xs[division-1]+xs[division])*.5f;
                         if(Mathf.Abs(plane)>.0025f)
                         {order.Target.x=Mathf.Clamp(Local(f.Centre).x-plane,-.045f,.045f);order.Arrived=false;continue;}
-                        cutAt=level.Organism.SimulationTime;cutAnchor=f.Anchor;cutPerformed=false;Status="BÁM YÊN · DAO ĐANG CHIA CƠ THỂ";break;
+                        cutAt=level.Organism.SimulationTime;cutAnchor=f.Anchor;cutPerformed=false;
+                        // Hold the chamber at its current orientation while the
+                        // powered edge crosses the body. Rotating a kinematic
+                        // knife through dynamic tissue adds an artificial side
+                        // impulse and can eject a newly separated droplet.
+                        level.Rotation.InputEnabled=false;
+                        Status="BÁM YÊN · DAO ĐANG CHIA CƠ THỂ";break;
                     }
                 }
                 return;
@@ -296,7 +318,11 @@ namespace GravityBox.Venom
                     Learn(VenomSkill.Divide);Status="HAI PHẦN · CHỌN MỘT PHẦN RỒI GIAO VIỆC";
                 }
             }
-            if(age>1.1f){cutAt=-1;if(!cutPerformed){Assign(cutAnchor,VenomTask.Move,0,new Vector3(-.10f,-.25f,-.14f));Status="CHƯA CẮT ĐƯỢC · ĐƯA THÂN TỚI DAO LẠI";}}
+            if(age>1.1f)
+            {
+                cutAt=-1;level.Rotation.InputEnabled=level.CanControl;
+                if(!cutPerformed){Assign(cutAnchor,VenomTask.Move,0,new Vector3(-.10f,-.25f,-.14f));Status="CHƯA CẮT ĐƯỢC · ĐƯA THÂN TỚI DAO LẠI";}
+            }
         }
         private void ResetMovingKnife(Vector3 p){Knife.MovePosition(World(p));Knife.MoveRotation(level.Rotation.transform.rotation);}
         private void Learn(VenomSkill skill)
