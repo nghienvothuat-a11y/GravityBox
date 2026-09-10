@@ -124,8 +124,7 @@ namespace GravityBox.Editor
                 foreach(var child in root.GetComponentsInChildren<Transform>())
                     if(child!=null && (child.name.Contains("flow guide") || child.name.Contains("Reunion"))) Object.DestroyImmediate(child.gameObject);
                 owner.View.orthographicSize=.65f;
-                owner.View.transform.position=new Vector3(.025f,1.1f,-.46f);
-                owner.View.transform.LookAt(new Vector3(0,-.02f,.015f));
+                owner.View.transform.rotation=VenomCameraFraming.Orientation(owner.ControlMode);
                 if(number==3)
                 {
                     // Offset the cutting plane so the player retains a larger
@@ -146,11 +145,27 @@ namespace GravityBox.Editor
                     Block("Detour inlay",root,new Vector3(-.075f,-.064f,-.105f),new Vector3(.35f,.001f,.002f),glow,false);
                     Ring(root,new Vector3(-.115f,-.063f,-.012f),.042f,.001f);
                 }
+                VenomCameraFraming.Frame(owner,540,960);
                 EditorSceneManager.SaveScene(scene,Scenes[number-1]);
             }
             EditorBuildSettings.scenes=Array.ConvertAll(Scenes,path=>new EditorBuildSettingsScene(path,true));
             AssetDatabase.SaveAssets();
             Debug.Log("VENOM CONTROLS GENERATED: select fragments in 02; largest leader and delayed pathfinding in 03.");
+        }
+
+        [MenuItem("Gravity Box/Venom/Update Control Cameras")]
+        public static void UpdateControlCameras()
+        {
+            // Update only camera transforms/settings in the existing authored
+            // scenes. Do not regenerate their puzzle objects or asset identities.
+            for(int number=2;number<=3;number++)
+            {
+                var scene=EditorSceneManager.OpenScene(Scenes[number-1],OpenSceneMode.Single);
+                var owner=Object.FindFirstObjectByType<VenomLevelController>();
+                VenomCameraFraming.Frame(owner,540,960);
+                EditorSceneManager.SaveScene(scene,Scenes[number-1]);
+            }
+            Debug.Log("VENOM CAMERAS UPDATED: 02 overhead 88 degrees; 03 oblique 58 degrees from the spawn end, 12 degrees to its right.");
         }
         private static void Transparent(Material material)
         {

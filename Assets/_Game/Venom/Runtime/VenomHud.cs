@@ -25,25 +25,7 @@ namespace GravityBox.Venom
             if (level != null && level.DirectControl) FrameChamber(Screen.width,Screen.height);
             RefreshSelection();
         }
-        public void FrameChamber(int width, int height)
-        {
-            if (!level.DirectControl) return;
-            float scale = width/540f;
-            float bottom = 282*scale, top = height-205*scale;
-            float available = Mathf.Max(80*scale,top-bottom);
-            Vector3 right = level.View.transform.right, up = level.View.transform.up;
-            float minX = float.PositiveInfinity, minY = minX, maxX = float.NegativeInfinity, maxY = maxX;
-            for (int x=-1;x<=1;x+=2) for (int y=0;y<=1;y++) for (int z=-1;z<=1;z+=2)
-            {
-                Vector3 p = level.Rotation.transform.TransformVector(new Vector3(x*.268f,y==0?-.076f:.181f,z*.33f));
-                float px = Vector3.Dot(p,right), py = Vector3.Dot(p,up);
-                minX = Mathf.Min(minX,px); maxX = Mathf.Max(maxX,px); minY = Mathf.Min(minY,py); maxY = Mathf.Max(maxY,py);
-            }
-            float size = Mathf.Max((maxY-minY)*.5f*height/available,(maxX-minX)*.5f*height/(width*.9f));
-            Vector3 centre = level.Rotation.transform.position+right*((minX+maxX)*.5f)+up*((minY+maxY)*.5f);
-            level.View.orthographicSize = size;
-            level.View.transform.position = centre-level.View.transform.forward*1.3f-up*(((bottom+top)/height-1f)*size);
-        }
+        public void FrameChamber(int width, int height) => VenomCameraFraming.Frame(level,width,height);
         public void RefreshSelection()
         {
             if (selection == null) return;

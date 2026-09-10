@@ -88,9 +88,7 @@ namespace GravityBox.Venom
         }
         private Vector3 ScreenDirection(Vector2 direction)
         {
-            Vector3 right = Vector3.ProjectOnPlane(level.View.transform.right,Vector3.up).normalized;
-            Vector3 forward = Vector3.Cross(right,Vector3.up).normalized;
-            return right*direction.x+forward*direction.y;
+            return VenomCameraFraming.ScreenToFloor(level.View,direction);
         }
         private void End()
         {

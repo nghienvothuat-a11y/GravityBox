@@ -11,6 +11,15 @@ App macOS `Builds/Venom/macOS/Venom.app` có ba nút chọn màn ở đầu màn
 - Vòng xanh và nhãn `ĐANG CHỌN`/`CHỦ THỂ` chỉ phần nhận input. Nhãn phần còn lại cho biết đang bám, thời gian chờ, đang tìm về hoặc chờ lối mở.
 - **R** reset toàn bộ, **P/Esc** pause. Pause dừng cả vật lý lẫn đồng hồ 3 giây. Reset xóa input, selection, đường đi và thời gian chờ.
 
+## Camera theo cách điều khiển
+
+- **Màn 02:** camera orthographic nhìn xuống **88° so với mặt sàn**, thẳng theo trục hộp. Hai công tắc và hai nửa hộp dễ so sánh, thuận tiện chạm chọn phần và căn vị trí. Góc gần thẳng đứng giúp thanh cửa đang nâng không che phần đứng trên công tắc.
+- **Màn 03:** camera orthographic nhìn xuống **58°**, nhìn chếch **12°** từ phía sau, ở đầu xuất phát của chủ thể. Sinh vật bắt đầu ở gần người chơi và tiến về lỗ ở phía trên màn hình. Góc này bộc lộ phần đầu kéo, mô phía sau, độ cao của vách và hình dạng lúc nhập lại. Khung hình chứa cả hộp để người chơi theo dõi chủ thể lẫn phần nhỏ đang vòng về.
+- Góc và khung bao cơ cấu cố định trong từng màn. Cắt/đổi phần/nhập lại không làm camera xoay hoặc zoom; màn 01 giữ góc quan sát cũ. Camera tính lại tỷ lệ theo kích thước cửa sổ để tránh HUD.
+- Ánh xạ giữ–kéo bù độ co ngắn của mặt sàn khi nhìn chéo: hướng di chuyển chiếu lên màn hình khớp hướng ngón tay. Độ lớn joystick vẫn điều khiển tốc độ yêu cầu như trước.
+
+`VenomCameraFraming` quản lý góc, khung hình và đổi hướng màn hình sang mặt sàn. Menu **Gravity Box → Venom → Update Control Cameras** chỉ cập nhật camera trong hai scene đã author, không tạo lại cơ quan.
+
 ## 02 — Hai phần, một kế hoạch
 
 Lưỡi chém được giữ cao cho đến khi khối vào vùng cắt, sau đó hạ bằng lực motor, rồi nâng lại sau nhịp cắt 1,2 giây để không ghì mảnh nhỏ xuống sàn. Nếu nhập lại trước khi giải cửa và rời vùng cắt, trạm sẵn sàng cho lượt cắt tiếp theo. Trong hộp đứng yên, chỉ trọng lượng lưỡi có thể khiến nó nằm trên cơ thể mềm, nên trạm cắt này có motor; joint vẫn giới hạn hành trình trên mặt sàn.
@@ -36,6 +45,7 @@ Một vách ngăn tách hai phía của trạm cắt; một vách ngang phía d�
 | `VenomNavigator` | A* trên lưới mặt sàn, khoảng tránh vách, đường vòng và làm thẳng đoạn đi có kiểm tra vật cản |
 | `VenomLevelController` | Chế độ điều khiển, trạm cắt, luật cửa riêng từng màn, pause/reset/thoát/chuyển scene |
 | `VenomInput` / `VenomHud` | Joystick, phím điều hướng, chọn phần, dấu chủ thể và thông tin thời gian chờ |
+| `VenomCameraFraming` | Góc riêng từng màn, khung bao hộp/cơ cấu, bù độ co ngắn hướng giữ–kéo |
 | `VenomLifeAnimation` | Đọc thêm ý định bò để thân/xúc tua hướng theo lực đang cố tạo, kể cả khi bị vách chặn |
 
 Locomotion không ghi transform hoặc gán vận tốc hạt. Vận tốc yêu cầu được đổi thành lực có giới hạn, đặt trên các hạt tiếp xúc mặt đỡ. Lực được chiếu lên tiếp tuyến; mặt đỡ động nhận lực phản ứng ngược lại. Hạt đang bay không nhận lực bò. Khi số hạt có tiếp xúc ít đi, tổng lực bám cũng giảm; hạt sát lỗ thoát nhả lực bò/bám để hỗ trợ thoát và trọng lực kéo phần còn lại qua lỗ.
@@ -59,3 +69,7 @@ Kết quả ngày 10/09/2026:
 - Kiểm tra riêng mốc 3 giây: chưa tìm đường ở thời điểm ngay trước 3 giây, bắt đầu sau mốc đó, pause không tiêu hao thời gian. Có thêm kiểm tra chọn chủ thể lớn nhất sau nhiều lần tách và khi chủ thể cũ đã thoát.
 - Build macOS gồm đủ ba scene thành công. Đã mở bản native và kiểm tra bố cục; vòng chọn dùng material được tham chiếu để shader không bị loại khi build. Camera màn 02/03 dành khoảng trống cho HUD ở cửa sổ thấp. Sửa lỗi thay đổi danh sách nhóm ngay khi đang vẽ nút A/B bằng cách áp dụng selection sau vòng lặp GUI.
 - [Ảnh từ mô phỏng](Images/VenomControls/README.md). XML/log tại `Artifacts/VenomControls-final.*`, `Artifacts/VenomControls-capture.*`, `Artifacts/VenomControls-retry.*`. Feeling trên thiết bị cảm ứng cần được đánh giá riêng; không suy ra từ đường giải tự động.
+
+### Kiểm tra góc camera riêng cho hai màn
+
+Đã chạy 8/8 kiểm tra điều khiển với camera có đồ họa, sau đó chạy lại riêng cả hai đường giải đầy đủ ở góc chốt cuối (88° và 58°/12°): 2/2 qua, đủ 32/32 hạt thoát mỗi màn. Đã xem ảnh khi hai nút cùng được giữ, phần nhỏ tìm về và nhập lại để chọn góc ít bị thanh cửa/lưỡi chém che. Log/XML/capture tại `Artifacts/VenomCamera`. Camera cố định, giữ cả hộp và các phần trong cùng khung hình. Bản macOS đã build lại thành công với hai góc này.
