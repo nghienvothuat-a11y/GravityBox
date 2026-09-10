@@ -127,6 +127,7 @@ namespace GravityBox.Venom
                 Vector3 command = fragment.Selected ? input : Vector3.zero;
                 if(level.WallCrawl)
                 {
+                    if(level.Guidance!=null)command=level.Guidance.Steer(fragment);
                     if(level.SplitVault!=null && level.SplitVault.AutoFollow(fragment))
                     {
                         fragment.Following=true;command=Follow(fragment,level.Outlet.position);

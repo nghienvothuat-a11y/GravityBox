@@ -15,7 +15,9 @@ namespace GravityBox.Venom
         public VenomLocomotion Locomotion { get; private set; }
         public VenomWallClimb Climbing { get; private set; }
         public VenomFollowCamera FollowView { get; private set; }
-        public bool WallCrawl => ControlMode == VenomControlMode.SurfaceCrawl || ControlMode == VenomControlMode.SplitVault;
+        public bool WallCrawl => ControlMode == VenomControlMode.SurfaceCrawl || ControlMode == VenomControlMode.SplitVault || ControlMode == VenomControlMode.TouchSurface;
+        public VenomGuidance Guidance;
+        public static readonly int[] Experiments = {1,2,3,4,5,7,8};
         public VenomSplitVault SplitVault;
         public float NavigationY=>SplitVault!=null?SplitVault.NavigationY:FloorBoundary.Top+.025f;
         public Vector3 NavigationUp=>SplitVault!=null?Rotation.transform.up:Vector3.up;
@@ -70,6 +72,7 @@ namespace GravityBox.Venom
             if(WallCrawl)Climbing=new VenomWallClimb(this);
             SplitVault?.Initialize(this);
             if (DirectControl) Locomotion = new VenomLocomotion(this);
+            Guidance?.Initialize(this);
             if(WallCrawl)FollowView=new VenomFollowCamera(this);
             matter.AddComponent<VenomSurface>().Initialize(Organism, this);
             gameObject.AddComponent<VenomInput>().Initialize(this);
@@ -107,7 +110,7 @@ namespace GravityBox.Venom
             Organism.Step(dt);
             if(WallCrawl)
             {
-                SplitVault?.Cut();Locomotion.Step(dt);EvaluateEscape(dt);CheckLost();return;
+                SplitVault?.Cut();Guidance?.StepMechanisms(dt);Locomotion.Step(dt);EvaluateEscape(dt);Guidance?.ObserveCompletion();CheckLost();return;
             }
             if (!BladeReleased)
             {
@@ -257,7 +260,10 @@ namespace GravityBox.Venom
                 if (old.z < -.003f && local.z >= -.003f)
                 {
                     Vector3 crossing = Vector3.Lerp(old, local, (-.003f-old.z)/(local.z-old.z));
-                    enteredBore[i] = new Vector2(crossing.x,crossing.y).magnitude < ApertureRadius - radius;
+                    // Use the same contact tolerance as the in-bore check below.
+                    // PhysX can clear the rim within this tolerance; rejecting
+                    // that first crossing leaves real escaped tissue at 31/32.
+                    enteredBore[i] = new Vector2(crossing.x,crossing.y).magnitude < ApertureRadius - radius + .001f;
                 }
                 if (local.z < -.012f) enteredBore[i] = false;
                 if (local.z >= -.003f && local.z <= .003f && radial > ApertureRadius-radius+.001f) enteredBore[i] = false;
@@ -283,12 +289,13 @@ namespace GravityBox.Venom
                 ResetBody(Blade,BladeRest+Vector3.up*.064f); ResetBody(Gate,GateRest);
                 LeftPad.ResetPlate(Rotation.transform); RightPad.ResetPlate(Rotation.transform);
             }
-            else GateLatched=true;
+            else GateLatched=Guidance==null || !Guidance.RequiresButton;
             Organism.ResetMatter();
             Climbing?.Reset();
             SplitVault?.ResetState();
             FollowView?.Reset();
             Locomotion?.Reset();
+            Guidance?.ResetState();
             Rotation.InputEnabled = !DirectControl || WallCrawl;
             for (int i = 0; i < previous.Length; i++)
             { previous[i] = Outlet.InverseTransformPoint(Organism.Bodies[i].position); enteredBore[i] = false; }
@@ -311,10 +318,11 @@ namespace GravityBox.Venom
         }
         public void LoadExperiment(int number)
         {
-            if (number < 1 || number > 5) return;
+            if (System.Array.IndexOf(Experiments,number)<0) return;
             Time.timeScale = 1;
             SceneManager.LoadScene($"Venom{number:00}");
         }
+        internal void LatchGuidedGate()=>GateLatched=true;
         private void OnApplicationPause(bool pause) { if (pause && !Paused) TogglePause(); }
         private void OnDestroy() { Time.timeScale = 1; }
     }

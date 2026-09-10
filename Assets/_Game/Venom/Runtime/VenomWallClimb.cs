@@ -29,6 +29,7 @@ namespace GravityBox.Venom
         private bool holdingDirection;
         public Vector3 Normal=>level.Rotation.transform.TransformDirection(Normals[selectedFace]);
         public string SurfaceName=>Names[selectedFace];
+        public int FaceFor(int anchor)=>states[anchor]?.Face??0;
         public int VisitedMask {get;private set;}
         public int VisitedCount {get{int n=0;for(int i=0;i<6;i++)if((VisitedMask&(1<<i))!=0)n++;return n;}}
         public VenomWallClimb(VenomLevelController owner){level=owner;Reset();}

@@ -16,7 +16,7 @@ namespace GravityBox.Editor
     {
         public const string Folder = "Assets/_Game/Venom";
         public const string ScenePath = Folder + "/Venom01.unity";
-        public static readonly string[] Scenes = { ScenePath, Folder+"/Venom02.unity", Folder+"/Venom03.unity", Folder+"/Venom04.unity", Folder+"/Venom05.unity" };
+        public static readonly string[] Scenes = { ScenePath, Folder+"/Venom02.unity", Folder+"/Venom03.unity", Folder+"/Venom04.unity", Folder+"/Venom05.unity", Folder+"/Venom07.unity", Folder+"/Venom08.unity" };
         private static PhysicsMaterial contact;
         private static Material floor, glass, frame, glow, bladeMaterial;
         [MenuItem("Gravity Box/Venom/Generate Experiment 01")]
@@ -309,6 +309,44 @@ namespace GravityBox.Editor
             if(m==glass)go.GetComponent<Renderer>().shadowCastingMode=ShadowCastingMode.Off;
             return go;
         }
+        [MenuItem("Gravity Box/Venom/Generate Experiments 07 and 08")]
+        public static void GenerateGuidance()
+        {
+            contact=AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(Folder+"/Materials/Soft contact.physicMaterial");
+            glow=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Materials/Mint inlay.mat");
+            glass=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Materials/Climbing crystal.mat");
+            var doorMaterial=Material("Guidance door",new Color(.15f,.32f,.31f),.45f,.55f);
+            var motion=Asset<VenomLocomotionProfile>(Folder+"/Guided locomotion.asset",()=>ScriptableObject.CreateInstance<VenomLocomotionProfile>());
+            motion.CrawlSpeed=.22f;EditorUtility.SetDirty(motion);
+            foreach(int number in new[]{7,8})
+            {
+                var scene=EditorSceneManager.OpenScene(Scenes[3],OpenSceneMode.Single);
+                var owner=Object.FindFirstObjectByType<VenomLevelController>();
+                owner.name=$"Venom {number:00} — surface guidance and memory";
+                owner.LevelNumber=number;owner.ControlMode=VenomControlMode.TouchSurface;owner.LocomotionProfile=motion;
+                var root=owner.Rotation.transform;
+                var guidance=owner.gameObject.AddComponent<VenomGuidance>();owner.Guidance=guidance;
+                guidance.RequiresButton=number==8;
+                if(guidance.RequiresButton)
+                {
+                    var pad=Slider("Learned switch A",root,new Vector3(.13f,-.251f,-.11f),new Vector3(.086f,.004f,.086f),glow,.008f,Vector3.up,.0003f);
+                    guidance.Button=pad.gameObject.AddComponent<VenomPressurePlate>();
+                    guidance.Button.Body=pad;guidance.Button.RestLocal=pad.transform.localPosition;guidance.Button.Light=pad.GetComponentInChildren<Renderer>();
+                    Ring(root,new Vector3(.13f,-.249f,-.11f),.052f,.0015f);
+                    guidance.Door=Slider("Sliding exit cover",root,guidance.DoorRest,new Vector3(.10f,.006f,.10f),doorMaterial,.04f,Vector3.right,.065f);
+                    var joint=guidance.Door.GetComponent<ConfigurableJoint>();
+                    joint.connectedAnchor=guidance.DoorRest+Vector3.right*.065f;
+                    joint.linearLimit=new SoftJointLimit{limit=.065f,bounciness=0,contactDistance=.008f};
+                    foreach(float z in new[]{-.057f,.057f})Block("Door guide inlay",root,new Vector3(.065f,.248f,z),new Vector3(.232f,.001f,.0015f),glow,false);
+                    Block("Switch opens this cover",guidance.Door.transform,new Vector3(0,-.0032f,0),new Vector3(.032f,.001f,.005f),glow,false);
+                }
+                VenomCameraFraming.Frame(owner,540,960);
+                EditorSceneManager.SaveScene(scene,Folder+$"/Venom{number:00}.unity");
+            }
+            EditorBuildSettings.scenes=Array.ConvertAll(Scenes,path=>new EditorBuildSettingsScene(path,true));
+            AssetDatabase.SaveAssets();Debug.Log("VENOM 07/08 GENERATED: tap surface, local memory, switch-to-exit autonomy.");
+        }
+
         private static Rigidbody Slider(string name,Transform parent,Vector3 p,Vector3 size,Material m,float mass,Vector3 axis,float travel)
         {
             var go=new GameObject(name,typeof(Rigidbody),typeof(ConfigurableJoint));go.transform.SetParent(parent,false);go.transform.localPosition=p;

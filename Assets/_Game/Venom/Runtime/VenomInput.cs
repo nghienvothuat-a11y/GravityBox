@@ -11,6 +11,10 @@ namespace GravityBox.Venom
         private Vector2 stickOrigin, stickPosition;
         private bool rotating, requireTouchRelease;
         private int climbTouches;
+        private bool tapPending, tapDragged;
+        private Vector2 tapStart;
+        private int guidanceTouches;
+        private bool guidanceRelease;
         public bool Rotating => rotating;
         public bool Holding => dragging;
         public Vector2 StickOrigin => stickOrigin;
@@ -37,10 +41,13 @@ namespace GravityBox.Venom
                 if (keys.digit3Key.wasPressedThisFrame) { End(); level.LoadExperiment(3); return; }
                 if (keys.digit5Key.wasPressedThisFrame) { End(); level.LoadExperiment(5); return; }
                 if (keys.digit4Key.wasPressedThisFrame) { End(); level.LoadExperiment(4); return; }
+                if (keys.digit7Key.wasPressedThisFrame) { End(); level.LoadExperiment(7); return; }
+                if (keys.digit8Key.wasPressedThisFrame) { End(); level.LoadExperiment(8); return; }
                 if (keys.zKey.wasPressedThisFrame && level.WallCrawl) level.ToggleZoom();
                 if (keys.tabKey.wasPressedThisFrame) level.Locomotion?.SelectNext();
             }
             if (!level.CanControl) { End(); return; }
+            if(level.Guidance!=null){UpdateGuidance();pressed=released=false;return;}
             if(level.WallCrawl){UpdateClimbing(keys);pressed=released=false;return;}
             if (level.DirectControl && !dragging)
             {
@@ -96,6 +103,65 @@ namespace GravityBox.Venom
         private Vector3 ScreenDirection(Vector2 direction)
         {
             return level.WallCrawl?level.Climbing.ScreenDirection(direction):VenomCameraFraming.ScreenToFloor(level.View,direction);
+        }
+        private void UpdateGuidance()
+        {
+            int count=0;Vector2 first=Vector2.zero,second=Vector2.zero;
+            foreach(var touch in Touch.activeTouches)
+            {
+                if(touch.phase==UnityEngine.InputSystem.TouchPhase.Canceled){CancelGesture();guidanceRelease=true;continue;}
+                if(touch.phase==UnityEngine.InputSystem.TouchPhase.Ended)continue;
+                if(count==0)first=touch.screenPosition;else if(count==1)second=touch.screenPosition;count++;
+            }
+            if(count>0 || guidanceTouches>0 || guidanceRelease){ApplyGuidanceTouch(count,first,second);return;}
+            var mouse=Mouse.current;if(mouse==null)return;
+            Vector2 p=mouse.position.ReadValue();
+            if(mouse.rightButton.isPressed)
+            {
+                if(mouse.rightButton.wasPressedThisFrame && InPlayArea(p)){CancelGesture();BeginRotation(p);}
+                if(rotating)Rotate(p);return;
+            }
+            if(rotating && !tapPending)End();
+            if(pressed)BeginTap(beganAt);
+            if(tapPending && (mouse.leftButton.isPressed || released))MoveTap(released?endedAt:p);
+            if(released)FinishTap();
+        }
+        public void BeginTap(Vector2 p)
+        {
+            if(!level.CanControl || !InPlayArea(p))return;
+            tapPending=true;tapDragged=false;tapStart=previous=p;
+        }
+        public void MoveTap(Vector2 p)
+        {
+            if(!tapPending)return;
+            float slop=10*VenomCameraFraming.UiScale(level,Screen.width,Screen.height);
+            if(!tapDragged && (p-tapStart).magnitude>slop){tapDragged=true;BeginRotation(tapStart);}
+            if(tapDragged)Rotate(p);else previous=p;
+        }
+        public void FinishTap()
+        {
+            if(tapPending && !tapDragged && level.CanControl)level.Guidance.Touch(previous);
+            tapPending=false;tapDragged=false;if(rotating){level.Rotation.EndDrag();rotating=false;}
+        }
+        public void ApplyGuidanceTouch(int count,Vector2 first,Vector2 second)
+        {
+            count=Mathf.Min(2,count);
+            if(count==0)
+            {
+                if(!guidanceRelease)FinishTap();else tapPending=false;
+                if(rotating){level.Rotation.EndDrag();rotating=false;}
+                guidanceTouches=0;guidanceRelease=false;return;
+            }
+            if(guidanceRelease){guidanceTouches=count;return;}
+            if(guidanceTouches==2 && count==1){tapPending=false;guidanceRelease=true;guidanceTouches=count;return;}
+            if(count!=guidanceTouches)
+            {
+                tapPending=false;
+                if(!InPlayArea(first) || count==2 && !InPlayArea(second)){guidanceRelease=true;guidanceTouches=count;return;}
+                if(count==1)BeginTap(first);else BeginRotation((first+second)*.5f);
+            }
+            guidanceTouches=count;
+            if(count==1)MoveTap(first);else Rotate((first+second)*.5f);
         }
         private void UpdateClimbing(Keyboard keys)
         {
@@ -159,6 +225,7 @@ namespace GravityBox.Venom
         {
             if (level != null) { if (dragging || rotating) level.Rotation.EndDrag(); level.Locomotion?.SetInput(Vector3.zero); level.Climbing?.ScreenDirection(Vector2.zero); }
             dragging = rotating = pressed = released = false; finger = -1;climbTouches=0;requireTouchRelease=false;
+            tapPending=tapDragged=guidanceRelease=false;guidanceTouches=0;
         }
         private void OnApplicationFocus(bool focused) { if (!focused) End(); }
     }

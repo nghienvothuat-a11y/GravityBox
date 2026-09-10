@@ -1,6 +1,6 @@
 # Venom — Living Matter Prototype
 
-Nhánh **`Venom`** có năm màn thử nghiệm điều khiển sinh vật mềm. Chỉ thắng khi **100% vật chất** đã đi qua lỗ tròn thật.
+Nhánh **`Venom`** có bảy màn thử nghiệm điều khiển sinh vật mềm (01–05, 07–08). Chỉ thắng khi **100% vật chất** đã đi qua lỗ tròn thật.
 
 | Màn | Điều khiển | Bài thử |
 | --- | --- | --- |
@@ -9,14 +9,17 @@ Nhánh **`Venom`** có năm màn thử nghiệm điều khiển sinh vật mềm
 | 03 — Tìm về chủ thể | Điều khiển phần lớn nhất | Phần nhỏ chờ 3 giây rồi tự tìm đường vòng về để nhập lại |
 | 04 — Bò khắp sáu mặt | Bò trên mặt hộp, xoay hộp độc lập | Hộp lập phương trong suốt; bò sàn → tường → lỗ giữa trần; Zoom theo sinh vật |
 | 05 — Chia ra để lọt vào | Điều khiển mảnh lớn sau khi cắt | Dao cắt theo vị trí; phần lớn luồn vào hộp nhỏ, phần còn lại tự chui theo qua khe |
+| 07 — Chạm để dẫn đường | Chạm đích trên mặt trong; kéo để xoay | Tự bò qua các mặt; gần lỗ tự thoát; ghi nhớ các điểm đã tới |
+| 08 — Học cách mở lối ra | Chạm nút để hướng dẫn | Tiếp xúc nút mở cửa; tự tìm lỗ và thoát; nhớ quan hệ nút–cửa |
 
-- Chạy macOS: `Builds/Venom/macOS/Venom.app`. Nút ở đầu HUD hoặc **1/2/3/4/5** chọn màn; **R** thử lại; **P/Esc** tạm dừng.
+- Chạy macOS: `Builds/Venom/macOS/Venom.app`. Nút ở đầu HUD hoặc **1/2/3/4/5/7/8** chọn màn; **R** thử lại; **P/Esc** tạm dừng.
 - Màn 01: dao chờ ở vị trí nâng, tự thả xuống theo trọng lực khi sinh vật trượt vào dưới lưỡi. Vùng nhả dao rộng hơn để dễ cắt khi nghiêng nhẹ hoặc căn hơi lệch; chém hụt thì dao tự nâng lại sau khi thân rời vùng dao.
 - Màn 02/03: **giữ–kéo** để bò hoặc **WASD/mũi tên**. Màn 02 chạm phần muốn chọn, dùng nút A/B hoặc **Tab**. Màn 03 luôn chọn phần lớn nhất.
 - Màn 04: **giữ–kéo một ngón / chuột trái** hoặc **WASD/mũi tên** để bò; **kéo hai ngón / chuột phải** để xoay hộp. Giữ hướng để bò vòng qua mép; thả tay thì bám tại chỗ. Xoay hộp để nhìn rõ mặt đang bò. Lỗ thoát ở **giữa trần**; nút **Zoom In / Z** tiến gần và theo sinh vật, bấm lại để về góc toàn hộp.
 - Màn 05 giữ điều khiển bò/xoay/Zoom của màn 04. Đưa cơ thể tới dao trên trần, dẫn mảnh lớn vào khe hộp nhỏ; mảnh còn lại bám chờ đến khi chủ thể vào hẳn mới tự chui theo.
-- Chạy Unity **6000.3.19f1**: mở `Assets/_Game/Venom/Venom01.unity`, `Venom02.unity`, `Venom03.unity`, `Venom04.unity` hoặc `Venom05.unity`, Game View **9:16**, Play.
-- Build lại: `bash Tools/build-venom.sh` (đóng Unity đang mở project trước). Build macOS có cả năm màn; chưa xuất APK cho biến thể Venom.
+- Màn 07/08: **chạm/click đặt đích**, **kéo để xoay hộp**. **Nhớ lại** lặp điều đã học; **R** giữ trí nhớ khi thử lại, **Quên** xóa trí nhớ của màn hiện tại. Trí nhớ được giữ giữa các lần mở app. [Thiết kế điều khiển và trí nhớ](Docs/VENOM_CONTROLS_07_08.md).
+- Chạy Unity **6000.3.19f1**: mở `Assets/_Game/Venom/Venom01.unity`, `Venom02.unity`, `Venom03.unity`, `Venom04.unity`, `Venom05.unity`, `Venom07.unity` hoặc `Venom08.unity`, Game View **9:16**, Play.
+- Build lại: `bash Tools/build-venom.sh` (đóng Unity đang mở project trước). Build macOS có cả bảy màn; chưa xuất APK cho biến thể Venom.
 - [Thiết kế màn 01](Docs/VENOM_PROTOTYPE_01.md) · [Điều khiển, navigation và kiến trúc màn 02–03](Docs/VENOM_CONTROLS_02_03.md) · [Bò tường và xoay hộp màn 04](Docs/VENOM_CONTROLS_04.md) · [Dao, khe hẹp và phối hợp màn 05](Docs/VENOM_CONTROLS_05.md).
 
 Camera màn 02 nhìn gần thẳng từ trên xuống (**88°**) để dễ chọn hai phần/căn công tắc; màn 03 nhìn **3/4 từ góc trái đầu xuất phát**, cao **45°** và chéo **45°** để thấy rõ chuyển động thân và phần đi theo. Cả hộp nằm trong khung hình; giữ–kéo được căn theo hướng nhìn mới.

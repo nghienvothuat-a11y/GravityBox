@@ -10,7 +10,7 @@ namespace GravityBox.Venom
         // exposes the depth while keeping the blade away from the reunion area.
         // Keep a fixed heading so input directions never drift during a hold.
         public static Quaternion Orientation(VenomControlMode mode) =>
-            mode == VenomControlMode.SelectFragment ? Quaternion.Euler(88,0,0) : Quaternion.Euler(mode==VenomControlMode.SurfaceCrawl || mode==VenomControlMode.SplitVault?28:45,135,0);
+            mode == VenomControlMode.SelectFragment ? Quaternion.Euler(88,0,0) : Quaternion.Euler(mode==VenomControlMode.SurfaceCrawl || mode==VenomControlMode.SplitVault || mode==VenomControlMode.TouchSurface?28:45,135,0);
 
         public static float UiScale(VenomLevelController level,int width,int height) =>
             level.WallCrawl?Mathf.Min(width/540f,height/960f):width/540f;

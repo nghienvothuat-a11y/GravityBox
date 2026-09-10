@@ -69,21 +69,21 @@ namespace GravityBox.Venom
                 badge = new GUIStyle(small) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, normal = { textColor = new Color(.64f,1,.82f) } };
             }
             GUI.Label(new Rect(30,24,480,24), "V E N O M     /     L I V I N G   M A T T E R", small);
-            string[] modes = { "01 · XOAY", "02 · CHỌN", "03 · THEO", "04 · BÒ", "05 · CẮT" };
-            for (int i = 1; i <= 5; i++)
+            string[] modes = { "01", "02", "03", "04", "05", "07", "08" };
+            for (int i = 0; i < VenomLevelController.Experiments.Length; i++)
             {
-                GUI.backgroundColor = level.LevelNumber == i ? new Color(.3f,.85f,.62f) : new Color(.25f,.35f,.33f);
-                if (GUI.Button(new Rect(30+(i-1)*98,58,88,34),modes[i-1],button) && level.LevelNumber != i) level.LoadExperiment(i);
+                GUI.backgroundColor = level.LevelNumber == VenomLevelController.Experiments[i] ? new Color(.3f,.85f,.62f) : new Color(.25f,.35f,.33f);
+                if (GUI.Button(new Rect(30+i*70,58,60,34),modes[i],button) && level.LevelNumber != VenomLevelController.Experiments[i]) level.LoadExperiment(VenomLevelController.Experiments[i]);
             }
             GUI.backgroundColor = Color.white;
-            string name = level.SplitVault!=null ? "05   Chia ra để lọt vào" : level.WallCrawl ? "04   Bò khắp sáu mặt" : level.LevelNumber == 2 ? "02   Hai phần, một kế hoạch" : level.LevelNumber == 3 ? "03   Tìm về chủ thể" : "01   Một cơ thể, hai ý chí";
-            string hint = level.SplitVault!=null ? "Bò tới dao để cắt. Dẫn phần lớn vào khe.\nPhần nhỏ chờ bên ngoài, rồi tự chui theo." : level.WallCrawl ? "Giữ–kéo để bò. Hai ngón / chuột phải xoay hộp.\nBò lên tường để tới lỗ tròn ở giữa trần." : level.LevelNumber == 2 ? "Chạm chọn một phần, giữ–kéo để bò.\nĐặt hai phần lên hai nút sáng để mở cửa." : level.LevelNumber == 3 ?
+            string name = level.Guidance!=null ? (level.Guidance.RequiresButton?"08   Học cách mở lối ra":"07   Chạm để dẫn đường") : level.SplitVault!=null ? "05   Chia ra để lọt vào" : level.WallCrawl ? "04   Bò khắp sáu mặt" : level.LevelNumber == 2 ? "02   Hai phần, một kế hoạch" : level.LevelNumber == 3 ? "03   Tìm về chủ thể" : "01   Một cơ thể, hai ý chí";
+            string hint = level.Guidance!=null ? (level.Guidance.RequiresButton?"Chạm nút sáng để dẫn sinh vật tới đó.\nCửa mở, sinh vật tự tìm đường thoát.":"Chạm mặt trong hộp để chọn nơi muốn tới.\nKéo để xoay. Gần lỗ, sinh vật tự chui ra.") : level.SplitVault!=null ? "Bò tới dao để cắt. Dẫn phần lớn vào khe.\nPhần nhỏ chờ bên ngoài, rồi tự chui theo." : level.WallCrawl ? "Giữ–kéo để bò. Hai ngón / chuột phải xoay hộp.\nBò lên tường để tới lỗ tròn ở giữa trần." : level.LevelNumber == 2 ? "Chạm chọn một phần, giữ–kéo để bò.\nĐặt hai phần lên hai nút sáng để mở cửa." : level.LevelNumber == 3 ?
                 "Điều khiển phần lớn nhất bằng giữ–kéo.\nPhần nhỏ chờ 3 giây rồi tìm đường về với bạn." : "Nghiêng hộp. Để sinh vật chảy qua lưỡi chém.\nHai phần giữ hai nút, rồi tìm về với nhau.";
             GUI.Label(new Rect(30,104,490,44),name,title);
             GUI.Label(new Rect(30,150,480,48),hint,body);
             var matter = level.Organism;
             string state = level.Lost ? "VẬT CHẤT RA SAI ĐƯỜNG — THỬ LẠI" : level.Completed ? "TOÀN BỘ SINH VẬT ĐÃ THOÁT" : level.Paused ? "TẠM DỪNG" :
-                level.SplitVault!=null ? (level.Organism.CutCount==0?"TỚI DAO SÁNG ĐỂ CHIA CƠ THỂ":level.SplitVault.FollowersReleased?"PHẦN NHỎ ĐANG TỰ CHUI VÀO · ĐƯA TẤT CẢ RA NGOÀI":"DẪN PHẦN LỚN QUA KHE · PHẦN NHỎ BÁM CHỜ") :
+                level.Guidance!=null ? level.Guidance.Status : level.SplitVault!=null ? (level.Organism.CutCount==0?"TỚI DAO SÁNG ĐỂ CHIA CƠ THỂ":level.SplitVault.FollowersReleased?"PHẦN NHỎ ĐANG TỰ CHUI VÀO · ĐƯA TẤT CẢ RA NGOÀI":"DẪN PHẦN LỚN QUA KHE · PHẦN NHỎ BÁM CHỜ") :
                 level.WallCrawl ? $"ĐANG BÁM {level.Climbing.SurfaceName} · {level.Climbing.VisitedCount}/6 MẶT ĐÃ KHÁM PHÁ" :
                 level.GateLatched ? "CỬA ĐÃ MỞ · ĐƯA TẤT CẢ TỚI LỖ TRÒN" :
                 matter.CutCount == 0 ? "QUA LƯỠI CHÉM ĐỂ TÁCH CƠ THỂ" : level.LevelNumber == 3 ? "DẪN PHẦN NHỎ VỀ · NHẬP LẠI ĐỂ MỞ CỬA" : "HAI PHẦN · CÙNG GIỮ HAI NÚT SÁNG";
@@ -93,7 +93,7 @@ namespace GravityBox.Venom
                 foreach (var fragment in level.Locomotion.Fragments)
                 {
                     Vector3 p = level.View.WorldToScreenPoint(fragment.Centre);
-                    string label = level.SplitVault!=null ? (fragment.Following ? (fragment.Blocked?"CHỜ LỐI MỞ":"TỰ CHUI VÀO") : fragment.Selected?"CHỦ THỂ":"CHỜ PHẦN LỚN VÀO") : level.WallCrawl ? "BÁM · " + level.Climbing.SurfaceName : fragment.Selected ? (level.LevelNumber == 3 ? "CHỦ THỂ" : "ĐANG CHỌN") :
+                    string label = level.Guidance!=null ? (level.Guidance.Exiting?"TỰ THOÁT":level.Guidance.Arrived?"ĐÃ TỚI":"ĐANG KHÁM PHÁ") : level.SplitVault!=null ? (fragment.Following ? (fragment.Blocked?"CHỜ LỐI MỞ":"TỰ CHUI VÀO") : fragment.Selected?"CHỦ THỂ":"CHỜ PHẦN LỚN VÀO") : level.WallCrawl ? "BÁM · " + level.Climbing.SurfaceName : fragment.Selected ? (level.LevelNumber == 3 ? "CHỦ THỂ" : "ĐANG CHỌN") :
                         level.LevelNumber == 2 ? "ĐANG BÁM" : fragment.WaitRemaining > 0 ? $"CHỜ {fragment.WaitRemaining:0.0}s" : fragment.Blocked ? "CHỜ LỐI MỞ" : "ĐANG TÌM VỀ";
                     if (p.z > 0 && !(level.WallCrawl && level.FollowView.Zoomed)) GUI.Label(new Rect((p.x-offsetX)/scale-70,(Screen.height-p.y)/scale-55,140,24),label,badge);
                     if (index < 4 && !level.WallCrawl)
@@ -110,7 +110,7 @@ namespace GravityBox.Venom
                 if (choose >= 0) level.Locomotion.Select(choose);
                 GUI.backgroundColor = Color.white;
                 var input = level.GetComponent<VenomInput>();
-                if (input.Holding)
+                if (input.Holding && level.Guidance==null)
                 {
                     Vector2 offset=new Vector2(offsetX,0);
                     Vector2 a = (input.StickOrigin-offset)/scale, b = (input.StickPosition-offset)/scale;
@@ -121,18 +121,25 @@ namespace GravityBox.Venom
             if(level.WallCrawl)
             {
                 GUI.backgroundColor=new Color(.28f,.55f,.5f);
-                if(GUI.Button(new Rect(30,h-268,480,38),level.FollowView.Zoomed?"ZOOM OUT · TOÀN HỘP  /  Z":"ZOOM IN · THEO SINH VẬT  /  Z",button))level.ToggleZoom();
+                if(GUI.Button(new Rect(30,h-268,level.Guidance!=null?150:480,38),level.FollowView.Zoomed?(level.Guidance!=null?"THU XA / Z":"ZOOM OUT · TOÀN HỘP  /  Z"):(level.Guidance!=null?"PHÓNG GẦN / Z":"ZOOM IN · THEO SINH VẬT  /  Z"),button))level.ToggleZoom();
                 GUI.backgroundColor=Color.white;
             }
+            if(level.Guidance!=null)
+            {
+                GUI.enabled=level.CanControl && (level.Guidance.Memory.Visits.Count>0 || level.Guidance.Memory.KnowsSwitch);
+                if(GUI.Button(new Rect(195,h-268,150,38),"NHỚ LẠI",button))level.Guidance.Replay();
+                GUI.enabled=true;
+                if(GUI.Button(new Rect(360,h-268,150,38),"QUÊN",button))level.Guidance.Forget();
+            }
             GUI.Label(new Rect(30,h-213,480,42),state,body);
-            string puzzle = level.SplitVault!=null ? (level.SplitVault.FollowersReleased?"ĐÃ VÀO HỘP NHỎ":"DAO → KHE HẸP → LỖ TRẦN") : level.WallCrawl ? "LỖ THOÁT Ở GIỮA TRẦN" : level.LevelNumber == 3 ? (level.GateLatched ? "ĐÃ HỢP THỂ" : "NHẬP LẠI ĐỂ MỞ CỬA") :
+            string puzzle = level.Guidance!=null ? $"NHỚ {level.Guidance.Memory.Visits.Count} ĐIỂM"+(level.Guidance.Memory.KnowsSwitch?" · BIẾT MỞ CỬA":"") : level.SplitVault!=null ? (level.SplitVault.FollowersReleased?"ĐÃ VÀO HỘP NHỎ":"DAO → KHE HẸP → LỖ TRẦN") : level.WallCrawl ? "LỖ THOÁT Ở GIỮA TRẦN" : level.LevelNumber == 3 ? (level.GateLatched ? "ĐÃ HỢP THỂ" : "NHẬP LẠI ĐỂ MỞ CỬA") :
                 level.GateLatched ? "CỬA ĐÃ GIỮ MỞ" : "NÚT " + (level.LeftPad.Pressed ? "●" : "○") + " / " + (level.RightPad.Pressed ? "●" : "○");
             GUI.Label(new Rect(30,h-158,480,24),$"{matter.FragmentCount:00} PHẦN  ·  THOÁT {matter.EscapedCount*100/32}%  ·  {puzzle}",small);
             GUI.backgroundColor = new Color(.36f,.65f,.56f);
             if (GUI.Button(new Rect(30,h-108,230,48),"THỬ LẠI  /  R",button)) level.ResetExperiment();
             if (GUI.Button(new Rect(280,h-108,230,48),level.Paused ? "TIẾP TỤC" : "TẠM DỪNG  /  P",button)) level.TogglePause();
             GUI.backgroundColor = Color.white;
-            GUI.Label(new Rect(30,h-44,480,24),level.WallCrawl ? "CHUỘT TRÁI / WASD: BÒ · CHUỘT PHẢI: XOAY · 1–5" : level.DirectControl ? "GIỮ–KÉO / WASD ĐỂ BÒ  ·  1–5 CHỌN MÀN" : "KÉO ĐỂ NGHIÊNG  ·  1–5 CHỌN MÀN",small);
+            GUI.Label(new Rect(30,h-44,480,24),level.Guidance!=null ? "CHẠM: CHỌN ĐÍCH · KÉO: XOAY HỘP · 1–5, 7, 8" : level.WallCrawl ? "CHUỘT TRÁI / WASD: BÒ · CHUỘT PHẢI: XOAY · 1–5, 7, 8" : level.DirectControl ? "GIỮ–KÉO / WASD ĐỂ BÒ  ·  1–5, 7, 8 CHỌN MÀN" : "KÉO ĐỂ NGHIÊNG  ·  1–5, 7, 8 CHỌN MÀN",small);
         }
         private void OnDestroy() { if (selectionMaterial != null) Destroy(selectionMaterial); }
     }

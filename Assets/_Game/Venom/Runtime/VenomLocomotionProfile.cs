@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace GravityBox.Venom
 {
-    public enum VenomControlMode { TiltBox, SelectFragment, FollowLargest, SurfaceCrawl, SplitVault }
+    public enum VenomControlMode { TiltBox, SelectFragment, FollowLargest, SurfaceCrawl, SplitVault, TouchSurface }
 
     [CreateAssetMenu(menuName = "Gravity Box/Venom Locomotion")]
     public sealed class VenomLocomotionProfile : ScriptableObject
