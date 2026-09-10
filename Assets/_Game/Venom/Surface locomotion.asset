@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 247dae317e5d54f68b0529947d45a336, type: 3}
+  m_Name: Surface locomotion
+  m_EditorClassIdentifier: GravityBox.Venom::GravityBox.Venom.VenomLocomotionProfile
+  CrawlSpeed: 0.14
+  FollowSpeed: 0.16
+  FollowDelay: 3
+  VelocityResponse: 16
+  MaxAcceleration: 5
+  GripAcceleration: 3
+  FrictionCompensation: 1.3
+  RepathSeconds: 0.35
+  NavigationClearance: 0.029

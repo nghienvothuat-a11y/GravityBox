@@ -120,10 +120,11 @@ namespace GravityBox.Venom
             up = state.Up;
             Vector3 tangentVelocity = Vector3.ProjectOnPlane(velocity,up);
             state.Speed = Mathf.Lerp(state.Speed,tangentVelocity.magnitude,1-Mathf.Exp(-dt*10));
-            float moving = grounded ? Smooth(.010f,.065f,state.Speed) : 0;
+            Vector3 crawlIntent = level.Locomotion != null ? level.Locomotion.IntentForParticle(ids[0]) : Vector3.zero;
+            float moving = grounded ? Mathf.Max(Smooth(.010f,.065f,state.Speed),crawlIntent.magnitude*.75f) : 0;
             state.Moving = Mathf.MoveTowards(state.Moving,moving,dt*(grounded ? 4 : 12));
             // The intended direction follows flow/downhill, never the game camera.
-            Vector3 intent = tangentVelocity + Vector3.ProjectOnPlane(Vector3.down,up)*.018f;
+            Vector3 intent = tangentVelocity + Vector3.ProjectOnPlane(Vector3.down,up)*.018f + crawlIntent*.08f;
             if (grounded && intent.sqrMagnitude > .000025f)
                 state.Forward = Vector3.Slerp(state.Forward,intent.normalized,1-Mathf.Exp(-dt*5));
             state.Forward = Vector3.ProjectOnPlane(state.Forward,up).normalized;
@@ -132,7 +133,7 @@ namespace GravityBox.Venom
             if (dt > 0)
                 state.Lag = Vector3.SmoothDamp(state.Lag,Vector3.ClampMagnitude(-tangentVelocity*.055f,.009f),
                     ref state.LagRate,.19f,Mathf.Infinity,dt);
-            state.IdleTime = grounded && state.Speed < .024f ? state.IdleTime+dt : 0;
+            state.IdleTime = grounded && state.Speed < .024f && crawlIntent.sqrMagnitude < .001f ? state.IdleTime+dt : 0;
             if (grounded && count >= 8 && state.IdleTime > state.NextPeek)
             {
                 state.PeekStart = clock; state.IdleTime = 0; state.Peeks++;

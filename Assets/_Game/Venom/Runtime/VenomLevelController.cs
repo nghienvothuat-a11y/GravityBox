@@ -1,6 +1,7 @@
 using GravityBox.Foundation;
 using GravityBox.Simulation;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace GravityBox.Venom
 {
@@ -8,6 +9,12 @@ namespace GravityBox.Venom
     public sealed class VenomLevelController : MonoBehaviour
     {
         public VenomProfile MatterProfile;
+        public int LevelNumber = 1;
+        public VenomControlMode ControlMode;
+        public VenomLocomotionProfile LocomotionProfile;
+        public VenomLocomotion Locomotion { get; private set; }
+        public bool DirectControl => ControlMode != VenomControlMode.TiltBox;
+        public bool CanControl => !Paused && !Completed && !Lost;
         public RotationSettings RotationProfile;
         public BoxRotationController Rotation;
         public Transform Spawn, Outlet;
@@ -24,12 +31,15 @@ namespace GravityBox.Venom
         public bool Completed { get; private set; }
         public bool Paused { get; private set; }
         public bool Lost { get; private set; }
+        public bool BladeReleased { get; private set; }
         public float PairedHold { get; private set; }
         public float GateOpening => Vector3.Dot(Gate.position - Rotation.transform.TransformPoint(GateRest), Rotation.transform.up);
         private readonly Vector3[] previous = new Vector3[CohesiveOrganism.ParticleCount];
         private readonly bool[] enteredBore = new bool[CohesiveOrganism.ParticleCount];
         private Collider[] boundaries;
+        private Collider[] navigationObstacles;
         private Vector3 initialRootPosition;
+        private float bladeCycle;
 
         private void Awake()
         {
@@ -40,12 +50,14 @@ namespace GravityBox.Venom
             FloorBoundary = floor.gameObject.AddComponent<VenomFloorBoundary>();
             FloorBoundary.Initialize(floor,Outlet,ApertureRadius);
             boundaries = Rotation.GetComponentsInChildren<Collider>();
+            navigationObstacles = System.Array.FindAll(boundaries,c => c.gameObject != floor.gameObject && c.GetComponentInParent<VenomPressurePlate>() == null && !c.isTrigger);
             ConfigureFloorStop(Blade,BladeRest);
             ConfigureFloorStop(Gate,GateRest);
             Blade.transform.SetParent(Apparatus, true); Gate.transform.SetParent(Apparatus, true);
             LeftPad.transform.SetParent(Apparatus, true); RightPad.transform.SetParent(Apparatus, true);
             var matter = new GameObject("Living matter — world space"); matter.transform.SetParent(transform, false);
             Organism = matter.AddComponent<CohesiveOrganism>(); Organism.Initialize(MatterProfile, Spawn, this);
+            if (DirectControl) Locomotion = new VenomLocomotion(this);
             matter.AddComponent<VenomSurface>().Initialize(Organism, this);
             gameObject.AddComponent<VenomInput>().Initialize(this);
             gameObject.AddComponent<VenomHud>().Initialize(this);
@@ -75,11 +87,47 @@ namespace GravityBox.Venom
         private void FixedUpdate() { if (!Paused && !Lost) Step(Time.fixedDeltaTime); }
         public void Step(float dt)
         {
+            if (Paused || Lost || dt <= 0) return;
             Organism.Step(dt);
-            Blade.AddForce(Vector3.down * 9.81f, ForceMode.Acceleration);
+            if (DirectControl && !BladeReleased)
+            {
+                Vector3 centre = Vector3.zero;
+                foreach (var body in Organism.Bodies) centre += Rotation.transform.InverseTransformPoint(body.position)/32;
+                BladeReleased = Mathf.Abs(centre.z-BladeRest.z) < .018f && Mathf.Abs(centre.x-BladeRest.x) < .035f;
+                if (!BladeReleased)
+                {
+                    Vector3 parked = Rotation.transform.TransformPoint(BladeRest+Vector3.up*.064f);
+                    Blade.AddForce(Rotation.transform.up*Mathf.Clamp(Vector3.Dot(parked-Blade.position,Rotation.transform.up)*65-Vector3.Dot(Blade.linearVelocity,Rotation.transform.up)*2,-2,2));
+                }
+            }
+            if (!DirectControl || BladeReleased) Blade.AddForce(Vector3.down * 9.81f, ForceMode.Acceleration);
+            if (DirectControl && BladeReleased)
+            {
+                bladeCycle += dt;
+                // A powered press is necessary in a stationary chamber: gravity
+                // alone can leave the blade supported on top of the soft body.
+                float downSpeed = Vector3.Dot(Blade.linearVelocity,Rotation.transform.up);
+                float drive = (-.22f-downSpeed)*4;
+                if (bladeCycle > 1.2f)
+                {
+                    float height = Vector3.Dot(Rotation.transform.TransformPoint(BladeRest+Vector3.up*.064f)-Blade.position,Rotation.transform.up);
+                    drive = height*65-downSpeed*2+Blade.mass*9.81f;
+                }
+                Blade.AddForce(Rotation.transform.up*Mathf.Clamp(drive,-1.5f,1.5f));
+                if (bladeCycle > 1.8f && !GateLatched && Organism.FragmentCount == 1)
+                {
+                    float z = 0;
+                    foreach (var body in Organism.Bodies) z += Rotation.transform.InverseTransformPoint(body.position).z/32;
+                    if (Mathf.Abs(z-BladeRest.z) > .075f) { BladeReleased = false; bladeCycle = 0; }
+                }
+            }
             Organism.Cut(Blade.transform, BladeHalfSize);
-            LeftPad.Step(Organism, Rotation.transform); RightPad.Step(Organism, Rotation.transform);
-            bool pair = LeftPad.Pressed && RightPad.Pressed && LeftPad.Group != RightPad.Group && Organism.CutCount > 0;
+            Locomotion?.Step(dt);
+            if (ControlMode != VenomControlMode.FollowLargest)
+            { LeftPad.Step(Organism, Rotation.transform); RightPad.Step(Organism, Rotation.transform); }
+            bool pair = ControlMode == VenomControlMode.FollowLargest
+                ? Organism.CutCount > 0 && Organism.MergeCount > 0 && Organism.FragmentCount == 1
+                : LeftPad.Pressed && RightPad.Pressed && LeftPad.Group != RightPad.Group && Organism.CutCount > 0;
             PairedHold = pair ? PairedHold + dt : 0;
             if (PairedHold >= .22f) GateLatched = true;
             Vector3 target = Rotation.transform.TransformPoint(GateRest + Vector3.up * (GateLatched ? .145f : 0));
@@ -103,6 +151,25 @@ namespace GravityBox.Venom
         }
 
         public bool IsBoundary(Collider collider) => System.Array.IndexOf(boundaries, collider) >= 0;
+
+        public bool NavigationFree(Vector3 world, float clearance, bool allowOutlet)
+        {
+            Vector3 p = Rotation.transform.InverseTransformPoint(world);
+            if (Mathf.Abs(p.x) > .25f-clearance || Mathf.Abs(p.z) > .32f-clearance) return false;
+            Vector3 hole = Rotation.transform.InverseTransformPoint(Outlet.position);
+            if (!allowOutlet && new Vector2(p.x-hole.x,p.z-hole.z).magnitude < ApertureRadius+clearance) return false;
+            p.y = FloorBoundary.Top+.025f; world = Rotation.transform.TransformPoint(p);
+            foreach (var collider in navigationObstacles)
+            {
+                if (collider == null || !collider.enabled || !collider.gameObject.activeInHierarchy) continue;
+                // These experiments have a stationary horizontal floor. Covers
+                // and a raised gate above the crawling envelope are traversable.
+                Bounds bounds = collider.bounds;
+                if (bounds.min.y > world.y+.02f || bounds.max.y < world.y-.016f || bounds.SqrDistance(world) >= clearance*clearance) continue;
+                if ((collider.ClosestPoint(world)-world).sqrMagnitude < clearance*clearance) return false;
+            }
+            return true;
+        }
 
         public bool RaycastBoundary(Vector3 origin, Vector3 direction, float distance, out RaycastHit nearest)
         {
@@ -156,11 +223,14 @@ namespace GravityBox.Venom
 
         public void ResetExperiment()
         {
-            Time.timeScale = 1; Paused = Completed = GateLatched = Lost = false; PairedHold = 0;
+            Time.timeScale = 1; Paused = Completed = GateLatched = Lost = BladeReleased = false; PairedHold = bladeCycle = 0;
             Rotation.GetComponent<Rigidbody>().position = initialRootPosition; Rotation.ResetState();
             ResetBody(Blade, BladeRest); ResetBody(Gate, GateRest);
+            if (DirectControl) ResetBody(Blade,BladeRest+Vector3.up*.064f);
             LeftPad.ResetPlate(Rotation.transform); RightPad.ResetPlate(Rotation.transform);
             Organism.ResetMatter();
+            Locomotion?.Reset();
+            Rotation.InputEnabled = !DirectControl;
             for (int i = 0; i < previous.Length; i++)
             { previous[i] = Outlet.InverseTransformPoint(Organism.Bodies[i].position); enteredBore[i] = false; }
             Physics.SyncTransforms();
@@ -170,7 +240,17 @@ namespace GravityBox.Venom
             body.position = Rotation.transform.TransformPoint(local); body.rotation = Rotation.transform.rotation;
             body.linearVelocity = body.angularVelocity = Vector3.zero;
         }
-        public void TogglePause() { Paused = !Paused; Time.timeScale = Paused ? 0 : 1; Rotation.InputEnabled = !Paused && !Completed && !Lost; }
+        public void TogglePause()
+        {
+            Paused = !Paused; Time.timeScale = Paused ? 0 : 1;
+            Rotation.InputEnabled = CanControl && !DirectControl; Locomotion?.SetInput(Vector3.zero);
+        }
+        public void LoadExperiment(int number)
+        {
+            if (number < 1 || number > 3) return;
+            Time.timeScale = 1;
+            SceneManager.LoadScene($"Venom{number:00}");
+        }
         private void OnApplicationPause(bool pause) { if (pause && !Paused) TogglePause(); }
         private void OnDestroy() { Time.timeScale = 1; }
     }

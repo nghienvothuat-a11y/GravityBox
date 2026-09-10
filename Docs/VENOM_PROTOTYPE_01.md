@@ -2,6 +2,8 @@
 
 Prototype trên nhánh `Venom`, phát triển từ bản 23 thí nghiệm trước campaign 100. Scene riêng tại `Assets/_Game/Venom/Venom01.unity`. Mục tiêu là kiểm tra một sinh vật mềm có thể tách để phối hợp rồi nhập lại dưới cùng một thao tác nghiêng hộp.
 
+Màn 01 giữ cơ chế nghiêng hộp. Hai biến thể hộp đứng yên nằm ở [màn 02–03](VENOM_CONTROLS_02_03.md); app macOS có nút chọn cả ba màn.
+
 ## Vòng chơi
 
 1. Khối vật chất ở đầu hộp. Nghiêng nhẹ về phía máy chém; quan sát khối chảy, bẹp và kéo dài.
@@ -64,7 +66,7 @@ Mỗi nút nhận tải từ các hạt thực sự có tiếp xúc trên mặt 
 
 ## Tạo lại, build và kiểm chứng
 
-Scene/profile/mesh đã được lưu trong Git; không cần Generate để chơi. **Gravity Box → Venom → Generate Experiment 01** sẽ tạo lại nội dung, ghi đè thay đổi author trong scene và thông số builder quản lý. **Gravity Box → Venom → Build macOS** hoặc `bash Tools/build-venom.sh` xuất riêng app Venom. `Tools/build.sh` vẫn dành cho lab bi thép.
+Scene/profile/mesh đã được lưu trong Git; không cần Generate để chơi. **Gravity Box → Venom → Generate Experiment 01** sẽ tạo lại nội dung, ghi đè thay đổi author trong scene và thông số builder quản lý. **Gravity Box → Venom → Build macOS** hoặc `bash Tools/build-venom.sh` xuất app Venom gồm cả ba màn. `Tools/build.sh` vẫn dành cho lab bi thép.
 
 `VenomPrototypeTests` kiểm tra khối nghỉ ổn định, khối lượng qua cắt, vùng cắt, ngăn hàn ngay lập tức, đường giải bằng rotation/PhysX thực, hai nút không thể được giải bởi một nhóm, không thắng khi mới thoát một phần và reset. Đường giải tự động không đặt vị trí sinh vật: chỉ đổi orientation mục tiêu của hộp, gồm đoạn nghiêng ban đầu rồi phản hồi vị trí/vận tốc để đưa khối về khoang nhập và lỗ.
 

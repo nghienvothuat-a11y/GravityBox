@@ -16,6 +16,7 @@ namespace GravityBox.Editor
     {
         public const string Folder = "Assets/_Game/Venom";
         public const string ScenePath = Folder + "/Venom01.unity";
+        public static readonly string[] Scenes = { ScenePath, Folder+"/Venom02.unity", Folder+"/Venom03.unity" };
         private static PhysicsMaterial contact;
         private static Material floor, glass, frame, glow, bladeMaterial;
         [MenuItem("Gravity Box/Venom/Generate Experiment 01")]
@@ -102,6 +103,55 @@ namespace GravityBox.Editor
         }
         private static T Asset<T>(string path,Func<T> create) where T:Object
         { var a=AssetDatabase.LoadAssetAtPath<T>(path);if(a==null){a=create();AssetDatabase.CreateAsset(a,path);}return a; }
+
+        [MenuItem("Gravity Box/Venom/Generate Experiments 02 and 03")]
+        public static void GenerateControls()
+        {
+            contact=AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(Folder+"/Materials/Soft contact.physicMaterial");
+            glass=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Materials/Observation glass.mat");
+            glow=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Materials/Mint inlay.mat");
+            frame=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Materials/Graphite edges.mat");
+            var locomotion=Asset<VenomLocomotionProfile>(Folder+"/Surface locomotion.asset",()=>ScriptableObject.CreateInstance<VenomLocomotionProfile>());
+            EditorUtility.SetDirty(locomotion);
+            for(int number=2;number<=3;number++)
+            {
+                var scene=EditorSceneManager.OpenScene(ScenePath,OpenSceneMode.Single);
+                var owner=Object.FindFirstObjectByType<VenomLevelController>();
+                owner.name=$"Venom {number:00} — stationary chamber"; owner.LevelNumber=number;
+                owner.ControlMode=number==2?VenomControlMode.SelectFragment:VenomControlMode.FollowLargest;
+                owner.LocomotionProfile=locomotion;
+                var root=owner.Rotation.transform;root.name="Stationary chamber";
+                foreach(var child in root.GetComponentsInChildren<Transform>())
+                    if(child!=null && (child.name.Contains("flow guide") || child.name.Contains("Reunion"))) Object.DestroyImmediate(child.gameObject);
+                owner.View.orthographicSize=.65f;
+                owner.View.transform.position=new Vector3(.025f,1.1f,-.46f);
+                owner.View.transform.LookAt(new Vector3(0,-.02f,.015f));
+                if(number==3)
+                {
+                    // Offset the cutting plane so the player retains a larger
+                    // body. A long spine initially puts its follower out of sight
+                    // around a corner; the lower wall requires another turn.
+                    owner.BladeRest.x=.006f;owner.Blade.transform.localPosition=owner.BladeRest;
+                    owner.Blade.GetComponent<ConfigurableJoint>().connectedAnchor=owner.BladeRest;
+                    var spine=root.Find("Separation spine");spine.localPosition=new Vector3(.006f,.003f,.075f);spine.localScale=new Vector3(.007f,.139f,.11f);
+                    var line=root.Find("Spine light");line.localPosition=new Vector3(.006f,-.064f,.075f);line.localScale=new Vector3(.002f,.001f,.11f);
+                    owner.LeftPad.gameObject.SetActive(false);owner.RightPad.gameObject.SetActive(false);
+                    // The exit gate is beyond the reunion area; it opens only
+                    // after a real cut followed by a complete physical reunion.
+                    owner.GateRest.z=-.185f;owner.Gate.transform.localPosition=owner.GateRest;
+                    owner.Gate.GetComponent<ConfigurableJoint>().connectedAnchor=owner.GateRest;
+                    var upperCover=root.Find("Upper observation cover");upperCover.localPosition=new Vector3(0,.075f,.0705f);upperCover.localScale=new Vector3(.5f,.004f,.499f);
+                    var lowerCover=root.Find("Lower observation cover");lowerCover.localPosition=new Vector3(0,.075f,-.2555f);lowerCover.localScale=new Vector3(.5f,.004f,.129f);
+                    Block("Detour wall",root,new Vector3(-.075f,.002f,-.105f),new Vector3(.35f,.138f,.008f),glass);
+                    Block("Detour inlay",root,new Vector3(-.075f,-.064f,-.105f),new Vector3(.35f,.001f,.002f),glow,false);
+                    Ring(root,new Vector3(-.115f,-.063f,-.012f),.042f,.001f);
+                }
+                EditorSceneManager.SaveScene(scene,Scenes[number-1]);
+            }
+            EditorBuildSettings.scenes=Array.ConvertAll(Scenes,path=>new EditorBuildSettingsScene(path,true));
+            AssetDatabase.SaveAssets();
+            Debug.Log("VENOM CONTROLS GENERATED: select fragments in 02; largest leader and delayed pathfinding in 03.");
+        }
         private static void Transparent(Material material)
         {
             material.SetFloat("_Surface",1);material.SetFloat("_Blend",0);material.SetFloat("_BlendModePreserveSpecular",0);
@@ -176,7 +226,7 @@ namespace GravityBox.Editor
             try
             {
                 PlayerSettings.productName="Venom";
-                var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{ScenePath},target=BuildTarget.StandaloneOSX,locationPathName=path,options=BuildOptions.Development});
+                var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=Scenes,target=BuildTarget.StandaloneOSX,locationPathName=path,options=BuildOptions.Development});
                 if(report.summary.result!=BuildResult.Succeeded)throw new Exception("Venom build failed: "+report.summary.result);
                 Debug.Log("VENOM BUILD SUCCESS: "+path+" ("+report.summary.totalSize+" bytes)");
             }

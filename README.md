@@ -1,15 +1,22 @@
 # Venom — Living Matter Prototype
 
-Nhánh **`Venom`** có một prototype riêng: **01 — Một cơ thể, hai ý chí**. Xoay hộp để sinh vật đen bóng chảy qua máy chém, tách thành hai phần độc lập, giữ hai nút mở cửa, rồi nhập lại và chui qua lỗ tròn. Chỉ thắng khi **100% vật chất** đã thoát.
+Nhánh **`Venom`** có ba màn thử nghiệm điều khiển sinh vật mềm. Chỉ thắng khi **100% vật chất** đã đi qua lỗ tròn thật.
 
-- Chạy macOS: `Builds/Venom/macOS/Venom.app`. Kéo chuột trong vùng hộp; **R** thử lại; **P/Esc** tạm dừng.
-- Chạy Unity **6000.3.19f1**: mở `Assets/_Game/Venom/Venom01.unity`, Game View **9:16**, Play.
-- Build lại: `bash Tools/build-venom.sh` (đóng Unity đang mở project trước).
-- [Thiết kế, kiến trúc, cách thử và giới hạn mô phỏng](Docs/VENOM_PROTOTYPE_01.md).
+| Màn | Điều khiển | Bài thử |
+| --- | --- | --- |
+| 01 — Một cơ thể, hai ý chí | Nghiêng hộp | Cắt, hai nút, hợp thể, thoát |
+| 02 — Hai phần, một kế hoạch | Hộp đứng im; chọn từng phần | Bám giữ nút A, đổi phần sang nút B, mở cửa |
+| 03 — Tìm về chủ thể | Điều khiển phần lớn nhất | Phần nhỏ chờ 3 giây rồi tự tìm đường vòng về để nhập lại |
+
+- Chạy macOS: `Builds/Venom/macOS/Venom.app`. Nút ở đầu HUD hoặc **1/2/3** chọn màn; **R** thử lại; **P/Esc** tạm dừng.
+- Màn 02/03: **giữ–kéo** để bò hoặc **WASD/mũi tên**. Màn 02 chạm phần muốn chọn, dùng nút A/B hoặc **Tab**. Màn 03 luôn chọn phần lớn nhất.
+- Chạy Unity **6000.3.19f1**: mở `Assets/_Game/Venom/Venom01.unity`, `Venom02.unity` hoặc `Venom03.unity`, Game View **9:16**, Play.
+- Build lại: `bash Tools/build-venom.sh` (đóng Unity đang mở project trước). Build macOS có cả ba màn; chưa xuất APK cho biến thể Venom.
+- [Thiết kế màn 01](Docs/VENOM_PROTOTYPE_01.md) · [Điều khiển, navigation và kiến trúc màn 02–03](Docs/VENOM_CONTROLS_02_03.md).
 
 Sinh vật dùng hạt vật lý liên kết nhớt/dẻo và bề mặt metaball liên tục. Đây là mô hình vật chất mềm phục vụ thử gameplay, chưa phải solver chất lỏng bảo toàn thể tích. Nội dung 23 bàn bi thép bên dưới vẫn có thể mở qua scene `Gameplay.unity`; build Venom dùng scene riêng.
 
-Sinh vật có animation theo hướng symbiote: thân dồn và cuộn lệch, mô phía trên có độ trễ khi trượt, thỉnh thoảng dựng một đỉnh mềm để thăm dò. Các sợi bám mọc độc lập và căng mảnh rồi thu lại. Animation đọc vận tốc và tiếp xúc thật, không thêm lực hoặc thay đổi lượng vật chất cần thoát. [Tư liệu và cách áp dụng](Docs/VENOM_MOTION_STUDY.md) · [Ảnh/animation cận cảnh](Docs/Images/VenomLife/README.md).
+Sinh vật có animation theo hướng symbiote: thân dồn và cuộn lệch, mô phía trên có độ trễ khi trượt, thỉnh thoảng dựng một đỉnh mềm để thăm dò. Các sợi bám mọc độc lập và căng mảnh rồi thu lại. Animation đọc vận tốc, tiếp xúc thật và ý định bò ở màn 02/03. Lực bám–kéo do hệ locomotion riêng tạo ở các hạt có tiếp xúc; mesh/xúc tua chỉ biểu diễn hình ảnh, không thay đổi lượng vật chất cần thoát. [Tư liệu và cách áp dụng](Docs/VENOM_MOTION_STUDY.md) · [Ảnh/animation cận cảnh](Docs/Images/VenomLife/README.md).
 
 Bản cập nhật tiếp xúc sàn: cửa và lưỡi chém có chặn dưới đúng mặt sàn; skin không phình xuyên phần sàn đặc và cập nhật theo từng frame. Animation nhanh hơn **1,5×**, biên độ tăng khoảng **20–30%**. Đóng bản macOS đang chạy rồi mở lại app để nhận bản build mới. Kiểm chứng: rơi 2/5/10 m/s, lật hộp nhiều trục, chặn cơ cấu và đường giải thoát đủ vật chất.
 
