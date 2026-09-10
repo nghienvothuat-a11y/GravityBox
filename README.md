@@ -14,7 +14,7 @@ Nhánh **`Venom`** có ba màn thử nghiệm điều khiển sinh vật mềm. 
 - Build lại: `bash Tools/build-venom.sh` (đóng Unity đang mở project trước). Build macOS có cả ba màn; chưa xuất APK cho biến thể Venom.
 - [Thiết kế màn 01](Docs/VENOM_PROTOTYPE_01.md) · [Điều khiển, navigation và kiến trúc màn 02–03](Docs/VENOM_CONTROLS_02_03.md).
 
-Camera màn 02 nhìn gần thẳng từ trên xuống (**88°**) để dễ chọn hai phần/căn công tắc; màn 03 nhìn chéo từ đầu xuất phát (**58°, lệch 12°**) để thấy rõ chuyển động thân và phần đi theo. Cả hộp nằm trong khung hình; giữ–kéo được căn theo hướng nhìn mới.
+Camera màn 02 nhìn gần thẳng từ trên xuống (**88°**) để dễ chọn hai phần/căn công tắc; màn 03 nhìn **3/4 từ góc trái đầu xuất phát**, cao **45°** và chéo **45°** để thấy rõ chuyển động thân và phần đi theo. Cả hộp nằm trong khung hình; giữ–kéo được căn theo hướng nhìn mới.
 
 Sinh vật dùng hạt vật lý liên kết nhớt/dẻo và bề mặt metaball liên tục. Đây là mô hình vật chất mềm phục vụ thử gameplay, chưa phải solver chất lỏng bảo toàn thể tích. Nội dung 23 bàn bi thép bên dưới vẫn có thể mở qua scene `Gameplay.unity`; build Venom dùng scene riêng.
 

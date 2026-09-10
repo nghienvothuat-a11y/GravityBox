@@ -14,7 +14,7 @@ App macOS `Builds/Venom/macOS/Venom.app` có ba nút chọn màn ở đầu màn
 ## Camera theo cách điều khiển
 
 - **Màn 02:** camera orthographic nhìn xuống **88° so với mặt sàn**, thẳng theo trục hộp. Hai công tắc và hai nửa hộp dễ so sánh, thuận tiện chạm chọn phần và căn vị trí. Góc gần thẳng đứng giúp thanh cửa đang nâng không che phần đứng trên công tắc.
-- **Màn 03:** camera orthographic nhìn xuống **58°**, nhìn chếch **12°** từ phía sau, ở đầu xuất phát của chủ thể. Sinh vật bắt đầu ở gần người chơi và tiến về lỗ ở phía trên màn hình. Góc này bộc lộ phần đầu kéo, mô phía sau, độ cao của vách và hình dạng lúc nhập lại. Khung hình chứa cả hộp để người chơi theo dõi chủ thể lẫn phần nhỏ đang vòng về.
+- **Màn 03:** camera orthographic **góc nhìn 3/4**, nhìn xuống **45°** và nhìn chéo **45°** từ góc trái đầu xuất phát. Sinh vật bắt đầu ở gần người chơi và tiến về lỗ ở phía trên màn hình. Góc này bộc lộ phần đầu kéo, mô phía sau, độ cao của vách và hình dạng lúc nhập lại. Khung hình chứa cả hộp để người chơi theo dõi chủ thể lẫn phần nhỏ đang vòng về.
 - Góc và khung bao cơ cấu cố định trong từng màn. Cắt/đổi phần/nhập lại không làm camera xoay hoặc zoom; màn 01 giữ góc quan sát cũ. Camera tính lại tỷ lệ theo kích thước cửa sổ để tránh HUD.
 - Ánh xạ giữ–kéo bù độ co ngắn của mặt sàn khi nhìn chéo: hướng di chuyển chiếu lên màn hình khớp hướng ngón tay. Độ lớn joystick vẫn điều khiển tốc độ yêu cầu như trước.
 
@@ -72,4 +72,8 @@ Kết quả ngày 10/09/2026:
 
 ### Kiểm tra góc camera riêng cho hai màn
 
-Đã chạy 8/8 kiểm tra điều khiển với camera có đồ họa, sau đó chạy lại riêng cả hai đường giải đầy đủ ở góc chốt cuối (88° và 58°/12°): 2/2 qua, đủ 32/32 hạt thoát mỗi màn. Đã xem ảnh khi hai nút cùng được giữ, phần nhỏ tìm về và nhập lại để chọn góc ít bị thanh cửa/lưỡi chém che. Log/XML/capture tại `Artifacts/VenomCamera`. Camera cố định, giữ cả hộp và các phần trong cùng khung hình. Bản macOS đã build lại thành công với hai góc này.
+Đã chạy 8/8 kiểm tra điều khiển với camera có đồ họa, sau đó chạy lại riêng cả hai đường giải đầy đủ ở góc trước lần thử 3/4 (88° và 58°/12°): 2/2 qua, đủ 32/32 hạt thoát mỗi màn. Đã xem ảnh khi hai nút cùng được giữ, phần nhỏ tìm về và nhập lại để chọn góc ít bị thanh cửa/lưỡi chém che. Log/XML/capture tại `Artifacts/VenomCamera`. Camera cố định, giữ cả hộp và các phần trong cùng khung hình. Bản macOS đã build lại thành công với hai góc này.
+
+### Màn 03: thử góc nhìn 3/4
+
+Theo yêu cầu tiếp theo, đổi riêng màn 03 sang camera 3/4 từ góc trái đầu xuất phát: cao 45°, chéo 45° (rotation Unity 45°, 135°, 0°). Góc này cho thấy mặt sàn và độ sâu hai thành hộp, đồng thời đưa lưỡi chém sang bên trong ảnh quan sát cảnh hợp thể. Đã xem ảnh tìm về/nhập lại và chạy lại đường giải đầy đủ: 1/1 qua, đủ 32/32 hạt thoát. Capture/XML/log tại `Artifacts/VenomCamera/ThreeQuarter` và `Artifacts/VenomCamera/three-quarter.*`.

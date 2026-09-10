@@ -6,11 +6,11 @@ namespace GravityBox.Venom
     public static class VenomCameraFraming
     {
         // 02: read/select both pieces like a tabletop puzzle.
-        // 03: look from the spawn end toward the outlet; raised gates move
-        // away from the approaching body in screen space instead of covering it.
+        // 03: three-quarter view from the spawn-side left corner. This
+        // exposes the depth while keeping the blade away from the reunion area.
         // Keep a fixed heading so input directions never drift during a hold.
         public static Quaternion Orientation(VenomControlMode mode) =>
-            mode == VenomControlMode.SelectFragment ? Quaternion.Euler(88,0,0) : Quaternion.Euler(58,192,0);
+            mode == VenomControlMode.SelectFragment ? Quaternion.Euler(88,0,0) : Quaternion.Euler(45,135,0);
 
         public static void Frame(VenomLevelController level, int width, int height)
         {

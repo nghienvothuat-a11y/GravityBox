@@ -165,7 +165,7 @@ namespace GravityBox.Editor
                 VenomCameraFraming.Frame(owner,540,960);
                 EditorSceneManager.SaveScene(scene,Scenes[number-1]);
             }
-            Debug.Log("VENOM CAMERAS UPDATED: 02 overhead 88 degrees; 03 oblique 58 degrees from the spawn end, 12 degrees to its right.");
+            Debug.Log("VENOM CAMERAS UPDATED: 02 overhead 88 degrees; 03 three-quarter view, 45 degrees down and 45 degrees from the spawn-side left corner.");
         }
         private static void Transparent(Material material)
         {
