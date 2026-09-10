@@ -21,7 +21,7 @@ Màn thử điều khiển trong hộp lập phương kính 0,5 m, trống bên 
 - `VenomControlMode.SurfaceCrawl` được thêm cuối enum để giữ nguyên dữ liệu màn 01–03.
 - `VenomWallClimb` quản lý bề mặt, lực bám và chuyển góc. Sáu collider thật bao quanh khoang; thứ tự dữ liệu: sàn, trái, phải, trước, sau, trần.
 - Đầu dò hỗ trợ dài 35 mm, chỉ tạo lực trên mô nằm sát một mặt hộp. Sinh vật ở giữa khoảng không vẫn rơi tự do. Không dịch chuyển trực tiếp Rigidbody và không vô hiệu hóa collider hạt.
-- Tốc độ mục tiêu 0,14 m/s; điều khiển lực dựa trên vận tốc **tương đối với hộp**, có bù thành phần trọng lực dọc mặt. Lực pháp tuyến mô phỏng khả năng kết dính của sinh vật. Đây là năng lực hư cấu phục vụ gameplay, không phải chất lỏng thụ động.
+- Tốc độ mục tiêu 0,28 m/s (gấp đôi bản đầu màn 04 để test feeling); điều khiển lực dựa trên vận tốc **tương đối với hộp**, có bù thành phần trọng lực dọc mặt. Lực pháp tuyến mô phỏng khả năng kết dính của sinh vật. Đây là năng lực hư cấu phục vụ gameplay, không phải chất lỏng thụ động.
 - Khi ít nhất ba hạt tiếp cận tường theo hướng bò, hướng di chuyển được xoay sang mặt mới. Hạt đầu leo lên; mô phía sau còn chạm mặt cũ được kéo về góc.
 - Khi dừng, điểm bám lưu trong tọa độ hộp. Hộp quay bằng Rigidbody kinematic, tối đa 65°/s và gia tốc 280°/s²; trọng lực vẫn hướng xuống thế giới.
 - Lỗ thật dùng lại quy tắc hỗ trợ thoát của các màn trước. Gần lỗ, lực bám nhường cho lực hỗ trợ thoát; mỗi hạt phải xuyên qua miệng lỗ và ra hết mặt dưới.
@@ -36,6 +36,8 @@ Một cơ thể, không máy chém hay công tắc mới; mục tiêu là kiểm
 ## Kiểm chứng
 
 Đã pass **30/30** bài kiểm tra PlayMode của Venom (26 bài cũ và 4 bài màn 04); build macOS thành công bằng Unity 6000.3.19f1. Đã mở bản native và xác nhận HUD/camera màn 04.
+
+Bản tăng tốc độ lên **0,28 m/s** đã chạy lại và pass **4/4** bài `VenomClimbTests`.
 
 `VenomClimbTests` chạy bước vật lý 120 Hz, dùng lực điều khiển thật:
 - Giữ một hướng theo màn hình để bò sàn → tường → trần, giữ trần, rồi xoay hộp khi đang bám.

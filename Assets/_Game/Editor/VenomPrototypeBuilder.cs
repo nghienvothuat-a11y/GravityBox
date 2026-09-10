@@ -177,7 +177,7 @@ namespace GravityBox.Editor
             rotation.MaxDegreesPerSecond=65;rotation.MaxDegreesPerSecondSquared=280;
             owner.RotationProfile=rotation;EditorUtility.SetDirty(rotation);
             var motion=Asset<VenomLocomotionProfile>(Folder+"/Climbing locomotion.asset",()=>ScriptableObject.CreateInstance<VenomLocomotionProfile>());
-            owner.LocomotionProfile=motion;EditorUtility.SetDirty(motion);
+            motion.CrawlSpeed=.28f;owner.LocomotionProfile=motion;EditorUtility.SetDirty(motion);
             Vector2 hole=new Vector2(0,-.12f);
             var floorGo=new GameObject("Crystal floor — circular through hole",typeof(MeshFilter),typeof(MeshRenderer),typeof(MeshCollider));
             floorGo.transform.SetParent(root,false);
