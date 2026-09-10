@@ -1,12 +1,6 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** Campaign có 100 màn/10 boss và giữ 23 màn Physics Lab. ADR 027 thống nhất build macOS/Android trên Campaign; ADR 026 là thư viện sáu họ cơ khí dùng để phát triển nội dung. ADR 025 giữ luật tất cả bi thoát và roster nhiều bi. Hỗ trợ thoát ADR 023 áp dụng riêng cho từng bi. Các quyết định cũ bên dưới giữ lại để theo dõi lịch sử.
-
-## ADR 027 Một pipeline Campaign cho macOS và Android
-
-`CampaignBuilder` là chủ sở hữu build phân phối của prototype 100 màn. Cả macOS và Android chỉ nhúng `Assets/_Game/Scenes/Campaign.unity`; scene này giữ `CampaignCatalog` C001–C100 và tham chiếu Physics Lab để chuyển đối chứng trong runtime. `Tools/build.sh Android` không gọi `PrototypeBuilder` vì builder đó chỉ nhúng `Gameplay.unity` và có thể tạo nhầm APK Lab.
-
-Android dùng Development build, IL2CPP, ARM64, portrait, min API 26 và debug signing. Builder ghi file canonical `GravityBox.apk` rồi sao chép byte-identical thành `GravityBox-Campaign100.apk` để người test nhận đúng phạm vi. Đây là APK sideload để playtest; signing phát hành, store bundle, profiling thiết bị và iOS Campaign là các cổng riêng.
+**Phạm vi hiện tại:** ADR 026 thêm sáu họ cơ khí và boss, tổng 23 màn. ADR 025 giữ luật tất cả bi thoát và roster nhiều bi. Hỗ trợ thoát ADR 023 áp dụng riêng cho từng bi. Các quyết định cũ bên dưới giữ lại để theo dõi lịch sử.
 
 ## ADR 025 Toàn bộ bi phải thoát, cơ quan phối hợp ở bàn 16
 

@@ -6,9 +6,6 @@ namespace GravityBox.Gameplay
     [CreateAssetMenu(menuName = "Gravity Box/Level Catalog")]
     public sealed class LevelCatalog : ScriptableObject
     {
-        public string Id = "physics-lab";
-        public string DisplayName = "Physics Lab";
-        public bool IsCampaign;
         public LevelDefinition[] Levels;
         public BallController BallPrefab;
         public BallPhysicsProfile BallProfile;

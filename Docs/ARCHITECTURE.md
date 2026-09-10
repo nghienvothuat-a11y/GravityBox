@@ -74,7 +74,7 @@ Bounds của LevelRuntime là hàng rào kiểm tra lỗi sau vùng vỏ và ng�
 
 ## Session và reset
 
-Active có thể chuyển Paused, Completing khi mọi bi thoát, hoặc Failed nếu phát hiện lọt ra ngoài sai đường. Completing giữ time scale 1 và lên lịch tải màn kế sau `CompletionDelay`; campaign dùng 1,15 giây, C100 không quay vòng. Boss replay có thể tạm giữ lịch này mà không đổi trạng thái vật lý. Next vẫn cho phép bỏ qua thủ công khi test. Reset hủy lịch chuyển đang chờ và khôi phục cùng điều kiện.
+Active có thể chuyển Paused, Completing khi bi thoát, hoặc Failed nếu phát hiện lọt ra ngoài sai đường. Completing giữ time scale 1; manager không tự chuyển bàn theo timer. Next được người chơi gọi và quay vòng 13 bàn. Reset có thể gọi từ trạng thái đang chơi hoặc đã thoát để lặp cùng điều kiện.
 
 Reset khôi phục root pose trước, xóa input backlog, khôi phục exit/traversal state, rồi world pose/vận tốc của props và contact state của bi. Cuối cùng SyncTransforms và BeginTracking lấy mẫu mới. Registry chỉ capture trạng thái ban đầu một lần; reset không ghi đè trạng thái chuẩn bằng kết quả thử trước đó.
 
@@ -107,10 +107,3 @@ Bàn 13 mở rộng hệ lực bằng `IForceStepProvider.PrepareStep(dt)` trư�
 Bàn 14 thay profile bằng thủy ngân; không có nhánh lực riêng hoặc bản sao solver. Tên lớp `Water*` giữ để tương thích các asset/GUID hiện có; menu authoring đổi thành Liquid Profile. `WaterVisuals.MercuryCutaway` chỉ chọn màu tracer và bộ material/shader khác, không tham gia tính lực. ContentValidator kiểm tra từng chất lỏng và view tương ứng. [Thiết kế thủy ngân](LEVEL14_MERCURY.md).
 
 Giữ seam giữa simulation, level content và presentation để tinh chỉnh từng phần. Chỉ thêm bàn/cơ cấu sau khi cảm giác bi đạt qua thử trực tiếp. Force providers, PhysicalProp, save adapter hoặc loader async có thể được mở rộng khi có yêu cầu cụ thể; số lượng lớp không phải mục tiêu. Các rule tín hiệu/zero-G cũ không được coi là nền tảng cần bật lại.
-
-
-## Campaign 100 (09/09/2026)
-
-`Campaign.unity` là composition root của campaign và tham chiếu catalog Lab làm chế độ phụ. `Gameplay.unity` vẫn chạy Lab độc lập. Cùng LevelManager/EnvironmentForceSystem/Rigidbody/ExitSocket xử lý cả hai catalog. Nội dung campaign được author trong Editor rồi lưu prefab; mesh nằm trong GeometryAssetScope riêng, không thay runtime generation.
-
-LevelDesignProfile chứa metadata curriculum, budget và phiên bản, không áp lực giả vào bi. CampaignProgress tách storage interface khỏi progression theo stable ID. BossPresentation chỉ quan sát physics; BossReplay phát lại renderer từ pose đã ghi. Chi tiết dữ liệu, lifecycle, build và phạm vi kiểm chứng nằm trong [CAMPAIGN_IMPLEMENTATION.md](CAMPAIGN_IMPLEMENTATION.md).

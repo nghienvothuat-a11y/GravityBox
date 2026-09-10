@@ -1,19 +1,5 @@
 # Nhật ký phát triển Gravity Box
 
-## APK Android Campaign 100 — 09/09/2026
-
-- Sửa `Tools/build.sh Android` dùng `CampaignBuilder` thay cho `PrototypeBuilder`; APK nhúng `Assets/_Game/Scenes/Campaign.unity`, catalog `gravity-box-campaign-v1` và đủ ID C001–C100. Builder giữ cả `GravityBox.apk` và tên rõ phạm vi `GravityBox-Campaign100.apk` dưới dạng hai bản byte-identical.
-- Development APK IL2CPP chỉ chứa ABI `arm64-v8a`, min API 26, target API 36, package `com.gravityboxlab.prototype`, debug-signed bằng APK Signature Scheme v2. File thật **59.272.201 bytes**, SHA-256 `fac50d77fceb3b65b1a5dfe11e993c269e7f93fbf8523db15f680e1c11f88d3c`; ZIP integrity đạt.
-- Build log xác nhận Unity mở `Campaign.unity`; dữ liệu đóng gói chứa `gravity-box-campaign-v1`, `Hành trình 100 màn`, các ID từ `campaign-001` tới `campaign-100` và asset C100. [Bằng chứng Android](Verification/Campaign100/Android/README.md).
-- Không có thiết bị trong `adb devices`, nên chưa cài/chạy hay đo hiệu năng trên Android thật. Build/manifest/signature chỉ xác nhận gói hợp lệ về kỹ thuật, chưa xác nhận touch, readability, thermal hoặc feeling trên thiết bị của người dùng.
-
-## Tự chuyển màn và âm thanh lăn dịu hơn — 09/09/2026
-
-- Khi toàn bộ bi đã ra khỏi lỗ, Campaign giữ hiệu ứng thắng 1,15 giây rồi tự tải màn kế tiếp; Physics Lab giữ 1,8 giây. C100 dừng tại trạng thái hoàn thành, không quay về C001. NEXT vẫn dùng để bỏ qua nhanh trong lúc test.
-- Boss replay tạm giữ bộ đếm tự chuyển màn; khi replay kết thúc, khoảng chờ thắng bắt đầu lại để người chơi không bị cắt mất đoạn xem lại.
-- Âm thanh lăn mới hạ trần âm lượng, tắt nhiễu do rung tiếp xúc rất nhỏ, dùng fade-in chậm/fade-out nhanh, bỏ Doppler/reverb và giới hạn pitch 0,72–0,98. Procedural loop dài ba giây, lọc bớt dải cao và crossfade đầu/cuối để giảm tiếng rít, tiếng sạn và nhịp click lặp lại.
-- **391/391 passed**: 11 EditMode + 380 PlayMode. Bộ test xác nhận tự chuyển Campaign/Lab, luật đủ toàn bộ bi, reset, replay và việc C100 không wrap. [XML và phạm vi](Verification/AutoAdvanceAudio/README.md).
-
 ## Bàn 17–23 — sáu họ cơ khí và boss — 09/09/2026
 
 - Thêm cầu gập tự rơi, cân hai bi, lồng treo độc lập, cửa con lắc, lấy đà–bay–đón, cam có trí nhớ và boss phối hợp hai bi trong khối cầu. Các màn 18/23 có hai bi; tất cả bi thoát mới thắng. [Thiết kế/cách thử](MECHANICAL_LEVELS_17_23.md), ADR 026.

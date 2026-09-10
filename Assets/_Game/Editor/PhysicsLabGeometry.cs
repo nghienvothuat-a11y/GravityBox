@@ -382,7 +382,7 @@ namespace GravityBox.Editor
             public void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d) { Triangle(a, b, c); Triangle(a, c, d); }
             public Mesh Save(string name)
             {
-                string path = GeometryAssetScope.MeshPath(name);
+                string path = PhysicsLabBuilder.Folder + "/Meshes/" + name + ".asset";
                 Mesh mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
                 if (mesh == null) { mesh = new Mesh { name = name }; AssetDatabase.CreateAsset(mesh, path); }
                 mesh.Clear(); mesh.SetVertices(vertices); mesh.SetTriangles(triangles, 0);

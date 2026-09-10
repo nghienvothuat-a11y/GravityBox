@@ -53,7 +53,7 @@ namespace GravityBox.Tests
         }
 
         [UnityTest]
-        public IEnumerator GameplayScene_BootstrapsTwentyThreeLevelsAndAutoAdvancesAfterEachWin()
+        public IEnumerator GameplayScene_BootstrapsTwentyThreeLevelsAndChangesOnlyOnManualNext()
         {
             yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/_Game/Scenes/Gameplay.unity", new LoadSceneParameters(LoadSceneMode.Single));
             yield return null;
@@ -89,11 +89,11 @@ namespace GravityBox.Tests
                 Assert.That(outlet.HasExited, Is.True);
                 Assert.That(Time.timeScale, Is.EqualTo(1));
                 yield return new WaitForSecondsRealtime(levels.Catalog.CompletionDelay + 0.1f);
-                Assert.That(levels.Index, Is.EqualTo((index + 1) % levels.Catalog.Levels.Length),
-                    "A completed level should advance after its short physical payoff.");
-                Assert.That(levels.Session.State, Is.EqualTo(SessionState.Active));
+                Assert.That(levels.Index, Is.EqualTo(index), "Keep the experiment until the player changes it.");
+                Assert.That(levels.Session.State, Is.EqualTo(SessionState.Completing));
+                levels.Next();
             }
-            Assert.That(levels.Index, Is.Zero, "Lab auto-advance wraps around all twenty-three levels.");
+            Assert.That(levels.Index, Is.Zero, "Manual next wraps around all twenty-three levels.");
             levels.Load(0);
             levels.TogglePause();
             Assert.That(Time.timeScale, Is.Zero);

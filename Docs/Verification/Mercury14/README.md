@@ -33,6 +33,6 @@ Ba ảnh render từ mô phỏng liên tục đã được xem, shader không c�
 
 Kiểm tra xác nhận lực theo mô hình và khả năng chơi, chưa phải hiệu chuẩn với thủy ngân thật. Không có CFD, sức căng bề mặt, meniscus hoặc squeeze-film va chạm; root vẫn kinematic và không mô phỏng sức tay xoay khối chất lỏng khoảng 113 kg. [Thông số/nguồn/giới hạn](../../LEVEL14_MERCURY.md).
 
-Ở mốc kiểm chứng này chỉ xuất macOS. Bản phân phối hiện tại đã đưa thủy ngân vào chương C071–C080 của [APK Campaign 100](../Campaign100/Android/README.md); iOS chưa được build lại theo Campaign.
+Chỉ xuất macOS theo yêu cầu hiện tại; không build APK/iOS mới.
 
 `Tools/build.sh macOS` thành công, player cập nhật **10:13:50 giờ Việt Nam** (03:13:50 UTC), tại `Builds/macOS/Gravity Box.app`. Đã khởi chạy, mở selector, chọn màn 14 và quan sát bi nổi, HUD 111 g và nhãn nhìn xuyên. Player.log không có exception/error trong lượt khởi chạy đã đọc. Sau đó người dùng bắt đầu xoay hộp; tác vụ dừng điều khiển UI để giữ nguyên lượt chơi. Kiểm tra native này không phải lượt giải trọn màn. Không gán ảnh native cũ của bàn 13 cho bằng chứng bàn 14.

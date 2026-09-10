@@ -48,5 +48,3 @@ Các test nước kiểm tra lực nổi/added mass, giảm tốc giữa nước
 So sánh với bàn 02 bằng cùng góc nghiêng: quan sát lúc bắt đầu lăn, khi lao vào cube, khi đổi chiều hộp và lúc bi chìm qua chiều dày hộp. Ở tốc độ nhỏ và quãng đường ngắn, khác biệt của bi thép trong nước có thể vừa phải; nước không làm nó lơ lửng hoặc chuyển động như slow motion.
 
 Xem [ảnh kiểm tra](Images/Level13/README.md) và [kết quả kiểm chứng](Verification/Water13/README.md).
-
-Mô hình hiệu chỉnh hiện đã có trong Campaign Android tại chương C061–C070. APK test và hash được ghi ở [Campaign 100 Android](Verification/Campaign100/Android/README.md); lượt kiểm chứng nước ban đầu bên trên vẫn là số đo PlayMode/macOS của mô hình.

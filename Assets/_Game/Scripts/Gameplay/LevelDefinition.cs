@@ -21,7 +21,6 @@ namespace GravityBox.Gameplay
         public Vector3 InitialLocalVelocity;
         [Min(0)] public float ParSeconds = 30;
         public bool Tutorial;
-        public LevelDesignProfile Design;
         [TextArea] public string DesignerSolution;
     }
 }

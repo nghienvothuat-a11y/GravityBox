@@ -715,20 +715,20 @@ namespace GravityBox.Tests
         }
 
         [UnityTest]
-        public IEnumerator CompletionAutomaticallyAdvancesAfterThePhysicalEscapePayoff()
+        public IEnumerator CompletionWaitsForManualNextAndResetKeepsCurrentExperiment()
         {
             levels.enabled = true;
             LaunchThroughExit();
             Assert.That(levels.Current.Exit.HasExited, Is.True);
             yield return new WaitForSecondsRealtime(levels.Catalog.CompletionDelay + 0.1f);
-            Assert.That(levels.Index, Is.EqualTo(1), "A completed level should advance without requiring NEXT.");
-            Assert.That(levels.Session.State, Is.EqualTo(SessionState.Active));
+            Assert.That(levels.Index, Is.Zero, "An experiment must never advance on a timer.");
+            Assert.That(levels.Session.State, Is.EqualTo(SessionState.Completing));
             Assert.That(Time.timeScale, Is.EqualTo(1));
             levels.ResetLevel();
             Assert.That(levels.Current.Exit.HasExited, Is.False);
             Assert.That(levels.Session.State, Is.EqualTo(SessionState.Active));
             levels.Next();
-            Assert.That(levels.Index, Is.EqualTo(2));
+            Assert.That(levels.Index, Is.EqualTo(1));
             Assert.That(forces.TargetCount, Is.EqualTo(1));
         }
     }
