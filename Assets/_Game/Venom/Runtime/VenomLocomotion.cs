@@ -49,7 +49,7 @@ namespace GravityBox.Venom
         }
         public void SetInput(Vector3 direction)
         {
-            input = level.CanControl ? Vector3.ClampMagnitude(Vector3.ProjectOnPlane(direction,level.Rotation.transform.up),1) : Vector3.zero;
+            input = level.CanControl ? Vector3.ClampMagnitude(level.WallCrawl?direction:Vector3.ProjectOnPlane(direction,level.Rotation.transform.up),1) : Vector3.zero;
         }
         public bool Select(int particle)
         {
@@ -121,6 +121,10 @@ namespace GravityBox.Venom
             {
                 fragment.WaitRemaining = 0;
                 Vector3 command = fragment.Selected ? input : Vector3.zero;
+                if(level.WallCrawl)
+                {
+                    fragment.Intent=level.Climbing.Step(fragment,command,dt);continue;
+                }
                 float speed = profile.CrawlSpeed;
                 if (!fragment.Selected && level.ControlMode == VenomControlMode.FollowLargest)
                 {

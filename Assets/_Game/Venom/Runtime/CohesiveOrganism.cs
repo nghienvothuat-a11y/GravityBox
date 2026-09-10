@@ -223,6 +223,7 @@ namespace GravityBox.Venom
 
         public bool TryGetSupport(int particle, out Collider collider, out Vector3 point, out Vector3 normal)
         {
+            if(level != null && level.Climbing != null)return level.Climbing.TryGetSupport(particle,out collider,out point,out normal);
             collider = support[particle]; point = normal = Vector3.zero;
             if (Escaped[particle] || collider == null || !collider.enabled || SimulationTime-supportTime[particle] > .08f) return false;
             point = collider.transform.TransformPoint(supportPoint[particle]);

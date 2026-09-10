@@ -29,12 +29,12 @@ namespace GravityBox.Venom
         private Matrix4x4 toFloor,fromFloor;
         private readonly Vector3[] floorPoints = new Vector3[CohesiveOrganism.ParticleCount+6];
         private int sourceCount;
-        private bool allAboveFloor;
+        private bool allAboveFloor,climbing;
         public int VertexCount => mesh != null ? mesh.vertexCount : 0;
 
         public void Initialize(CohesiveOrganism source, VenomLevelController owner)
         {
-            organism = source; floor = owner.FloorBoundary; block = new MaterialPropertyBlock();
+            organism = source; floor = owner.FloorBoundary;climbing=owner.WallCrawl; block = new MaterialPropertyBlock();
             var go = new GameObject("Continuous wet skin",typeof(MeshFilter),typeof(MeshRenderer)); go.transform.SetParent(transform,false);
             mesh = new Mesh { name = "Living isosurface", indexFormat = IndexFormat.UInt32 }; mesh.MarkDynamic();
             go.GetComponent<MeshFilter>().sharedMesh = mesh; skin = go.GetComponent<MeshRenderer>(); skin.sharedMaterial = source.Profile.Skin;
@@ -141,6 +141,13 @@ namespace GravityBox.Venom
         private void ConstrainFloor(ref Vector3 point,ref Vector3 normal)
         {
             Vector3 local=toFloor.MultiplyPoint3x4(point);
+            if(climbing && local.y>floor.Top)
+            {
+                // Clip decorative tissue to the five solid crystal panes.
+                // The floor keeps its true aperture logic below.
+                Vector3 clamped=new Vector3(Mathf.Clamp(local.x,-.2498f,.2498f),Mathf.Min(local.y,.2498f),Mathf.Clamp(local.z,-.2498f,.2498f));
+                if(clamped!=local){normal=fromFloor.MultiplyVector((local-clamped).normalized);local=clamped;point=fromFloor.MultiplyPoint3x4(local);}
+            }
             if(local.y>=floor.Top+.0002f || !floor.OverSolid(local)) return;
             bool above=allAboveFloor;
             if(!above)

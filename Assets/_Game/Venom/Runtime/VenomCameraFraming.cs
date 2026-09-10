@@ -10,7 +10,10 @@ namespace GravityBox.Venom
         // exposes the depth while keeping the blade away from the reunion area.
         // Keep a fixed heading so input directions never drift during a hold.
         public static Quaternion Orientation(VenomControlMode mode) =>
-            mode == VenomControlMode.SelectFragment ? Quaternion.Euler(88,0,0) : Quaternion.Euler(45,135,0);
+            mode == VenomControlMode.SelectFragment ? Quaternion.Euler(88,0,0) : Quaternion.Euler(mode==VenomControlMode.SurfaceCrawl?28:45,135,0);
+
+        public static float UiScale(VenomLevelController level,int width,int height) =>
+            level.WallCrawl?Mathf.Min(width/540f,height/960f):width/540f;
 
         public static void Frame(VenomLevelController level, int width, int height)
         {
@@ -18,9 +21,19 @@ namespace GravityBox.Venom
             Camera camera = level.View;
             camera.orthographic = true;
             camera.transform.rotation = Orientation(level.ControlMode);
-            float scale = width/540f;
+            float scale = UiScale(level,width,height);
             float bottom = 282*scale, top = height-205*scale;
             float available = Mathf.Max(80*scale,top-bottom);
+            if(level.WallCrawl)
+            {
+                // A fixed sphere contains every orientation, avoiding breathing
+                // zoom while the user rotates the real chamber around its centre.
+                float radius=.258f*Mathf.Sqrt(3)+.012f;
+                float extent=Mathf.Max(radius*height/available,radius*height/(width*.92f));
+                camera.orthographicSize=extent;
+                camera.transform.position=level.Rotation.transform.position-camera.transform.forward*1.5f-camera.transform.up*(((bottom+top)/height-1)*extent);
+                return;
+            }
             Vector3 right = camera.transform.right, up = camera.transform.up;
             float minX = float.PositiveInfinity, minY = minX, maxX = float.NegativeInfinity, maxY = maxX;
             void Include(Vector3 local)

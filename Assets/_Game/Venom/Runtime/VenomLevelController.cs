@@ -13,6 +13,10 @@ namespace GravityBox.Venom
         public VenomControlMode ControlMode;
         public VenomLocomotionProfile LocomotionProfile;
         public VenomLocomotion Locomotion { get; private set; }
+        public VenomWallClimb Climbing { get; private set; }
+        public bool WallCrawl => ControlMode == VenomControlMode.SurfaceCrawl;
+        public Collider[] CrawlFaces;
+        public Material IndicatorMaterial;
         public bool DirectControl => ControlMode != VenomControlMode.TiltBox;
         public bool CanControl => !Paused && !Completed && !Lost;
         public RotationSettings RotationProfile;
@@ -33,7 +37,7 @@ namespace GravityBox.Venom
         public bool Lost { get; private set; }
         public bool BladeReleased { get; private set; }
         public float PairedHold { get; private set; }
-        public float GateOpening => Vector3.Dot(Gate.position - Rotation.transform.TransformPoint(GateRest), Rotation.transform.up);
+        public float GateOpening => Gate == null ? 0 : Vector3.Dot(Gate.position - Rotation.transform.TransformPoint(GateRest), Rotation.transform.up);
         private readonly Vector3[] previous = new Vector3[CohesiveOrganism.ParticleCount];
         private readonly bool[] enteredBore = new bool[CohesiveOrganism.ParticleCount];
         private Collider[] boundaries;
@@ -51,12 +55,15 @@ namespace GravityBox.Venom
             FloorBoundary.Initialize(floor,Outlet,ApertureRadius);
             boundaries = Rotation.GetComponentsInChildren<Collider>();
             navigationObstacles = System.Array.FindAll(boundaries,c => c.gameObject != floor.gameObject && c.GetComponentInParent<VenomPressurePlate>() == null && !c.isTrigger);
-            ConfigureFloorStop(Blade,BladeRest);
-            ConfigureFloorStop(Gate,GateRest);
-            Blade.transform.SetParent(Apparatus, true); Gate.transform.SetParent(Apparatus, true);
-            LeftPad.transform.SetParent(Apparatus, true); RightPad.transform.SetParent(Apparatus, true);
+            if(!WallCrawl)
+            {
+                ConfigureFloorStop(Blade,BladeRest); ConfigureFloorStop(Gate,GateRest);
+                Blade.transform.SetParent(Apparatus, true); Gate.transform.SetParent(Apparatus, true);
+                LeftPad.transform.SetParent(Apparatus, true); RightPad.transform.SetParent(Apparatus, true);
+            }
             var matter = new GameObject("Living matter — world space"); matter.transform.SetParent(transform, false);
             Organism = matter.AddComponent<CohesiveOrganism>(); Organism.Initialize(MatterProfile, Spawn, this);
+            if(WallCrawl)Climbing=new VenomWallClimb(this);
             if (DirectControl) Locomotion = new VenomLocomotion(this);
             matter.AddComponent<VenomSurface>().Initialize(Organism, this);
             gameObject.AddComponent<VenomInput>().Initialize(this);
@@ -89,6 +96,10 @@ namespace GravityBox.Venom
         {
             if (Paused || Lost || dt <= 0) return;
             Organism.Step(dt);
+            if(WallCrawl)
+            {
+                Locomotion.Step(dt);EvaluateEscape(dt);CheckLost();return;
+            }
             if (DirectControl && !BladeReleased)
             {
                 Vector3 centre = Vector3.zero;
@@ -137,6 +148,10 @@ namespace GravityBox.Venom
             Gate.AddForce(Vector3.down * 9.81f, ForceMode.Acceleration);
             Gate.AddForce(axis * Mathf.Clamp(error * 45 - speed * 1.6f, -2, 2));
             EvaluateEscape(dt);
+            CheckLost();
+        }
+        private void CheckLost()
+        {
             for (int i = 0; i < CohesiveOrganism.ParticleCount; i++)
                 if (!Organism.Escaped[i] && Rotation.transform.InverseTransformPoint(Organism.Bodies[i].position).magnitude > 1.6f)
                 { Lost = true; Rotation.InputEnabled = false; }
@@ -225,12 +240,17 @@ namespace GravityBox.Venom
         {
             Time.timeScale = 1; Paused = Completed = GateLatched = Lost = BladeReleased = false; PairedHold = bladeCycle = 0;
             Rotation.GetComponent<Rigidbody>().position = initialRootPosition; Rotation.ResetState();
-            ResetBody(Blade, BladeRest); ResetBody(Gate, GateRest);
-            if (DirectControl) ResetBody(Blade,BladeRest+Vector3.up*.064f);
-            LeftPad.ResetPlate(Rotation.transform); RightPad.ResetPlate(Rotation.transform);
+            if(!WallCrawl)
+            {
+                ResetBody(Blade, BladeRest); ResetBody(Gate, GateRest);
+                if (DirectControl) ResetBody(Blade,BladeRest+Vector3.up*.064f);
+                LeftPad.ResetPlate(Rotation.transform); RightPad.ResetPlate(Rotation.transform);
+            }
+            else GateLatched=true;
             Organism.ResetMatter();
+            Climbing?.Reset();
             Locomotion?.Reset();
-            Rotation.InputEnabled = !DirectControl;
+            Rotation.InputEnabled = !DirectControl || WallCrawl;
             for (int i = 0; i < previous.Length; i++)
             { previous[i] = Outlet.InverseTransformPoint(Organism.Bodies[i].position); enteredBore[i] = false; }
             Physics.SyncTransforms();
@@ -243,11 +263,11 @@ namespace GravityBox.Venom
         public void TogglePause()
         {
             Paused = !Paused; Time.timeScale = Paused ? 0 : 1;
-            Rotation.InputEnabled = CanControl && !DirectControl; Locomotion?.SetInput(Vector3.zero);
+            Rotation.InputEnabled = CanControl && (!DirectControl || WallCrawl); Locomotion?.SetInput(Vector3.zero);
         }
         public void LoadExperiment(int number)
         {
-            if (number < 1 || number > 3) return;
+            if (number < 1 || number > 4) return;
             Time.timeScale = 1;
             SceneManager.LoadScene($"Venom{number:00}");
         }
