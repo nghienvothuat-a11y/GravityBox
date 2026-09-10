@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using GravityBox.Venom;
@@ -131,9 +132,18 @@ namespace GravityBox.Tests
             CollectionAssert.AreEqual(enabled,colliders.Select(c=>c.enabled).ToArray(),"No collision changes for the shot.");
             Assert.That(level.View.orthographicSize,Is.LessThan(overview*.6f));
             Assert.That(level.Organism.GetComponentsInChildren<Renderer>().All(r=>!r.forceRenderingOff),Is.True);
-            var positions=level.Organism.Bodies.Select(b=>b.position).ToArray();skin.Rebuild(false);
-            CollectionAssert.AreEqual(positions,level.Organism.Bodies.Select(b=>b.position).ToArray(),"Dance only deforms the rendered skin.");
-            Capture("victory-floor-dance");
+            var positions=level.Organism.Bodies.Select(b=>b.position).ToArray();
+            var names=new HashSet<string>();
+            for(int variant=0;variant<3;variant++)
+            {
+                level.Celebration.SetVariantForTests(variant);skin.Rebuild(false);
+                Assert.That(level.Celebration.Variant,Is.EqualTo(variant));
+                Assert.That(names.Add(level.Celebration.VariantName),Is.True,"Each random result has its own readable performance.");
+                Assert.That(life.DanceAmount,Is.GreaterThan(.9f));
+                Assert.That(life.RaisedTendrilCount,Is.GreaterThanOrEqualTo(4));
+                CollectionAssert.AreEqual(positions,level.Organism.Bodies.Select(b=>b.position).ToArray(),"Every celebration only deforms the rendered skin.");
+                Capture($"victory-variant-{variant+1}");
+            }
             level.TogglePause();float time=level.Celebration.Elapsed;Vector3 camera=level.View.transform.position;
             for(int i=0;i<600;i++)level.Step(Dt);
             hud.FrameChamber(Screen.width,Screen.height);

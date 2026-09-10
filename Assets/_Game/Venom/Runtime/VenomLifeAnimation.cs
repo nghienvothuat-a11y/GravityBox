@@ -253,11 +253,23 @@ namespace GravityBox.Venom
             Vector3 up=victory.Up,right=victory.Right,forward=-victory.Forward;
             Vector3 centre=Vector3.zero;
             for(int i=0;i<count;i++)centre+=transform.TransformPoint(points[i])/count;
-            float beat=(time-.12f)*Mathf.PI*3.2f;
-            float hop=Mathf.Pow(Mathf.Max(0,Mathf.Sin(beat)),1.5f);
-            float stretch=1+energy*(.14f*Mathf.Sin(beat)+.1f*hop);
-            Quaternion sway=Quaternion.AngleAxis(Mathf.Sin(beat*.5f)*14*energy,forward);
-            Vector3 lifted=centre+up*(hop*.015f*scale*energy)+right*(Mathf.Sin(beat*.5f)*.005f*energy);
+            int variant=victory.Variant;
+            float beat=(time-.12f)*Mathf.PI*(variant==1?4.3f:3.2f);
+            float pulse=Mathf.Sin(beat);
+            float hop=Mathf.Pow(Mathf.Max(0,pulse),variant==1?1.15f:1.5f);
+            float stretch=variant==0
+                ? 1+energy*(.14f*pulse+.1f*hop)
+                : variant==1
+                    ? 1+energy*(.24f*hop-.11f*Mathf.Max(0,-pulse))
+                    : 1+energy*(.08f*Mathf.Sin(beat*1.5f)+.05f);
+            Quaternion sway=variant==0
+                ? Quaternion.AngleAxis(Mathf.Sin(beat*.5f)*14*energy,forward)
+                : variant==1
+                    ? Quaternion.AngleAxis(Mathf.Sin(beat)*7*energy,forward)
+                    : Quaternion.AngleAxis(time*105*energy,up)*Quaternion.AngleAxis(Mathf.Sin(beat*.5f)*19*energy,forward);
+            float hopHeight=variant==1?.026f:variant==0?.015f:.010f;
+            float sideTravel=variant==2?Mathf.Sin(beat*.5f)*.008f:Mathf.Sin(beat*.5f)*.005f;
+            Vector3 lifted=centre+up*(hop*hopHeight*scale*energy)+right*(sideTravel*energy);
             float top=0;
             for(int i=0;i<count;i++)
             {
@@ -269,30 +281,53 @@ namespace GravityBox.Venom
                 top=Mathf.Max(top,Vector3.Dot(sway*shape,up));
             }
             DanceAmount=energy;HeadAmount=energy;
-            float lift=.043f*scale*energy;
+            float lift=(variant==1?.037f:variant==2?.050f:.043f)*scale*energy;
             HeadHeight=lift;
             Vector3 shoulder=lifted+up*(top*.5f)+forward*(.007f*scale);
             for(int j=0;j<6;j++)
             {
                 float t=j/5f;
-                Vector3 crest=shoulder+up*(lift*t)+forward*(.012f*scale*t*t*energy)
-                    +right*(Mathf.Sin(beat*.5f-t*1.1f)*.012f*scale*t*t*energy);
+                float nod=variant==1?Mathf.Sin(beat)*.022f:variant==2?Mathf.Sin(beat*.7f)*.015f:.012f;
+                Vector3 crest=shoulder+up*(lift*t)+forward*(nod*scale*t*t*energy)
+                    +right*(Mathf.Sin(beat*(variant==2?.72f:.5f)-t*1.1f)*.012f*scale*t*t*energy);
                 points[count+j]=transform.InverseTransformPoint(crest);
                 supports[count+j]=Mathf.Lerp(.030f,.018f,t)*scale;
                 weights[count+j]=energy*Mathf.Lerp(.85f,.7f,t);
             }
-            // Four soft arms fan upwards and wave with offset phases. They remain
-            // attached to the animated shoulders, facing the player in every box orientation.
+            // Three readable silhouettes: greeting waves, fast overhead claps,
+            // or a rotating firework fan. All face the camera in every box orientation.
             if(energy>.01f)for(int arm=0;arm<4;arm++)
             {
                 float sign=arm%2==0?-1:1;
                 float phase=beat*.5f+arm*.85f;
                 Vector3 root=lifted+right*(sign*.015f*scale)+up*(top*.3f)+forward*((arm/2-.5f)*.018f*scale);
                 float reach=(arm<2?.070f:.055f)*scale*energy;
-                Vector3 p1=root+right*(sign*reach*.45f)+up*(reach*.10f);
-                Vector3 p2=root+right*(sign*reach*(.72f+Mathf.Sin(phase)*.15f))+up*(reach*.95f);
-                Vector3 tip=root+right*(sign*reach*(.55f+Mathf.Sin(phase)*.28f))
-                    +up*(reach*(.9f+Mathf.Cos(phase)*.15f))+forward*(Mathf.Sin(phase+arm)*reach*.16f);
+                Vector3 p1,p2,tip;
+                if(variant==1)
+                {
+                    // Paired tips repeatedly meet above the head like soft hands.
+                    float clap=Mathf.SmoothStep(0,1,(Mathf.Cos(beat*1.35f+arm/2*.8f)+1)*.5f);
+                    p1=root+right*(sign*reach*.35f)+up*(reach*.25f);
+                    p2=root+right*(sign*reach*Mathf.Lerp(.62f,.18f,clap))+up*(reach*.96f);
+                    tip=root+right*(sign*reach*Mathf.Lerp(.48f,.055f,clap))+up*(reach*(1.12f+.08f*Mathf.Sin(phase)));
+                }
+                else if(variant==2)
+                {
+                    // The fan rolls around the body and opens like a small firework.
+                    float angle=(23+arm*43)+time*70;
+                    Vector3 radial=(right*Mathf.Cos(angle*Mathf.Deg2Rad)+up*Mathf.Sin(angle*Mathf.Deg2Rad)).normalized;
+                    root=lifted+radial*(.014f*scale)+forward*((arm%2-.5f)*.012f*scale);
+                    p1=root+radial*(reach*.35f)+up*(reach*.15f);
+                    p2=root+radial*(reach*.9f)+up*(reach*(.28f+Mathf.Sin(phase)*.16f))+forward*(reach*.18f);
+                    tip=root+radial*(reach*(1.12f+Mathf.Sin(phase)*.1f))+up*(reach*(.18f+Mathf.Cos(phase)*.20f));
+                }
+                else
+                {
+                    p1=root+right*(sign*reach*.45f)+up*(reach*.10f);
+                    p2=root+right*(sign*reach*(.72f+Mathf.Sin(phase)*.15f))+up*(reach*.95f);
+                    tip=root+right*(sign*reach*(.55f+Mathf.Sin(phase)*.28f))
+                        +up*(reach*(.9f+Mathf.Cos(phase)*.15f))+forward*(Mathf.Sin(phase+arm)*reach*.16f);
+                }
                 Tube(root,p1,p2,tip,up,lifted-up*.12f,scale*energy*1.3f);
                 TendrilCount++;RaisedTendrilCount++;
             }

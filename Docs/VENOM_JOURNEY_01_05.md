@@ -38,7 +38,7 @@ Nhận lệnh làm sinh vật hướng phần đầu/xúc tu về mục tiêu. �
 
 ## Ăn mừng khi thoát
 
-Khi đủ 100% vật chất đã qua lỗ, camera chuyển liên tục từ góc đang chơi sang cận cảnh trong khoảng 1 giây. Hộp, kính, cơ quan, viền chỉ dẫn và HUD puzzle được ẩn để chỉ còn sinh vật trên nền tối. Sinh vật nhún, kéo giãn thân, dựng đầu và vẫy bốn xúc tu về phía người chơi. Các phần còn tách được lấy chung vào khung hình và có thể nhập lại sau khi thoát.
+Khi đủ 100% vật chất đã qua lỗ, camera chuyển liên tục từ góc đang chơi sang cận cảnh trong khoảng 1 giây. Hộp, kính, cơ quan, viền chỉ dẫn và HUD puzzle được ẩn để chỉ còn sinh vật trên nền tối. Mỗi lần thắng chọn ngẫu nhiên một trong ba animation: **vẫy chào**, **nhảy bật và vỗ xúc tu trên đầu**, hoặc **xoay thân rồi bung xúc tu như pháo hoa**. Hệ thống tránh lặp lại đúng animation của lần thắng liền trước. Các phần còn tách được lấy chung vào khung hình và có thể nhập lại sau khi thoát.
 
 `VenomCelebration` quản lý camera, thời gian và trạng thái hiển thị; `VenomCelebrationHud` giữ thông báo ngắn ở rìa màn hình. `VenomLifeAnimation` biến dạng skin cho điệu nhảy, không thay vị trí hạt hoặc tạo vật chất mới. Lực gom sẵn có ở cửa thoát tiếp tục giữ mô động lực học ngoài hộp cho đoạn ăn mừng; đây là hỗ trợ trình diễn sau chiến thắng. Collider vẫn hoạt động, không đổi điều kiện thắng.
 
@@ -71,7 +71,9 @@ Lần chạy cuối bật đồ họa đạt **66/66 PlayMode Venom**, gồm **1
 
 XML: `Artifacts/Venom01/celebration-full-tests.xml`; log cùng tên. Kiểm tra Journey cuối sau khi bổ sung chặn chuyển scene lúc tạm dừng: `Artifacts/Venom01/celebration-final-journey-tests.xml`. Ảnh đoạn thắng tại lỗ sàn, lỗ trần xoay nghiêng và bài phối hợp: `Artifacts/VenomCelebration/victory-*.png`.
 
-Kiểm tra đoạn thắng bao gồm: phần đầu qua lỗ chưa được kích hoạt ăn mừng; đủ 32/32 mới bắt đầu; camera cận cảnh giữ mọi phần trong khung; skin vẫy ít nhất bốn xúc tu mà không sửa vị trí vật lý; kính/cơ quan/marker bị ẩn nhưng collider giữ nguyên; pause giữ nhịp và hoãn chuyển scene kể cả ở nhịp cuối; retry trả lại cả renderer đã bị ẩn sẵn trước đó và camera; không chuyển scene ở mốc 3 giây cũ, sang bài mới sau 4,8 giây và không mang trạng thái ẩn sang bài sau.
+Kiểm tra tổng thể sau khi thêm ba animation: `Artifacts/Venom01/three-celebrations-full-tests.xml`, **66/66 đạt**. Ba ảnh cùng thời điểm để so sánh silhouette nằm tại `Artifacts/VenomCelebrationVariants/victory-variant-1.png` đến `victory-variant-3.png`.
+
+Kiểm tra đoạn thắng bao gồm: phần đầu qua lỗ chưa được kích hoạt ăn mừng; đủ 32/32 mới bắt đầu; camera cận cảnh giữ mọi phần trong khung; cả ba biến thể có tên và pose riêng, skin vẫy ít nhất bốn xúc tu mà không sửa vị trí vật lý; kính/cơ quan/marker bị ẩn nhưng collider giữ nguyên; pause giữ nhịp và hoãn chuyển scene kể cả ở nhịp cuối; retry trả lại cả renderer đã bị ẩn sẵn trước đó và camera; không chuyển scene ở mốc 3 giây cũ, sang bài mới sau 4,8 giây và không mang trạng thái ẩn sang bài sau.
 
 Bản macOS cập nhật ăn mừng đã được kiểm tra trực tiếp: chạm lỗ bài 1, camera tiến gần, toàn bộ kính/cơ quan biến mất, thân và bốn xúc tu đổi nhịp nhảy; tạm dừng/tiếp tục giữa đoạn thắng rồi tự sang bài 2 với hộp hiện đầy đủ. Kết quả kiểm tra Journey cuối: **12/12 đạt**.
 

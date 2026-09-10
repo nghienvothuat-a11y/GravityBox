@@ -1,6 +1,6 @@
 # Venom — Living Matter Prototype
 
-Bản macOS mặc định chuyển sang **Venom Journey — 5 màn đầu**: người chơi chạm để hướng dẫn sinh vật, kéo để xoay hộp. Chỉ thắng khi **100% vật chất** đi qua lỗ tròn thật; camera tiến sát sinh vật, ẩn hộp/cơ quan và ăn mừng 4,8 giây rồi tự sang màn tiếp.
+Bản macOS mặc định chuyển sang **Venom Journey — 5 màn đầu**: người chơi chạm để hướng dẫn sinh vật, kéo để xoay hộp. Chỉ thắng khi **100% vật chất** đi qua lỗ tròn thật; camera tiến sát sinh vật, ẩn hộp/cơ quan và chọn ngẫu nhiên một trong ba điệu ăn mừng 4,8 giây rồi tự sang màn tiếp.
 
 | Bài | Nội dung |
 | --- | --- |
