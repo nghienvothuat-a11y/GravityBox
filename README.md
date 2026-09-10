@@ -1,4 +1,15 @@
-# Gravity Box — Steel Ball Lab
+# Venom — Living Matter Prototype
+
+Nhánh **`Venom`** có một prototype riêng: **01 — Một cơ thể, hai ý chí**. Xoay hộp để sinh vật đen bóng chảy qua máy chém, tách thành hai phần độc lập, giữ hai nút mở cửa, rồi nhập lại và chui qua lỗ tròn. Chỉ thắng khi **100% vật chất** đã thoát.
+
+- Chạy macOS: `Builds/Venom/macOS/Venom.app`. Kéo chuột trong vùng hộp; **R** thử lại; **P/Esc** tạm dừng.
+- Chạy Unity **6000.3.19f1**: mở `Assets/_Game/Venom/Venom01.unity`, Game View **9:16**, Play.
+- Build lại: `bash Tools/build-venom.sh` (đóng Unity đang mở project trước).
+- [Thiết kế, kiến trúc, cách thử và giới hạn mô phỏng](Docs/VENOM_PROTOTYPE_01.md).
+
+Sinh vật dùng hạt vật lý liên kết nhớt/dẻo và bề mặt metaball liên tục. Đây là mô hình vật chất mềm phục vụ thử gameplay, chưa phải solver chất lỏng bảo toàn thể tích. Nội dung 23 bàn bi thép bên dưới vẫn có thể mở qua scene `Gameplay.unity`; build Venom dùng scene riêng.
+
+## Gravity Box — Steel Ball Lab
 
 Prototype Unity tập trung vào cảm giác bi thép lăn trong hộp: tăng tốc khi nghiêng, giữ quán tính, đổi hướng và nảy khi va chạm. Catalog có **23 bàn**: giữ 16 thí nghiệm trước và thêm bảy màn cơ khí 17–23. Hai môi trường chất lỏng dùng cùng hộp vuông/cube của bàn 02: bi chìm trong nước và nổi trong thủy ngân.
 
