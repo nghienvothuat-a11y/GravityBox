@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace GravityBox.Editor
 {
-    public static class VenomPrototypeBuilder
+    public static partial class VenomPrototypeBuilder
     {
         public const string Folder = "Assets/_Game/Venom";
         public const string ScenePath = Folder + "/Venom01.unity";

@@ -127,6 +127,15 @@ namespace GravityBox.Venom
             else if(!state.Gripping){state.GripLocal=root.InverseTransformPoint(fragment.Centre);state.Gripping=true;}
             Vector3 grip=Vector3.ProjectOnPlane(root.TransformPoint(state.GripLocal)-fragment.Centre,preferred);
             float weight=Mathf.Min(fragment.Count/(float)supported,level.SplitVault!=null?4f:2.5f);
+            if(level.Journey!=null && moving)
+            {
+                // Leading contacts lift the trailing tissue around a corner.
+                // Counting floor contacts as wall traction underestimates the load
+                // carried by a small split body's leading tendrils and stalls it.
+                int leading=0;
+                for(int i=0;i<32;i++)if(!matter.Escaped[i]&&matter.Groups[i]==fragment.Group&&near[i,state.Face])leading++;
+                if(leading>0)weight=Mathf.Min(fragment.Count/(float)leading,2.5f);
+            }
             Vector3 gravity=Vector3.down*9.81f;
             for(int i=0;i<32;i++)
             {
@@ -147,7 +156,8 @@ namespace GravityBox.Venom
                         desired=fragment.Squeeze.Velocity(level,matter.Bodies[i].position,travel,speed);
                 }
                 else desired=Vector3.ClampMagnitude(Vector3.ProjectOnPlane(grip,normal)*5,config.CrawlSpeed);
-                Vector3 tangent=(desired-Vector3.ProjectOnPlane(relative,normal))*config.VelocityResponse-Vector3.ProjectOnPlane(gravity,normal);
+                float response=level.Journey!=null?32:config.VelocityResponse;
+                Vector3 tangent=(desired-Vector3.ProjectOnPlane(relative,normal))*response-Vector3.ProjectOnPlane(gravity,normal);
                 if(moving)tangent+=desired.normalized*config.FrictionCompensation;
                 tangent=Vector3.ClampMagnitude(tangent,config.ClimbAcceleration);
                 float gap=Vector3.Dot(matter.Bodies[i].position-point,normal);

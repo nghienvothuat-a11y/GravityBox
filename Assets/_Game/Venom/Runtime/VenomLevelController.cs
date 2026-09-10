@@ -17,6 +17,7 @@ namespace GravityBox.Venom
         public VenomFollowCamera FollowView { get; private set; }
         public bool WallCrawl => ControlMode == VenomControlMode.SurfaceCrawl || ControlMode == VenomControlMode.SplitVault || ControlMode == VenomControlMode.TouchSurface;
         public VenomGuidance Guidance;
+        public VenomJourney Journey;
         public static readonly int[] Experiments = {1,2,3,4,5,7,8};
         public VenomSplitVault SplitVault;
         public float NavigationY=>SplitVault!=null?SplitVault.NavigationY:FloorBoundary.Top+.025f;
@@ -73,6 +74,7 @@ namespace GravityBox.Venom
             SplitVault?.Initialize(this);
             if (DirectControl) Locomotion = new VenomLocomotion(this);
             Guidance?.Initialize(this);
+            Journey?.Initialize(this);
             if(WallCrawl)FollowView=new VenomFollowCamera(this);
             matter.AddComponent<VenomSurface>().Initialize(Organism, this);
             gameObject.AddComponent<VenomInput>().Initialize(this);
@@ -296,6 +298,7 @@ namespace GravityBox.Venom
             FollowView?.Reset();
             Locomotion?.Reset();
             Guidance?.ResetState();
+            Journey?.ResetState();
             Rotation.InputEnabled = !DirectControl || WallCrawl;
             for (int i = 0; i < previous.Length; i++)
             { previous[i] = Outlet.InverseTransformPoint(Organism.Bodies[i].position); enteredBore[i] = false; }
@@ -318,6 +321,7 @@ namespace GravityBox.Venom
         }
         public void LoadExperiment(int number)
         {
+            if(Journey!=null){Journey.Load(number);return;}
             if (System.Array.IndexOf(Experiments,number)<0) return;
             Time.timeScale = 1;
             SceneManager.LoadScene($"Venom{number:00}");

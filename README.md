@@ -1,6 +1,26 @@
 # Venom — Living Matter Prototype
 
-Nhánh **`Venom`** có bảy màn thử nghiệm điều khiển sinh vật mềm (01–05, 07–08). Chỉ thắng khi **100% vật chất** đã đi qua lỗ tròn thật.
+Bản macOS mặc định chuyển sang **Venom Journey — 5 màn đầu**: người chơi chạm để hướng dẫn sinh vật, kéo để xoay hộp. Chỉ thắng khi **100% vật chất** đi qua lỗ tròn thật; tự sang màn tiếp sau 3 giây.
+
+| Bài | Nội dung |
+| --- | --- |
+| 01 — Chào bạn nhỏ | Chỉ đường trên sàn, phản hồi nhận lệnh, thoát qua lỗ sàn |
+| 02 — Một thế giới sáu mặt | Bò qua tường, xoay để quan sát, tới lỗ giữa trần |
+| 03 — Giữ thêm một chút | Giao việc giữ nút đủ thời gian rồi mở cửa |
+| 04 — Chờ nhau qua cửa | Chia đôi, một phần giữ A để phần kia tới B |
+| 05 — Mỗi phần một nhiệm vụ | Thử cắt giữa/cắt lệch, A cần 24 g và B cần 60 g |
+
+Mở `Builds/Venom/macOS/Venom.app`. **1–5** chọn bài, **R** thử lại, **P/Esc** tạm dừng, **Z** zoom. Chạm phần cơ thể hoặc nút khối lượng để chọn; chạm nút cơ quan để giao việc giữ. **Gọi về hợp thể** thu hồi nhiệm vụ; **Cùng ra ngoài** giao đích thoát cho mọi phần sau khi mở cửa.
+
+[Hướng dẫn, đường giải và giới hạn prototype](Docs/VENOM_JOURNEY_01_05.md) · [Thiết kế gameplay, AI và animation dài hạn](Docs/VENOM_GUIDED_PUZZLE_DESIGN.md).
+
+Build: `bash Tools/build-venom.sh`. Các scene mới nằm ở `Assets/_Game/Venom/VenomJourney01.unity` đến `VenomJourney05.unity`. Kỹ năng và bài đã hoàn thành được nhớ giữa các lần mở app; retry chỉ reset cơ quan và nhiệm vụ. AI hiện học theo sự kiện và phản hồi theo ngữ cảnh, chưa triển khai toàn bộ hệ cảm xúc của thiết kế dài hạn.
+
+Kiểm chứng: **64/64 PlayMode Venom đạt**, gồm **10 trường hợp Journey**; đã kiểm tra trực tiếp đường chơi macOS ở bài 1 và 4 cùng chuyển màn tự động. Chi tiết trong [báo cáo năm bài](Docs/VENOM_JOURNEY_01_05.md#kết-quả-kiểm-chứng).
+
+## Bộ thí nghiệm điều khiển trước campaign
+
+Nhánh vẫn giữ bảy scene thử nghiệm **01–05, 07–08**. Dùng `bash Tools/build-venom.sh --lab` để build bộ này thay cho Journey vào cùng đường dẫn app.
 
 | Màn | Điều khiển | Bài thử |
 | --- | --- | --- |
@@ -12,14 +32,14 @@ Nhánh **`Venom`** có bảy màn thử nghiệm điều khiển sinh vật mề
 | 07 — Chạm để dẫn đường | Chạm đích trên mặt trong; kéo để xoay | Tự bò qua các mặt; gần lỗ tự thoát; ghi nhớ các điểm đã tới |
 | 08 — Học cách mở lối ra | Chạm nút để hướng dẫn | Tiếp xúc nút mở cửa; tự tìm lỗ và thoát; nhớ quan hệ nút–cửa |
 
-- Chạy macOS: `Builds/Venom/macOS/Venom.app`. Nút ở đầu HUD hoặc **1/2/3/4/5/7/8** chọn màn; **R** thử lại; **P/Esc** tạm dừng.
+- Trong bản build `--lab`: nút ở đầu HUD hoặc **1/2/3/4/5/7/8** chọn màn; **R** thử lại; **P/Esc** tạm dừng.
 - Màn 01: dao chờ ở vị trí nâng, tự thả xuống theo trọng lực khi sinh vật trượt vào dưới lưỡi. Vùng nhả dao rộng hơn để dễ cắt khi nghiêng nhẹ hoặc căn hơi lệch; chém hụt thì dao tự nâng lại sau khi thân rời vùng dao.
 - Màn 02/03: **giữ–kéo** để bò hoặc **WASD/mũi tên**. Màn 02 chạm phần muốn chọn, dùng nút A/B hoặc **Tab**. Màn 03 luôn chọn phần lớn nhất.
 - Màn 04: **giữ–kéo một ngón / chuột trái** hoặc **WASD/mũi tên** để bò; **kéo hai ngón / chuột phải** để xoay hộp. Giữ hướng để bò vòng qua mép; thả tay thì bám tại chỗ. Xoay hộp để nhìn rõ mặt đang bò. Lỗ thoát ở **giữa trần**; nút **Zoom In / Z** tiến gần và theo sinh vật, bấm lại để về góc toàn hộp.
 - Màn 05 giữ điều khiển bò/xoay/Zoom của màn 04. Đưa cơ thể tới dao trên trần, dẫn mảnh lớn vào khe hộp nhỏ; mảnh còn lại bám chờ đến khi chủ thể vào hẳn mới tự chui theo.
 - Màn 07/08: **chạm/click đặt đích**, **kéo để xoay hộp**. **Nhớ lại** lặp điều đã học; **R** giữ trí nhớ khi thử lại, **Quên** xóa trí nhớ của màn hiện tại. Trí nhớ được giữ giữa các lần mở app. [Thiết kế điều khiển và trí nhớ](Docs/VENOM_CONTROLS_07_08.md).
 - Chạy Unity **6000.3.19f1**: mở `Assets/_Game/Venom/Venom01.unity`, `Venom02.unity`, `Venom03.unity`, `Venom04.unity`, `Venom05.unity`, `Venom07.unity` hoặc `Venom08.unity`, Game View **9:16**, Play.
-- Build lại: `bash Tools/build-venom.sh` (đóng Unity đang mở project trước). Build macOS có cả bảy màn; chưa xuất APK cho biến thể Venom.
+- Build bộ cũ: `bash Tools/build-venom.sh --lab` (đóng Unity đang mở project trước). Chưa xuất APK cho biến thể Venom.
 - [Thiết kế màn 01](Docs/VENOM_PROTOTYPE_01.md) · [Điều khiển, navigation và kiến trúc màn 02–03](Docs/VENOM_CONTROLS_02_03.md) · [Bò tường và xoay hộp màn 04](Docs/VENOM_CONTROLS_04.md) · [Dao, khe hẹp và phối hợp màn 05](Docs/VENOM_CONTROLS_05.md).
 
 Camera màn 02 nhìn gần thẳng từ trên xuống (**88°**) để dễ chọn hai phần/căn công tắc; màn 03 nhìn **3/4 từ góc trái đầu xuất phát**, cao **45°** và chéo **45°** để thấy rõ chuyển động thân và phần đi theo. Cả hộp nằm trong khung hình; giữ–kéo được căn theo hướng nhìn mới.

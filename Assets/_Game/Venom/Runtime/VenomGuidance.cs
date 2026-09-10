@@ -84,10 +84,12 @@ namespace GravityBox.Venom
         }
         public bool Touch(Vector2 screen)
         {
+            if(level.Journey!=null)return level.Journey.Touch(screen);
             return PickSurface(level.View.ScreenPointToRay(screen),out int face,out var point) && Command(face,point);
         }
         public bool Command(int face,Vector3 local)
         {
+            if(level.Journey!=null)return level.Journey.Command(face,local);
             if(!level.CanControl || face<0 || face>=6 || !Finite(local))return false;
             if(RequiresButton && !DoorUnlocked && face==5 && new Vector2(local.x,local.z).magnitude<.085f)
             {Status="LỖ ĐANG ĐÓNG · CHẠM NÚT SÁNG TRƯỚC";return false;}
@@ -121,6 +123,7 @@ namespace GravityBox.Venom
         private void HasStopped(){TargetFace=-1;Exiting=false;Arrived=false;taught=false;}
         public void StepMechanisms(float dt)
         {
+            if(level.Journey!=null){level.Journey.Step(dt);return;}
             if(!RequiresButton)return;
             Button.Step(level.Organism,level.Rotation.transform);
             hold=Button.Pressed?hold+dt:0;
@@ -151,6 +154,7 @@ namespace GravityBox.Venom
         }
         public Vector3 Steer(VenomLocomotion.Fragment fragment)
         {
+            if(level.Journey!=null)return level.Journey.Steer(fragment);
             var root=level.Rotation.transform;
             Vector3 local=root.InverseTransformPoint(fragment.Centre);
             int face=level.Climbing.FaceFor(fragment.Anchor);

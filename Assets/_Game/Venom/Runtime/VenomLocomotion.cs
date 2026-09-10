@@ -53,7 +53,7 @@ namespace GravityBox.Venom
         }
         public bool Select(int particle)
         {
-            if (!level.CanControl || level.ControlMode != VenomControlMode.SelectFragment || particle < 0 || particle >= 32 || matter.Escaped[particle]) return false;
+            if (!level.CanControl || (level.ControlMode != VenomControlMode.SelectFragment && level.Journey==null) || particle < 0 || particle >= 32 || matter.Escaped[particle]) return false;
             SelectedParticle = particle; input = Vector3.zero; Refresh(); return true;
         }
         public void SelectNext()

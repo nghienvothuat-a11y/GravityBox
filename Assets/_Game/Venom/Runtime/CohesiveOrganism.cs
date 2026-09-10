@@ -123,7 +123,7 @@ namespace GravityBox.Venom
             {
                 if (connected[i,j] || Escaped[i] != Escaped[j] || SimulationTime < healAt[i] || SimulationTime < healAt[j]) continue;
                 if (Vector3.SqrMagnitude(Bodies[i].position - Bodies[j].position) > Profile.Spacing * Profile.Spacing * 1.32f) continue;
-                if (level != null && level.SegmentBlocked(Bodies[i].position, Bodies[j].position)) continue;
+                if (level != null && (level.SegmentBlocked(Bodies[i].position, Bodies[j].position) || level.Journey!=null&&!level.Journey.CanFuse(i,j))) continue;
                 fused |= Groups[i] != Groups[j];
                 Link(i, j, .03f);
             }

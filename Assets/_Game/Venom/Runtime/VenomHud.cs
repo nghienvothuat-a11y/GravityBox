@@ -4,12 +4,14 @@ namespace GravityBox.Venom
     public sealed class VenomHud : MonoBehaviour
     {
         private VenomLevelController level;
+        private VenomJourneyHud journeyHud;
         private GUIStyle small, title, body, button, badge;
         private LineRenderer selection;
         private Material selectionMaterial;
         public void Initialize(VenomLevelController controller)
         {
             level = controller;
+            if(level.Journey!=null)journeyHud=new VenomJourneyHud(level);
             if (!level.DirectControl) return;
             selection = new GameObject("Selected fragment contact ring",typeof(LineRenderer)).GetComponent<LineRenderer>();
             selection.transform.SetParent(transform,false); selection.useWorldSpace = true;
@@ -41,7 +43,7 @@ namespace GravityBox.Venom
             if(level.WallCrawl)
             {
                 Vector3 sum=Vector3.zero;int count=0;
-                for(int i=0;i<32;i++)if(level.Organism.TryGetSupport(i,out _,out var p,out var n) && Vector3.Dot(n,normal)>.9f){sum+=p;count++;}
+                for(int i=0;i<32;i++)if(level.Organism.Groups[i]==chosen.Group && level.Organism.TryGetSupport(i,out _,out var p,out var n) && Vector3.Dot(n,normal)>.9f){sum+=p;count++;}
                 if(count==0){selection.enabled=false;return;}
                 centre-=normal*Vector3.Dot(centre-sum/count,normal);centre+=normal*.001f;
             }
@@ -57,6 +59,7 @@ namespace GravityBox.Venom
         private void OnGUI()
         {
             if (level == null || level.Organism == null) return;
+            if(journeyHud!=null){journeyHud.Draw();return;}
             float scale = VenomCameraFraming.UiScale(level,Screen.width,Screen.height), h = Screen.height / scale;
             float offsetX=(Screen.width-540*scale)*.5f;
             GUI.matrix = Matrix4x4.TRS(new Vector3(offsetX,0,0), Quaternion.identity, new Vector3(scale,scale,1));

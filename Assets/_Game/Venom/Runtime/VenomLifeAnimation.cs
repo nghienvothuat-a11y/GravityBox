@@ -152,7 +152,7 @@ namespace GravityBox.Venom
                 state.Lag = Vector3.SmoothDamp(state.Lag,Vector3.ClampMagnitude(-tangentVelocity*.055f,.009f),
                     ref state.LagRate,.19f,Mathf.Infinity,dt);
             state.IdleTime = grounded && state.Speed < .024f && crawlIntent.sqrMagnitude < .001f ? state.IdleTime+dt : 0;
-            bool canDance = grounded && count >= 8 && state.Speed < .024f && crawlIntent.sqrMagnitude < .001f && state.Squeezing < .05f;
+            bool canDance = !(level.Journey!=null && level.Journey.Busy(key)) && grounded && count >= 8 && state.Speed < .024f && crawlIntent.sqrMagnitude < .001f && state.Squeezing < .05f;
             if(canDance && state.IdleTime>.6f && clock>=state.NextDance)
             {
                 state.DanceStart=clock;state.DanceLength=3.6f+Noise(key+state.Peeks*13)*.8f;
@@ -172,6 +172,17 @@ namespace GravityBox.Venom
             float peek = (clock-state.PeekStart)/state.PeekLength;
             float envelope = Smooth(0,.28f,peek)*(1-Smooth(.58f,1,peek));
             float targetHead = grounded && state.Speed < .024f && crawlIntent.sqrMagnitude < .001f && count >= 8 && state.Squeezing < .05f ? envelope : 0;
+            if(level.Journey!=null && grounded && !leaving && state.Squeezing<.05f)
+            {
+                float attention=level.Journey.Attention(key,out var look);
+                if(attention>0)
+                {
+                    Vector3 attentionDirection=Vector3.ProjectOnPlane(look-centre,up);
+                    if(attentionDirection.sqrMagnitude>.00001f)state.Probe=attentionDirection.normalized;
+                    targetHead=Mathf.Max(targetHead,attention*.78f);
+                }
+                if(level.Journey.Busy(key))state.Dance=0;
+            }
             state.Head = Mathf.MoveTowards(state.Head,targetHead,dt*3.5f);
             if (!grounded) foreach (var foot in state.Feet) foot.Surface = null;
 

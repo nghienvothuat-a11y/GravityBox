@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
+using UnityEngine.InputSystem.LowLevel;
+using System.Collections.Generic;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 namespace GravityBox.Venom
 {
@@ -15,6 +17,10 @@ namespace GravityBox.Venom
         private Vector2 tapStart;
         private int guidanceTouches;
         private bool guidanceRelease;
+        private struct PointerEvent { public Vector2 Position; public int Phase; }
+        private readonly Queue<PointerEvent> mouseEvents=new Queue<PointerEvent>();
+        private bool eventMouseDown;
+        private bool pointerDiagnostics;
         public bool Rotating => rotating;
         public bool Holding => dragging;
         public Vector2 StickOrigin => stickOrigin;
@@ -23,10 +29,23 @@ namespace GravityBox.Venom
         private void OnEnable()
         {
             EnhancedTouchSupport.Enable(); press = new InputAction("Matter box drag", InputActionType.Button, "<Mouse>/leftButton");
-            press.started += c => { pressed = true; beganAt = Mouse.current.position.ReadValue(); };
-            press.canceled += c => { released = true; endedAt = Mouse.current.position.ReadValue(); }; press.Enable();
+            press.started += c => { if(c.control.device is Mouse mouse){pressed = true; beganAt = mouse.position.ReadValue();} };
+            press.canceled += c => { if(c.control.device is Mouse mouse){released = true; endedAt = mouse.position.ReadValue();} }; press.Enable();
+            InputSystem.onEvent+=ObserveMouse;
         }
-        private void OnDisable() { End(); press?.Dispose(); EnhancedTouchSupport.Disable(); }
+        private void OnDisable() { InputSystem.onEvent-=ObserveMouse;End(); press?.Dispose(); EnhancedTouchSupport.Disable(); }
+        private void ObserveMouse(InputEventPtr inputEvent,InputDevice device)
+        {
+            if(level==null||level.Guidance==null||!(device is Mouse mouse)||!level.CanControl)return;
+            if(!inputEvent.IsA<StateEvent>()&&!inputEvent.IsA<DeltaStateEvent>())return;
+            Vector2 p=mouse.position.ReadValueFromEvent(inputEvent,out var position)?position:mouse.position.ReadValue();
+            bool down=mouse.leftButton.ReadValueFromEvent(inputEvent,out var value)?value>.5f:eventMouseDown;
+            if(pointerDiagnostics)Debug.Log($"VENOM POINTER t={inputEvent.time:F4} down={down} previous={eventMouseDown} event={p} current={mouse.position.ReadValue()} delta={mouse.delta.ReadValueFromEvent(inputEvent)}");
+            if(down&&!eventMouseDown)mouseEvents.Enqueue(new PointerEvent{Position=p,Phase=0});
+            if(down||eventMouseDown)mouseEvents.Enqueue(new PointerEvent{Position=p,Phase=1});
+            if(!down&&eventMouseDown)mouseEvents.Enqueue(new PointerEvent{Position=p,Phase=2});
+            eventMouseDown=down;
+        }
         private void Update()
         {
             if (level == null) return;
@@ -36,6 +55,7 @@ namespace GravityBox.Venom
                 if (keys.rKey.wasPressedThisFrame) { End(); level.ResetExperiment(); }
                 if (keys.pKey.wasPressedThisFrame || keys.escapeKey.wasPressedThisFrame) { End(); level.TogglePause(); }
                 if (keys.f12Key.wasPressedThisFrame) ScreenCapture.CaptureScreenshot(System.IO.Path.Combine(Application.persistentDataPath,"venom.png"));
+                if (Debug.isDebugBuild&&keys.f9Key.wasPressedThisFrame)pointerDiagnostics=!pointerDiagnostics;
                 if (keys.digit1Key.wasPressedThisFrame) { End(); level.LoadExperiment(1); return; }
                 if (keys.digit2Key.wasPressedThisFrame) { End(); level.LoadExperiment(2); return; }
                 if (keys.digit3Key.wasPressedThisFrame) { End(); level.LoadExperiment(3); return; }
@@ -107,13 +127,19 @@ namespace GravityBox.Venom
         private void UpdateGuidance()
         {
             int count=0;Vector2 first=Vector2.zero,second=Vector2.zero;
+            bool ended=false;Vector2 endPoint=Vector2.zero;
             foreach(var touch in Touch.activeTouches)
             {
                 if(touch.phase==UnityEngine.InputSystem.TouchPhase.Canceled){CancelGesture();guidanceRelease=true;continue;}
-                if(touch.phase==UnityEngine.InputSystem.TouchPhase.Ended)continue;
+                if(touch.phase==UnityEngine.InputSystem.TouchPhase.Ended){ended=true;endPoint=touch.screenPosition;continue;}
                 if(count==0)first=touch.screenPosition;else if(count==1)second=touch.screenPosition;count++;
             }
-            if(count>0 || guidanceTouches>0 || guidanceRelease){ApplyGuidanceTouch(count,first,second);return;}
+            if(count>0 || guidanceTouches>0 || guidanceRelease)
+            {
+                mouseEvents.Clear();
+                if(count==0&&ended&&guidanceTouches==1&&!guidanceRelease)MoveTap(endPoint);
+                ApplyGuidanceTouch(count,first,second);return;
+            }
             var mouse=Mouse.current;if(mouse==null)return;
             Vector2 p=mouse.position.ReadValue();
             if(mouse.rightButton.isPressed)
@@ -122,9 +148,16 @@ namespace GravityBox.Venom
                 if(rotating)Rotate(p);return;
             }
             if(rotating && !tapPending)End();
-            if(pressed)BeginTap(beganAt);
-            if(tapPending && (mouse.leftButton.isPressed || released))MoveTap(released?endedAt:p);
-            if(released)FinishTap();
+            // Preserve every phase even when an entire drag and cursor restoration
+            // arrive between two rendered frames. Polling only the endpoint can
+            // collapse such a gesture into a tap.
+            while(mouseEvents.Count>0)
+            {
+                var sample=mouseEvents.Dequeue();
+                if(sample.Phase==0)BeginTap(sample.Position);
+                else if(sample.Phase==1)MoveTap(sample.Position);
+                else FinishTap();
+            }
         }
         public void BeginTap(Vector2 p)
         {
@@ -226,6 +259,7 @@ namespace GravityBox.Venom
             if (level != null) { if (dragging || rotating) level.Rotation.EndDrag(); level.Locomotion?.SetInput(Vector3.zero); level.Climbing?.ScreenDirection(Vector2.zero); }
             dragging = rotating = pressed = released = false; finger = -1;climbTouches=0;requireTouchRelease=false;
             tapPending=tapDragged=guidanceRelease=false;guidanceTouches=0;
+            mouseEvents.Clear();eventMouseDown=false;
         }
         private void OnApplicationFocus(bool focused) { if (!focused) End(); }
     }
