@@ -2,6 +2,8 @@
 
 Ngày thiết kế: 10/09/2026. Trạng thái: đề xuất sản phẩm dựa trên lựa chọn điều khiển màn 07 của người chơi; chưa triển khai các hệ thống và campaign bên dưới.
 
+Cập nhật 11/09/2026: năm màn Journey đầu đã có bản chơi, xem [trạng thái triển khai](VENOM_JOURNEY_01_05.md). [Đặc tả chỉ số, cơ quan và level](VENOM_STATS_LEVEL_DESIGN.md) bổ sung yêu cầu tiến bộ phải nhìn thấy được và thay thế đề xuất 06–10 ở mục 10 dưới đây. Hệ chỉ số và các màn tiếp theo chưa triển khai.
+
 ## 1. Trải nghiệm cần tạo ra
 
 Người chơi quan sát chiếc hộp, hướng dẫn sinh vật giải quyết các cơ quan và đưa toàn bộ cơ thể ra ngoài. Sinh vật càng chơi càng biết làm nhiều việc, nhận ra những thứ quen thuộc và thể hiện sự gắn bó với người hướng dẫn.
@@ -173,6 +175,8 @@ Mỗi cụm 10 màn: giới thiệu luật → luyện → kết hợp → tình
 Màn rất khó tăng sự phụ thuộc giữa các quyết định, phân bổ vật chất và thay đổi kết nối. Không tăng khó bằng việc AI ngẫu nhiên không nghe lời, dấu mục tiêu không rõ hoặc yêu cầu chạm cực chính xác. Có checkpoint theo giai đoạn đối với boss dài.
 
 ## 10. Chương thử nghiệm 10 màn đề xuất
+
+Đề xuất ban đầu ngày 10/09, giữ để đối chiếu. Với các màn tiếp theo, dùng chuỗi 06–10 và boss trong [đặc tả chỉ số cập nhật](VENOM_STATS_LEVEL_DESIGN.md#4-chuỗi-thử-nghiệm-đầu-và-boss).
 
 Đây là số thứ tự campaign thiết kế mới, không đổi số hay ghi đè các scene thử nghiệm 01–08 hiện có.
 

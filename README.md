@@ -14,6 +14,8 @@ Mở `Builds/Venom/macOS/Venom.app`. **1–5** chọn bài, **R** thử lại, *
 
 [Hướng dẫn, đường giải và giới hạn prototype](Docs/VENOM_JOURNEY_01_05.md) · [Thiết kế gameplay, AI và animation dài hạn](Docs/VENOM_GUIDED_PUZZLE_DESIGN.md).
 
+[Thiết kế chỉ số gắn với cơ quan, vật lý và level](Docs/VENOM_STATS_LEVEL_DESIGN.md): đặc tả tiến bộ nhìn thấy được, chuỗi thử 06–09 và boss 10; chưa triển khai trong bản chơi.
+
 Build: `bash Tools/build-venom.sh`. Các scene mới nằm ở `Assets/_Game/Venom/VenomJourney01.unity` đến `VenomJourney05.unity`. Kỹ năng và bài đã hoàn thành được nhớ giữa các lần mở app; retry chỉ reset cơ quan và nhiệm vụ. AI hiện học theo sự kiện và phản hồi theo ngữ cảnh, chưa triển khai toàn bộ hệ cảm xúc của thiết kế dài hạn.
 
 Khi bò tường hoặc trần, phần thân phía ngoài và xúc tu chùng rủ xuống theo trọng lực thế giới; vùng tiếp xúc giữ bám, cơ thể hồi lại dần khi xoay mặt đó thành sàn.
