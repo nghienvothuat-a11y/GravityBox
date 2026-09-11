@@ -23,6 +23,7 @@ namespace GravityBox.Venom
         private readonly Collider[] supports=new Collider[32];
         private readonly Vector3[] points=new Vector3[32],normals=new Vector3[32];
         private readonly float[] times=new float[32];
+        private readonly float[] hangingLoad=new float[32];
         private int selectedFace;
         private Vector2 heldScreen;
         private Vector3 heldLocal;
@@ -123,6 +124,7 @@ namespace GravityBox.Venom
                 times[i]=matter.SimulationTime;supported++;
             }
             if(supported==0){state.Gripping=false;return travel;}
+            DistributeHangingLoad(fragment,root.TransformDirection(Normals[state.Face]));
             if(moving)state.Gripping=false;
             else if(!state.Gripping){state.GripLocal=root.InverseTransformPoint(fragment.Centre);state.Gripping=true;}
             Vector3 grip=Vector3.ProjectOnPlane(root.TransformPoint(state.GripLocal)-fragment.Centre,preferred);
@@ -168,6 +170,29 @@ namespace GravityBox.Venom
                 if(surface.attachedRigidbody!=null && !surface.attachedRigidbody.isKinematic)surface.attachedRigidbody.AddForceAtPosition(-force,point);
             }
             return travel;
+        }
+
+        private void DistributeHangingLoad(VenomLocomotion.Fragment fragment,Vector3 inward)
+        {
+            float amount=level.LocomotionProfile.HangingLoad*Mathf.Clamp01(1-Vector3.Dot(inward,Vector3.up));
+            if(amount<=0 || level.Journey!=null&&level.Journey.Cutting)return;
+            var matter=level.Organism;var root=level.Rotation.transform;
+            float mean=0;int count=0;
+            for(int i=0;i<32;i++)if(!matter.Escaped[i]&&matter.Groups[i]==fragment.Group)
+            {
+                // Depth from the current attachment plane selects the outer
+                // tissue. The material touching glass carries the reaction;
+                // the belly keeps more of its load instead of being plastered
+                // flat by a gravity-compensated locomotion force on every node.
+                float depth=Vector3.Dot(matter.Bodies[i].position-root.position,inward)+.25f;
+                hangingLoad[i]=Mathf.SmoothStep(0,1,Mathf.InverseLerp(matter.Profile.ParticleRadius+.002f,.038f,depth));
+                mean+=hangingLoad[i];count++;
+            }
+            if(count==0)return;mean/=count;
+            for(int i=0;i<32;i++)if(!matter.Escaped[i]&&matter.Groups[i]==fragment.Group)
+                matter.Bodies[i].AddForce(Vector3.down*(9.81f*amount*(hangingLoad[i]-mean)),ForceMode.Acceleration);
+            // Equal particle masses make this redistribution sum to zero.
+            // World gravity remains 9.81 m/s², and unsupported tissue still falls.
         }
 
         public bool TryGetSupport(int i,out Collider collider,out Vector3 point,out Vector3 normal)

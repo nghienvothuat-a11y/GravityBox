@@ -176,6 +176,42 @@ namespace GravityBox.Tests
             Assert.That(Vector3.Distance(Local(level.Locomotion.Selected.Centre),new Vector3(-.225f,.08f,-.1f)),Is.LessThan(.05f));
             ExitAll();Capture("02-escaped");Steps(180);Capture("victory-rotated-ceiling-dance");
         }
+        [UnityTest] public IEnumerator ClingingBodySagsWithWorldGravityAndSettlesWhenItsCeilingBecomesAFloor()
+        {
+            yield return Load(2);
+            var skin=level.Organism.GetComponent<VenomSurface>();
+            var life=level.Organism.GetComponent<VenomLifeAnimation>();
+            void Settle()
+            {
+                for(int frame=0;frame<40;frame++){Steps(6);skin.Rebuild(false);level.GetComponent<VenomHud>().FrameChamber(720,1280,.05f);}
+            }
+            Settle();Assert.That(life.GravitySag.magnitude,Is.LessThan(.001f),"A supported floor does not pull the skin through itself.");
+            Reach(1,new Vector3(-.25f,.04f,-.1f));level.ToggleZoom();Settle();
+            Assert.That(life.GravitySag.y,Is.LessThan(-.014f));
+            Assert.That(new Vector2(life.GravitySag.x,life.GravitySag.z).magnitude,Is.LessThan(.001f));
+            Capture("gravity-wall");
+            Reach(5,new Vector3(-.12f,.25f,-.1f));Settle();Capture("gravity-ceiling");
+            Assert.That(life.GravitySag.y,Is.LessThan(-.014f),"Hanging tissue must extend down into the box, not up through the ceiling.");
+            var physical=level.Organism.Bodies.Select(b=>b.position).ToArray();
+            Vector3 frozen=life.GravitySag;level.TogglePause();
+            for(int frame=0;frame<30;frame++){level.Step(Dt);skin.Rebuild(false);}
+            Assert.That(life.GravitySag,Is.EqualTo(frozen));
+            CollectionAssert.AreEqual(physical,level.Organism.Bodies.Select(b=>b.position).ToArray(),"Skin sag never teleports physics nodes.");
+            level.TogglePause();level.Rotation.SetTargetOrientation(Quaternion.Euler(180,0,0));Steps(360);Settle();
+            Assert.That(life.GravitySag.magnitude,Is.LessThan(.002f),"After rotation, the old ceiling now supports the body from below.");
+            Capture("gravity-ceiling-now-floor");
+            level.Rotation.SetTargetOrientation(Quaternion.Euler(0,0,90));Steps(360);Settle();
+            Assert.That(life.GravitySag.y,Is.LessThan(-.014f));
+            Assert.That(new Vector2(life.GravitySag.x,life.GravitySag.z).magnitude,Is.LessThan(.001f),"Changing box orientation never rotates Earth gravity.");
+            Capture("gravity-rotated-wall");
+            Assert.That(level.Organism.TotalMass,Is.EqualTo(.096f).Within(.000001f));
+            Assert.That(level.Organism.EscapedCount,Is.Zero);
+            foreach(var body in level.Organism.Bodies)
+            {
+                var p=Local(body.position);
+                Assert.That(Mathf.Max(Mathf.Abs(p.x),Mathf.Abs(p.y),Mathf.Abs(p.z)),Is.LessThan(.247f));
+            }
+        }
         [UnityTest] public IEnumerator ThirdLessonRequiresRealSustainedContactAndDoesNotAutoSolveExit()
         {
             yield return Load(3);Capture("03-overview");

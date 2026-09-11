@@ -20,5 +20,6 @@ namespace GravityBox.Venom
         [Min(.01f)] public float AdhesionReach = .035f;
         [Min(1)] public float AdhesionAcceleration = 32f;
         [Min(1)] public float ClimbAcceleration = 20f;
+        [Range(0,1)] public float HangingLoad = .65f;
     }
 }

@@ -34,6 +34,7 @@ namespace GravityBox.Venom
             public float IdleTime, NextPeek, PeekStart = -100, PeekLength = 3, Head, Moving, Speed, Flow;
             public float DanceStart = -100, DanceLength = 3.8f, NextDance, Dance, Squeezing;
             public Vector3 Up = Vector3.up, Forward = Vector3.forward, Probe = Vector3.forward, Lag, LagRate;
+            public Vector3 Sag,SagRate;
             public Fragment(int key, float time)
             {
                 NextPeek = 1.8f + Noise(key)*1.2f;
@@ -59,6 +60,8 @@ namespace GravityBox.Venom
         private readonly List<Plant> plants = new List<Plant>(48);
         private Mesh tendrils;
         private float clock, dt, previousSimulationTime = -1;
+        private float physicalDt;
+        public Vector3 GravitySag {get;private set;}
         public float HeadAmount { get; private set; }
         public float HeadHeight { get; private set; }
         public int TendrilCount { get; private set; }
@@ -81,11 +84,13 @@ namespace GravityBox.Venom
             float time = organism.SimulationTime;
             bool reset = time < previousSimulationTime;
             if (reset) { Array.Clear(fragments,0,fragments.Length); clock = 0; }
-            dt = previousSimulationTime < 0 || reset ? 0 : Mathf.Min(.05f,time-previousSimulationTime)*organism.Profile.AnimationSpeed;
+            physicalDt = previousSimulationTime < 0 || reset ? 0 : Mathf.Min(.05f,time-previousSimulationTime);
+            dt = physicalDt*organism.Profile.AnimationSpeed;
             previousSimulationTime = time;
             clock += dt;
             vertices.Clear(); normals.Clear(); triangles.Clear(); plants.Clear();
             HeadAmount = HeadHeight = CrawlAmount = DanceAmount = 0; TendrilCount = RaisedTendrilCount = 0;
+            GravitySag=Vector3.zero;
             foreach (var fragment in fragments) if (fragment != null) fragment.Seen = false;
         }
         // Up to six extra field sources form a crest, not another simulated body.
@@ -133,6 +138,10 @@ namespace GravityBox.Venom
                 state.Up = Vector3.Slerp(state.Up,up,1-Mathf.Exp(-dt*14));
             }
             up = state.Up;
+            float sagAmount=grounded&&level.WallCrawl?Mathf.Clamp01(1-Vector3.Dot(up,Vector3.up)):0;
+            Vector3 sagTarget=Vector3.down*(organism.Profile.ClingingSag*sagAmount*Mathf.Sqrt(count/32f));
+            if(physicalDt>0)state.Sag=Vector3.SmoothDamp(state.Sag,sagTarget,ref state.SagRate,.24f,Mathf.Infinity,physicalDt);
+            if(state.Sag.sqrMagnitude>GravitySag.sqrMagnitude)GravitySag=state.Sag;
             Vector3 tangentVelocity = Vector3.ProjectOnPlane(velocity,up);
             state.Speed = Mathf.Lerp(state.Speed,tangentVelocity.magnitude,1-Mathf.Exp(-dt*10));
             Vector3 crawlIntent = level.Locomotion != null ? level.Locomotion.IntentForParticle(ids[0]) : Vector3.zero;
@@ -386,6 +395,13 @@ namespace GravityBox.Venom
             {
                 Vector3 world = transform.TransformPoint(points[i]);
                 Vector3 delta = deformation[i]-average;
+                // Keep contact tissue planted; the exposed belly stretches down
+                // in world space with a short viscous settling time. Ramp this
+                // away near the outlet, narrow passages and powered cutting.
+                float exposure=Smooth(organism.Profile.ParticleRadius+.001f,.045f,Vector3.Dot(world-floor,up));
+                float sagWeight=exposure*(1-state.Squeezing);
+                if(level.Journey!=null&&level.Journey.Cutting)sagWeight=0;
+                delta+=state.Sag*sagWeight;
                 // Remove common translation before constraining visual
                 // displacement against nearby apparatus. Never cross a thin wall.
                 float length = delta.magnitude;
@@ -462,6 +478,10 @@ namespace GravityBox.Venom
                 Vector3 bend = Vector3.Cross(normal,dir)*(.0035f*(Noise(seed+2)*2-1)*(1-tension));
                 Vector3 p1 = origin+dir*.008f+normal*.0015f;
                 Vector3 p2 = Vector3.Lerp(origin,end,.72f)+bend+normal*(.001f+release*.006f);
+                // Gravity bows slack strands between their body root and their
+                // real contact tip; a taut strand carries load with little sag.
+                Vector3 droop=Vector3.ProjectOnPlane(state.Sag,normal)+normal*Mathf.Max(0,Vector3.Dot(state.Sag,normal));
+                p1+=droop*(1-tension)*.22f;p2+=droop*(1-tension)*.35f;
                 Tube(origin,p1,p2,end,normal,anchor,foot.Thickness*Mathf.Lerp(1,.48f,tension)*(1-release*.5f));
                 TendrilCount++;
             }

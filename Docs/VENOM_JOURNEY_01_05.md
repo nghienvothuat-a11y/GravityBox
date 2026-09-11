@@ -48,6 +48,9 @@ Tạm dừng dừng cả animation và thời gian chuyển màn; R khôi phục
 
 ## Cơ quan và vật lý
 
+- Khi bò tường/trần, tải bám được phân bố theo độ sâu của mô: mô tiếp xúc chịu phản lực, phần bụng chịu nhiều tải xuống hơn. Phần phân bố lại có tổng lực bằng 0; trọng lực thế giới vẫn là 9,81 m/s². Đây là xấp xỉ mô mềm bám dính dùng cho prototype, không phải mô phỏng chất lỏng liên tục.
+- Skin rủ theo hướng xuống của thế giới, mạnh dần từ vùng tiếp xúc ra bụng; trần kéo bụng xuống trong hộp, tường tạo nếp chảy xuống. Độ võng có thời gian ổn định khoảng 0,24 giây, giảm khi xoay bề mặt thành sàn. Xúc tu đang bám cũng võng nhẹ giữa gốc và đầu bám; sợi căng võng ít hơn. Skin vẫn kiểm tra vật cản trước khi biến dạng, giảm võng khi chui khe và tắt biểu diễn này khi đang qua lỗ hoặc cắt.
+- Có thể chỉnh `HangingLoad` trong profile di chuyển và `ClingingSag` trong profile vật chất. Biến dạng skin không sửa vị trí Rigidbody, không thêm khối lượng và không thay điều kiện thắng.
 - Giữ 32 hạt động lực học, mỗi hạt 3 g, tổng 96 g. Lực bám và di chuyển tác dụng lên tiếp xúc bề mặt, mô mềm tiếp tục dùng liên kết có độ nhớt/dẻo.
 - Nút phải có tiếp xúc vật lý thật. Khối lượng kích hoạt tính từ mô cùng một phần đang thực sự nằm trên vùng nút, sau khi xác nhận tiếp xúc; không cộng khối lượng phần ở xa chỉ vì một đầu xúc tu chạm tới.
 - Đây là cảm biến tải gameplay dựa vào tiếp xúc và lượng mô trên vùng nút, không phải cân đo lực pháp tuyến chính xác. Cách này giữ luật phân bổ rõ ràng khi người chơi xoay hộp.
@@ -69,7 +72,11 @@ Kiểm chứng tự động: `GravityBox.Tests.VenomJourneyTests`. Kết quả v
 
 ## Kết quả kiểm chứng
 
-Lần chạy cuối đạt **67/67 PlayMode Venom**, gồm **13 trường hợp Journey**: đường giải đủ năm bài; giữ/rời nút, thay lệnh, lựa chọn phần, xoay khi đang giữ; chia giữa chưa đủ tải → hợp thể → chia lệch → giải bài 5; lưu kỹ năng qua scene mà không phát lại lệnh cũ; chuột kéo nhanh rồi trả con trỏ về chỗ cũ; cảm ứng kết thúc một lần vuốt ở vị trí mới. Máy chém màn 4 còn được kiểm tra ở ba hướng xoay, khóa xoay xuyên cả thao tác pause/resume, giữ mọi tâm hạt trong mặt va chạm và không tạo phần nhỏ hơn 10/32 hạt. Đuôi cơ thể vẫn giữ lệnh thoát khi hạt đại diện đã đi qua lỗ.
+Sau cập nhật trọng lực, **67/67 PlayMode hồi quy và 1/1 kiểm tra biến dạng mới đạt**, tổng cộng **14 trường hợp Journey**: đường giải đủ năm bài; giữ/rời nút, thay lệnh, lựa chọn phần, xoay khi đang giữ; chia giữa chưa đủ tải → hợp thể → chia lệch → giải bài 5; lưu kỹ năng qua scene mà không phát lại lệnh cũ; chuột kéo nhanh rồi trả con trỏ về chỗ cũ; cảm ứng kết thúc một lần vuốt ở vị trí mới. Máy chém màn 4 còn được kiểm tra ở ba hướng xoay, khóa xoay xuyên cả thao tác pause/resume, giữ mọi tâm hạt trong mặt va chạm và không tạo phần nhỏ hơn 10/32 hạt. Đuôi cơ thể vẫn giữ lệnh thoát khi hạt đại diện đã đi qua lỗ.
+
+XML cập nhật trọng lực: `Artifacts/Venom01/gravity-full-tests.xml` và `gravity-shape-tests.xml`. Kiểm tra mới đi từ sàn lên tường, trần, xoay trần thành sàn rồi thành tường; xác nhận hướng võng luôn xuống theo thế giới, pause đóng băng biến dạng, giữ đủ 96 g và không có hạt lọt khỏi hộp. Ảnh cận cảnh tại `Artifacts/VenomGravity/gravity-*.png` đã được kiểm tra. Đây là kiểm chứng hướng biến dạng và tính ổn định; feeling vẫn cần chơi thử bằng tay.
+
+Bản macOS cập nhật trọng lực build thành công; đã đóng tiến trình cũ, mở bản mới và kiểm tra chạm dẫn sinh vật từ sàn lên tường ở bài 2, zoom cận cảnh, tới nơi vẫn bám và giữ đủ 96 g. Không có exception trong Player.log của lần kiểm tra này.
 
 XML: `Artifacts/Venom01/celebration-full-tests.xml`; log cùng tên. Kiểm tra Journey cuối sau khi bổ sung chặn chuyển scene lúc tạm dừng: `Artifacts/Venom01/celebration-final-journey-tests.xml`. Ảnh đoạn thắng tại lỗ sàn, lỗ trần xoay nghiêng và bài phối hợp: `Artifacts/VenomCelebration/victory-*.png`.
 

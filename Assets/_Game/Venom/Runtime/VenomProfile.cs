@@ -25,6 +25,7 @@ namespace GravityBox.Venom
         [Header("Living surface (visual only)")]
         [Range(.25f,3f)] public float AnimationSpeed = 1.5f;
         public float IdleBulge = .0036f;
+        [Range(0,.03f)] public float ClingingSag = .019f;
         public float CuriousHeadLift = .041f;
         public float TendrilReach = .034f;
         public float RaisedTendrilReach = .052f;

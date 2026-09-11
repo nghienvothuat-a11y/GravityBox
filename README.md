@@ -16,7 +16,9 @@ Mở `Builds/Venom/macOS/Venom.app`. **1–5** chọn bài, **R** thử lại, *
 
 Build: `bash Tools/build-venom.sh`. Các scene mới nằm ở `Assets/_Game/Venom/VenomJourney01.unity` đến `VenomJourney05.unity`. Kỹ năng và bài đã hoàn thành được nhớ giữa các lần mở app; retry chỉ reset cơ quan và nhiệm vụ. AI hiện học theo sự kiện và phản hồi theo ngữ cảnh, chưa triển khai toàn bộ hệ cảm xúc của thiết kế dài hạn.
 
-Kiểm chứng: **67/67 PlayMode Venom đạt**, gồm **13 trường hợp Journey**; máy chém màn 4 được thử ở ba hướng xoay và giữ đủ hai phần trong hộp. Chi tiết trong [báo cáo năm bài](Docs/VENOM_JOURNEY_01_05.md#kết-quả-kiểm-chứng).
+Khi bò tường hoặc trần, phần thân phía ngoài và xúc tu chùng rủ xuống theo trọng lực thế giới; vùng tiếp xúc giữ bám, cơ thể hồi lại dần khi xoay mặt đó thành sàn.
+
+Kiểm chứng: **67/67 PlayMode hồi quy và 1/1 kiểm tra biến dạng trọng lực đạt**, tổng cộng **14 trường hợp Journey**; máy chém màn 4 được thử ở ba hướng xoay và giữ đủ hai phần trong hộp. Chi tiết trong [báo cáo năm bài](Docs/VENOM_JOURNEY_01_05.md#kết-quả-kiểm-chứng).
 
 ## Bộ thí nghiệm điều khiển trước campaign
 
