@@ -30,7 +30,7 @@ Luồng học: gặp cơ quan → được hướng dẫn → thực hiện thà
 
 Level khai báo kỹ năng đã được dạy và kỹ năng đang giới thiệu. Nếu người chơi chưa trải nghiệm sự kiện học bắt buộc, cho hướng dẫn bù ngắn. Không âm thầm tăng IQ theo số màn rồi đổi hành vi mà người chơi không biết. Nhận lệnh, giữ nhiệm vụ và dừng ở điểm chỉ phải đáng tin cậy từ đầu.
 
-Kỹ năng quen có thể giảm chỉ dẫn vụn trong một việc được giao. Nó không tự quyết cắt, tự rời nút, tự hợp thể làm mất nhiệm vụ hoặc tự mở chuỗi cơ quan để giải cả màn. Các bước tự thực hiện có phản hồi về ý định; người chơi đổi lệnh được ở những thời điểm cho phép.
+Kỹ năng quen có thể giảm chỉ dẫn vụn trong một việc được giao. Nó không tự quyết đi tới dao, tự rời nút, tự gọi các phần bỏ nhiệm vụ để tìm nhau hoặc tự mở chuỗi cơ quan để giải cả màn. Các phần đã tới đủ gần thì tự kết dính theo điều kiện hiện có, không cần lệnh tụ riêng; giữ bảo vệ nhiệm vụ đang thực hiện. Các bước tự thực hiện có phản hồi về ý định; người chơi đổi lệnh được ở những thời điểm cho phép.
 
 Retry giữ kiến thức nhưng reset cơ quan và nhiệm vụ. Khi quay lại màn cũ, kỹ năng đã biết vẫn không được bỏ qua quyết định chính; công cụ kiểm chứng cần thử cả lần học đầu và sinh vật đã biết kỹ năng. Kiến thức do chơi campaign và ký ức tình cảm ở nhà được lưu riêng về ý nghĩa.
 

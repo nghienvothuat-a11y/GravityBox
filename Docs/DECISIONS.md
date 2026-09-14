@@ -6,6 +6,8 @@
 
 Ngày 14/09/2026, người dùng đưa concept bò, leo, biến dạng luồn khe/ống có giới hạn lượng vật chất, đẩy, kéo, phân tách, tụ lại và copy vật thể. Đẩy/kéo mạnh hơn theo khối lượng thực của phần; bản thể đầy đủ có ngân sách lực lớn nhất. Level sẽ giới thiệu kỹ năng riêng rồi tăng độ khó bằng kết hợp. Người dùng xác nhận **chỉ tách khi đi qua cơ quan cắt**, không tự tách theo lệnh ở vị trí bất kỳ.
 
+Người dùng làm rõ **các phần gần nhau tự tụ, giữ nguyên nguyên tắc hiện có**. Không thêm nút kích hoạt tụ bắt buộc; gọi về chỉ đưa các phần tới gần. Giữ kiểm tra khoảng cách mô, vật cản, thời gian sau cắt và bảo vệ nhiệm vụ hiện tại của Journey.
+
 [Đặc tả kỹ năng](VENOM_CREATURE_SKILLS.md) phân biệt yêu cầu này với các quy tắc chi tiết còn đề xuất, gồm nguyên nhân giới hạn luồn và mô hình copy. Tám kỹ năng chưa được triển khai đầy đủ; lần này không đổi runtime hoặc scene.
 
 ## ADR V001 — Giải đố thuần, trưởng thành qua kỹ năng và tương tác ở nhà

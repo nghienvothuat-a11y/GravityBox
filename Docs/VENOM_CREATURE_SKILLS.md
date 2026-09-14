@@ -20,7 +20,7 @@ Các trạng thái vật lý như rơi, va chạm, võng, biến dạng thụ đ
 | Đẩy | Chọn vật có thể đẩy và hướng/đích tác động | Chọn vùng tì, bám chống, truyền lực tiếp xúc có giới hạn | Vật dịch chuyển/khớp quay thật; thân ép và căng theo tải; thiếu lực thì tì thử rồi báo |
 | Kéo | Chọn tay nắm/cần gạt/chốt và hướng/đích | Tới điểm bám, quấn/nối tiếp xúc, kéo và nhả theo nhiệm vụ | Xúc tu căng theo lực; vật/chốt phải chuyển động đủ hành trình mới kích hoạt |
 | Phân tách | Dẫn cơ thể qua cơ quan cắt, chọn vị trí/cách tiếp cận để phân lượng mô | Liên kết bị cắt khi lưỡi dao thực sự giao với cơ thể; các phần có danh tính/nhiệm vụ riêng | Thấy phần nào đang chọn, khối lượng và việc đang giữ; không sinh/mất vật chất; không tự tách theo nút lệnh |
-| Tụ lại | Chọn các phần cần gặp nhau hoặc gọi toàn bộ về | Các phần được gọi rời nhiệm vụ theo lệnh, tìm tới điểm gặp và chỉ nhập khi tiếp xúc hợp lệ | Có cầu mô/kết dính nhìn thấy; lực tối đa của bản thể hồi theo khối lượng thực đã nhập |
+| Tụ lại | Dẫn các phần đến gần nhau; có thể dùng gọi về để cùng tới một điểm | Khi mô của các phần đủ gần và thỏa điều kiện kết dính hiện có, tự nhập; không cần lệnh kích hoạt tụ riêng | Có cầu mô/kết dính nhìn thấy; lực tối đa của bản thể hồi theo khối lượng thực đã nhập |
 | Copy vật thể | Chọn vật mẫu hợp lệ, rồi chỉ nơi cần sử dụng | Quan sát/tiếp xúc để học mẫu, biến dạng phần được chọn và thực hiện chức năng hình học phù hợp | Hình mẫu rõ, sinh vật tự trở thành vật thể; không tạo một vật mới độc lập hoặc giả báo mở khóa |
 
 Giữ nút, chờ cửa, chọn phần và ghi nhớ là hành vi hỗ trợ các kỹ năng trên; chưa thêm chúng thành bốn kỹ năng mới cần mua/mở riêng.
@@ -29,7 +29,7 @@ Giữ nút, chờ cửa, chọn phần và ghi nhớ là hành vi hỗ trợ cá
 
 Giữ chạm để chỉ dẫn và kéo để xoay hộp. Bò, leo và luồn có thể chuyển tiếp theo đường đi sau khi được học. Đẩy/kéo/copy cần ý định rõ khi cùng đồ vật có nhiều cách dùng: đề xuất chạm đồ → hiện các điểm/hành động phù hợp → chọn mục tiêu, không dùng kéo ngón tay vì đã dành cho xoay hộp.
 
-Các phần được chọn riêng, phần khác tiếp tục nhiệm vụ. “Điều khiển đồng thời” là nhiều nhiệm vụ cùng tồn tại, không yêu cầu giữ nhiều ngón để lái nhiều phần. AI không tự chia, tự tụ hay tự copy ngoài ý định nếu làm thay đổi trạng thái puzzle.
+Các phần được chọn riêng, phần khác tiếp tục nhiệm vụ. “Điều khiển đồng thời” là nhiều nhiệm vụ cùng tồn tại, không yêu cầu giữ nhiều ngón để lái nhiều phần. AI không tự chọn đi qua dao, tự gọi các phần bỏ nhiệm vụ để tìm nhau hoặc tự copy ngoài ý định. Khi các phần đã đủ gần, tụ là phản ứng kết dính tự động theo điều kiện hiện có, không phải một quyết định mới cần người chơi bấm nút.
 
 Các lệnh có thể hủy phải giải phóng điểm bám, lực điều khiển, chờ sự kiện và quyền giữ cơ quan. Nếu một hành động tạm thời không thể ngắt, phải thể hiện thời điểm đó và có thời hạn ngắn, hữu hạn. Không để animation kết thúc muộn kích hoạt vật thể sau khi đã đổi lệnh.
 
@@ -60,9 +60,13 @@ Trường hợp chỉ muốn giới thiệu khả năng luồn: dùng khe đủ 
 
 **Đã được người dùng chốt: chỉ phân tách khi đi qua cơ quan cắt.** Không có kỹ năng tự tách tại vị trí bất kỳ. “Học phân tách” là biết tiếp cận và sử dụng cơ quan cắt, nhận biết các phần sau cắt và chờ phân công; AI không tự tìm dao khi người chơi chưa giao ý định đó.
 
+**Đã được người dùng chốt: các phần ở gần nhau tự tụ lại, giữ nguyên nguyên tắc hiện có.** “Học tụ” là người chơi/sinh vật nhận biết và tận dụng sự kết dính; không mở một nút kích hoạt khả năng mới. Có thể chỉ dẫn các phần về gần nhau bằng lệnh di chuyển thông thường. Nút gọi về chỉ thay nhiệm vụ di chuyển để đưa các phần tới điểm gặp, không trực tiếp nhập mô và không bắt buộc để tụ.
+
+Đối chiếu runtime hiện có: xét khoảng cách giữa các hạt mô, có thời gian hồi sau cắt và không nối xuyên vật cản. Journey còn bảo vệ phần đang giữ nút/chờ dao hoặc có nhiệm vụ không tương thích; hai phần tự do hoặc được giao cùng vùng đích có thể kết dính khi đủ gần. Giữ các điều kiện này trong lần làm rõ thiết kế, không thay bằng hút từ xa hoặc bỏ bảo vệ nhiệm vụ.
+
 Vị trí dao, đường tới dao và vị trí có thể tụ lại là cấu trúc puzzle. Một màn cần phần nhỏ ở phía sau khe phải cho tiếp cận cơ quan cắt trước khi bị chặn; một màn cần cắt lại sau khi tụ phải có đường tới dao hoặc cơ quan cắt tiếp theo. Không thêm hành động tự tách vô hình để cứu một bố trí thiếu đường giải.
 
-Tách và tụ nên được dạy thành một cặp: trước thử thách phân tải đầu tiên phải có cách tập hợp lại để sửa sai. Đề xuất lần đầu hai phần, sau đó mới mở bài phối hợp nhiều phần khi cách chọn/giữ nhiệm vụ đã rõ. Số phần tối đa, khối lượng nhỏ nhất điều khiển được và cách chọn tỷ lệ tách chưa chốt; không cho từng hạt vụn thành một nhân vật cần thao tác riêng.
+Tách và tụ nên được dạy thành một cặp: cho thấy dao chia cơ thể, rồi chỉ dẫn hai phần về gần để chúng tự kết dính; trước thử thách phân tải đầu tiên phải có cách tập hợp lại để sửa sai. Đề xuất lần đầu hai phần, sau đó mới mở bài phối hợp nhiều phần khi cách chọn/giữ nhiệm vụ đã rõ. Số phần tối đa, khối lượng nhỏ nhất điều khiển được và cách chọn tỷ lệ tách chưa chốt; không cho từng hạt vụn thành một nhân vật cần thao tác riêng.
 
 Sau tách, lượng vật chất và vị trí thực quyết định lực/khả năng nhận việc. Nhiệm vụ thuộc về hạt/ID vật chất ổn định; cần quy tắc rõ khi chủ thể tách hoặc nhiều chủ thể nhập. Không tự hợp thể nếu làm mất nhiệm vụ giữ cơ quan; người chơi gọi về phải thấy việc nào sẽ được nhả.
 
