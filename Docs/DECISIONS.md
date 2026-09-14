@@ -1,6 +1,12 @@
 # Các quyết định kiến trúc
 
-**Phạm vi hiện tại:** ADR 026 thêm sáu họ cơ khí và boss, tổng 23 màn. ADR 025 giữ luật tất cả bi thoát và roster nhiều bi. Hỗ trợ thoát ADR 023 áp dụng riêng cho từng bi. Các quyết định cũ bên dưới giữ lại để theo dõi lịch sử.
+**Nhánh Venom hiện tại:** xem ADR V001 và [năm màn Journey đang chạy](VENOM_JOURNEY_01_05.md). Các ADR số 001–026 bên dưới ghi lịch sử prototype bi thép, trong đó ADR 026 đưa tổng số màn bi thép lên 23; không phải trạng thái campaign Venom.
+
+## ADR V001 — Giải đố thuần, trưởng thành qua kỹ năng và tương tác ở nhà
+
+Ngày 14/09/2026, người dùng chốt campaign không có phân điểm; sinh vật học qua các màn. Thêm hướng sản phẩm ngôi nhà, nơi có thể mua đồ vật, đồ ăn và animation tương tác. Giữ năng lực vật lý/điều kiện puzzle độc lập với nội dung mua ở nhà; những kỹ năng cần để giải màn được học trong campaign. Người chơi quyết định kế hoạch, sinh vật thực hiện kỹ năng đã biết trong nhiệm vụ.
+
+[Đặc tả quyết định và phạm vi](VENOM_PURE_PUZZLE_AND_HOME.md) thay thế đề xuất tăng chỉ số. Nhà, cửa hàng và thư viện tương tác mở rộng chưa triển khai; loại tiền, giá và phương thức mua chưa chốt. Chưa đổi code, scene hoặc save trong lần ghi quyết định này.
 
 ## ADR 025 Toàn bộ bi phải thoát, cơ quan phối hợp ở bàn 16
 

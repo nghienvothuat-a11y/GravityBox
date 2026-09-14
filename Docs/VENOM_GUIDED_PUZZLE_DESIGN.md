@@ -1,8 +1,8 @@
 # Venom — Dẫn đường cho một sinh vật đang lớn lên
 
-Ngày thiết kế: 10/09/2026. Trạng thái: đề xuất sản phẩm dựa trên lựa chọn điều khiển màn 07 của người chơi; chưa triển khai các hệ thống và campaign bên dưới.
+Ngày thiết kế gốc: 10/09/2026. Cập nhật hướng sản phẩm: 14/09/2026. Năm màn Journey đã có bản chơi; các hệ dài hạn bên dưới chưa triển khai đầy đủ.
 
-Cập nhật 11/09/2026: năm màn Journey đầu đã có bản chơi, xem [trạng thái triển khai](VENOM_JOURNEY_01_05.md). [Đặc tả chỉ số, cơ quan và level](VENOM_STATS_LEVEL_DESIGN.md) bổ sung yêu cầu tiến bộ phải nhìn thấy được và thay thế đề xuất 06–10 ở mục 10 dưới đây. Hệ chỉ số và các màn tiếp theo chưa triển khai.
+Người dùng đã chốt [giải đố thuần và ngôi nhà cho sinh vật](VENOM_PURE_PUZZLE_AND_HOME.md): học kỹ năng qua màn, không phân điểm; mua đồ vật, đồ ăn và animation để tương tác ở nhà. Nội dung nhà không tăng khả năng giải đố. [Đề xuất chỉ số ngày 11/09](VENOM_STATS_LEVEL_DESIGN.md) giữ làm lịch sử; chuỗi 06–10 thử nâng chỉ số đã ngừng chọn. Xem [trạng thái năm màn đang chạy](VENOM_JOURNEY_01_05.md).
 
 ## 1. Trải nghiệm cần tạo ra
 
@@ -16,7 +16,7 @@ Ba cam kết:
 - Sinh vật tự thực hiện kỹ năng đã biết trong phạm vi việc được giao. Người chơi quyết định kế hoạch giải puzzle.
 - Cơ quan chỉ thay đổi khi điều kiện gameplay/vật lý thực sự đạt. Animation thể hiện hành động và kết quả, không giả lập thành công.
 
-Trong code hiện tại, màn 07–08 mới có đường đi trên sáu mặt hộp, trí nhớ tối đa 24 điểm theo từng màn và một cờ biết quan hệ nút–cửa. `VenomLifeAnimation` đã đọc chuyển động/tiếp xúc để tạo biến dạng, xúc tu và cử chỉ. Đây là nền thử nghiệm, chưa phải hệ học kỹ năng và cảm xúc mô tả ở tài liệu này.
+Nền thí nghiệm màn 07–08 có đường đi trên sáu mặt hộp, trí nhớ điểm và cờ biết quan hệ nút–cửa. Năm màn Journey tiếp theo đã có nhiệm vụ riêng theo phần, ghi nhận kỹ năng và tiến trình qua scene. `VenomLifeAnimation` đọc chuyển động/tiếp xúc để tạo biến dạng, xúc tu và cử chỉ. Đây vẫn là nền prototype, chưa phải hệ cảm xúc/ngôi nhà và học kỹ năng đầy đủ mô tả trong thiết kế.
 
 ## 2. Một ngôn ngữ điều khiển
 
@@ -176,7 +176,7 @@ Màn rất khó tăng sự phụ thuộc giữa các quyết định, phân bổ
 
 ## 10. Chương thử nghiệm 10 màn đề xuất
 
-Đề xuất ban đầu ngày 10/09, giữ để đối chiếu. Với các màn tiếp theo, dùng chuỗi 06–10 và boss trong [đặc tả chỉ số cập nhật](VENOM_STATS_LEVEL_DESIGN.md#4-chuỗi-thử-nghiệm-đầu-và-boss).
+Đề xuất ban đầu ngày 10/09, giữ để đối chiếu, không phải danh sách scene đã dựng hoặc kế hoạch cố định. Hướng hiện tại là [giải đố thuần](VENOM_PURE_PUZZLE_AND_HOME.md); các dạng level mới sẽ theo bản vẽ và quyết định của người dùng, không theo chuỗi thử tăng chỉ số ngày 11/09.
 
 Đây là số thứ tự campaign thiết kế mới, không đổi số hay ghi đè các scene thử nghiệm 01–08 hiện có.
 

@@ -14,7 +14,7 @@ Mở `Builds/Venom/macOS/Venom.app`. **1–5** chọn bài, **R** thử lại, *
 
 [Hướng dẫn, đường giải và giới hạn prototype](Docs/VENOM_JOURNEY_01_05.md) · [Thiết kế gameplay, AI và animation dài hạn](Docs/VENOM_GUIDED_PUZZLE_DESIGN.md).
 
-[Thiết kế chỉ số gắn với cơ quan, vật lý và level](Docs/VENOM_STATS_LEVEL_DESIGN.md): mọi cách phân điểm đều có đường giải; chỉ số phù hợp giúp ít thao tác hoặc nhanh hơn. Đặc tả chuỗi thử 06–09 và boss 10 chưa triển khai trong bản chơi.
+[Định hướng đã chốt 14/09: giải đố thuần và ngôi nhà sinh vật](Docs/VENOM_PURE_PUZZLE_AND_HOME.md). Sinh vật học kỹ năng qua campaign; người chơi có thể mua đồ vật, đồ ăn và cử chỉ để tương tác ở nhà. Nội dung nhà không thay khả năng giải đố. Nhà/cửa hàng chưa triển khai; [đề xuất phân điểm cũ](Docs/VENOM_STATS_LEVEL_DESIGN.md) chỉ giữ làm lịch sử.
 
 Build: `bash Tools/build-venom.sh`. Các scene mới nằm ở `Assets/_Game/Venom/VenomJourney01.unity` đến `VenomJourney05.unity`. Kỹ năng và bài đã hoàn thành được nhớ giữa các lần mở app; retry chỉ reset cơ quan và nhiệm vụ. AI hiện học theo sự kiện và phản hồi theo ngữ cảnh, chưa triển khai toàn bộ hệ cảm xúc của thiết kế dài hạn.
 

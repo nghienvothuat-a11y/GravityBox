@@ -1,5 +1,7 @@
 # Venom — Chỉ số, cơ quan và sự trưởng thành nhìn thấy được
 
+**Đã ngừng chọn hướng phân điểm — 14/09/2026.** Người dùng chốt [giải đố thuần, học kỹ năng qua màn và xây nhà cho sinh vật](VENOM_PURE_PUZZLE_AND_HOME.md). Các phần phân điểm và chuỗi thử nâng chỉ số 06–10 dưới đây là lịch sử nghiên cứu, không phải yêu cầu triển khai hiện tại. Giữ lại nguyên tắc vật lý và kiểm chứng để tham khảo.
+
 Ngày: 11/09/2026. Trạng thái: đặc tả thiết kế cho giai đoạn tiếp theo, chưa triển khai hệ chỉ số hoặc các màn 06–10. Bản chơi vẫn có năm màn Journey hiện tại. Tài liệu này cập nhật hướng phát triển sau năm màn, thay cho chuỗi 06–10 sơ bộ trong `VENOM_GUIDED_PUZZLE_DESIGN.md`; mốc boss mỗi 10 màn được giữ lại.
 
 ## 1. Hợp đồng thiết kế
