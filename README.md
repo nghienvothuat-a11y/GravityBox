@@ -16,6 +16,8 @@ Mở `Builds/Venom/macOS/Venom.app`. **1–5** chọn bài, **R** thử lại, *
 
 [Định hướng đã chốt 14/09: giải đố thuần và ngôi nhà sinh vật](Docs/VENOM_PURE_PUZZLE_AND_HOME.md). Sinh vật học kỹ năng qua campaign; người chơi có thể mua đồ vật, đồ ăn và cử chỉ để tương tác ở nhà. Nội dung nhà không thay khả năng giải đố. Nhà/cửa hàng chưa triển khai; [đề xuất phân điểm cũ](Docs/VENOM_STATS_LEVEL_DESIGN.md) chỉ giữ làm lịch sử.
 
+[Concept tám kỹ năng nền](Docs/VENOM_CREATURE_SKILLS.md): bò, leo, luồn, đẩy, kéo, phân tách, tụ lại và copy vật thể. Level sẽ dạy từng kỹ năng rồi tăng độ khó bằng phối hợp; luật chi tiết và phần chưa triển khai được ghi riêng.
+
 Build: `bash Tools/build-venom.sh`. Các scene mới nằm ở `Assets/_Game/Venom/VenomJourney01.unity` đến `VenomJourney05.unity`. Kỹ năng và bài đã hoàn thành được nhớ giữa các lần mở app; retry chỉ reset cơ quan và nhiệm vụ. AI hiện học theo sự kiện và phản hồi theo ngữ cảnh, chưa triển khai toàn bộ hệ cảm xúc của thiết kế dài hạn.
 
 Khi bò tường hoặc trần, phần thân phía ngoài và xúc tu chùng rủ xuống theo trọng lực thế giới; vùng tiếp xúc giữ bám, cơ thể hồi lại dần khi xoay mặt đó thành sàn.

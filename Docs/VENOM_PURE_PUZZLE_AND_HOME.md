@@ -24,6 +24,8 @@ Tài liệu này thay thế hướng phát triển có phân điểm trong `VENO
 
 ## 3. Trưởng thành bằng kỹ năng, không bằng điểm
 
+Concept kỹ năng do người dùng đưa ra: **bò, leo trèo, biến dạng luồn khe/ống, đẩy, kéo, phân tách, tụ lại và copy vật thể**. [Đặc tả tám kỹ năng](VENOM_CREATURE_SKILLS.md) ghi điều kiện vật lý, cách mở dần, phối hợp, giới hạn và trạng thái triển khai. Khối lượng phân bổ trong màn ảnh hưởng lực đẩy/kéo; đây là tài nguyên puzzle, không phải điểm nâng cấp.
+
 Luồng học: gặp cơ quan → được hướng dẫn → thực hiện thành công thật → ghi nhận kỹ năng → nhận ra cơ quan tương đương ở màn sau. Ví dụ: giữ nút theo lệnh, bám qua mép vách, chờ một cửa có chu kỳ, duy trì nhiệm vụ của một phần khi chọn phần khác.
 
 Level khai báo kỹ năng đã được dạy và kỹ năng đang giới thiệu. Nếu người chơi chưa trải nghiệm sự kiện học bắt buộc, cho hướng dẫn bù ngắn. Không âm thầm tăng IQ theo số màn rồi đổi hành vi mà người chơi không biết. Nhận lệnh, giữ nhiệm vụ và dừng ở điểm chỉ phải đáng tin cậy từ đầu.

@@ -73,6 +73,8 @@ Các phần chưa có nhiệm vụ có thể tự nhìn nhau hoặc vươn xúc 
 
 ## 5. Sinh vật lớn lên bằng những năng lực quan sát được
 
+Ngày 14/09 người dùng đưa concept [tám kỹ năng nền](VENOM_CREATURE_SKILLS.md), làm cơ sở thiết kế level đơn kỹ năng rồi phối hợp: bò, leo, luồn, đẩy, kéo, phân tách, tụ lại, copy. Các giai đoạn dưới mô tả mức tự thực hiện và biểu đạt; không thay thế danh mục kỹ năng này. Đẩy/kéo phụ thuộc khối lượng thực, giới hạn lượng vật chất qua khe cần nguyên nhân rõ và copy cần mô hình tương tác riêng.
+
 | Giai đoạn | Năng lực mới | Cách người chơi nhận ra | Thử thách tiếp theo |
 | --- | --- | --- | --- |
 | Làm quen | Nhìn điểm chỉ, đi tới, chờ | Quay đầu theo chạm; tới nơi nhìn lại người hướng dẫn | Chọn mặt và đường tiếp cận |
