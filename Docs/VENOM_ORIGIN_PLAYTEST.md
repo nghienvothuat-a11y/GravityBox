@@ -6,6 +6,7 @@ Bản thử nghiệm macOS ngày 15/09/2026. Chạy `Builds/Venom/macOS/Venom.ap
 
 - Chạm một điểm trên bề mặt để hướng dẫn sinh vật. Kéo trên vùng chơi để xoay cả hộp quanh tâm, với tốc độ và gia tốc quay có giới hạn. Trọng lực luôn hướng xuống thế giới.
 - 07–08 khóa xoay. Riêng nóc của hộp đầu màn 08 nhận chạm trực tiếp để người chơi có thể chỉ đường lên đó từ camera cố định.
+- Camera 08 nhìn 3/4 từ bên trái, góc nhìn xuống 30°, yaw 42°, khung hình gần hơn khoảng 10%. Nóc, vành bám/miệng ống và lỗ cuối cùng đều chọn được từ góc cố định này; nóc không chắn đường chọn miệng ống.
 - Kính ngoài trong suốt không chặn chọn bề mặt bên trong. Màn 03 chủ động giữ mặt kính trước làm bề mặt nhận lệnh, nên phải xoay để chỉ vào lỗ phía sau. Vật cản và nắp thật vẫn chặn điểm chạm.
 - Khi bị tách, chạm một phần hoặc nút “Phần …” để chọn. Chỉ phần được chọn nhận điểm đến mới; phần đang giữ cơ quan tiếp tục nhiệm vụ.
 - `1`–`9`, `0`: chọn 01–10. `R`: thử lại. `P`/`Esc`: tạm dừng. `Z`: zoom. Các nút cùng chức năng nằm dưới màn hình.
@@ -62,3 +63,5 @@ Kết quả chạy Origin riêng được lưu ở `Artifacts/Venom01/origin-tes
 - Bản build chứa 10 scene Origin; danh sách scene tạm cho test đã được phục hồi.
 - Kiểm tra trực tiếp macOS từng phát hiện kính bên hông chặn chọn lỗ ở 01. Đã sửa và thêm test chọn điểm màn hình rồi thoát đủ cơ thể; test 03 vẫn bảo đảm mặt trước chặn chọn mặt sau.
 - Binary macOS cập nhật lúc 17:28:57 ngày 15/09/2026 đã mở và kiểm tra trực tiếp màn 04: chọn lỗ từ phía dưới vùng trơn, sinh vật rơi xuống sàn và trở về Idle; không bị treo ở mép. Các đường giải còn lại của binary này được kiểm tra tự động, chưa chơi tay lại toàn bộ.
+- Cập nhật camera 08: 3/3 kiểm tra liên quan đạt lúc 2026-09-15 10:38:51Z, gồm nạp 10 scene, chọn nóc và hoàn thành 08 bằng các lệnh điểm màn hình. Test đường giải 08 hiện dùng cùng `TouchPoint` với người chơi ở cả nóc, mép rơi, miệng ống và lỗ cuối, không gọi tắt `EnterTube`.
+- Bản macOS camera 08 build lúc 17:39:49 đã mở, kiểm tra khung hình và chạm lên nóc trực tiếp; sinh vật nhận đúng bề mặt và leo tới điểm chọn.

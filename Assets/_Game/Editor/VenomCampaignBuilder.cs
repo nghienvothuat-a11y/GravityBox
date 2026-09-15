@@ -47,7 +47,10 @@ namespace GravityBox.Editor
                 var game=owner.gameObject.AddComponent<VenomCampaign>();
                 var data=Asset<VenomCampaignDefinition>("Definitions/Level"+number.ToString("00")+".asset",()=>ScriptableObject.CreateInstance<VenomCampaignDefinition>());
                 data.Id="venom.origin."+number.ToString("00");data.Order=number;data.Title=number.ToString("00")+" · "+Names[number-1];data.Lesson=Lessons[number-1];
-                data.CanRotate=number!=7&&number!=8;data.Boss=number==10;data.Passive=number==6;data.ViewRadius=number==8?.65f:.46f;data.CameraEuler=new Vector3(number==3?14:25,-24,0);EditorUtility.SetDirty(data);game.Definition=data;
+                data.CanRotate=number!=7&&number!=8;data.Boss=number==10;data.Passive=number==6;data.ViewRadius=number==8?.59f:.46f;
+                // Look into the inlet from the left. A steeper pitch would put
+                // the selectable ceiling over the inlet's touch target.
+                data.CameraEuler=number==8?new Vector3(30,42,0):new Vector3(number==3?14:25,-24,0);EditorUtility.SetDirty(data);game.Definition=data;
                 owner.Apparatus=new GameObject("Apparatus").transform;owner.Apparatus.SetParent(owner.transform,false);
                 var root=new GameObject("Box pivot",typeof(Rigidbody),typeof(BoxRotationController));root.transform.SetParent(owner.Apparatus,false);
                 var rb=root.GetComponent<Rigidbody>();rb.isKinematic=true;rb.useGravity=false;owner.Rotation=root.GetComponent<BoxRotationController>();

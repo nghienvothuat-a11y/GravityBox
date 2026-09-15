@@ -204,16 +204,22 @@ namespace GravityBox.Tests
         }
         [UnityTest] public IEnumerator EighthLessonFallsCatchesAndFlowsThroughTube()
         {
-            yield return Load(8);Vector3 safeTop=new Vector3(-.49f,.208f,0);game.Motion.Move(0,safeTop);
+            yield return Load(8);yield return null;
+            Vector3 safeTop=new Vector3(-.49f,.208f,0);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(new Vector3(safeTop.x,.23f,0)));
             yield return Until(20,()=>Vector3.Distance(game.Motion.Centre(0),safeTop)<.04f);
-            Vector3 perch=new Vector3(-.19f,.208f,0);game.Motion.Move(0,perch);
+            Vector3 perch=new Vector3(-.19f,.208f,0);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(new Vector3(perch.x,.23f,0)));
             yield return Until(22,()=>Vector3.Distance(game.Motion.Centre(0),perch)<.04f);
             Assert.Greater(game.Motion.Centre(0).y,.15f,"Reach ceiling: "+State);
-            game.Motion.Move(0,game.Tube.transform.position-Vector3.right*.020f);
-            yield return Until(15,()=>game.EnterTube());Assert.IsTrue(game.InTube,"Catch ring: "+State);Steps(150);Capture("08-flow");
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Tube.transform.position));
+            Assert.Less(Vector3.Distance(game.Root.TransformPoint(game.Motion.Get(0).Target),game.Tube.transform.position),.04f,"The visible inlet must not be intercepted by the ceiling");
+            yield return Until(15,()=>game.InTube);Assert.IsTrue(game.InTube,"Catch ring after a screen tap: "+State);Steps(150);Capture("08-flow");
             yield return Until(15,()=>!game.InTube);Assert.IsFalse(game.InTube,"Flow: "+State);Assert.Greater(game.Motion.Centre(0).x,.11f);
             Assert.AreEqual(1,game.Matter.TotalFragmentCount);Assert.AreEqual(0,game.Matter.EscapedCount);
-            AimExit();yield return Until(25,()=>game.Owner.Completed);Assert.IsTrue(game.Owner.Completed,State);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Owner.Outlet.position));
+            Assert.IsTrue(game.Motion.Get(0)?.Exit??false,"The final exit must also accept a screen tap from the fixed camera");
+            yield return Until(25,()=>game.Owner.Completed);Assert.IsTrue(game.Owner.Completed,State);
         }
         [UnityTest] public IEnumerator NinthLessonCoverFallsAwayUnderGravity()
         {
