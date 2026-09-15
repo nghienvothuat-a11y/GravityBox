@@ -1,12 +1,13 @@
 # Venom — Giải đố thuần và ngôi nhà của sinh vật
 
-Ngày chốt hướng sản phẩm: 14/09/2026. Đây là định hướng được người dùng chọn; hệ ngôi nhà, cửa hàng và thư viện tương tác mở rộng chưa được triển khai. Bản chơi hiện vẫn là năm màn Journey. Các chi tiết ghi là đề xuất bên dưới cần kiểm chứng bằng prototype.
+Ngày chốt hướng sản phẩm: 14/09/2026; cập nhật 15/09/2026: thắng **Boss 10** mở Collection **“Nhà của sinh vật”**, không mở nhà từ đầu game. Hệ ngôi nhà, cửa hàng và thư viện tương tác mở rộng chưa được triển khai. Bản chơi hiện vẫn là năm màn Journey. Các chi tiết ghi là đề xuất bên dưới cần kiểm chứng bằng prototype.
 
 ## 1. Quyết định chính
 
 - Campaign là **giải đố thuần**. Không có phân điểm sức mạnh, nhanh nhẹn, trí tuệ hoặc cảm nhận làm thay đổi cách cân bằng level.
 - Sinh vật thông minh dần qua các màn: học kỹ năng và nhận ra cơ quan quen từ trải nghiệm. Người chơi tiếp tục quyết định mục tiêu, thứ tự và phân vai.
-- Có **ngôi nhà cho sinh vật**, nơi người chơi bố trí đồ vật, cho ăn và tương tác.
+- Có Collection **“Nhà của sinh vật”**, mở sau khi thắng Boss 10; nơi người chơi bố trí đồ vật, cho ăn và tương tác.
+- Sinh vật phải hợp thể trước khi thoát qua lỗ cuối. Một phần ra trước khi nhập hết thì thua, hiện “bạn phải hợp thể trước khi chui ra”. Boss 10 không có tutorial, người chơi tự mày mò; luật và phản hồi vẫn rõ.
 - Người chơi có thể mua thêm đồ vật, đồ ăn và animation tương tác. Chưa chốt loại tiền, giá, phương thức mua hay lịch phát hành nội dung; không mặc định tất cả là mua bằng tiền thật.
 
 Tài liệu này thay thế hướng phát triển có phân điểm trong `VENOM_STATS_LEVEL_DESIGN.md`. Tài liệu cũ được giữ làm lịch sử nghiên cứu. Các nguyên tắc vật lý, biểu đạt nhân quả và kiểm chứng đường giải vẫn được giữ; chuỗi màn thử nâng chỉ số 06–10 không còn là kế hoạch triển khai.
@@ -20,15 +21,15 @@ Tài liệu này thay thế hướng phát triển có phân điểm trong `VENO
 | Quyết định | Chọn đích, chia cơ thể, phân vai, thứ tự, quan sát hộp | Chọn bố trí, đồ chơi, món ăn và cách chơi cùng sinh vật |
 | Phần thưởng quan sát được | Thực hiện kỹ năng đã biết, phản hồi rõ, khoảnh khắc giải được cơ quan | Sinh vật phản ứng với đồ được đặt, nhận món quen, chơi và chào theo cách riêng |
 
-Đề xuất nhịp chơi: giải màn → ăn mừng → tiếp tục màn mới như hiện tại; người chơi có thể chọn về nhà ở khoảng nghỉ. Không bắt đi qua nhà hoặc cửa hàng sau mỗi màn. Từ nhà có lối tiếp tục campaign rõ ràng. Phần nhà có nhịp thư giãn, không trở thành công việc cần hoàn thành trước khi được giải đố.
+Đề xuất nhịp chơi: giải màn → ăn mừng → tiếp tục màn mới như hiện tại. Lần đầu thắng Boss 10, thêm khoảnh khắc mở Collection sau ăn mừng trước khi tiếp tục; quyền mở được lưu cùng chiến thắng và không cấp lặp khi replay. Sau khi nhà đã mở, người chơi có thể về nhà ở khoảng nghỉ. Không bắt đi qua nhà hoặc cửa hàng sau mỗi màn. Từ nhà có lối tiếp tục campaign rõ ràng khi có màn tiếp theo. Phần nhà có nhịp thư giãn, không trở thành công việc cần hoàn thành trước khi được giải đố.
 
 ## 3. Trưởng thành bằng kỹ năng, không bằng điểm
 
 Concept kỹ năng do người dùng đưa ra: **bò, leo trèo, biến dạng luồn khe/ống, đẩy, kéo, phân tách, tụ lại và copy vật thể**. [Đặc tả tám kỹ năng](VENOM_CREATURE_SKILLS.md) ghi điều kiện vật lý, cách mở dần, phối hợp, giới hạn và trạng thái triển khai. Khối lượng phân bổ trong màn ảnh hưởng lực đẩy/kéo; đây là tài nguyên puzzle, không phải điểm nâng cấp.
 
-Luồng học: gặp cơ quan → được hướng dẫn → thực hiện thành công thật → ghi nhận kỹ năng → nhận ra cơ quan tương đương ở màn sau. Ví dụ: giữ nút theo lệnh, bám qua mép vách, chờ một cửa có chu kỳ, duy trì nhiệm vụ của một phần khi chọn phần khác.
+Luồng học: gặp cơ quan → thử theo ý định người chơi → thực hiện thành công thật → ghi nhận kỹ năng → nhận ra cơ quan tương đương ở màn sau. Các bài làm quen có thể hướng dẫn; **Boss 10 tự khám phá**, không yêu cầu đã học dao/giữ nút mới cho sử dụng. Ví dụ kiến thức được ghi: giữ nút theo lệnh, bám qua mép vách, chờ một cửa có chu kỳ, duy trì nhiệm vụ của một phần khi chọn phần khác.
 
-Level khai báo kỹ năng đã được dạy và kỹ năng đang giới thiệu. Nếu người chơi chưa trải nghiệm sự kiện học bắt buộc, cho hướng dẫn bù ngắn. Không âm thầm tăng IQ theo số màn rồi đổi hành vi mà người chơi không biết. Nhận lệnh, giữ nhiệm vụ và dừng ở điểm chỉ phải đáng tin cậy từ đầu.
+Level khai báo năng lực có thể thử, mục tiêu học và chính sách hướng dẫn. Không tự hiện hướng dẫn bù trong màn có `Hints=None`, kể cả save mới hoặc nhiều lần thua ở Boss. Không âm thầm tăng IQ theo số màn rồi đổi hành vi mà người chơi không biết. Nhận lệnh, giữ nhiệm vụ và dừng ở điểm chỉ phải đáng tin cậy từ đầu.
 
 Kỹ năng quen có thể giảm chỉ dẫn vụn trong một việc được giao. Nó không tự quyết đi tới dao, tự rời nút, tự gọi các phần bỏ nhiệm vụ để tìm nhau hoặc tự mở chuỗi cơ quan để giải cả màn. Các phần đã tới đủ gần thì tự kết dính theo điều kiện hiện có, không cần lệnh tụ riêng; giữ bảo vệ nhiệm vụ đang thực hiện. Các bước tự thực hiện có phản hồi về ý định; người chơi đổi lệnh được ở những thời điểm cho phép.
 
@@ -47,7 +48,7 @@ Các ví dụ sau là đề xuất thư viện đầu, chưa phải danh sách h
 | Đồ ăn | Món có hình dáng và cách ăn khác nhau | Ngửi/dò, vươn lấy, bao lấy, nuốt và phản ứng | Trải nghiệm chăm sóc, khám phá sở thích |
 | Animation / cử chỉ | Vẫy xúc tu, múa, chạm tay qua kính, kiểu chào | Thực hiện khi người chơi chọn hoặc ở ngữ cảnh phù hợp | Thêm cách giao tiếp và cá tính |
 
-Đề xuất cung cấp nhà cơ bản và một số tương tác ngay từ đầu. Đồ và animation mua thêm mở rộng lựa chọn; phần thưởng từ campaign có thể bổ sung bộ sưu tập sau khi chốt kinh tế. Đề xuất quyền sử dụng nội thất và cử chỉ là lâu dài; việc đồ ăn có tiêu hao, cách bổ sung và chi phí cần được quyết định riêng.
+Đã chốt mở quyền vào nhà sau Boss 10. Đề xuất tặng nhà cơ bản và một số tương tác khi mở; đồ và animation mua thêm mở rộng lựa chọn. Phần thưởng từ campaign có thể bổ sung bộ sưu tập sau khi chốt kinh tế. Đề xuất quyền sử dụng nội thất và cử chỉ là lâu dài; việc đồ ăn có tiêu hao, cách bổ sung và chi phí cần được quyết định riêng.
 
 Trước khi mua cần xem được đồ vật/cử chỉ sẽ tạo tương tác gì. Sở hữu cử chỉ không có nghĩa sinh vật phát ngẫu nhiên liên tục. Người chơi có thể chọn dùng, đổi lựa chọn; phản ứng tự phát phải đúng tình huống và có khoảng nghỉ. Một đồ vật có thể có nhiều phản ứng và một nhóm hành động có thể dùng trên nhiều đồ vật.
 
@@ -63,7 +64,7 @@ Nhà và campaign dùng cùng danh tính sinh vật. Mô phỏng đồ ăn/đồ
 
 ## 6. Hệ tương tác và tổ chức kỹ thuật đề xuất
 
-Giữ các trách nhiệm tách biệt: tiến trình màn; kiến thức kỹ năng; ký ức tương tác; đồ đã sở hữu; bố trí nhà; lựa chọn cử chỉ. Lưu bằng ID ổn định và phiên bản dữ liệu. Không sửa cấu trúc save hiện có trong lần chốt thiết kế này.
+Giữ các trách nhiệm tách biệt: tiến trình màn; kiến thức kỹ năng; quyền mở Collection; ký ức tương tác; đồ đã sở hữu; bố trí nhà; lựa chọn cử chỉ. Lưu bằng ID ổn định và phiên bản dữ liệu. Quyền mở nhà chỉ từ chiến thắng Boss hợp lệ; replay không cấp lại, thắng Journey04 cũ không tự mở Boss mới. [Kiến trúc](VENOM_LEVEL_ARCHITECTURE.md) có luồng save/mở lại và migration; chưa sửa save trong lần tài liệu này.
 
 Đồ vật khai báo điểm tiếp cận/bám, nhóm hành động hỗ trợ, giới hạn lực/chuyển động và phản hồi thành công. Chuỗi tương tác: chú ý → tiếp cận → chuẩn bị → tác động → phản ứng. Bộ thực thi áp lực/ràng buộc có giới hạn; animation đọc tiếp xúc và tiến độ thật. Ví dụ bóng bị đẩy phải lăn do tiếp xúc/lực, vật treo bị kéo phải có điểm bám và phản lực, không chỉ chạy theo clip.
 
@@ -73,7 +74,7 @@ Thư viện dùng các nhóm dò, bám, kéo, đẩy, cuộn, ăn và cử chỉ
 
 ## 7. Thứ tự phát triển và nghiệm thu
 
-1. Tiếp tục đối chiếu thiết kế trước khi dựng các dạng level từ bản vẽ của người dùng, với một bộ năng lực vật lý chung. [Bản vẽ màn 01–04](VENOM_CAMPAIGN_01_10.md) đã đối chiếu: vách 02 kín hai đầu, lời giải xoay hộp/trọng lực ở 04 hợp lệ; 05–09 chờ tư liệu. Đây là campaign mới, chưa phải các scene Journey hiện tại; không tự ghi đè scene trước khi chốt thiết kế và kiến trúc.
+1. Đã đối chiếu đủ [thiết kế 01–09 và Boss 10](VENOM_CAMPAIGN_01_10.md). Xây theo [kiến trúc và từng bước nghiệm thu](VENOM_LEVEL_ARCHITECTURE.md), dùng một bộ năng lực vật lý chung. Giữ source Journey hiện tại để hồi quy và bảo toàn lịch sử save.
 2. Hoàn thiện kỹ năng cần cho các cơ quan đó và khả năng nhớ kỹ năng theo sự kiện. Giữ cách điều khiển chạm chỉ dẫn, kéo xoay.
 3. Sau phần lõi, đề xuất prototype nhà: một phòng, một chỗ nghỉ, một món đồ chơi, một món ăn và vài cử chỉ có thể chọn. Thử vòng mua/sở hữu bằng dữ liệu và tiền thử trong prototype trước khi chọn hệ thanh toán.
 4. Khi tương tác ở nhà có cảm giác tốt, mở rộng đồ vật, món ăn, animation và chốt mô hình kinh tế. Giá, nguồn tiền, tiêu hao, mở khóa hay mua bằng tiền thật hiện là các quyết định còn mở.

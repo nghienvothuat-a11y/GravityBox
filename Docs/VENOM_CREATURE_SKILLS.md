@@ -1,6 +1,6 @@
 # Venom — Tám kỹ năng nền của sinh vật
 
-Ngày: 14/09/2026. Nguồn: concept tám kỹ năng do người dùng đưa ra, trước bước thiết kế chuỗi level mở kỹ năng. Danh sách là hướng thiết kế; các luật chi tiết được ghi là đề xuất, chưa đồng nghĩa đã triển khai hoặc đã cân bằng. Campaign tiếp tục là giải đố thuần, không phân điểm và không nhận buff từ đồ mua ở nhà.
+Ngày concept: 14/09/2026; cập nhật 15/09/2026 theo [mười màn đầu](VENOM_CAMPAIGN_01_10.md). Danh sách là hướng thiết kế; các luật chi tiết được ghi là đề xuất, chưa đồng nghĩa đã triển khai hoặc đã cân bằng. Campaign tiếp tục là giải đố thuần, không phân điểm và không nhận buff từ đồ mua ở nhà. **Luật mới yêu cầu hợp thể trước khi thoát; Boss 10 tự khám phá, không tutorial; thắng mở Collection “Nhà của sinh vật”.**
 
 ## 1. Nguyên tắc chung
 
@@ -18,7 +18,7 @@ Các trạng thái vật lý như rơi, va chạm, võng, biến dạng thụ đ
 | Leo trèo | Chỉ điểm trên mặt có thể bám | Tiếp cận mép, bám, kéo thân qua góc và tiếp tục trên vách/nóc | Xúc tu bám trước, thân/đuôi theo sau; bụng vẫn rủ theo trọng lực thế giới |
 | Biến dạng luồn lách | Chỉ đích qua khe/ống phù hợp | Dò miệng vào, kéo dài/thu tiết diện, giữ liên tục vật chất và hồi hình sau khi qua | Nhìn thấy thân ép mỏng, kéo thành dòng; không đủ khả năng thì dừng/rút ra, không mất vật chất |
 | Đẩy | Chọn vật có thể đẩy và hướng/đích tác động | Chọn vùng tì, bám chống, truyền lực tiếp xúc có giới hạn | Vật dịch chuyển/khớp quay thật; thân ép và căng theo tải; thiếu lực thì tì thử rồi báo |
-| Kéo | Chọn tay nắm/cần gạt/chốt và hướng/đích | Tới điểm bám, quấn/nối tiếp xúc, kéo và nhả theo nhiệm vụ | Xúc tu căng theo lực; vật/chốt phải chuyển động đủ hành trình mới kích hoạt |
+| Kéo | Chọn đồ vật có thể bám/tay nắm/cần gạt/chốt và hướng/đích | Tới điểm bám, quấn/nối tiếp xúc, kéo và nhả theo nhiệm vụ; hộp 07 kéo được khỏi kính để đặt lại | Xúc tu căng theo lực; vật/chốt phải chuyển động đủ hành trình mới kích hoạt |
 | Phân tách | Dẫn cơ thể qua cơ quan cắt, chọn vị trí/cách tiếp cận để phân lượng mô | Liên kết bị cắt khi lưỡi dao thực sự giao với cơ thể; các phần có danh tính/nhiệm vụ riêng | Thấy phần nào đang chọn, khối lượng và việc đang giữ; không sinh/mất vật chất; không tự tách theo nút lệnh |
 | Tụ lại | Dẫn các phần đến gần nhau; có thể dùng gọi về để cùng tới một điểm | Khi mô của các phần đủ gần và thỏa điều kiện kết dính hiện có, tự nhập; không cần lệnh kích hoạt tụ riêng | Có cầu mô/kết dính nhìn thấy; lực tối đa của bản thể hồi theo khối lượng thực đã nhập |
 | Copy vật thể | Chọn vật mẫu hợp lệ, rồi chỉ nơi cần sử dụng | Quan sát/tiếp xúc để học mẫu, biến dạng phần được chọn và thực hiện chức năng hình học phù hợp | Hình mẫu rõ, sinh vật tự trở thành vật thể; không tạo một vật mới độc lập hoặc giả báo mở khóa |
@@ -28,6 +28,8 @@ Giữ nút, chờ cửa, chọn phần và ghi nhớ là hành vi hỗ trợ cá
 ## 3. Ngôn ngữ điều khiển
 
 Giữ chạm để chỉ dẫn và kéo để xoay hộp. Bò, leo và luồn có thể chuyển tiếp theo đường đi sau khi được học. Đẩy/kéo/copy cần ý định rõ khi cùng đồ vật có nhiều cách dùng: đề xuất chạm đồ → hiện các điểm/hành động phù hợp → chọn mục tiêu, không dùng kéo ngón tay vì đã dành cho xoay hộp.
+
+Màn 07 đã chốt cụ thể: chạm hộp để bám, sau đó điểm chạm là đích đưa hộp tới; sinh vật đẩy/kéo theo hướng đó. Sau 3 giây không điều khiển buông hộp về Idle, có thể chọn lại. Đây không phải thời hạn tự bỏ mọi nhiệm vụ; giữ nút ở Boss vẫn bền vững khi đổi phần. Màn 07–08 khóa xoay theo bản vẽ. Màn 08 yêu cầu người chơi căn rơi bắt vành, AI không tự chọn toàn bộ chuỗi hoặc vươn từ nóc thay cú rơi.
 
 Các phần được chọn riêng, phần khác tiếp tục nhiệm vụ. “Điều khiển đồng thời” là nhiều nhiệm vụ cùng tồn tại, không yêu cầu giữ nhiều ngón để lái nhiều phần. AI không tự chọn đi qua dao, tự gọi các phần bỏ nhiệm vụ để tìm nhau hoặc tự copy ngoài ý định. Khi các phần đã đủ gần, tụ là phản ứng kết dính tự động theo điều kiện hiện có, không phải một quyết định mới cần người chơi bấm nút.
 
@@ -66,11 +68,11 @@ Trường hợp chỉ muốn giới thiệu khả năng luồn: dùng khe đủ 
 
 Vị trí dao, đường tới dao và vị trí có thể tụ lại là cấu trúc puzzle. Một màn cần phần nhỏ ở phía sau khe phải cho tiếp cận cơ quan cắt trước khi bị chặn; một màn cần cắt lại sau khi tụ phải có đường tới dao hoặc cơ quan cắt tiếp theo. Không thêm hành động tự tách vô hình để cứu một bố trí thiếu đường giải.
 
-Tách và tụ nên được dạy thành một cặp: cho thấy dao chia cơ thể, rồi chỉ dẫn hai phần về gần để chúng tự kết dính; trước thử thách phân tải đầu tiên phải có cách tập hợp lại để sửa sai. Đề xuất lần đầu hai phần, sau đó mới mở bài phối hợp nhiều phần khi cách chọn/giữ nhiệm vụ đã rõ. Số phần tối đa, khối lượng nhỏ nhất điều khiển được và cách chọn tỷ lệ tách chưa chốt; không cho từng hạt vụn thành một nhân vật cần thao tác riêng.
+Tách và tụ cần có cơ hội trải nghiệm cùng nhau và có đường tập hợp lại để sửa sai. **Boss 10 là nơi người chơi tự khám phá dao, chọn phần, giữ cơ quan và tụ; không chèn hướng dẫn trước hoặc trong Boss để đáp ứng đề xuất tutorial cũ.** Năng lực dùng dao/chọn phần có sẵn để thử dù chưa được ghi vào trí nhớ; ghi nhận sau sự kiện thật. Baseline Boss dùng hai phần; số phần tối đa, khối lượng nhỏ nhất điều khiển được và cách chọn tỷ lệ tách cho các màn sau chưa chốt; không cho từng hạt vụn thành một nhân vật cần thao tác riêng.
 
 Sau tách, lượng vật chất và vị trí thực quyết định lực/khả năng nhận việc. Nhiệm vụ thuộc về hạt/ID vật chất ổn định; cần quy tắc rõ khi chủ thể tách hoặc nhiều chủ thể nhập. Không tự hợp thể nếu làm mất nhiệm vụ giữ cơ quan; người chơi gọi về phải thấy việc nào sẽ được nhả.
 
-Tụ không dịch chuyển các phần qua vật cản. Chỉ những phần có đường về mới tiếp cận được; gặp nhau mới nhập. Không nhập từ xa, không khôi phục phần thất lạc bằng animation và không thắng khi còn phần chưa thoát.
+Tụ không dịch chuyển các phần qua vật cản. Chỉ những phần có đường về mới tiếp cận được; gặp nhau mới nhập. Không nhập từ xa hoặc khôi phục phần thất lạc bằng animation. **Tất cả phần phải nhập thành một cơ thể bên trong trước khi qua cửa thoát cuối**; bất kỳ phần nào ra trước khi nhập hết thì thua và hiện “bạn phải hợp thể trước khi chui ra”. Nhập ngoài hộp không cứu được lần thua. Một cơ thể chảy qua ống liên tục không phải phân tách, ống chuyển khoang không phải cửa cuối. Xem [hợp đồng kết thúc](VENOM_LEVEL_ARCHITECTURE.md).
 
 ## 7. Copy vật thể: biến thành hình dạng có công dụng
 
@@ -89,9 +91,9 @@ Về triển khai, cần thư viện mẫu do thiết kế khai báo và bộ ch
 
 ## 8. Cách mở kỹ năng và tăng độ khó
 
-Người dùng đã [chốt 10 màn đầu là chương làm quen](VENOM_CAMPAIGN_01_10.md) và chọn màn 10 từ màn 4 hiện tại. Bản vẽ 01–04 đã đối chiếu: bò → leo → xoay để chọn đúng mặt → chọn đường tránh trơn hoặc tận dụng trọng lực. Chưa gán số level cho các kỹ năng còn lại; màn 05–09 chờ thiết kế gốc. Thứ tự dạy tiếp theo chỉ là tham khảo: luồn khe không yêu cầu chia → đẩy/kéo đơn giản → phân tách và tụ lại cùng một bài an toàn → luồn có giới hạn lượng vật chất và phối hợp → copy → tổng hợp. Có thể đổi theo bản vẽ; không dựng màn cần một kỹ năng chưa có cơ hội học.
+Người dùng đã chốt [01–09 làm quen, 10 là Boss](VENOM_CAMPAIGN_01_10.md), đã nhận đủ bản vẽ. Chuỗi: bò → leo → xoay chọn mặt → vùng trơn → tận dụng trượt → vỏ cầu trơn → đẩy/kéo làm bậc → rơi bắt vành/chảy qua ống → nắp rơi theo trọng lực → Boss dao/hai phần/A–B/hợp thể. Boss lấy cơ quan Journey04 cũ nhưng sửa luật thoát. Copy và giới hạn khối lượng qua khoang chưa có màn trong chuỗi này, giữ cho các thiết kế sau.
 
-Mỗi kỹ năng có nhịp: thử đơn lẻ với đường ra rõ → luyện trong bố trí khác → kết hợp một kỹ năng quen → tình huống đổi vai/thứ tự → ôn nhẹ. Boss mỗi mốc 10 dùng các kỹ năng đã được giới thiệu; không mặc định boss đầu phải dùng đủ tám kỹ năng. Độ khó đo bằng số quyết định có hệ quả, số nhiệm vụ cùng giữ, phụ thuộc thứ tự, phương án phục hồi và độ rõ tín hiệu, không chỉ đếm kỹ năng hoặc kéo dài đường đi.
+Nhịp làm quen tham khảo: thử đơn lẻ → luyện trong bố trí khác → kết hợp → đổi vai/thứ tự → ôn nhẹ. Quyết định cụ thể của người dùng cho Boss 10 có ưu tiên: **thử thách mới, khó và không hướng dẫn**, không buộc giới thiệu dao trước đó. Không ép Boss dùng đủ tám kỹ năng. Độ khó đo bằng quyết định có hệ quả, nhiệm vụ cùng giữ, phụ thuộc thứ tự, khả năng phục hồi và độ rõ tín hiệu; kiểm chứng bằng lượt chơi thật, không chỉ đếm kỹ năng hoặc kéo dài đường đi.
 
 Các chuỗi minh họa, cần dựng hình học và kiểm chứng trước khi coi là level:
 
@@ -104,7 +106,7 @@ Chuỗi cuối phải có bước giải phóng phần đang làm chìa; nếu b
 
 ## 9. Kiến trúc và phạm vi hiện tại
 
-Đề xuất mỗi kỹ năng là bộ thực thi gồm điều kiện bắt đầu, bước tiếp cận, trạng thái đang làm, kiểm tra kết quả, điều kiện bị chặn và hủy. Dữ liệu cơ quan cung cấp điểm bám/tì, hướng tác động, ngưỡng vật lý, vùng hình học và các tác động puzzle. Ý định của người chơi, bộ thực thi, mô phỏng và biểu diễn có trách nhiệm riêng; animation không tự thay trạng thái cơ quan.
+Xem [kiến trúc level và kế hoạch triển khai](VENOM_LEVEL_ARCHITECTURE.md). Mỗi kỹ năng là bộ thực thi gồm điều kiện bắt đầu, bước tiếp cận, trạng thái đang làm, kiểm tra kết quả, điều kiện bị chặn và hủy. Dữ liệu cơ quan cung cấp điểm bám/tì, hướng tác động, ngưỡng vật lý, vùng hình học và các tác động puzzle. Ý định của người chơi, bộ thực thi, mô phỏng và biểu diễn có trách nhiệm riêng; animation không tự thay trạng thái cơ quan.
 
 Kiến thức được ghi qua sự kiện thực hiện thật. Level khai báo tập kỹ năng đã học/cần dạy; không dùng level number để rải logic cho từng cơ quan. Các trạng thái chỉ có một phần đang chọn nhưng nhiều phần đang thực hiện phải được HUD thể hiện nhất quán.
 

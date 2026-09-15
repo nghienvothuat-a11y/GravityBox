@@ -18,7 +18,7 @@ Mở `Builds/Venom/macOS/Venom.app`. **1–5** chọn bài, **R** thử lại, *
 
 [Concept tám kỹ năng nền](Docs/VENOM_CREATURE_SKILLS.md): bò, leo, luồn, đẩy, kéo, phân tách, tụ lại và copy vật thể. Level sẽ dạy từng kỹ năng rồi tăng độ khó bằng phối hợp; luật chi tiết và phần chưa triển khai được ghi riêng.
 
-[Chương mở đầu 01–10](Docs/VENOM_CAMPAIGN_01_10.md): đã đối chiếu 01 Bò đi, 02 Leo đi, 03 Xoay đi, 04 Trơn đấy; vách 02 kín hai đầu, lời giải xoay hộp/lợi dụng trọng lực ở 04 được công nhận. Màn 05–09 chờ bản vẽ; màn 10 sẽ lấy màn 4 hiện tại làm bài phối hợp. Bản chơi mặc định vẫn là năm Journey hiện tại.
+[Thiết kế campaign 01–10](Docs/VENOM_CAMPAIGN_01_10.md) đã đối chiếu đủ bản vẽ 01–09. Màn 07 đẩy/kéo theo điểm chạm, buông sau 3 giây không điều khiển; 08 rơi bắt vành rồi chảy qua ống. **Luật mới yêu cầu hợp thể trước khi thoát; một phần ra trước thì thua. Boss 10 không tutorial và thắng mở Collection “Nhà của sinh vật”.** [Kiến trúc xây level và kế hoạch nghiệm thu](Docs/VENOM_LEVEL_ARCHITECTURE.md) đã được đề xuất. Đây là thiết kế chưa triển khai: bản macOS vẫn là năm Journey và còn cho các phần thoát lần lượt như mô tả phía trên.
 
 Build: `bash Tools/build-venom.sh`. Các scene mới nằm ở `Assets/_Game/Venom/VenomJourney01.unity` đến `VenomJourney05.unity`. Kỹ năng và bài đã hoàn thành được nhớ giữa các lần mở app; retry chỉ reset cơ quan và nhiệm vụ. AI hiện học theo sự kiện và phản hồi theo ngữ cảnh, chưa triển khai toàn bộ hệ cảm xúc của thiết kế dài hạn.
 

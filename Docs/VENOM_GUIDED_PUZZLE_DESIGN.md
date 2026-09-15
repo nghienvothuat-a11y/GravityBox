@@ -2,6 +2,8 @@
 
 Ngày thiết kế gốc: 10/09/2026. Cập nhật hướng sản phẩm: 14/09/2026. Năm màn Journey đã có bản chơi; các hệ dài hạn bên dưới chưa triển khai đầy đủ.
 
+**Quyết định mới 15/09 có ưu tiên:** [thiết kế 01–10](VENOM_CAMPAIGN_01_10.md) đã đối chiếu đủ bản vẽ. Hợp thể trước cửa cuối, một phần ra sớm thì thua. Boss 10 là thử thách mới tự khám phá, **không tutorial hoặc hướng dẫn bù**, thắng mở Collection “Nhà của sinh vật”. Đề xuất cũ “Boss chỉ dùng kỹ năng đã dạy/không luật mới” bên dưới đã được thay cho Boss 10. [Kiến trúc triển khai](VENOM_LEVEL_ARCHITECTURE.md) là bản đề xuất hiện hành; chưa đổi runtime năm Journey.
+
 Người dùng đã chốt [giải đố thuần và ngôi nhà cho sinh vật](VENOM_PURE_PUZZLE_AND_HOME.md): học kỹ năng qua màn, không phân điểm; mua đồ vật, đồ ăn và animation để tương tác ở nhà. Nội dung nhà không tăng khả năng giải đố. [Đề xuất chỉ số ngày 11/09](VENOM_STATS_LEVEL_DESIGN.md) giữ làm lịch sử; chuỗi 06–10 thử nâng chỉ số đã ngừng chọn. Xem [trạng thái năm màn đang chạy](VENOM_JOURNEY_01_05.md).
 
 ## 1. Trải nghiệm cần tạo ra

@@ -2,6 +2,8 @@
 
 Ngày: 10/09/2026. Campaign thử nghiệm riêng, sử dụng một cách điều khiển xuyên suốt: chạm để hướng dẫn, kéo để xoay hộp. Các scene thử nghiệm điều khiển cũ được giữ lại.
 
+**Phạm vi tài liệu:** mô tả bản chơi năm Journey hiện tại. [Thiết kế campaign mới ngày 15/09](VENOM_CAMPAIGN_01_10.md) đã thay luật: phải hợp thể trước khi thoát, Boss 10 không tutorial và thắng mở Collection. Các thay đổi đó chưa có trong code/build được mô tả ở đây; đường giải ra từng phần bên dưới chỉ là hành vi prototype cũ, không phải yêu cầu nghiệm thu campaign mới.
+
 ## Chơi trên macOS
 
 Mở `Builds/Venom/macOS/Venom.app`. Phím 1–5 hoặc hàng nút đầu màn chọn bài. R thử lại; P/Esc tạm dừng; Z phóng gần và theo sinh vật. Sau khi toàn bộ 32 hạt thoát thật qua lỗ, camera tiến gần và theo sinh vật ăn mừng 4,8 giây rồi sang bài tiếp theo. Bài 5 kết thúc chuỗi thử nghiệm.

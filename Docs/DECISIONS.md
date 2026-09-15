@@ -1,16 +1,26 @@
 # Các quyết định kiến trúc
 
-**Nhánh Venom hiện tại:** xem ADR V001–V004 và [năm màn Journey đang chạy](VENOM_JOURNEY_01_05.md). Các ADR số 001–026 bên dưới ghi lịch sử prototype bi thép, trong đó ADR 026 đưa tổng số màn bi thép lên 23; không phải trạng thái campaign Venom.
+**Nhánh Venom hiện tại:** xem ADR V001–V005 và [năm màn Journey đang chạy](VENOM_JOURNEY_01_05.md). Các ADR số 001–026 bên dưới ghi lịch sử prototype bi thép, trong đó ADR 026 đưa tổng số màn bi thép lên 23; không phải trạng thái campaign Venom.
+
+## ADR V005 — Đẩy/kéo, rơi bắt vành, hợp thể trước thoát và Boss mở nhà
+
+Ngày 15/09/2026, nhận đủ bản vẽ 05–09. Người dùng xác nhận màn 07: chạm đích khi đang bám hộp để đẩy/kéo tới đó, kéo được khỏi kính, sau 3 giây không điều khiển buông về Idle. Màn 08: leo nóc, rơi khi tới vật liệu trơn, căn rơi vào vành bám rồi chảy qua ống như dòng nước; thay cách hiểu vươn từ nóc sang vành. Màn 07–08 khóa xoay theo bản vẽ.
+
+Luật Venom đổi thành **hợp thể toàn bộ bên trong trước khi thoát qua lỗ cuối**. Một phần ra trước thì thua, hiện nguyên văn “bạn phải hợp thể trước khi chui ra”. Không coi việc đầu–đuôi một cơ thể lần lượt qua cửa là tách, không tính ống nối khoang là cửa cuối. Luật mới thay việc cho nhiều phần thoát lần lượt trong prototype hiện tại.
+
+**Màn 10 là Boss khó, không tutorial/hướng dẫn bù**, người chơi tự khám phá cả các thử thách mới. Giữ nguồn cơ quan Journey04, cửa A/B phải chốt mở để người chơi có thể nhả nút, hợp thể rồi thoát. Sau thắng mở Collection **“Nhà của sinh vật”**, thay đề xuất cho nhà ngay từ đầu. Quyền mở phải bền vững, không cấp từ lần thua/replay/debug hoặc chiến thắng Journey04 cũ.
+
+[Thiết kế 01–10](VENOM_CAMPAIGN_01_10.md) là nguồn gameplay hiện hành; [kiến trúc đề xuất](VENOM_LEVEL_ARCHITECTURE.md) đối chiếu code, cách authoring, kết thúc, save và thứ tự kiểm chứng. Chưa sửa runtime, scene, save hay build trong lần ghi quyết định này. Yêu cầu không tutorial ở Boss có ưu tiên so với đề xuất cũ dạy mọi kỹ năng trước Boss.
 
 ## ADR V004 — Bốn bài mở đầu và lời giải bằng trọng lực
 
 Ngày 15/09/2026, đã đối chiếu bản vẽ campaign mới: **01 Bò đi, 02 Leo đi, 03 Xoay đi, 04 Trơn đấy**. Người dùng xác nhận **vách thấp màn 02 bịt kín hai đầu tới thành hộp** và **xoay hộp lợi dụng trọng lực để vượt vùng trơn hoặc rơi vào lỗ ở màn 04 là một tính năng hợp lệ**.
 
-Công nhận lời giải khác dự kiến khi tuân thủ luật vật lý/cơ quan và toàn bộ sinh vật thoát thật qua lỗ; không buộc đi đúng đường mẫu. Màn 04 mới dạy tự chọn đường qua vật liệu: chạm thẳng có thể làm sinh vật trượt, AI không tự giải hộ đường vòng. Chi tiết bố cục, phản hồi chạm và tiêu chí nghiệm thu nằm trong [thiết kế 01–04](VENOM_CAMPAIGN_01_10.md#thiết-kế-đã-đối-chiếu-của-màn-0104). Chưa dựng scene mới; 05–09 vẫn chờ bản vẽ.
+Công nhận lời giải khác dự kiến khi tuân thủ luật vật lý/cơ quan và toàn bộ sinh vật thoát thật qua lỗ; không buộc đi đúng đường mẫu. Màn 04 mới dạy tự chọn đường qua vật liệu: chạm thẳng có thể làm sinh vật trượt, AI không tự giải hộ đường vòng. Chi tiết bố cục, phản hồi chạm và tiêu chí nghiệm thu nằm trong [thiết kế 01–04](VENOM_CAMPAIGN_01_10.md#thiết-kế-đã-đối-chiếu-của-màn-0104). Tại thời điểm quyết định này còn chờ 05–09; ADR V005 bổ sung đủ bản vẽ và luật thoát mới. Chưa dựng scene campaign mới.
 
 ## ADR V003 — Mười màn đầu làm quen, màn 10 lấy màn 4 hiện tại
 
-Ngày 15/09/2026, người dùng chốt 10 màn đầu là chương mở đầu để nhận biết khả năng của sinh vật. Người dùng đã thiết kế chín màn đầu; màn 10 dùng màn 4 hiện tại. [Bảng đối chiếu](VENOM_CAMPAIGN_01_10.md) hiện ghi bản vẽ 01–04 đã xem, 05–09 còn chờ tư liệu và giả định nguồn 10 là `VenomJourney04` đang chơi mặc định, chờ xác nhận vì dự án còn màn lab `Venom04` khác. Không renumber scene/save trước khi chốt nguồn và xem đủ chín thiết kế.
+Ngày 15/09/2026, người dùng chốt 10 màn đầu là chương mở đầu để nhận biết khả năng của sinh vật, màn 10 dùng màn 4 hiện tại. Quyết định tiếp theo ADR V005 làm rõ 01–09 làm quen, 10 là Boss khó không tutorial; đã nhận đủ bản vẽ và lấy cơ quan `VenomJourney04` làm nguồn. Không chỉ đổi số scene/save; [kiến trúc](VENOM_LEVEL_ARCHITECTURE.md) tách ID mới và bảo toàn lịch sử prototype.
 
 ## ADR V002 — Tám kỹ năng và phân tách bằng cơ quan cắt
 
