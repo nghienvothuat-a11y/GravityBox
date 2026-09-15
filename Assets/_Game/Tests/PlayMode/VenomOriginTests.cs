@@ -142,6 +142,7 @@ namespace GravityBox.Tests
         {
             yield return Load(7);yield return null;game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Props[0].Body.position));
             yield return Until(15,()=>game.Attached);Assert.IsTrue(game.Attached,State);
+            Capture("07-attached");
         }
         [UnityTest] public IEnumerator FourthLessonRoutesAroundSlipperyPatch()
         {
@@ -264,21 +265,34 @@ namespace GravityBox.Tests
             yield return Until(15,()=>game.Attached);Assert.IsTrue(game.Attached,"Attach: "+State);
             Vector3 origin=prop.Body.position;game.SetPropTarget(origin+Vector3.right*.16f);yield return Until(2,()=>false);
             Assert.Greater(prop.Body.position.x,origin.x+.01f,"Push: "+State);
+            Capture("07-pushing");
             Vector3 pushed=prop.Body.position;game.SetPropTarget(pushed-Vector3.right*.12f);yield return Until(2,()=>false);
             Assert.Less(prop.Body.position.x,pushed.x-.01f,"Pull: "+State);
+            Capture("07-pulling");
             yield return Until(1.2f,()=>!game.Attached);Assert.IsFalse(game.Attached,"Must release after three seconds");
         }
         [UnityTest] public IEnumerator SeventhLessonNeedsStepAndClimbsAfterPlacement()
         {
             yield return Load(7);AimExit();yield return Until(12,()=>game.Owner.Completed);Assert.IsFalse(game.Owner.Completed,"The plain wall must not bypass the box puzzle");
-            game.ResetLevel();Steps(60);game.SelectProp(game.Props[0]);yield return Until(15,()=>game.Attached);Assert.IsTrue(game.Attached,State);
+            game.ResetLevel();Steps(60);game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Props[0].Body.position));yield return Until(15,()=>game.Attached);Assert.IsTrue(game.Attached,State);
+            bool climbed=false,exiting=false;
+            bool ObserveClimbAndExit()
+            {
+                if(!climbed&&!game.Attached&&game.Motion.Centre(0).y>-.15f)
+                {climbed=true;Capture("07-climbing-step");}
+                if(!exiting&&game.Matter.EscapedCount>0)
+                {exiting=true;Capture("07-through-hole");}
+                return game.Owner.Completed;
+            }
             for(int i=0;i<6&&!game.Owner.Completed;i++)
             {
-                if(!game.Attached&&game.Motion.Get(0)==null){game.SelectProp(game.Props[0]);yield return Until(8,()=>game.Attached);}
-                if(game.Attached)game.SetPropTarget(new Vector3(.3f,-.21f,0));
-                yield return Until(2.4f,()=>game.Owner.Completed);
+                if(!game.Attached&&game.Motion.Get(0)==null){game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Props[0].Body.position));yield return Until(8,()=>game.Attached);}
+                // Point to visible wall above the crate; the push target ignores
+                // height. A low target would be hidden behind the crate itself.
+                if(game.Attached)game.TouchPoint(game.Owner.View.WorldToScreenPoint(new Vector3(.3f,-.025f,0)));
+                yield return Until(2.4f,ObserveClimbAndExit);
             }
-            Capture("07-step-placed");yield return Until(25,()=>game.Owner.Completed);Assert.IsTrue(game.Owner.Completed,State+$" prop={game.Props[0].Body.position}, tilt={game.Props[0].Body.rotation.eulerAngles}");
+            Capture("07-step-placed");yield return Until(25,ObserveClimbAndExit);Assert.IsTrue(game.Owner.Completed,State+$" prop={game.Props[0].Body.position}, tilt={game.Props[0].Body.rotation.eulerAngles}");
         }
         [UnityTest] public IEnumerator SeventhLessonCanPullBoxAwayFromGlass()
         {
