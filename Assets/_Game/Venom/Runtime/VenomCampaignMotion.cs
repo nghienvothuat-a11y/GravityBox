@@ -26,10 +26,18 @@ namespace GravityBox.Venom
         // Sustained excess load peels the footprint before it can reattach.
         private const float GripAccelerationLimit=36f;
         private readonly float[] gripStrain=new float[32], detachedUntil=new float[32];
+        private readonly HashSet<VenomSurfacePatch>[] detachedSurfaces=new HashSet<VenomSurfacePatch>[32];
+        private sealed class RingCatch
+        {
+            public VenomSurfacePatch Surface;
+            public Vector3 LocalPoint,LocalTarget;
+            public float Until;
+        }
+        private readonly RingCatch[] ringCatches=new RingCatch[32];
         public int Selected;
         public int RouteCount=>nodes.Count;
         public VenomCampaignMotion(VenomCampaign owner){game=owner;}
-        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);System.Array.Clear(gripStrain,0,32);System.Array.Clear(detachedUntil,0,32);Selected=0;BuildGraph();}
+        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);System.Array.Clear(gripStrain,0,32);System.Array.Clear(detachedUntil,0,32);System.Array.Clear(detachedSurfaces,0,32);System.Array.Clear(ringCatches,0,32);Selected=0;BuildGraph();}
         public Vector3 Centre(int anchor)
         {
             Vector3 c=Vector3.zero;int count=0;int group=game.Matter.Groups[anchor];
@@ -49,7 +57,36 @@ namespace GravityBox.Venom
             var patch=support[particle];collider=patch!=null?patch.Shape:null;point=contact[particle];normal=patch!=null?patch.Normal:Vector3.up;
             return patch!=null && !game.Matter.Escaped[particle];
         }
-        public bool HasGrip(int particle)=>support[particle]!=null&&game.Matter.SimulationTime>=detachedUntil[particle]&&support[particle].Grip(contact[particle]);
+        public bool HasGrip(int particle)=>support[particle]!=null&&support[particle].Grip(contact[particle])&&
+            (game.Matter.SimulationTime>=detachedUntil[particle]||detachedSurfaces[particle]==null||!detachedSurfaces[particle].Contains(support[particle]));
+        public bool TryCatchPoint(int anchor,out Vector3 point)
+        {
+            var caught=ringCatches[anchor];point=Vector3.zero;
+            if(caught==null||game.InTube||game.Matter.SimulationTime>=caught.Until)return false;
+            point=caught.Surface.transform.TransformPoint(caught.LocalPoint);return true;
+        }
+        private void SetCatch(int anchor,RingCatch caught)
+        {for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[anchor])ringCatches[i]=caught;}
+        private RingCatch CatchRing(int anchor,Vector3 centre,Vector3 velocity)
+        {
+            var caught=ringCatches[anchor];var ring=game.Tube!=null?game.Tube.Entrance:null;
+            if(caught!=null&&(game.InTube||game.Matter.SimulationTime>=caught.Until||
+                !caught.Surface.isActiveAndEnabled||Vector3.Distance(centre,caught.Surface.transform.TransformPoint(caught.LocalPoint))>.15f))
+            {SetCatch(anchor,null);caught=null;}
+            if(caught!=null||game.InTube||ring==null||Vector3.Dot(velocity,Vector3.down)<.25f)return caught;
+            int count=0;Vector3 point=Vector3.zero;
+            for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[anchor]&&HasGrip(i)&&support[i]==ring)
+            {count++;point+=contact[i];}
+            // Only two real skin contacts can start this short active grasp.
+            // The stored anchor has a finite reach and never catches a remote fall.
+            if(count<2)return null;
+            Vector3 local=ring.transform.InverseTransformPoint(ring.Closest(point/count));
+            Vector2 radial=new Vector2(local.x,local.y)-ring.HoleCentre;
+            float radius=Mathf.Lerp(ring.HoleRadius,ring.GripRadius,.5f);
+            Vector2 footprint=ring.HoleCentre+(radial.sqrMagnitude>.000001f?radial.normalized:Vector2.up)*radius;
+            caught=new RingCatch{Surface=ring,LocalPoint=local,LocalTarget=new Vector3(footprint.x,footprint.y,.022f),Until=game.Matter.SimulationTime+.55f};
+            SetCatch(anchor,caught);Cancel(anchor);return caught;
+        }
         public void BuildGraph()
         {
             Physics.SyncTransforms();
@@ -76,6 +113,7 @@ namespace GravityBox.Venom
         public void Move(int anchor,Vector3 world,bool hold=false,bool exit=false)
         {
             if(game.Props.Length>0)BuildGraph();
+            SetCatch(anchor,null);
             Cancel(anchor);
             var o=new Order{Anchor=anchor,Target=game.Root.InverseTransformPoint(world),Holding=hold,Exit=exit};
             int grips=0;for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[anchor]&&HasGrip(i))grips++;
@@ -136,22 +174,31 @@ namespace GravityBox.Venom
             {
                 if(game.Matter.Escaped[a]||!seen.Add(game.Matter.Groups[a]))continue;
                 Vector3 centre=Centre(a);Order o=Get(a);Vector3 target=centre;
-                int grips=0;float mass=0,contactMass=0,gripMass=0,strain=0;
+                int grips=0;float mass=0,contactMass=0,gripMass=0,strain=0;Vector3 momentum=Vector3.zero;
                 for(int i=0;i<32;i++)
                 {
                     if(game.Matter.Groups[i]!=game.Matter.Groups[a]||game.Matter.Escaped[i])continue;
                     mass+=game.Matter.Bodies[i].mass;strain=Mathf.Max(strain,gripStrain[i]);
+                    momentum+=game.Matter.Bodies[i].linearVelocity*game.Matter.Bodies[i].mass;
                     if(support[i]!=null)contactMass+=game.Matter.Bodies[i].mass;
                     if(HasGrip(i)){grips++;gripMass+=game.Matter.Bodies[i].mass;}
                 }
                 float capacity=mass*GripAccelerationLimit*gripMass/Mathf.Max(contactMass,.0001f);
+                var caught=CatchRing(a,centre,momentum/Mathf.Max(mass,.0001f));o=Get(a);
+                if(caught!=null){capacity=mass*GripAccelerationLimit;strain=0;}
                 float weight=mass*9.81f;
                 strain=grips>=2&&capacity<weight?strain+dt*8*(weight-capacity)/weight:Mathf.Max(0,strain-dt*.25f);
                 bool peeled=strain>.14f&&!game.InTube;
+                HashSet<VenomSurfacePatch> released=null;
+                if(peeled)
+                {
+                    released=new HashSet<VenomSurfacePatch>();
+                    for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[a]&&HasGrip(i))released.Add(support[i]);
+                }
                 for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[a])
                 {
                     gripStrain[i]=peeled?0:strain;
-                    if(peeled)detachedUntil[i]=game.Matter.SimulationTime+.45f;
+                    if(peeled){detachedUntil[i]=game.Matter.SimulationTime+.45f;detachedSurfaces[i]=released;}
                 }
                 if(peeled){Cancel(a);o=null;grips=0;capacity=0;}
                 if(o!=null)
@@ -165,10 +212,11 @@ namespace GravityBox.Venom
                     target=game.Root.TransformPoint(o.Path[o.Cursor]);
                     if(Vector3.Distance(centre,game.Root.TransformPoint(o.Target))<.023f&&!o.Holding&&!o.Exit){Cancel(a);o=null;}
                 }
-                bool anchored=grips>=2&&(!game.Definition.Passive||game.Home)&&!game.InTube;
+                bool anchored=(grips>=2||caught!=null)&&(!game.Definition.Passive||game.Home)&&!game.InTube;
                 Vector3 delta=target-centre;
                 Vector3 desired=o!=null?delta.normalized*.105f:Vector3.zero;
                 if(o!=null&&o.Cursor==o.Path.Count-1)desired=Vector3.ClampMagnitude(delta*4,.105f);
+                if(caught!=null)desired=Vector3.ClampMagnitude((caught.Surface.transform.TransformPoint(caught.LocalTarget)-centre)*6,.35f);
                 for(int i=0;i<32;i++)
                 {
                     if(game.Matter.Groups[i]!=game.Matter.Groups[a]||game.Matter.Escaped[i])continue;
@@ -182,7 +230,7 @@ namespace GravityBox.Venom
                     Vector3 relative=body.linearVelocity-game.Owner.Rotation.GetComponent<Rigidbody>().GetPointVelocity(body.position);
                     Vector3 acceleration=Vector3.up*9.81f;
                     bool manipulating=game.Attached&&game.Matter.Groups[a]==game.Matter.Groups[Selected];
-                    if(!manipulating)acceleration+=Vector3.ClampMagnitude((desired-relative)*26,5);
+                    if(!manipulating)acceleration+=Vector3.ClampMagnitude((desired-relative)*(caught!=null?35:26),caught!=null?18:5);
                     acceleration=Vector3.ClampMagnitude(acceleration,capacity/Mathf.Max(mass,.0001f));
                     intent[i]=desired/.105f;
                     if(HasGrip(i))

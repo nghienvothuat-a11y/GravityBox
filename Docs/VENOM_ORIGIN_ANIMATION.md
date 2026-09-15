@@ -15,7 +15,7 @@ Ngày 15/09/2026. Nghiên cứu và triển khai cho mười màn theo bản v�
 | Bò | Khối thân đi trước, nếp mô truyền dọc thân; xúc tu dò, bám, kéo rồi nhả không đồng nhịp | Vận tốc tương đối với mặt đỡ, ý định đi, điểm tiếp xúc |
 | Leo | Chuyển hướng qua mép, giữ các điểm tì; phần bụng rủ theo hướng đất | Normal mặt bám, gravity thế giới và hướng đi |
 | Trượt / rơi | Không chạy chân giả trên vật trơn; khi dấu chân còn lại không chịu nổi tải, nhả chân, thân kéo nhẹ theo vận tốc, xúc tu tìm bám ngắn rồi rút | Tỷ lệ dấu chân bám, quá tải bám, vận tốc, contact |
-| Bắt vành / đáp đất | Nén thân ngắn, hồi lại; chân bám xuất hiện sau khi tiếp xúc | Chuyển từ không bám sang có bám và biến thiên vận tốc |
+| Bắt vành / đáp đất | Nén thân ngắn, hồi lại; hai xúc tu giữ điểm đã chạm trên vành trong pha hãm, sau đó chuyển sang tư thế bám nghỉ | Tiếp xúc da thật với vành, trạng thái bắt rơi hữu hạn và biến thiên vận tốc |
 | Đẩy | Thân nén theo hướng tác động, hai xúc tu tì vào hộp; các chân sau chống | Điểm tiếp xúc hộp, lực và đích đang kéo/đẩy |
 | Kéo | Thân dài hơn giữa chỗ bám và hộp, xúc tu căng; nhả khi hết thời hạn | Điểm bám đi cùng Rigidbody của hộp, tác vụ kéo |
 | Chui ống | Các hạt mô tiến qua lòng ống, skin thu tiết diện, gợn dọc dòng; đuôi theo sau, thu lại ở đầu ra | Vị trí/vận tốc hạt thực, trạng thái luồn; không thay sinh vật bằng VFX giả |

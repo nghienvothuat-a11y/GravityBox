@@ -23,7 +23,7 @@ Bản thử nghiệm macOS ngày 15/09/2026. Chạy `Builds/Venom/macOS/Venom.ap
 | 05 | Lật nóc trơn xuống; nghiêng nhẹ và điều chỉnh để sinh vật trượt tới lỗ. Chạm không tạo lực bò trên vật liệu trơn |
 | 06 | Sinh vật chỉ trượt/dao động; người chơi đưa lỗ tới nó bằng xoay vỏ cầu |
 | 07 | Chạm hộp nhựa để bám, chạm đích để đẩy/kéo. Đẩy kịch kính vẫn kéo ra được. 3 giây không lệnh mới thì buông; pause không ăn thời hạn. Khi đặt đúng bậc dưới vùng bám, sinh vật tiếp nối leo lên và đi tới lỗ |
-| 08 | Chỉ lên phần nóc còn bám được, hướng tới mép có vật liệu trơn, căn cú rơi vào vành. Lệnh tới miệng ống được giữ tới lúc bắt vành. Quan sát dòng mô xuyên ống, đuôi đi hết, rồi tụ hình trong khoang bên kia |
+| 08 | Chỉ lên phần nóc còn bám được, hướng tới mép có vật liệu trơn, căn cú rơi vào vành. Sinh vật bắt vành, hãm lại và chờ chỉ vào ống; nếu đã có lệnh chui ống thì giữ lệnh tới khi ổn định. Không cần chạm lần hai đúng khoảnh khắc đang rơi. Quan sát dòng mô xuyên ống, đuôi đi hết, rồi tụ hình trong khoang bên kia |
 | 09 | Nắp trong suốt rơi, va chạm và nằm lại trong hộp. Không biến mất theo góc xoay |
 | 10 | Boss không có dòng tutorial hoặc lời giải trong HUD. Kiểm chứng sự phối hợp và luật hợp thể mới |
 
@@ -41,7 +41,8 @@ Sau thắng, camera gần, cảnh bị ẩn, sinh vật chọn một trong ba đ
 
 - 32 phần tử Rigidbody, mỗi phần 3 g, tổng 96 g, bán kính collider 9 mm. Bước mô phỏng 1/120 giây. Project tắt `Physics.gravity`; runtime áp gia tốc 9,81 m/s² riêng cho mô, đồ vật rời và dao trong pha rơi để không tính trọng lực hai lần. Liên kết mềm, tính dẻo và thay đổi láng giềng tạo khả năng chảy; chỉ cơ quan cắt làm tách cơ thể.
 - Bộ vận động chủ động truyền lực qua các điểm bám của cùng cơ thể. Mất bám thì rơi theo trọng lực; vật trơn không nhận lực bò. Vành bắt dùng vùng tiếp xúc của lớp da mềm quanh các phần tử, tối đa 21 mm từ tâm hạt, không kéo từ nóc cách miệng hàng chục centimet.
-- Khi cơ thể đi từ kính thường vào vùng trơn, lực giữ giảm theo tỷ lệ dấu chân còn bám: `F_max = khối lượng × 36 m/s² × tỷ lệ bám`. Các hạt nằm trong thân hoặc đang ở trong không khí không bị tính nhầm thành chân mất bám. Đây là tham số mô mềm của prototype, chưa phải số đo sinh học. Nếu lực giữ không đủ chịu trọng lượng trong một khoảng ngắn, các chân còn lại tuột ra, lệnh leo bị ngắt và có 0,45 giây nhả bám để tránh móc lại ngay cùng mép. Người chơi có thể chỉ đường vòng mới sau cú trượt; không mất mô và không phải reset màn.
+- Khi cơ thể đi từ kính thường vào vùng trơn, lực giữ giảm theo tỷ lệ dấu chân còn bám: `F_max = khối lượng × 36 m/s² × tỷ lệ bám`. Các hạt nằm trong thân hoặc đang ở trong không khí không bị tính nhầm thành chân mất bám. Đây là tham số mô mềm của prototype, chưa phải số đo sinh học. Nếu lực giữ không đủ chịu trọng lượng trong một khoảng ngắn, các chân còn lại tuột ra, lệnh leo bị ngắt và có 0,45 giây nhả bám **chỉ trên những mặt vừa tuột** để tránh móc lại ngay cùng mép. Chạm một mặt bám mới có thể bám ngay; không khóa toàn cơ thể trong lúc đang rơi.
+- Vành ống có phản xạ bắt rơi sau ít nhất hai điểm tiếp xúc da thực. Pha giữ điểm bám và hãm kéo dài tối đa 0,55 giây, giới hạn tầm với 0,15 m từ điểm đã chạm và giữ giới hạn lực vận động hiện có. Hai xúc tu biểu diễn chỗ bám trong lúc hãm, HUD hiện “Bám vành ống”. Sau khi ổn định, lực bám thường tiếp quản; luồng chui ống chỉ tiếp quản khi tốc độ đã giảm. Không mở rộng vùng bắt từ xa hoặc teleport sinh vật.
 - Hộp đẩy có khối lượng 180 g và trọng tâm hạ trong phần đế để giảm lật. Nó vẫn có chuyển động, quay, trọng lực và va chạm tự do. Khi thao tác, điểm tì đi theo pose vật lý của hộp; lực phản ứng được truyền về sinh vật.
 - Animation đọc điểm bám, ý định, vận tốc, lực tương tác và trạng thái cắt/luồn/tụ. Skin có thêm độ rủ, nén khi tiếp đất, xúc tu chống khi đẩy và căng khi kéo; các phần này không sửa khối lượng hay tự mở cơ quan.
 - [Ma trận animation và nguồn nghiên cứu](VENOM_ORIGIN_ANIMATION.md).
@@ -58,10 +59,11 @@ Kết quả chạy Origin riêng được lưu ở `Artifacts/Venom01/origin-tes
 
 ## Kết quả kiểm tra 15/09/2026
 
-- Hồi quy: **88/88 test đạt**, gồm 20 test Origin và 68 test Venom cũ; kết thúc 2026-09-15 10:28:36Z. Test mới xác nhận bám ổn định trên kính thường, leo từ dưới vào dải trơn thì rơi, không tách mô và vẫn qua màn khi nhận đường vòng mới.
+- Hồi quy: **90/90 test đạt**, gồm 22 test Origin và 68 test Venom cũ; kết thúc 2026-09-15 10:52:33Z. Màn 04 vẫn tuột khỏi vùng trơn và qua được bằng đường vòng. Màn 08 được kiểm tra rơi trước khi có lệnh chui ống tại chính giữa và lệch hai bên 35 mm: bắt vành, giữ ít nhất 0,6 giây, nhận lệnh sau đó và chui qua. Cú rơi lệch ngoài vành không bị hút vào và phải xuống sàn.
 - MacOS: Unity 6000.3.19f1 báo `ORIGIN BUILD SUCCESS`, binary mới tại `Builds/Venom/macOS/Venom.app`.
 - Bản build chứa 10 scene Origin; danh sách scene tạm cho test đã được phục hồi.
 - Kiểm tra trực tiếp macOS từng phát hiện kính bên hông chặn chọn lỗ ở 01. Đã sửa và thêm test chọn điểm màn hình rồi thoát đủ cơ thể; test 03 vẫn bảo đảm mặt trước chặn chọn mặt sau.
 - Binary macOS cập nhật lúc 17:28:57 ngày 15/09/2026 đã mở và kiểm tra trực tiếp màn 04: chọn lỗ từ phía dưới vùng trơn, sinh vật rơi xuống sàn và trở về Idle; không bị treo ở mép. Các đường giải còn lại của binary này được kiểm tra tự động, chưa chơi tay lại toàn bộ.
 - Cập nhật camera 08: 3/3 kiểm tra liên quan đạt lúc 2026-09-15 10:38:51Z, gồm nạp 10 scene, chọn nóc và hoàn thành 08 bằng các lệnh điểm màn hình. Test đường giải 08 hiện dùng cùng `TouchPoint` với người chơi ở cả nóc, mép rơi, miệng ống và lỗ cuối, không gọi tắt `EnterTube`.
 - Bản macOS camera 08 build lúc 17:39:49 đã mở, kiểm tra khung hình và chạm lên nóc trực tiếp; sinh vật nhận đúng bề mặt và leo tới điểm chọn.
+- Bản sửa bắt vành build lúc 17:52:54 đã thử trực tiếp trên macOS: chỉ lên nóc, chỉ ra mép trơn mà chưa chỉ vào ống; sinh vật rơi rồi giữ lại trên vành ở trạng thái Idle. Chạm miệng ống sau đó chuyển sang “Chảy qua ống”.

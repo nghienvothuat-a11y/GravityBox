@@ -133,7 +133,7 @@ namespace GravityBox.Venom
             for(int i=0;i<32;i++){if(Motion.HasGrip(i))contacts++;velocity+=Matter.Bodies[i].linearVelocity/32;}
             if(!hadContact&&contacts>4){Impact=Mathf.Clamp01((lastVelocity-velocity).magnitude/.5f);CatchPulse=1;}
             hadContact=contacts>4;lastVelocity=velocity;
-            Activity=InTube?"Chảy qua ống":Cutting?"Phân tách":heldProp!=null?(IsPulling?"Kéo":"Đẩy"):
+            Activity=InTube?"Chảy qua ống":Motion.TryCatchPoint(Motion.Selected,out _)?"Bám vành ống":Cutting?"Phân tách":heldProp!=null?(IsPulling?"Kéo":"Đẩy"):
                 contacts<3?(velocity.magnitude>.06f?"Rơi / trượt":"Trượt"):Motion.Busy(Motion.Selected)?"Giữ":
                 Motion.Get(Motion.Selected)!=null?"Bò / leo":"Idle";
             if(!Home)EvaluateExit();else habitat?.Step(dt);
@@ -287,6 +287,14 @@ namespace GravityBox.Venom
             for(int i=0;i<32;i++)if(Matter.Groups[i]==Matter.Groups[Motion.Selected]&&Motion.HasGrip(i)&&
                 Vector3.Distance(Matter.Bodies[i].position,Tube.transform.position)<.11f)contactCount++;
             if(contactCount<2)return false;
+            // Finish braking against the new contact before the gentler tube
+            // flow takes over. Keep the queued instruction during the grasp.
+            if(Motion.TryCatchPoint(Motion.Selected,out _))
+            {
+                Vector3 velocity=Vector3.zero;int count=0;
+                for(int i=0;i<32;i++)if(Matter.Groups[i]==Matter.Groups[Motion.Selected]){velocity+=Matter.Bodies[i].linearVelocity;count++;}
+                if((velocity/Mathf.Max(1,count)).sqrMagnitude>.25f*.25f)return false;
+            }
             InTube=true;tubeIntent=false;tubeAnchor=Motion.Selected;Motion.Cancel(tubeAnchor);return true;
         }
         private void StepTube(float dt)

@@ -213,7 +213,7 @@ namespace GravityBox.Venom
                 FlowBody(state,key,points,count,centre,up,top,bottom,floorPoint);
                 DrawFeet(state,key,points,ids,count,centre,up,floorPoint,support);
             }
-            if(level.Campaign!=null)CampaignPerformance(points,supports,count,centre,up,velocity,grounded);
+            if(level.Campaign!=null)CampaignPerformance(points,supports,count,centre,up,velocity,grounded,ids[0]);
             int physicalCount=count;
             float expression=Mathf.Max(state.Head,state.Dance);
             if (expression < .008f)
@@ -259,7 +259,7 @@ namespace GravityBox.Venom
             return count;
         }
 
-        private void CampaignPerformance(Vector3[] points,float[] supports,int count,Vector3 centre,Vector3 up,Vector3 velocity,bool grounded)
+        private void CampaignPerformance(Vector3[] points,float[] supports,int count,Vector3 centre,Vector3 up,Vector3 velocity,bool grounded,int anchor)
         {
             var game=level.Campaign;
             if(game==null||game.Motion==null)return;
@@ -291,6 +291,17 @@ namespace GravityBox.Venom
                     Vector3 a=centre+side*((arm*2-1)*.014f),end=game.PropContact+side*((arm*2-1)*.008f);
                     Vector3 bend=up*(game.IsPulling?.003f:.014f);
                     Tube(a,Vector3.Lerp(a,end,.3f)+bend,Vector3.Lerp(a,end,.7f)+bend,end,up,centre-up*.04f,1);
+                    TendrilCount++;
+                }
+            }
+            else if(game.Motion.TryCatchPoint(anchor,out var caughtPoint))
+            {
+                Vector3 reach=caughtPoint-centre,side=Vector3.Cross(reach,level.View.transform.forward).normalized;
+                Vector3 normal=game.Tube.Entrance.Normal;
+                for(int arm=0;arm<2;arm++)
+                {
+                    Vector3 a=centre+side*((arm*2-1)*.012f),end=caughtPoint+side*((arm*2-1)*.004f)+normal*.001f;
+                    Tube(a,a+reach*.25f,Vector3.Lerp(a,end,.8f),end,normal,caughtPoint,1);
                     TendrilCount++;
                 }
             }

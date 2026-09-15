@@ -221,6 +221,55 @@ namespace GravityBox.Tests
             Assert.IsTrue(game.Motion.Get(0)?.Exit??false,"The final exit must also accept a screen tap from the fixed camera");
             yield return Until(25,()=>game.Owner.Completed);Assert.IsTrue(game.Owner.Completed,State);
         }
+        [UnityTest] public IEnumerator EighthLessonCatchesRingBeforePlayerTapsTube()
+        {foreach(float offset in new[]{0f,-.035f,.035f})yield return CatchTubeFromRoof(offset);}
+        private IEnumerator CatchTubeFromRoof(float offset)
+        {
+            yield return Load(8);yield return null;
+            var top=new Vector3(-.49f,.208f,offset);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(new Vector3(top.x,.23f,offset)));
+            yield return Until(20,()=>Vector3.Distance(game.Motion.Centre(0),top)<.04f);
+            Assert.Greater(game.Motion.Centre(0).y,.15f,"Reach the ceiling: "+State);
+            Assert.IsFalse(game.Motion.TryCatchPoint(0,out _),"The ring cannot catch tissue still on the ceiling");
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(new Vector3(-.12f,.23f,offset)));
+            bool touched=false,caught=false;string samples="";
+            for(int t=0;t<1200&&!game.Owner.Lost;t++)
+            {
+                Steps(1);int contacts=0,grips=0;Vector3 velocity=Vector3.zero;
+                for(int i=0;i<32;i++)
+                {
+                    velocity+=game.Matter.Bodies[i].linearVelocity/32;
+                    if(game.Motion.Support(i,out var shape,out var point,out _)&&shape==game.Tube.Entrance.Shape&&game.Tube.Entrance.Grip(point))
+                    {contacts++;if(game.Motion.HasGrip(i))grips++;}
+                }
+                touched|=contacts>=2;
+                caught=grips>=2&&Mathf.Abs(velocity.y)<.18f&&Vector3.Distance(game.Motion.Centre(0),game.Tube.transform.position)<.13f;
+                if(t%24==0){samples+=$" [{t/120f:F1}s c={game.Motion.Centre(0):F3} vy={velocity.y:F2} ring={contacts} grip={grips}]";yield return null;}
+                if(caught)break;
+            }
+            Assert.IsTrue(touched,"The fall must actually contact the ring: "+State+samples);
+            Assert.IsTrue(caught,$"A real ring contact must arrest the fall without a timed second tap (offset {offset}): "+State+samples);
+            Assert.IsFalse(game.InTube,"Catching is separate from entering the tube");
+            yield return Until(.6f,()=>false);
+            Assert.Less(Vector3.Distance(game.Motion.Centre(0),game.Tube.transform.position),.13f,"Remain attached long enough to give the next instruction");
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Tube.transform.position));
+            yield return Until(4,()=>game.InTube);Assert.IsTrue(game.InTube,"Accept the tube command after catching: "+State);
+            yield return Until(20,()=>!game.InTube);Assert.Greater(game.Motion.Centre(0).x,.11f,"Pass through after the catch: "+State);
+        }
+        [UnityTest] public IEnumerator EighthLessonMissedRingKeepsFalling()
+        {
+            yield return Load(8);yield return null;var top=new Vector3(-.49f,.208f,.17f);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(new Vector3(top.x,.23f,top.z)));
+            yield return Until(22,()=>Vector3.Distance(game.Motion.Centre(0),top)<.04f);
+            Assert.Greater(game.Motion.Centre(0).y,.15f,"Reach the ceiling before a missed fall: "+State);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(new Vector3(-.12f,.23f,top.z)));
+            bool caught=false;
+            for(int t=0;t<1440&&game.Motion.Centre(0).y>-.17f;t++)
+            {Steps(1);caught|=game.Motion.TryCatchPoint(0,out _);if(t%120==0)yield return null;}
+            Assert.Less(game.Motion.Centre(0).y,-.17f,"A fall outside the ring must reach the floor");
+            Assert.IsFalse(caught,"The ring must not attract tissue from outside its contact area");
+            Assert.IsFalse(game.InTube);Assert.IsFalse(game.Owner.Lost);
+        }
         [UnityTest] public IEnumerator NinthLessonCoverFallsAwayUnderGravity()
         {
             yield return Load(9);var cover=game.Props[0];yield return Rotate(Quaternion.Euler(0,0,180));
