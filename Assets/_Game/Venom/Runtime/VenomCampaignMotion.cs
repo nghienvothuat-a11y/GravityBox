@@ -25,6 +25,7 @@ namespace GravityBox.Venom
         // Available traction is finite (N = kg * m/s² * adhering fraction).
         // Sustained excess load peels the footprint before it can reattach.
         private const float GripAccelerationLimit=36f;
+        private const float MoveSpeed=.126f; // m/s; 20% above the original .105 m/s.
         private readonly float[] gripStrain=new float[32], detachedUntil=new float[32];
         private readonly HashSet<VenomSurfacePatch>[] detachedSurfaces=new HashSet<VenomSurfacePatch>[32];
         private sealed class RingCatch
@@ -272,8 +273,8 @@ namespace GravityBox.Venom
                 bool anchored=(grips>=2||caught!=null)&&(!game.Definition.Passive||game.Home)&&!game.InTube;
                 if(o!=null&&caught==null&&anchored)target=EdgeTarget(o,a,centre,target);
                 Vector3 delta=target-centre;
-                Vector3 desired=o!=null?delta.normalized*.105f:Vector3.zero;
-                if(o!=null&&o.Cursor==o.Path.Count-1)desired=Vector3.ClampMagnitude(delta*4,.105f);
+                Vector3 desired=o!=null?delta.normalized*MoveSpeed:Vector3.zero;
+                if(o!=null&&o.Cursor==o.Path.Count-1)desired=Vector3.ClampMagnitude(delta*4,MoveSpeed);
                 if(caught!=null)desired=Vector3.ClampMagnitude((caught.Surface.transform.TransformPoint(caught.LocalTarget)-centre)*6,.35f);
                 for(int i=0;i<32;i++)
                 {
@@ -290,7 +291,7 @@ namespace GravityBox.Venom
                     bool manipulating=game.Attached&&game.Matter.Groups[a]==game.Matter.Groups[Selected];
                     if(!manipulating)acceleration+=Vector3.ClampMagnitude((desired-relative)*(caught!=null?35:26),caught!=null?18:5);
                     acceleration=Vector3.ClampMagnitude(acceleration,capacity/Mathf.Max(mass,.0001f));
-                    intent[i]=desired/.105f;
+                    intent[i]=desired/MoveSpeed;
                     if(HasGrip(i))
                     {
                         Vector3 n=patch.Normal;
