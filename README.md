@@ -1,34 +1,35 @@
 # Venom — Living Matter Prototype
 
-Bản macOS mặc định chuyển sang **Venom Journey — 5 màn đầu**: người chơi chạm để hướng dẫn sinh vật, kéo để xoay hộp. Chỉ thắng khi **100% vật chất** đi qua lỗ tròn thật; camera tiến sát sinh vật, ẩn hộp/cơ quan và chọn ngẫu nhiên một trong ba điệu ăn mừng 4,8 giây rồi tự sang màn tiếp.
+Bản mặc định là **Venom Origin — 10 màn theo bản vẽ**, trên nhánh `Venom`. Chạm để hướng dẫn sinh vật; kéo để xoay hộp. Màn 07–08 khóa xoay. Sinh vật dùng mô mềm có khối lượng, lực bám, va chạm và trọng lực thế giới.
 
-| Bài | Nội dung |
+| Màn | Trọng tâm |
 | --- | --- |
-| 01 — Chào bạn nhỏ | Chỉ đường trên sàn, phản hồi nhận lệnh, thoát qua lỗ sàn |
-| 02 — Một thế giới sáu mặt | Bò qua tường, xoay để quan sát, tới lỗ giữa trần |
-| 03 — Giữ thêm một chút | Giao việc giữ nút đủ thời gian rồi mở cửa |
-| 04 — Chờ nhau qua cửa | Chia đôi, một phần giữ A để phần kia tới B |
-| 05 — Mỗi phần một nhiệm vụ | Thử cắt giữa/cắt lệch, A cần 24 g và B cần 60 g |
+| 01 — Bò đi | Chỉ đường tới lỗ ở góc sàn |
+| 02 — Leo đi | Vách thấp bịt kín hai đầu, leo qua rồi bám tường |
+| 03 — Xoay đi | Xoay để chọn đúng mặt có lỗ phía sau |
+| 04 — Trơn đấy | Chỉ đường tránh vùng mất bám; có thể dùng trọng lực |
+| 05 — Trượt đi | Lật nóc trơn xuống dưới, nghiêng để trượt vào lỗ |
+| 06 — Xoay tròn | Sinh vật trượt thụ động trong cầu; đưa lỗ tới nó |
+| 07 — Đẩy | Đẩy/kéo hộp làm bậc, tự buông sau 3 giây không điều khiển |
+| 08 — Chui qua lỗ | Căn rơi bắt vành bám, chảy qua ống sang hộp thứ hai |
+| 09 — Lật đi | Lật hộp để nắp rời rơi khỏi lỗ theo trọng lực |
+| 10 — BOSS · Chờ nhau | Phối hợp các phần cơ thể; không hướng dẫn trong màn |
 
-Mở `Builds/Venom/macOS/Venom.app`. **1–5** chọn bài, **R** thử lại, **P/Esc** tạm dừng, **Z** zoom. Chạm phần cơ thể hoặc nút khối lượng để chọn; chạm nút cơ quan để giao việc giữ. **Gọi về hợp thể** thu hồi nhiệm vụ; **Cùng ra ngoài** giao đích thoát cho mọi phần sau khi mở cửa.
+Mở `Builds/Venom/macOS/Venom.app`. **1–9, 0** chọn màn 01–10; **R** thử lại; **P/Esc** tạm dừng; **Z** zoom. Khi có nhiều phần, chạm một phần hoặc nút chọn phần ở cuối màn hình. Bộ chọn mở cả mười màn để test.
 
-[Hướng dẫn, đường giải và giới hạn prototype](Docs/VENOM_JOURNEY_01_05.md) · [Thiết kế gameplay, AI và animation dài hạn](Docs/VENOM_GUIDED_PUZZLE_DESIGN.md).
+**Phải hợp thể trong hộp trước khi thoát.** Một phần ra trước sẽ thua và hiện: `bạn phải hợp thể trước khi chui ra`. Chỉ thắng khi toàn bộ 32 phần tử vật chất đã ra ngoài qua lỗ cuối. Ống nối giữa hai khoang không phải lỗ thoát cuối. Camera sau thắng tiến sát, ẩn cảnh, chạy một trong ba điệu vui trong 4,8 giây; màn 01–09 tự chuyển tiếp.
 
-[Định hướng đã chốt 14/09: giải đố thuần và ngôi nhà sinh vật](Docs/VENOM_PURE_PUZZLE_AND_HOME.md). Sinh vật học kỹ năng qua campaign; người chơi có thể mua đồ vật, đồ ăn và cử chỉ để tương tác ở nhà. Nội dung nhà không thay khả năng giải đố. Nhà/cửa hàng chưa triển khai; [đề xuất phân điểm cũ](Docs/VENOM_STATS_LEVEL_DESIGN.md) chỉ giữ làm lịch sử.
+Thắng Boss lần đầu mở **Collection “Nhà của sinh vật”** với phòng thử nghiệm, chào/chơi và cho ăn. Đây là tương tác mẫu; chưa có cửa hàng, giao dịch hoặc hệ trang trí đầy đủ. Đồ ở nhà không tăng chỉ số hay thay khả năng giải đố. Tiến trình mới dùng ID `venom.origin.01`…`10` và save riêng; giữ nguyên dữ liệu Journey cũ.
 
-[Concept tám kỹ năng nền](Docs/VENOM_CREATURE_SKILLS.md): bò, leo, luồn, đẩy, kéo, phân tách, tụ lại và copy vật thể. Level sẽ dạy từng kỹ năng rồi tăng độ khó bằng phối hợp; luật chi tiết và phần chưa triển khai được ghi riêng.
+[Hướng dẫn test và giới hạn](Docs/VENOM_ORIGIN_PLAYTEST.md) · [Thiết kế 10 màn](Docs/VENOM_CAMPAIGN_01_10.md) · [Kiến trúc và lộ trình](Docs/VENOM_LEVEL_ARCHITECTURE.md) · [Animation theo hành động](Docs/VENOM_ORIGIN_ANIMATION.md).
 
-[Thiết kế campaign 01–10](Docs/VENOM_CAMPAIGN_01_10.md) đã đối chiếu đủ bản vẽ 01–09. Màn 07 đẩy/kéo theo điểm chạm, buông sau 3 giây không điều khiển; 08 rơi bắt vành rồi chảy qua ống. **Luật mới yêu cầu hợp thể trước khi thoát; một phần ra trước thì thua. Boss 10 không tutorial và thắng mở Collection “Nhà của sinh vật”.** [Kiến trúc xây level và kế hoạch nghiệm thu](Docs/VENOM_LEVEL_ARCHITECTURE.md) đã được đề xuất. Đây là thiết kế chưa triển khai: bản macOS vẫn là năm Journey và còn cho các phần thoát lần lượt như mô tả phía trên.
+Kiểm tra Venom: `bash Tools/verify-venom.sh` (tạm đăng ký scene Journey cho hồi quy rồi phục hồi danh sách Origin). Build mặc định: `bash Tools/build-venom.sh`. Sinh lại dữ liệu tác giả trong Unity: **Gravity Box → Venom → Generate Origin Campaign 01–10**. Lệnh Generate tạo lại scene và hình học, vì vậy cần lưu các chỉnh sửa tay trước khi chạy.
 
-Build: `bash Tools/build-venom.sh`. Các scene mới nằm ở `Assets/_Game/Venom/VenomJourney01.unity` đến `VenomJourney05.unity`. Kỹ năng và bài đã hoàn thành được nhớ giữa các lần mở app; retry chỉ reset cơ quan và nhiệm vụ. AI hiện học theo sự kiện và phản hồi theo ngữ cảnh, chưa triển khai toàn bộ hệ cảm xúc của thiết kế dài hạn.
-
-Khi bò tường hoặc trần, phần thân phía ngoài và xúc tu chùng rủ xuống theo trọng lực thế giới; vùng tiếp xúc giữ bám, cơ thể hồi lại dần khi xoay mặt đó thành sàn.
-
-Kiểm chứng: **67/67 PlayMode hồi quy và 1/1 kiểm tra biến dạng trọng lực đạt**, tổng cộng **14 trường hợp Journey**; máy chém màn 4 được thử ở ba hướng xoay và giữ đủ hai phần trong hộp. Chi tiết trong [báo cáo năm bài](Docs/VENOM_JOURNEY_01_05.md#kết-quả-kiểm-chứng).
+Bộ Journey 5 màn cũ vẫn giữ để đối chiếu: `bash Tools/build-venom.sh --journey`; [tài liệu Journey](Docs/VENOM_JOURNEY_01_05.md). [Kỹ năng nền](Docs/VENOM_CREATURE_SKILLS.md) và [định hướng giải đố thuần / ngôi nhà](Docs/VENOM_PURE_PUZZLE_AND_HOME.md) tiếp tục áp dụng; Copy vật thể và hệ nội thất đầy đủ thuộc giai đoạn sau.
 
 ## Bộ thí nghiệm điều khiển trước campaign
 
-Nhánh vẫn giữ bảy scene thử nghiệm **01–05, 07–08**. Dùng `bash Tools/build-venom.sh --lab` để build bộ này thay cho Journey vào cùng đường dẫn app.
+Nhánh vẫn giữ bảy scene thử nghiệm **01–05, 07–08**. Dùng `bash Tools/build-venom.sh --lab` để build bộ này thay cho Origin vào cùng đường dẫn app.
 
 | Màn | Điều khiển | Bài thử |
 | --- | --- | --- |

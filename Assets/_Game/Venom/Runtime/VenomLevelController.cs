@@ -19,6 +19,7 @@ namespace GravityBox.Venom
         public bool WallCrawl => ControlMode == VenomControlMode.SurfaceCrawl || ControlMode == VenomControlMode.SplitVault || ControlMode == VenomControlMode.TouchSurface;
         public VenomGuidance Guidance;
         public VenomJourney Journey;
+        public VenomCampaign Campaign { get; private set; }
         public static readonly int[] Experiments = {1,2,3,4,5,7,8};
         public VenomSplitVault SplitVault;
         public float NavigationY=>SplitVault!=null?SplitVault.NavigationY:FloorBoundary.Top+.025f;
@@ -55,6 +56,8 @@ namespace GravityBox.Venom
 
         private void Awake()
         {
+            Campaign=GetComponent<VenomCampaign>();
+            if(Campaign!=null){Campaign.Initialize(this);return;}
             PhysicsTiming.Apply(); Application.targetFrameRate = 60;
             Rotation.Configure(RotationProfile, RotationMode.Free); Rotation.CaptureInitialState();
             initialRootPosition = Rotation.transform.position;
@@ -111,6 +114,7 @@ namespace GravityBox.Venom
         public void Step(float dt)
         {
             if (Paused || Lost || dt <= 0) return;
+            if(Campaign!=null){Campaign.Step(dt);return;}
             Organism.Step(dt);
             if (Completed) { Celebration.Step(); return; }
             if(WallCrawl)
@@ -290,6 +294,7 @@ namespace GravityBox.Venom
 
         public void ResetExperiment()
         {
+            if(Campaign!=null){Campaign.ResetLevel();return;}
             Celebration?.Reset();
             Time.timeScale = 1; Paused = Completed = GateLatched = Lost = BladeReleased = false; PairedHold = bladeCycle = 0;
             Rotation.GetComponent<Rigidbody>().position = initialRootPosition; Rotation.ResetState();
@@ -320,20 +325,42 @@ namespace GravityBox.Venom
         {
             Paused = !Paused; Time.timeScale = Paused ? 0 : 1;
             Rotation.InputEnabled = CanControl && (!DirectControl || WallCrawl) && !(Journey?.Cutting??false); Locomotion?.SetInput(Vector3.zero);
+            if(Campaign!=null)Rotation.InputEnabled=CanControl&&Campaign.Definition.CanRotate&&!Campaign.Cutting&&!Campaign.Home;
         }
         public void ToggleZoom()
         {
+            if(Campaign!=null){Campaign.Zoom=!Campaign.Zoom;return;}
             if(!WallCrawl || Completed)return;
             GetComponent<VenomInput>().CancelGesture();FollowView.Toggle();
         }
         public void LoadExperiment(int number)
         {
+            if(Campaign!=null){Campaign.Load(number);return;}
             if(Journey!=null){Journey.Load(number);return;}
             if (System.Array.IndexOf(Experiments,number)<0) return;
             Time.timeScale = 1;
             SceneManager.LoadScene($"Venom{number:00}");
         }
         internal void LatchGuidedGate()=>GateLatched=true;
+        internal void InitializeCampaignMatter()
+        {
+            PhysicsTiming.Apply();Application.targetFrameRate=60;
+            Rotation.Configure(RotationProfile,RotationMode.Free);Rotation.CaptureInitialState();
+            // Surface routing reads the simulation pose at 120 Hz. Interpolating
+            // the shell transform would give contact queries a different pose.
+            Rotation.GetComponent<Rigidbody>().interpolation=RigidbodyInterpolation.None;
+            boundaries=Apparatus.GetComponentsInChildren<Collider>();
+            var slab=(MeshCollider)CrawlFaces[0];
+            FloorBoundary=slab.gameObject.AddComponent<VenomFloorBoundary>();FloorBoundary.Initialize(slab,Outlet,ApertureRadius,false);
+            var matter=new GameObject("Living matter — campaign");matter.transform.SetParent(transform,false);
+            Organism=matter.AddComponent<CohesiveOrganism>();Organism.Initialize(MatterProfile,Spawn,this);
+            Celebration=new VenomCelebration(this);
+            matter.AddComponent<VenomSurface>().Initialize(Organism,this);
+        }
+        internal void ResetCampaignState()
+        {Celebration.Reset();Time.timeScale=1;Paused=Completed=Lost=false;GateLatched=false;Organism.ResetMatter();}
+        internal void SetCampaignOutcome(bool won)
+        {if(Completed||Lost)return;Completed=won;Lost=!won;Rotation.InputEnabled=false;if(won)Celebration.Begin();}
         private void OnApplicationPause(bool pause) { if (pause && !Paused) TogglePause(); }
         private void OnDestroy() { Celebration?.Reset(); Time.timeScale = 1; }
     }

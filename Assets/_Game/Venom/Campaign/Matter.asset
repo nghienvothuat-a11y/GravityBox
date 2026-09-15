@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0495956ee1a834577b40efa3e338091f, type: 3}
+  m_Name: Living matter
+  m_EditorClassIdentifier: GravityBox.Venom::GravityBox.Venom.VenomProfile
+  ParticleRadius: 0.009
+  ParticleMass: 0.003
+  Spacing: 0.0185
+  BondReach: 0.027
+  Stiffness: 2.6
+  Viscosity: 0.009
+  Plasticity: 0.65
+  CutHealingDelay: 1.5
+  FusionSeconds: 0.65
+  SkinSupport: 0.026
+  SkinThreshold: 0.48
+  MeshCell: 0.007
+  FlowStiffness: 0.16
+  FlowPlasticity: 12
+  TissuePressure: 8
+  TissueDamping: 0.06
+  AnimationSpeed: 1.65
+  IdleBulge: 0.0036
+  ClingingSag: 0.019
+  CuriousHeadLift: 0.041
+  TendrilReach: 0.034
+  RaisedTendrilReach: 0.052
+  DanceLift: 0.064
+  DanceInterval: 14
+  Contact: {fileID: 13400000, guid: 0b859ca96f7a2483487bb295ae9fa446, type: 2}
+  Skin: {fileID: 2100000, guid: 80e6749f5b05e41089cf367e0f19f4a2, type: 2}

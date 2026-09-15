@@ -14,6 +14,7 @@ namespace GravityBox.Venom
         public bool[] Escaped { get; private set; }
         public int[] Groups { get; private set; }
         public int FragmentCount { get; private set; }
+        public int TotalFragmentCount { get; private set; }
         public int CutCount { get; private set; }
         public int MergeCount { get; private set; }
         public int EscapedCount { get; private set; }
@@ -123,7 +124,7 @@ namespace GravityBox.Venom
             {
                 if (connected[i,j] || Escaped[i] != Escaped[j] || SimulationTime < healAt[i] || SimulationTime < healAt[j]) continue;
                 if (Vector3.SqrMagnitude(Bodies[i].position - Bodies[j].position) > Profile.Spacing * Profile.Spacing * 1.32f) continue;
-                if (level != null && (level.SegmentBlocked(Bodies[i].position, Bodies[j].position) || level.Journey!=null&&!level.Journey.CanFuse(i,j))) continue;
+                if (level != null && (level.SegmentBlocked(Bodies[i].position, Bodies[j].position) || level.Journey!=null&&!level.Journey.CanFuse(i,j) || level.Campaign!=null&&!level.Campaign.CanFuse(i,j))) continue;
                 fused |= Groups[i] != Groups[j];
                 Link(i, j, .03f);
             }
@@ -194,6 +195,17 @@ namespace GravityBox.Venom
                 healAt[bond.A] = healAt[bond.B] = SimulationTime + Profile.CutHealingDelay;
                 bonds.RemoveAt(k); removed++;
             }
+            // A planar cut may disconnect tiny islands on the same side of the
+            // sparse particle lattice. Rejoin only neighbouring tissue on that
+            // side; never bridge the blade or a physical obstruction.
+            if(removed>0&&level!=null&&level.Campaign!=null)
+                for(int a=0;a<ParticleCount;a++)for(int b=a+1;b<ParticleCount;b++)
+                {
+                    if(connected[a,b]||Escaped[a]||Escaped[b])continue;
+                    if(blade.InverseTransformPoint(Bodies[a].position).x*blade.InverseTransformPoint(Bodies[b].position).x<=0)continue;
+                    if(Vector3.Distance(Bodies[a].position,Bodies[b].position)>Profile.BondReach)continue;
+                    if(!level.SegmentBlocked(Bodies[a].position,Bodies[b].position))Link(a,b,.3f);
+                }
             RefreshGroups();
             if (FragmentCount > before) { CutCount++; Split?.Invoke(); }
             return removed;
@@ -223,6 +235,7 @@ namespace GravityBox.Venom
 
         public bool TryGetSupport(int particle, out Collider collider, out Vector3 point, out Vector3 normal)
         {
+            if(level!=null&&level.Campaign?.Motion!=null)return level.Campaign.Motion.Support(particle,out collider,out point,out normal);
             if(level != null && level.Climbing != null)return level.Climbing.TryGetSupport(particle,out collider,out point,out normal);
             collider = support[particle]; point = normal = Vector3.zero;
             if (Escaped[particle] || collider == null || !collider.enabled || SimulationTime-supportTime[particle] > .08f) return false;
@@ -244,7 +257,7 @@ namespace GravityBox.Venom
                 Groups[i] = id;
             }
             // Escaped material is rendered, but no longer counts as an in-box fragment.
-            FragmentCount = 0;
+            TotalFragmentCount=count;FragmentCount = 0;
             for (int g = 0; g < count; g++)
                 for (int i = 0; i < ParticleCount; i++) if (Groups[i] == g && !Escaped[i]) { FragmentCount++; break; }
         }

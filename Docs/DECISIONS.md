@@ -1,6 +1,16 @@
 # Các quyết định kiến trúc
 
-**Nhánh Venom hiện tại:** xem ADR V001–V005 và [năm màn Journey đang chạy](VENOM_JOURNEY_01_05.md). Các ADR số 001–026 bên dưới ghi lịch sử prototype bi thép, trong đó ADR 026 đưa tổng số màn bi thép lên 23; không phải trạng thái campaign Venom.
+**Nhánh Venom hiện tại:** xem ADR V001–V006 và [mười màn Origin](VENOM_ORIGIN_PLAYTEST.md). Các ADR số 001–026 bên dưới ghi lịch sử prototype bi thép, trong đó ADR 026 đưa tổng số màn bi thép lên 23; không phải trạng thái campaign Venom.
+
+## ADR V006 — Runtime Origin dùng chung, animation từ mô phỏng và save riêng
+
+Ngày 15/09/2026. Triển khai mười màn theo bản vẽ trên nhánh Venom. Mỗi scene chứa dữ liệu bề mặt/cơ quan và dùng chung `VenomCampaign`, `VenomCampaignMotion`, `CohesiveOrganism`, `VenomSurface` và `VenomLifeAnimation`. `VenomCampaignBuilder` là công cụ authoring tái tạo nội dung; kiến trúc boot scene/catalog prefab và mạng tín hiệu cơ quan vẫn là bước mở rộng, không giả định đã triển khai.
+
+Chuyển động bám dùng lực trong hệ tọa độ thế giới. Vỏ và cơ quan cung cấp pose mô phỏng nhất quán với truy vấn tiếp xúc; mesh sinh vật vẫn nội suy để hiển thị. Vì `PhysicsTiming` đặt `Physics.gravity = Vector3.zero`, Campaign phải áp gia tốc trọng trường riêng cho tất cả đồ vật tự do được đăng ký trong `Props`, không chỉ các hạt mô. Dao nhận trọng lực trong pha chém. Không có lệnh làm nắp biến mất hoặc tự đổi vị trí đồ vật để giải màn.
+
+Khả năng đẩy/kéo đi theo khối lượng cơ thể, giữ cùng mặt bám khi đổi hướng, có lực phản ứng và buông sau ba giây không điều khiển. Màn 07 có vùng mất bám bao quanh đích để cần dùng bậc. Màn 08 chờ tiếp xúc gần vành trước khi luồn, giữ topology xuyên ống, nhận lại đường đi sau khi tiếp đất ở khoang mới. Animation thêm nén/giãn, chân chống, xúc tu căng, phản ứng đáp và gợn mô theo trạng thái này; không dùng animation để thay luật va chạm hoặc thắng.
+
+Luật hợp thể dựa trên topology của đầy đủ 32 hạt, gồm cả vật chất đã qua lỗ. Đầu–đuôi của cùng cơ thể có thể thoát lần lượt. Save `venom.origin.v2` giữ ID hoàn thành và quyền Nhà; không chuyển các bit thắng Journey cũ thành thắng Origin. Nhà là phòng tương tác mẫu, không tăng chỉ số puzzle. Build mặc định chứa đúng 10 scene Origin; Journey/lab chỉ build bằng tùy chọn riêng.
 
 ## ADR V005 — Đẩy/kéo, rơi bắt vành, hợp thể trước thoát và Boss mở nhà
 

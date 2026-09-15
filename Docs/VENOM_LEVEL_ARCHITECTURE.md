@@ -1,6 +1,30 @@
 # Venom — Kiến trúc level và kế hoạch xây dựng chương 01–10
 
-Ngày 15/09/2026. Đây là **kiến trúc đề xuất để triển khai** từ [thiết kế đã đối chiếu](VENOM_CAMPAIGN_01_10.md), không phải báo cáo code đã hoàn thành. Runtime và macOS vẫn là năm Journey cũ. Quyết định của người dùng có ưu tiên: thuần puzzle; cắt mới tách; gần nhau tự tụ; hợp thể trước khi thoát; Boss 10 không hướng dẫn và mở Collection “Nhà của sinh vật”.
+Ngày 15/09/2026. Thiết kế [campaign 01–10](VENOM_CAMPAIGN_01_10.md) đã được triển khai thành mười scene Origin cùng dùng chung runtime. Phần dưới vẫn giữ kiến trúc đích và kế hoạch mở rộng; không coi mọi interface/prefab được đề xuất là đã có trong code.
+
+## Trạng thái triển khai prototype
+
+| Trách nhiệm | Code hiện tại |
+| --- | --- |
+| ID, tên, camera, quyền xoay, chính sách Boss | `VenomCampaignDefinition` và 10 asset trong `Campaign/Definitions` |
+| Tạo nội dung / geometry / va chạm | `VenomCampaignBuilder`; 10 scene riêng dùng cùng component, chưa chuyển sang một boot scene và catalog prefab |
+| Chọn điểm / chọn phần / tác vụ / điều phối cơ quan | `VenomCampaign` |
+| Đường đi qua bề mặt, chuyển mặt bám, chờ tiếp xúc sau rơi | `VenomCampaignMotion` |
+| Vật liệu bám/trơn, vùng bám quanh miệng | `VenomSurfacePatch` |
+| Mô mềm, topology, cắt / tụ, khối lượng | `CohesiveOrganism` dùng chung với các lab |
+| Hộp đẩy/kéo, bậc và nắp rời | `VenomMovableProp`, Rigidbody; lực và phản lực trong Campaign |
+| Ống truyền vật chất | `VenomTransferTube`, lực hướng dòng và va chạm thật; không dùng trigger thắng |
+| Biểu diễn sinh vật | `VenomSurface`, `VenomLifeAnimation`, `VenomCelebration` |
+| Save / mở quyền Collection | `VenomCampaignSave`, khóa `venom.origin.v2`; không sửa save Journey cũ |
+| Nhà thử nghiệm | `VenomHabitat`, thay không gian sau khi mở khóa; không thay profile vật lý |
+| Kiểm chứng khả giải và hồi quy | `VenomOriginTests` + các suite lab/Journey cũ |
+
+Các scene có thể chỉnh số đo và vật liệu độc lập; số thứ tự không được dùng để thay lực hay luật thắng trong runtime. Cơ quan Boss hiện được điều phối trong Campaign, chưa phải một mạng signal graph tổng quát. Bước tiếp theo khi tăng số cơ quan: tách driver đẩy/kéo, dao, nút/cửa và portal thành component có cổng trạng thái; chuyển scene authoring sang prefab/catalog sau khi thông số chơi được chốt.
+
+Đường đi là đồ thị mẫu trên mặt collider, cập nhật khi đồ vật đổi chỗ hoặc sinh vật tiếp đất. Không tự tìm tổ hợp mở cửa hay tránh mọi bề mặt trơn thay người chơi. Màn 7 có hành vi tiếp nối đã định nghĩa: đặt đúng bậc → leo bậc → đi tới lỗ. Màn 8 giữ ý định chui ống tới lúc có tiếp xúc thật với vành. Đây là quy tắc tác vụ hữu hạn, không phải mô hình AI sinh nội dung trên thiết bị.
+
+Save hoàn thành mới tách riêng vì nội dung và luật thoát khác Journey; các bit thắng màn cũ không tự chuyển thành thắng Origin. Chưa có hệ nhớ kỹ năng độc lập hoặc migration kỹ năng vì chưa có dữ liệu kỹ năng Origin cũ.
+
 
 ## 1. Mục tiêu và ranh giới
 
@@ -175,4 +199,4 @@ Mobile: giữ fixed physics ổn định, bắt đầu từ cấu hình đang c�
 - **Save/flow:** quyền nhà và completed nhất quán sau tắt app giữa Won/ăn mừng/reveal; replay không cấp trùng; legacy Journey04 không mở Boss; Collection không tăng khả năng puzzle; không auto next tới level chưa tồn tại.
 - **Hình học và vòng đời:** collider khớp vách/ring/lòng ống/cửa; không collider bịt lỗ; bảo toàn vật chất; tải/retry luân phiên đủ mười màn không để force registry, contact hoặc callback cũ. Đo runtime và xem trực quan riêng, không coi test logic thay thế kiểm tra cảm giác.
 
-Các tên module/schema là đề xuất kỹ thuật. Kích thước hộp, vật liệu, lực bám ring, tốc độ, hình ảnh Boss và nội dung nhà chưa được cân bằng hoặc xây trong lần này. Thiết kế có đủ cơ chế để bắt đầu theo bước A; không cần bịa thêm màn hay chờ thêm bản vẽ.
+Các tên module/schema ở phần kiến trúc đích vẫn là đề xuất kỹ thuật. Prototype hiện thực hóa bộ cơ chế và các số đo ban đầu theo bảng trạng thái ở đầu tài liệu; cân bằng độ khó trên người chơi và đo hiệu năng mobile vẫn thuộc bước sau. Danh sách kiểm chứng trên là mục tiêu đầy đủ cho phát triển tiếp; kết quả thực chạy nằm trong hướng dẫn playtest và các artifact QA, không suy ra rằng mọi tình huống liệt kê đã có test riêng.

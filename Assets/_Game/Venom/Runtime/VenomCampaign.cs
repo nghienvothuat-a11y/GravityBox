@@ -1,0 +1,544 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.EnhancedTouch;
+using UnityEngine.SceneManagement;
+using Touch=UnityEngine.InputSystem.EnhancedTouch.Touch;
+
+namespace GravityBox.Venom
+{
+    [DefaultExecutionOrder(-110)]
+    public sealed class VenomCampaign : MonoBehaviour
+    {
+        public VenomCampaignDefinition Definition;
+        public VenomSurfacePatch[] Surfaces;
+        public VenomMovableProp[] Props;
+        public VenomTransferTube Tube;
+        public Rigidbody Knife, ExitCover, ButtonCover;
+        public Transform PadA,PadB;
+        public bool AutoAdvance=true;
+        public VenomLevelController Owner {get;private set;}
+        public CohesiveOrganism Matter=>Owner.Organism;
+        public Transform Root=>Owner.Rotation.transform;
+        public VenomCampaignMotion Motion {get;private set;}
+        public VenomCampaignSave Progress {get;private set;}
+        public bool Zoom;
+        public bool InTube {get;private set;}
+        public bool Cutting=>cutClock>=0&&cutClock<1.3f;
+        public bool GateOpen {get;private set;}
+        public string Failure {get;private set;}
+        public string Activity {get;private set;}="Idle";
+        public bool Attached=>heldProp!=null;
+        public bool IsHeldSurface(VenomSurfacePatch p)=>heldProp!=null&&p.Shape.attachedRigidbody==heldProp.Body;
+        public bool IsPulling {get;private set;}
+        public Vector3 PropContact {get;private set;}
+        public float Impact {get;private set;}
+        public float CatchPulse {get;private set;}
+        public bool Home {get;private set;}
+        public const string MergeFailure="bạn phải hợp thể trước khi chui ra";
+        private readonly Vector3[] previous=new Vector3[32];
+        private readonly bool[] inBore=new bool[32];
+        private VenomMovableProp heldProp,approachProp;
+        private VenomMovableProp climbingStep;
+        private Vector3 stepTop;
+        private bool tubeIntent;
+        private Vector3 propTarget,gripLocal,gripNormalLocal,knifeRest,exitRest,buttonRest;
+        private float lastPropInput,cutClock=-1,holdTime,noMergeUntil,advanceAt=-1,lastGraph;
+        private bool cutDone,hadContact,hasExited;
+        private int cuttingAnchor,tubeAnchor;
+        private Vector3 lastVelocity;
+        private bool pointerDown,pointerMoved;
+        private Vector2 pointerStart,pointerPrevious;
+        private int touchFinger=-1;
+        private LineRenderer marker;
+        private GUIStyle title,body,button,small;
+        private VenomHabitat habitat;
+
+        public void Initialize(VenomLevelController owner)
+        {
+            Owner=owner;Progress=VenomCampaignSave.Read();
+            owner.InitializeCampaignMatter();
+            Motion=new VenomCampaignMotion(this);
+            foreach(var p in Props){p.Body.useGravity=false;p.Capture(Root);}
+            if(Knife!=null)knifeRest=Root.InverseTransformPoint(Knife.position);
+            if(ExitCover!=null)exitRest=Root.InverseTransformPoint(ExitCover.position);
+            if(ButtonCover!=null)buttonRest=Root.InverseTransformPoint(ButtonCover.position);
+            var go=new GameObject("Chosen point");go.transform.SetParent(Root,false);marker=go.AddComponent<LineRenderer>();
+            marker.sharedMaterial=Owner.IndicatorMaterial;marker.startWidth=marker.endWidth=.0012f;marker.positionCount=49;marker.loop=false;marker.useWorldSpace=false;
+            EnhancedTouchSupport.Enable();ResetLevel();
+        }
+        public void ResetLevel()
+        {
+            if(Owner==null||Matter==null)return;
+            habitat?.Leave();Owner.Rotation.ResetState();Owner.ResetCampaignState();
+            foreach(var p in Props)p.ResetTo(Root);
+            ResetBody(Knife,knifeRest);ResetBody(ExitCover,exitRest);ResetBody(ButtonCover,buttonRest);
+            heldProp=approachProp=climbingStep=null;tubeIntent=false;InTube=false;cutClock=-1;holdTime=0;noMergeUntil=0;Failure=null;Activity="Idle";
+            hasExited=false;advanceAt=-1;GateOpen=PadA==null;Zoom=false;Home=false;
+            Owner.Rotation.InputEnabled=Definition.CanRotate;
+            if(GateOpen)Owner.LatchGuidedGate();
+            for(int i=0;i<32;i++){previous[i]=Owner.Outlet.InverseTransformPoint(Matter.Bodies[i].position);inBore[i]=false;}
+            Motion.Reset();marker.enabled=false;Physics.SyncTransforms();
+        }
+        private void ResetBody(Rigidbody body,Vector3 position)
+        {if(body==null)return;body.position=Root.TransformPoint(position);body.rotation=Root.rotation;body.linearVelocity=body.angularVelocity=Vector3.zero;}
+        public bool CanFuse(int a,int b)
+        {
+            if(Matter.Groups[a]==Matter.Groups[b])return true;
+            if(Cutting||Matter.SimulationTime<noMergeUntil||Motion==null||Motion.Busy(a)||Motion.Busy(b))return false;
+            var x=Motion.Get(a);var y=Motion.Get(b);
+            return x==null&&y==null || x!=null&&y!=null&&Vector3.Distance(x.Target,y.Target)<.07f;
+        }
+        public bool Clear(Vector3 a,Vector3 b,float radius=0)
+        {
+            var delta=b-a;if(delta.sqrMagnitude<.000001f)return true;
+            // Only authored scenery can obstruct a route; other pieces are simulated, not walls.
+            foreach(var patch in Surfaces)
+            {
+                if(!patch.isActiveAndEnabled)continue;
+                Vector3 x=patch.transform.InverseTransformPoint(a),y=patch.transform.InverseTransformPoint(b);
+                if(Mathf.Abs(x.z-y.z)>.00001f)
+                {
+                    float t=x.z/(x.z-y.z);
+                    if(t>=0&&t<=1&&patch.Contains(Vector3.Lerp(x,y,t),radius))return false;
+                }
+                if(patch.Shape!=null&&patch.Shape.Raycast(new Ray(a,delta.normalized),out var hit,delta.magnitude-.002f))return false;
+            }
+            foreach(var p in Props)
+                foreach(var collider in p.GetComponentsInChildren<Collider>())
+                    if(collider.Raycast(new Ray(a,delta.normalized),out _,delta.magnitude-.002f))return false;
+            return true;
+        }
+        public bool Occupied(Vector3 world)
+        {
+            foreach(var s in Surfaces)
+            {
+                if(!s.isActiveAndEnabled)continue;
+                Vector3 p=s.transform.InverseTransformPoint(world);
+                if(p.z>-.008f&&p.z<.008f&&s.Contains(p))return true;
+            }
+            return false;
+        }
+        public void Step(float dt)
+        {
+            // PhysicsTiming deliberately disables Unity's global gravity. Every
+            // free prop needs the same explicit world acceleration as the tissue.
+            if(!Home)foreach(var prop in Props)prop.Body.AddForce(Vector3.down*9.81f,ForceMode.Acceleration);
+            Matter.Step(dt);
+            if(Owner.Completed){Owner.Celebration.Step();return;}
+            Impact=Mathf.MoveTowards(Impact,0,dt*3);CatchPulse=Mathf.MoveTowards(CatchPulse,0,dt*2);
+            Motion.Step(dt);
+            if(!Home){StepProp(dt);StepKnife(dt);StepPads(dt);StepTube(dt);}
+            int contacts=0;Vector3 velocity=Vector3.zero;
+            for(int i=0;i<32;i++){if(Motion.HasGrip(i))contacts++;velocity+=Matter.Bodies[i].linearVelocity/32;}
+            if(!hadContact&&contacts>4){Impact=Mathf.Clamp01((lastVelocity-velocity).magnitude/.5f);CatchPulse=1;}
+            hadContact=contacts>4;lastVelocity=velocity;
+            Activity=InTube?"Chảy qua ống":Cutting?"Phân tách":heldProp!=null?(IsPulling?"Kéo":"Đẩy"):
+                contacts<3?(velocity.magnitude>.06f?"Rơi / trượt":"Trượt"):Motion.Busy(Motion.Selected)?"Giữ":
+                Motion.Get(Motion.Selected)!=null?"Bò / leo":"Idle";
+            if(!Home)EvaluateExit();else habitat?.Step(dt);
+            if(!Owner.Completed&&!Owner.Lost)for(int i=0;i<32;i++)
+                if(Matter.Bodies[i].position.magnitude>2.2f){Fail("Sinh vật đã ra ngoài vỏ hộp. Thử lại.");break;}
+        }
+        private void StepProp(float dt)
+        {
+            if(climbingStep!=null)
+            {
+                foreach(var face in climbingStep.GetComponentsInChildren<VenomSurfacePatch>())
+                    if(Vector3.Dot(face.Normal,Vector3.up)>.9f)
+                    {
+                        Vector3 fresh=face.Closest(climbingStep.Body.position+Vector3.up)+face.Normal*.024f;
+                        if(Vector3.Distance(stepTop,fresh)>.018f){stepTop=fresh;Motion.Move(Motion.Selected,stepTop);}
+                        break;
+                    }
+                if(Vector3.Distance(Motion.Centre(Motion.Selected),stepTop)<.035f)
+                {climbingStep=null;Motion.Move(Motion.Selected,Owner.Outlet.position-Owner.Outlet.forward*.024f,false,true);}
+                return;
+            }
+            if(approachProp!=null&&heldProp==null)
+            {
+                Vector3 c=Motion.Centre(Motion.Selected);Vector3 p=PropSideContact(approachProp,c);
+                if(Vector3.Distance(c,p)<.060f)
+                {heldProp=approachProp;approachProp=null;gripLocal=Quaternion.Inverse(heldProp.Body.rotation)*(p-heldProp.Body.position);gripNormalLocal=Quaternion.Inverse(heldProp.Body.rotation)*Vector3.ProjectOnPlane(p-heldProp.Body.position,Vector3.up).normalized;PropContact=p;lastPropInput=Matter.SimulationTime;propTarget=heldProp.Body.position;Motion.Cancel(Motion.Selected);}
+            }
+            if(heldProp==null)return;
+            if(Matter.SimulationTime-lastPropInput>=3){ReleaseProp();return;}
+            var rb=heldProp.Body;Vector3 c2=Motion.Centre(Motion.Selected);Vector3 desired=Vector3.ProjectOnPlane(propTarget-rb.position,Vector3.up);
+            Vector3 fromExit=Owner.Outlet.InverseTransformPoint(rb.position);
+            if(heldProp.ProvidesStep&&fromExit.z>-.105f&&Mathf.Abs(fromExit.x)<.028f&&rb.linearVelocity.magnitude<.035f)
+            {
+                var step=heldProp;VenomSurfacePatch top=null;
+                foreach(var p in step.GetComponentsInChildren<VenomSurfacePatch>())if(Vector3.Dot(p.Normal,Vector3.up)>.95f){top=p;break;}
+                if(top!=null)
+                {ReleaseProp();climbingStep=step;stepTop=top.Closest(rb.position+Vector3.up)+Vector3.up*.024f;Motion.Move(Motion.Selected,stepTop);return;}
+            }
+            Vector3 velocity=Vector3.ClampMagnitude(desired*2,.085f);
+            PropContact=rb.position+rb.rotation*gripLocal;
+            Vector3 fromProp=rb.rotation*gripNormalLocal;
+            IsPulling=Vector3.Dot(desired,fromProp)>0;
+            int count=0;for(int i=0;i<32;i++)if(Matter.Groups[i]==Matter.Groups[Motion.Selected])count++;
+            Vector3 force=Vector3.ClampMagnitude(Vector3.ProjectOnPlane(velocity-rb.linearVelocity,Vector3.up)*rb.mass*36,count*Matter.Profile.ParticleMass*7);
+            if(Vector3.Distance(c2,PropContact)>.13f){ReleaseProp();return;}
+            // Contact/tether acts equally on the object and material. Feet provide the reaction.
+            rb.AddForceAtPosition(force,PropContact);
+            Vector3 bodyTarget=PropContact+fromProp*.045f;
+            for(int i=0;i<32;i++)if(Matter.Groups[i]==Matter.Groups[Motion.Selected])
+            {
+                var b=Matter.Bodies[i];Vector3 drive=Vector3.ClampMagnitude((bodyTarget-c2)*12+velocity,.18f);
+                b.AddForce(-force/count+Vector3.ProjectOnPlane(drive-b.linearVelocity,Vector3.up)*b.mass*36);
+            }
+            if(Matter.SimulationTime-lastGraph>.6f&&rb.linearVelocity.sqrMagnitude<.0001f){Motion.BuildGraph();lastGraph=Matter.SimulationTime;}
+        }
+        public void ReleaseProp(){heldProp=approachProp=null;Motion.Cancel(Motion.Selected);Motion.BuildGraph();Activity="Idle";}
+        public void SetPropTarget(Vector3 world){if(heldProp==null)return;propTarget=world;propTarget.y=heldProp.Body.position.y;lastPropInput=Matter.SimulationTime;}
+        public void SelectProp(VenomMovableProp prop)
+        {
+            climbingStep=null;ReleaseProp();approachProp=prop;
+            Vector3 c=Motion.Centre(Motion.Selected),p=PropSideContact(prop,c);
+            Vector3 d=Vector3.ProjectOnPlane(c-prop.Body.position,Vector3.up).normalized;
+            Motion.Move(Motion.Selected,p+d*.045f);
+        }
+        private Vector3 PropSideContact(VenomMovableProp prop,Vector3 centre)
+        {
+            Vector3 nearest=prop.Body.position;float best=float.PositiveInfinity;
+            foreach(var face in prop.GetComponentsInChildren<VenomSurfacePatch>())
+            {
+                if(Mathf.Abs(Vector3.Dot(face.Normal,Vector3.up))>.5f)continue;
+                Vector3 reach=centre;reach.y=prop.Body.worldCenterOfMass.y;
+                Vector3 p=face.Closest(reach);float d=(p-centre).sqrMagnitude;
+                if(d<best){best=d;nearest=p;}
+            }
+            return nearest;
+        }
+        public void RequestCut()
+        {
+            if(Knife==null||Cutting)return;
+            Motion.Move(Motion.Selected,Root.TransformPoint(new Vector3(knifeRest.x,-.275f,knifeRest.z)),true);
+            cuttingAnchor=Motion.Selected;cutClock=-2;
+        }
+        private void StepKnife(float dt)
+        {
+            if(Knife==null||Home)return;
+            if(cutClock==-1&&Matter.TotalFragmentCount==1&&Matter.SimulationTime>=noMergeUntil&&Vector3.Distance(Motion.Centre(0),Root.TransformPoint(new Vector3(knifeRest.x,-.275f,knifeRest.z)))<.012f)
+            {cuttingAnchor=0;cutClock=-2;}
+            if(cutClock==-2&&Vector3.Distance(Motion.Centre(cuttingAnchor),Root.TransformPoint(new Vector3(knifeRest.x,-.275f,knifeRest.z)))<.012f)
+            {cutClock=0;cutDone=false;Motion.Cancel(cuttingAnchor);Owner.Rotation.InputEnabled=false;noMergeUntil=Matter.SimulationTime+3.5f;}
+            if(cutClock>=0)cutClock+=dt;
+            Vector3 axis=Root.up;
+            if(Cutting)
+            {
+                Knife.AddForce(Vector3.down*9.81f,ForceMode.Acceleration);
+                if(!cutDone&&Root.InverseTransformPoint(Knife.position).y<-.205f)
+                {
+                    Matter.Cut(Knife.transform,new Vector3(.006f,.065f,.075f));
+                    if(Matter.TotalFragmentCount>1){cutDone=true;Motion.StopAll();}
+                }
+            }
+            else
+            {
+                Vector3 target=Root.TransformPoint(knifeRest);
+                Knife.AddForce(Vector3.ClampMagnitude((target-Knife.position)*180-Knife.linearVelocity*22,30),ForceMode.Acceleration);
+                Owner.Rotation.InputEnabled=Definition.CanRotate&&Owner.CanControl;
+            }
+        }
+        private int PadGroup(Transform pad,out float mass)
+        {
+            mass=0;int group=-1;float largest=0;
+            for(int a=0;a<32;a++)
+            {
+                float m=0;
+                for(int i=0;i<32;i++)if(Matter.Groups[i]==Matter.Groups[a])
+                {
+                    Vector3 p=pad.InverseTransformPoint(Matter.Bodies[i].position);
+                    if(Mathf.Abs(p.x)<.044f&&Mathf.Abs(p.y)<.044f&&p.z>=0&&p.z<.032f&&Motion.HasGrip(i))m+=Matter.Profile.ParticleMass;
+                }
+                if(m>largest){largest=m;group=Matter.Groups[a];}
+            }
+            mass=largest;return group;
+        }
+        public float MassA {get;private set;}
+        public float MassB {get;private set;}
+        private void StepPads(float dt)
+        {
+            if(PadA==null)return;
+            int a=PadGroup(PadA,out float ma),b=PadGroup(PadB,out float mb);MassA=ma;MassB=mb;
+            if(!GateOpen)
+            {
+                holdTime=ma>=.012f&&mb>=.012f&&a!=b&&Matter.CutCount>0?holdTime+dt:0;
+                if(holdTime>=.65f){GateOpen=true;Owner.LatchGuidedGate();}
+            }
+            MoveCover(ButtonCover,buttonRest+(ma>=.012f||GateOpen?Vector3.up*.14f:Vector3.zero),dt);
+            MoveCover(ExitCover,exitRest+(GateOpen?Vector3.right*.14f:Vector3.zero),dt);
+            SetGlow(PadA,ma>=.012f);SetGlow(PadB,mb>=.012f);
+        }
+        private void SetGlow(Transform t,bool active)
+        {
+            var r=t.GetComponent<Renderer>();if(r==null)return;var block=new MaterialPropertyBlock();
+            block.SetColor("_EmissionColor",active?new Color(.3f,1,.65f):new Color(.08f,.1f,.08f));r.SetPropertyBlock(block);
+        }
+        private void MoveCover(Rigidbody rb,Vector3 local,float dt)
+        {if(rb!=null){rb.MovePosition(Vector3.MoveTowards(rb.position,Root.TransformPoint(local),dt*.18f));rb.MoveRotation(Root.rotation);}}
+        public bool EnterTube()
+        {
+            if(InTube)return true;
+            if(Tube==null)return false;
+            tubeIntent=true;
+            int contactCount=0;
+            for(int i=0;i<32;i++)if(Matter.Groups[i]==Matter.Groups[Motion.Selected]&&Motion.HasGrip(i)&&
+                Vector3.Distance(Matter.Bodies[i].position,Tube.transform.position)<.11f)contactCount++;
+            if(contactCount<2)return false;
+            InTube=true;tubeIntent=false;tubeAnchor=Motion.Selected;Motion.Cancel(tubeAnchor);return true;
+        }
+        private void StepTube(float dt)
+        {
+            if(!InTube&&tubeIntent)EnterTube();
+            if(!InTube||Tube==null)return;
+            bool through=true;
+            for(int i=0;i<32;i++)if(Matter.Groups[i]==Matter.Groups[tubeAnchor])
+            {
+                var b=Matter.Bodies[i];Vector3 p=Tube.transform.InverseTransformPoint(b.position);
+                if(p.z<Tube.Length+.035f)through=false;
+                Vector3 desired=new Vector3(-p.x*9,-p.y*9,.11f);
+                if(p.z<-.015f&&new Vector2(p.x,p.y).magnitude>Tube.Radius-.011f)desired.z=.01f;
+                if(p.z>Tube.Length+.04f)desired.z=.025f;
+                Vector3 v=Tube.transform.TransformDirection(Vector3.ClampMagnitude(desired,.15f));
+                b.AddForce(Vector3.up*9.81f+Vector3.ClampMagnitude((v-b.linearVelocity)*24,7),ForceMode.Acceleration);
+            }
+            if(through){InTube=false;Motion.Cancel(tubeAnchor);Motion.BuildGraph();}
+        }
+        public void EvaluateExit()
+        {
+            if(Owner.Lost||Owner.Completed||!GateOpen)return;
+            // Full roster connectivity, never just the number of pieces remaining in the box.
+            if(hasExited&&Matter.TotalFragmentCount!=1){Fail(MergeFailure);return;}
+            float r=Matter.Profile.ParticleRadius;
+            for(int i=0;i<32;i++)
+            {
+                var b=Matter.Bodies[i];Vector3 p=Owner.Outlet.InverseTransformPoint(b.position);var old=previous[i];previous[i]=p;
+                if(Matter.Escaped[i])
+                {b.AddForce(Vector3.up*9.81f+Vector3.ClampMagnitude((Owner.Outlet.TransformPoint(Vector3.forward*.12f)-b.position)*18-b.linearVelocity*8,5),ForceMode.Acceleration);continue;}
+                float radial=new Vector2(p.x,p.y).magnitude;
+                if(ExitAssisting(i))
+                {
+                    Vector3 desired=Owner.Outlet.TransformDirection(Vector3.ClampMagnitude(new Vector3(-p.x*8,-p.y*8,.14f),.18f));
+                    b.AddForce(Vector3.up*9.81f+Vector3.ClampMagnitude((desired-b.linearVelocity)*20,5),ForceMode.Acceleration);
+                }
+                if(old.z<-.004f&&p.z>=-.004f)
+                {var cross=Vector3.Lerp(old,p,(-.004f-old.z)/(p.z-old.z));inBore[i]=new Vector2(cross.x,cross.y).magnitude<Owner.ApertureRadius;}
+                if(p.z<-.018f)inBore[i]=false;
+                if(p.z>=-.004f&&p.z<=.004f&&radial>Owner.ApertureRadius)inBore[i]=false;
+                // A rotating circular rim can expose tissue already straddling
+                // its entrance plane. The far plane still requires full clearance.
+                bool clearedMouth=p.z>=.004f+r&&p.z<.085f&&radial<Owner.ApertureRadius;
+                if(clearedMouth||inBore[i]&&old.z<.004f+r&&p.z>=.004f+r)
+                {
+                    if(Matter.TotalFragmentCount!=1){Fail(MergeFailure);return;}
+                    hasExited=true;Matter.RecordEscape(i);
+                }
+            }
+            if(Matter.EscapedCount==32)
+            {Progress.Win(Definition);Owner.SetCampaignOutcome(true);advanceAt=Matter.SimulationTime+VenomCelebration.Duration;}
+        }
+        public bool ExitAssisting(int particle)
+        {
+            if(Home||!GateOpen||Matter.TotalFragmentCount!=1||Matter.Escaped[particle])return false;
+            Vector3 p=Owner.Outlet.InverseTransformPoint(Matter.Bodies[particle].position);
+            if(hasExited&&p.magnitude<.25f&&Clear(Matter.Bodies[particle].position,Owner.Outlet.TransformPoint(Vector3.back*.022f)))return true;
+            return p.z>-.050f&&p.z<.03f&&new Vector2(p.x,p.y).magnitude<Owner.ApertureRadius+.017f&&Owner.ExitAssistClear(Matter.Bodies[particle].position);
+        }
+        public void Fail(string reason)
+        {Failure=reason;Motion.StopAll();heldProp=approachProp=null;InTube=false;Owner.SetCampaignOutcome(false);}
+        public void ConstrainSkin(ref Vector3 local,ref Vector3 normal,Transform skin)
+        {
+            Vector3 world=skin.TransformPoint(local);
+            if(InTube&&Tube!=null)
+            {
+                Vector3 p=Tube.transform.InverseTransformPoint(world);float radial=new Vector2(p.x,p.y).magnitude;
+                if(p.z>0&&p.z<Tube.Length&&radial>Tube.Radius-.0005f&&radial<Tube.Radius+.03f)
+                {
+                    Vector3 outward=new Vector3(p.x,p.y,0).normalized;float scale=(Tube.Radius-.0005f)/radial;p.x*=scale;p.y*=scale;
+                    world=Tube.transform.TransformPoint(p);normal=skin.InverseTransformDirection(Tube.transform.TransformDirection(outward));
+                }
+            }
+            foreach(var patch in Surfaces)
+            {
+                Vector3 p=patch.transform.InverseTransformPoint(world);
+                if(p.z>=0||p.z<-.026f||!patch.Contains(p))continue;
+                p.z=.0006f;world=patch.transform.TransformPoint(p);normal=skin.InverseTransformDirection(patch.Normal);
+            }
+            local=skin.InverseTransformPoint(world);
+        }
+        public void Load(int number)
+        {if(number<1||number>10)return;Time.timeScale=1;SceneManager.LoadScene("VenomOrigin"+number.ToString("00"));}
+        private bool PlayArea(Vector2 p)=>p.y>140*(Screen.height/960f)&&p.y<Screen.height-165*(Screen.height/960f);
+        public void BeginPointer(Vector2 p){if(!Owner.CanControl||!PlayArea(p))return;pointerDown=true;pointerMoved=false;pointerStart=pointerPrevious=p;}
+        public void MovePointer(Vector2 p)
+        {
+            if(!pointerDown)return;
+            if(!pointerMoved&&(p-pointerStart).magnitude>10*Screen.width/540f){pointerMoved=true;if(Definition.CanRotate&&!Cutting)Owner.Rotation.BeginDrag();}
+            if(pointerMoved&&Definition.CanRotate&&!Cutting)Owner.Rotation.Drag((p-pointerPrevious)/Mathf.Min(Screen.width,Screen.height),Owner.View.transform.up,Owner.View.transform.right);
+            pointerPrevious=p;
+        }
+        public void EndPointer(Vector2 p){MovePointer(p);if(pointerDown&&!pointerMoved)TouchPoint(p);pointerDown=false;Owner.Rotation.EndDrag();}
+        private void Update()
+        {
+            if(Owner==null)return;
+            var k=Keyboard.current;
+            if(k!=null)
+            {
+                var ks=new[]{k.digit1Key,k.digit2Key,k.digit3Key,k.digit4Key,k.digit5Key,k.digit6Key,k.digit7Key,k.digit8Key,k.digit9Key,k.digit0Key};
+                for(int i=0;i<10;i++)if(ks[i].wasPressedThisFrame){Load(i+1);return;}
+                if(k.rKey.wasPressedThisFrame)ResetLevel();if(k.pKey.wasPressedThisFrame||k.escapeKey.wasPressedThisFrame)Owner.TogglePause();
+                if(k.zKey.wasPressedThisFrame)Zoom=!Zoom;
+            }
+            if(AutoAdvance&&Owner.Completed&&Matter.SimulationTime>=advanceAt&&!Definition.Boss){Load(Definition.Order+1);return;}
+            if(!Owner.CanControl)return;
+            if(Touch.activeTouches.Count>0||touchFinger>=0)
+            {
+                foreach(var t in Touch.activeTouches)
+                {
+                    if(touchFinger<0&&t.phase==UnityEngine.InputSystem.TouchPhase.Began){touchFinger=t.finger.index;BeginPointer(t.screenPosition);}
+                    if(t.finger.index!=touchFinger)continue;
+                    if(t.phase==UnityEngine.InputSystem.TouchPhase.Ended){EndPointer(t.screenPosition);touchFinger=-1;}
+                    else if(t.phase==UnityEngine.InputSystem.TouchPhase.Canceled){pointerDown=false;touchFinger=-1;Owner.Rotation.EndDrag();}
+                    else MovePointer(t.screenPosition);
+                    break;
+                }
+            }
+            else if(Mouse.current!=null)
+            {
+                var m=Mouse.current;Vector2 p=m.position.ReadValue();
+                if(m.leftButton.wasPressedThisFrame)BeginPointer(p);
+                if(m.leftButton.isPressed)MovePointer(p);
+                if(m.leftButton.wasReleasedThisFrame)EndPointer(p);
+            }
+        }
+        public void TouchPoint(Vector2 screen)
+        {
+            if(!Owner.CanControl)return;
+            climbingStep=null;tubeIntent=false;
+            Ray ray=Owner.View.ScreenPointToRay(screen);
+            int chosen=-1;float selection=.042f;
+            for(int i=0;i<32;i++)
+            {
+                Vector3 p=Matter.Bodies[i].position;float d=Vector3.Cross(p-ray.origin,ray.direction).magnitude;
+                if(d<selection){chosen=i;selection=d;}
+            }
+            if(Home&&chosen>=0){habitat?.Greet();return;}
+            if(chosen>=0&&Matter.TotalFragmentCount>1){Motion.Selected=chosen;return;}
+            var hits=Physics.RaycastAll(ray,5);System.Array.Sort(hits,(a,b)=>a.distance.CompareTo(b.distance));
+            float obstruction=5;
+            bool CanPick(VenomSurfacePatch face)
+            {
+                if(face==null)return true;
+                // Interior glass is transparent to an entering ray. A lesson can
+                // explicitly expose the near pane as a command surface (03, 08).
+                return face.Selectable&&(face.InterceptExterior||Vector3.Dot(ray.direction,face.Normal)<0);
+            }
+            foreach(var hit in hits)
+            {
+                if(hit.collider.GetComponent<VenomContact>()!=null)continue;
+                var face=hit.collider.GetComponent<VenomSurfacePatch>();if(!CanPick(face))continue;
+                obstruction=hit.distance;break;
+            }
+            bool PortalVisible(Transform p)
+            {return new Plane(p.forward,p.position).Raycast(ray,out float distance)&&distance<obstruction+.0015f;}
+            if(!Home&&heldProp==null&&PortalVisible(Owner.Outlet)&&TryPortal(ray,Owner.Outlet,Owner.ApertureRadius+.007f,true))return;
+            if(!Home&&heldProp==null&&Tube!=null&&PortalVisible(Tube.transform)&&TryPortal(ray,Tube.transform,Tube.Radius+.008f,false))return;
+            foreach(var hit in hits)
+            {
+                if(hit.collider.GetComponent<VenomContact>()!=null)continue;
+                var patch=hit.collider.GetComponent<VenomSurfacePatch>();
+                // Glass facing away from the inspection side can be seen through;
+                // explicitly selectable front panes still intercept hidden destinations (03).
+                if(!CanPick(patch))continue;
+                var prop=hit.collider.GetComponentInParent<VenomMovableProp>();
+                if(heldProp!=null){SetPropTarget(hit.point);ShowMarker(hit.point,hit.normal);return;}
+                if(prop!=null&&prop.Manipulable){SelectProp(prop);return;}
+                if(Knife!=null&&hit.collider.attachedRigidbody==Knife){RequestCut();return;}
+                if(PadA!=null&&(hit.collider.transform==PadA||hit.collider.transform==PadB))
+                {Motion.Move(Motion.Selected,hit.point+Root.up*.018f,true);ShowMarker(hit.point,Root.up);return;}
+                if(patch!=null){MoveTo(hit.point,patch);return;}
+                return; // An opaque cover intercepts commands to the mechanism behind it.
+            }
+            // A bore is empty; pick its disk only if no nearer selectable surface occludes it.
+            TryPortal(ray,Owner.Outlet,Owner.ApertureRadius+.015f,true);
+            if(Tube!=null)TryPortal(ray,Tube.transform,Tube.Radius+.045f,false);
+        }
+        private bool TryPortal(Ray ray,Transform portal,float radius,bool exit)
+        {
+            Plane plane=new Plane(portal.forward,portal.position);
+            if(!plane.Raycast(ray,out float t))return false;Vector3 p=ray.GetPoint(t);
+            if(Vector3.Distance(p,portal.position)>radius)return false;
+            if(exit)Motion.Move(Motion.Selected,portal.position-portal.forward*.024f,false,true);
+            else if(!EnterTube())Motion.Move(Motion.Selected,portal.position-portal.forward*.025f);
+            ShowMarker(p,portal.forward);return true;
+        }
+        public void MoveTo(Vector3 world,VenomSurfacePatch surface)
+        {
+            if(heldProp!=null){SetPropTarget(world);return;}
+            if(!Home&&Tube!=null&&Vector3.Distance(world,Tube.transform.position)<.085f&&EnterTube())return;
+            Motion.Move(Motion.Selected,world+surface.Normal*.019f);ShowMarker(world,surface.Normal);
+        }
+        private void ShowMarker(Vector3 p,Vector3 n)
+        {
+            marker.enabled=true;Vector3 x=Vector3.Cross(n,Vector3.up).normalized;if(x.sqrMagnitude<.1f)x=Vector3.Cross(n,Vector3.right).normalized;
+            Vector3 y=Vector3.Cross(n,x);
+            for(int i=0;i<=48;i++){float a=i*Mathf.PI*2/48;marker.SetPosition(i,Root.InverseTransformPoint(p+n*.002f+(x*Mathf.Cos(a)+y*Mathf.Sin(a))*.018f));}
+        }
+        private void LateUpdate()
+        {
+            if(Owner==null)return;
+            if(Owner.Completed){Owner.Celebration.Frame(Screen.width,Screen.height);return;}
+            var cam=Owner.View;cam.orthographic=true;cam.transform.rotation=Quaternion.Euler(Definition.CameraEuler);
+            Vector3 focus=Zoom?Motion.Centre(Motion.Selected):Root.position;
+            cam.transform.position=focus-cam.transform.forward*2;
+            float size=Zoom?.20f:Mathf.Max(Definition.ViewRadius,Definition.ViewRadius*Screen.height/(Screen.width*.87f));
+            cam.orthographicSize=Mathf.Lerp(cam.orthographicSize,size,1-Mathf.Exp(-Time.unscaledDeltaTime*6));
+        }
+        private void OnGUI()
+        {
+            if(Owner==null)return;
+            float s=Mathf.Min(Screen.width/540f,Screen.height/960f),h=Screen.height/s;
+            GUI.matrix=Matrix4x4.TRS(new Vector3((Screen.width-540*s)*.5f,0,0),Quaternion.identity,Vector3.one*s);
+            if(title==null)
+            {
+                title=new GUIStyle(GUI.skin.label){fontSize=25,alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,normal={textColor=new Color(.83f,.96f,.90f)}};
+                body=new GUIStyle(title){fontSize=16,fontStyle=FontStyle.Normal,wordWrap=true};small=new GUIStyle(body){fontSize=13};button=new GUIStyle(GUI.skin.button){fontSize=15};
+            }
+            GUI.Label(new Rect(15,20,510,38),Home?"NHÀ CỦA SINH VẬT":Definition.Title,title);
+            for(int i=1;i<=10;i++)if(GUI.Button(new Rect(20+(i-1)%5*101,67+(i-1)/5*34,96,29),(i==10?"BOSS":i.ToString("00"))+(Progress.Completed.Contains("venom.origin."+i.ToString("00"))?" ✓":""),button))Load(i);
+            if(!Definition.Boss&&!Owner.Completed&&!Home)GUI.Label(new Rect(24,143,492,54),Definition.Lesson,small);
+            if(Owner.Lost)
+            {GUI.Box(new Rect(25,h*.40f,490,145),"");GUI.Label(new Rect(43,h*.40f+12,454,80),Failure,body);if(GUI.Button(new Rect(150,h*.40f+94,240,38),"THỬ LẠI",button))ResetLevel();}
+            else if(Owner.Completed)
+            {
+                GUI.Label(new Rect(20,h-218,500,44),"CHÚNG MÌNH LÀM ĐƯỢC RỒI!",title);
+                if(Definition.Boss&&Owner.Celebration.ReadyForNext)
+                {GUI.Label(new Rect(20,h-174,500,30),"ĐÃ MỞ COLLECTION",body);if(GUI.Button(new Rect(80,h-131,380,45),"NHÀ CỦA SINH VẬT",button))EnterHome();}
+            }
+            else
+            {
+                GUI.Label(new Rect(20,h-167,500,30),Owner.Paused?"TẠM DỪNG":Activity,body);
+                var groups=new HashSet<int>();int slot=0;
+                for(int i=0;i<32;i++)if(groups.Add(Matter.Groups[i]))
+                {int anchor=i;if(Matter.TotalFragmentCount>1&&GUI.Button(new Rect(115+slot*160,h-124,150,34),(Matter.Groups[Motion.Selected]==Matter.Groups[i]?"● ":"")+"Phần "+(slot+1),button))Motion.Selected=anchor;slot++;}
+                if(Attached&&GUI.Button(new Rect(170,h-124,200,34),"BUÔNG HỘP",button))ReleaseProp();
+            }
+            if(GUI.Button(new Rect(20,h-72,120,36),"THỬ LẠI",button))ResetLevel();
+            if(GUI.Button(new Rect(150,h-72,110,36),Owner.Paused?"TIẾP":"DỪNG",button))Owner.TogglePause();
+            if(GUI.Button(new Rect(270,h-72,110,36),Zoom?"THU NHỎ":"ZOOM",button))Zoom=!Zoom;
+            if(Progress.HomeUnlocked&&GUI.Button(new Rect(390,h-72,130,36),Home?"CHÀO BẠN":"COLLECTION",button)){if(Home)habitat?.Greet();else EnterHome();}
+            if(Home)
+            {if(GUI.Button(new Rect(60,h-124,200,36),"CHO ĂN",button))habitat?.Feed();if(GUI.Button(new Rect(280,h-124,200,36),"CHƠI CÙNG",button))habitat?.Greet();}
+        }
+        public float Greeting=>Home?(habitat?.Greeting??0):0;
+        public void EnterHome()
+        {
+            if(!Progress.HomeUnlocked)return;
+            ResetLevel();Home=true;Progress.RevealHome=false;Progress.Write();Owner.Rotation.InputEnabled=false;
+            habitat=habitat??new VenomHabitat(this);habitat.Enter();Zoom=true;
+        }
+        private void OnDestroy(){habitat?.Dispose();if(Owner!=null&&Owner.Rotation!=null)Owner.Rotation.EndDrag();EnhancedTouchSupport.Disable();}
+    }
+}

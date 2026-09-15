@@ -132,6 +132,7 @@ namespace GravityBox.Venom
             Vector3 exit = level.Outlet.InverseTransformPoint(centre);
             leaving |= level.GateLatched && exit.z > -.06f && new Vector2(exit.x,exit.y).magnitude < .06f;
             bool grounded = contacts > 0 && count >= 3 && !leaving;
+            if(level.Campaign!=null){int grips=0;for(int i=0;i<count;i++)if(level.Campaign.Motion!=null&&level.Campaign.Motion.HasGrip(ids[i]))grips++;grounded&=grips>2;}
             if (grounded)
             {
                 up.Normalize(); floorPoint /= contacts;
@@ -145,7 +146,9 @@ namespace GravityBox.Venom
             Vector3 tangentVelocity = Vector3.ProjectOnPlane(velocity,up);
             state.Speed = Mathf.Lerp(state.Speed,tangentVelocity.magnitude,1-Mathf.Exp(-dt*10));
             Vector3 crawlIntent = level.Locomotion != null ? level.Locomotion.IntentForParticle(ids[0]) : Vector3.zero;
+            if(level.Campaign?.Motion!=null)crawlIntent=level.Campaign.Motion.Intent(ids[0]);
             state.Squeezing = 0;
+            if(level.Campaign!=null&&level.Campaign.InTube)state.Squeezing=1;
             if(level.Locomotion != null)
                 foreach(var fragment in level.Locomotion.Fragments)
                     if(fragment.Group==organism.Groups[ids[0]])state.Squeezing=fragment.Squeeze.Amount;
@@ -163,6 +166,7 @@ namespace GravityBox.Venom
                     ref state.LagRate,.19f,Mathf.Infinity,dt);
             state.IdleTime = grounded && state.Speed < .024f && crawlIntent.sqrMagnitude < .001f ? state.IdleTime+dt : 0;
             bool canDance = !(level.Journey!=null && level.Journey.Busy(key)) && grounded && count >= 8 && state.Speed < .024f && crawlIntent.sqrMagnitude < .001f && state.Squeezing < .05f;
+            if(level.Campaign!=null)canDance&=!level.Campaign.Attached&&!level.Campaign.Cutting&&!(level.Campaign.Motion?.Busy(key)??false);
             if(canDance && state.IdleTime>.6f && clock>=state.NextDance)
             {
                 state.DanceStart=clock;state.DanceLength=3.6f+Noise(key+state.Peeks*13)*.8f;
@@ -171,6 +175,7 @@ namespace GravityBox.Venom
             float danceTime=(clock-state.DanceStart)/state.DanceLength;
             float danceEnvelope=Smooth(.08f,.32f,danceTime)*(1-Smooth(.73f,1,danceTime));
             state.Dance=Mathf.MoveTowards(state.Dance,canDance?danceEnvelope:0,dt*5);
+            if(level.Campaign!=null&&canDance)state.Dance=Mathf.Max(state.Dance,level.Campaign.Greeting);
             DanceAmount=Mathf.Max(DanceAmount,state.Dance);
             if (grounded && count >= 8 && state.IdleTime > state.NextPeek)
             {
@@ -208,6 +213,7 @@ namespace GravityBox.Venom
                 FlowBody(state,key,points,count,centre,up,top,bottom,floorPoint);
                 DrawFeet(state,key,points,ids,count,centre,up,floorPoint,support);
             }
+            if(level.Campaign!=null)CampaignPerformance(points,supports,count,centre,up,velocity,grounded);
             int physicalCount=count;
             float expression=Mathf.Max(state.Head,state.Dance);
             if (expression < .008f)
@@ -251,6 +257,54 @@ namespace GravityBox.Venom
             }
             if(grounded)DrawGestures(state,key,points,physicalCount,centre,up,floorPoint,lift*state.Dance);
             return count;
+        }
+
+        private void CampaignPerformance(Vector3[] points,float[] supports,int count,Vector3 centre,Vector3 up,Vector3 velocity,bool grounded)
+        {
+            var game=level.Campaign;
+            if(game==null||game.Motion==null)return;
+            Vector3 direction=velocity.sqrMagnitude>.001f?velocity.normalized:Vector3.down;
+            if(game.Attached)direction=(game.PropContact-centre).normalized;
+            float stretch=game.InTube?1:game.Attached?(game.IsPulling?1.16f:.88f):!grounded?1+Mathf.Clamp(velocity.magnitude*.14f,0,.18f):1-game.Impact*.24f;
+            for(int i=0;i<count;i++)
+            {
+                Vector3 p=transform.TransformPoint(points[i]),d=p-centre;
+                if(game.InTube)
+                {
+                    // Small travelling ripples on the actual flow, without moving collision particles.
+                    p+=game.Tube.transform.up*(Mathf.Sin(clock*9-Vector3.Dot(p,game.Tube.transform.forward)*60)*.001f);
+                    supports[i]*=.88f;
+                }
+                else
+                {
+                    Vector3 axis=game.Impact>.1f?up:direction;
+                    Vector3 change=axis*Vector3.Dot(d,axis)*(stretch-1)+Vector3.ProjectOnPlane(d,axis)*(1/Mathf.Sqrt(stretch)-1);
+                    p+=Vector3.ClampMagnitude(change,.006f);
+                }
+                points[i]=transform.InverseTransformPoint(p);
+            }
+            if(game.Attached)
+            {
+                Vector3 side=Vector3.Cross(up,direction).normalized;
+                for(int arm=0;arm<2;arm++)
+                {
+                    Vector3 a=centre+side*((arm*2-1)*.014f),end=game.PropContact+side*((arm*2-1)*.008f);
+                    Vector3 bend=up*(game.IsPulling?.003f:.014f);
+                    Tube(a,Vector3.Lerp(a,end,.3f)+bend,Vector3.Lerp(a,end,.7f)+bend,end,up,centre-up*.04f,1);
+                    TendrilCount++;
+                }
+            }
+            else if(!grounded&&!game.InTube&&velocity.magnitude>.12f)
+            {
+                // Brief searching filaments retract when no support is found.
+                Vector3 side=Vector3.Cross(direction,level.View.transform.forward).normalized;
+                for(int arm=0;arm<2;arm++)
+                {
+                    Vector3 a=centre+side*((arm*2-1)*.017f),end=a-direction*.022f+side*((arm*2-1)*(.018f+Mathf.Sin(clock*11+arm)*.004f));
+                    Tube(a,a-direction*.009f,Vector3.Lerp(a,end,.7f),end,Vector3.up,centre-Vector3.up*.12f,.72f);
+                    TendrilCount++;
+                }
+            }
         }
 
         private int Celebrate(Vector3[] points,float[] supports,float[] weights,int count)

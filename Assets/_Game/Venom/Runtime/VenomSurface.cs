@@ -37,7 +37,7 @@ namespace GravityBox.Venom
         {
             level=owner;
             organism = source; floor = owner.FloorBoundary;climbing=owner.WallCrawl; block = new MaterialPropertyBlock();
-            if(climbing)
+            if(climbing&&owner.Campaign==null)
             {
                 var slab=(MeshCollider)owner.CrawlFaces[5];ceiling=slab.gameObject.AddComponent<VenomFloorBoundary>();
                 ceiling.Initialize(slab,owner.Outlet,owner.ApertureRadius);
@@ -148,6 +148,7 @@ namespace GravityBox.Venom
         private void ConstrainFloor(ref Vector3 point,ref Vector3 normal)
         {
             if(level.Celebration.Active)return;
+            if(level.Campaign!=null){level.Campaign.ConstrainSkin(ref point,ref normal,transform);return;}
             Vector3 local=toFloor.MultiplyPoint3x4(point);
             if(climbing && local.y>floor.Top)
             {
