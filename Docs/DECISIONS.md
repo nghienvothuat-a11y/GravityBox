@@ -1,10 +1,16 @@
 # Các quyết định kiến trúc
 
-**Nhánh Venom hiện tại:** xem ADR V001–V003 và [năm màn Journey đang chạy](VENOM_JOURNEY_01_05.md). Các ADR số 001–026 bên dưới ghi lịch sử prototype bi thép, trong đó ADR 026 đưa tổng số màn bi thép lên 23; không phải trạng thái campaign Venom.
+**Nhánh Venom hiện tại:** xem ADR V001–V004 và [năm màn Journey đang chạy](VENOM_JOURNEY_01_05.md). Các ADR số 001–026 bên dưới ghi lịch sử prototype bi thép, trong đó ADR 026 đưa tổng số màn bi thép lên 23; không phải trạng thái campaign Venom.
+
+## ADR V004 — Bốn bài mở đầu và lời giải bằng trọng lực
+
+Ngày 15/09/2026, đã đối chiếu bản vẽ campaign mới: **01 Bò đi, 02 Leo đi, 03 Xoay đi, 04 Trơn đấy**. Người dùng xác nhận **vách thấp màn 02 bịt kín hai đầu tới thành hộp** và **xoay hộp lợi dụng trọng lực để vượt vùng trơn hoặc rơi vào lỗ ở màn 04 là một tính năng hợp lệ**.
+
+Công nhận lời giải khác dự kiến khi tuân thủ luật vật lý/cơ quan và toàn bộ sinh vật thoát thật qua lỗ; không buộc đi đúng đường mẫu. Màn 04 mới dạy tự chọn đường qua vật liệu: chạm thẳng có thể làm sinh vật trượt, AI không tự giải hộ đường vòng. Chi tiết bố cục, phản hồi chạm và tiêu chí nghiệm thu nằm trong [thiết kế 01–04](VENOM_CAMPAIGN_01_10.md#thiết-kế-đã-đối-chiếu-của-màn-0104). Chưa dựng scene mới; 05–09 vẫn chờ bản vẽ.
 
 ## ADR V003 — Mười màn đầu làm quen, màn 10 lấy màn 4 hiện tại
 
-Ngày 15/09/2026, người dùng chốt 10 màn đầu là chương mở đầu để nhận biết khả năng của sinh vật. Người dùng đã thiết kế chín màn đầu; màn 10 dùng màn 4 hiện tại. [Bảng đối chiếu](VENOM_CAMPAIGN_01_10.md) ghi bản vẽ 01–02 đã xem, 03–09 còn thiếu tư liệu gốc trong workspace và giả định nguồn 10 là `VenomJourney04` đang chơi mặc định, chờ xác nhận vì dự án còn màn lab `Venom04` khác. Không renumber scene/save trước khi chốt nguồn và xem đủ chín thiết kế.
+Ngày 15/09/2026, người dùng chốt 10 màn đầu là chương mở đầu để nhận biết khả năng của sinh vật. Người dùng đã thiết kế chín màn đầu; màn 10 dùng màn 4 hiện tại. [Bảng đối chiếu](VENOM_CAMPAIGN_01_10.md) hiện ghi bản vẽ 01–04 đã xem, 05–09 còn chờ tư liệu và giả định nguồn 10 là `VenomJourney04` đang chơi mặc định, chờ xác nhận vì dự án còn màn lab `Venom04` khác. Không renumber scene/save trước khi chốt nguồn và xem đủ chín thiết kế.
 
 ## ADR V002 — Tám kỹ năng và phân tách bằng cơ quan cắt
 

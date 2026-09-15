@@ -73,7 +73,7 @@ Thư viện dùng các nhóm dò, bám, kéo, đẩy, cuộn, ăn và cử chỉ
 
 ## 7. Thứ tự phát triển và nghiệm thu
 
-1. Tiếp tục đọc và dựng các dạng level từ bản vẽ của người dùng, với một bộ năng lực vật lý chung. Hai bản vẽ màn 1–2 là ý tưởng mới để đối chiếu, chưa phải hai scene Journey hiện tại; không tự ghi đè hoặc chốt vị trí còn mơ hồ của vách/lỗ.
+1. Tiếp tục đối chiếu thiết kế trước khi dựng các dạng level từ bản vẽ của người dùng, với một bộ năng lực vật lý chung. [Bản vẽ màn 01–04](VENOM_CAMPAIGN_01_10.md) đã đối chiếu: vách 02 kín hai đầu, lời giải xoay hộp/trọng lực ở 04 hợp lệ; 05–09 chờ tư liệu. Đây là campaign mới, chưa phải các scene Journey hiện tại; không tự ghi đè scene trước khi chốt thiết kế và kiến trúc.
 2. Hoàn thiện kỹ năng cần cho các cơ quan đó và khả năng nhớ kỹ năng theo sự kiện. Giữ cách điều khiển chạm chỉ dẫn, kéo xoay.
 3. Sau phần lõi, đề xuất prototype nhà: một phòng, một chỗ nghỉ, một món đồ chơi, một món ăn và vài cử chỉ có thể chọn. Thử vòng mua/sở hữu bằng dữ liệu và tiền thử trong prototype trước khi chọn hệ thanh toán.
 4. Khi tương tác ở nhà có cảm giác tốt, mở rộng đồ vật, món ăn, animation và chốt mô hình kinh tế. Giá, nguồn tiền, tiêu hao, mở khóa hay mua bằng tiền thật hiện là các quyết định còn mở.
