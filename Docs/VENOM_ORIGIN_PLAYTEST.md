@@ -40,6 +40,7 @@ Sau thắng, camera gần, cảnh bị ẩn, sinh vật chọn một trong ba đ
 
 - 32 phần tử Rigidbody, mỗi phần 3 g, tổng 96 g, bán kính collider 9 mm. Bước mô phỏng 1/120 giây. Project tắt `Physics.gravity`; runtime áp gia tốc 9,81 m/s² riêng cho mô, đồ vật rời và dao trong pha rơi để không tính trọng lực hai lần. Liên kết mềm, tính dẻo và thay đổi láng giềng tạo khả năng chảy; chỉ cơ quan cắt làm tách cơ thể.
 - Bộ vận động chủ động truyền lực qua các điểm bám của cùng cơ thể. Mất bám thì rơi theo trọng lực; vật trơn không nhận lực bò. Vành bắt dùng vùng tiếp xúc của lớp da mềm quanh các phần tử, tối đa 21 mm từ tâm hạt, không kéo từ nóc cách miệng hàng chục centimet.
+- Khi cơ thể đi từ kính thường vào vùng trơn, lực giữ giảm theo tỷ lệ dấu chân còn bám: `F_max = khối lượng × 36 m/s² × tỷ lệ bám`. Các hạt nằm trong thân hoặc đang ở trong không khí không bị tính nhầm thành chân mất bám. Đây là tham số mô mềm của prototype, chưa phải số đo sinh học. Nếu lực giữ không đủ chịu trọng lượng trong một khoảng ngắn, các chân còn lại tuột ra, lệnh leo bị ngắt và có 0,45 giây nhả bám để tránh móc lại ngay cùng mép. Người chơi có thể chỉ đường vòng mới sau cú trượt; không mất mô và không phải reset màn.
 - Hộp đẩy có khối lượng 180 g và trọng tâm hạ trong phần đế để giảm lật. Nó vẫn có chuyển động, quay, trọng lực và va chạm tự do. Khi thao tác, điểm tì đi theo pose vật lý của hộp; lực phản ứng được truyền về sinh vật.
 - Animation đọc điểm bám, ý định, vận tốc, lực tương tác và trạng thái cắt/luồn/tụ. Skin có thêm độ rủ, nén khi tiếp đất, xúc tu chống khi đẩy và căng khi kéo; các phần này không sửa khối lượng hay tự mở cơ quan.
 - [Ma trận animation và nguồn nghiên cứu](VENOM_ORIGIN_ANIMATION.md).
@@ -56,7 +57,8 @@ Kết quả chạy Origin riêng được lưu ở `Artifacts/Venom01/origin-tes
 
 ## Kết quả kiểm tra 15/09/2026
 
-- Hồi quy: **87/87 test đạt**, gồm 19 test Origin và 68 test Venom cũ; kết thúc 2026-09-15 07:56:41Z.
+- Hồi quy: **88/88 test đạt**, gồm 20 test Origin và 68 test Venom cũ; kết thúc 2026-09-15 10:28:36Z. Test mới xác nhận bám ổn định trên kính thường, leo từ dưới vào dải trơn thì rơi, không tách mô và vẫn qua màn khi nhận đường vòng mới.
 - MacOS: Unity 6000.3.19f1 báo `ORIGIN BUILD SUCCESS`, binary mới tại `Builds/Venom/macOS/Venom.app`.
 - Bản build chứa 10 scene Origin; danh sách scene tạm cho test đã được phục hồi.
-- Kiểm tra trực tiếp macOS phát hiện kính bên hông chặn chọn lỗ ở 01. Đã sửa và thêm test chọn điểm màn hình rồi thoát đủ cơ thể; test 03 vẫn bảo đảm mặt trước chặn chọn mặt sau. Lượt mở lại bản cuối bị dừng vì macOS khóa màn hình; chưa ghi nhận lượt chơi tay hoàn chỉnh trên binary cuối.
+- Kiểm tra trực tiếp macOS từng phát hiện kính bên hông chặn chọn lỗ ở 01. Đã sửa và thêm test chọn điểm màn hình rồi thoát đủ cơ thể; test 03 vẫn bảo đảm mặt trước chặn chọn mặt sau.
+- Binary macOS cập nhật lúc 17:28:57 ngày 15/09/2026 đã mở và kiểm tra trực tiếp màn 04: chọn lỗ từ phía dưới vùng trơn, sinh vật rơi xuống sàn và trở về Idle; không bị treo ở mép. Các đường giải còn lại của binary này được kiểm tra tự động, chưa chơi tay lại toàn bộ.

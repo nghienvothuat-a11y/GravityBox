@@ -109,6 +109,39 @@ namespace GravityBox.Tests
             game.Motion.Move(0,new Vector3(.278f,.10f,.21f));yield return Until(20,()=>Vector3.Distance(game.Motion.Centre(0),new Vector3(.278f,.10f,.21f))<.04f);
             AimExit();yield return Until(20,()=>game.Owner.Completed);Assert.IsTrue(game.Owner.Completed,State);
         }
+        [UnityTest] public IEnumerator FourthLessonPeelsAndFallsWhenClimbingIntoSlipperyBand()
+        {
+            yield return Load(4);
+            Vector3 below=new Vector3(.278f,-.14f,0);
+            game.Motion.Move(0,below);yield return Until(25,()=>Vector3.Distance(game.Motion.Centre(0),below)<.04f);
+            Assert.Less(Vector3.Distance(game.Motion.Centre(0),below),.04f,"Reach the safe wall below the band: "+State);
+            game.Motion.Cancel(0);float restingHeight=game.Motion.Centre(0).y;yield return Until(1.5f,()=>false);
+            Assert.Greater(game.Motion.Centre(0).y,restingHeight-.025f,"A healthy footprint must still hold on ordinary glass");
+            AimExit();bool touched=false,fell=false;float highest=-1;string samples="";
+            for(int t=0;t<2400&&!game.Owner.Completed&&!game.Owner.Lost;t++)
+            {
+                Steps(1);int grips=0,slick=0;
+                for(int i=0;i<32;i++)
+                {
+                    if(game.Motion.HasGrip(i))grips++;
+                    if(game.Motion.Support(i,out var collider,out var point,out _)&&collider.GetComponent<VenomSurfacePatch>() is VenomSurfacePatch patch&&!patch.Grip(point))slick++;
+                }
+                touched|=slick>2;
+                float y=game.Motion.Centre(0).y;
+                if(touched){highest=Mathf.Max(highest,y);fell|=highest-y>.09f;}
+                if(t%120==0){samples+=$" [{t/120f:F1}s y={y:F3} grips={grips} slick={slick}]";yield return null;}
+                if(fell)break;
+            }
+            Assert.IsTrue(touched,"Must actually enter the slippery band: "+State+samples);
+            Assert.IsTrue(fell,"A few lower anchors must not suspend the body indefinitely: "+State+samples);
+            Assert.IsFalse(game.Owner.Completed,"Climbing straight through the coating must not bypass the puzzle");
+            Assert.AreEqual(1,game.Matter.TotalFragmentCount,"Slipping must not tear off material");
+            Capture("04-slipped");
+            Vector3 detour=new Vector3(.278f,.10f,.21f);
+            game.Motion.Move(0,detour);yield return Until(25,()=>Vector3.Distance(game.Motion.Centre(0),detour)<.04f);
+            AimExit();yield return Until(20,()=>game.Owner.Completed);
+            Assert.IsTrue(game.Owner.Completed,"After a slip, a new safe route must still complete the level: "+State);
+        }
         [UnityTest] public IEnumerator FifthLessonFlipsSlipperyCeilingDown()
         {
             yield return Load(5);yield return Rotate(Quaternion.Euler(0,0,180));AimExit();

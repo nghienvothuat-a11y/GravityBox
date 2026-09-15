@@ -20,10 +20,16 @@ namespace GravityBox.Venom
         private readonly Order[] orders=new Order[32];
         private readonly VenomSurfacePatch[] support=new VenomSurfacePatch[32];
         private readonly Vector3[] contact=new Vector3[32], intent=new Vector3[32];
+        // The contact samples approximate the fraction of the footprint that
+        // still adheres. Internal / airborne particles are not missing feet.
+        // Available traction is finite (N = kg * m/s² * adhering fraction).
+        // Sustained excess load peels the footprint before it can reattach.
+        private const float GripAccelerationLimit=36f;
+        private readonly float[] gripStrain=new float[32], detachedUntil=new float[32];
         public int Selected;
         public int RouteCount=>nodes.Count;
         public VenomCampaignMotion(VenomCampaign owner){game=owner;}
-        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);Selected=0;BuildGraph();}
+        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);System.Array.Clear(gripStrain,0,32);System.Array.Clear(detachedUntil,0,32);Selected=0;BuildGraph();}
         public Vector3 Centre(int anchor)
         {
             Vector3 c=Vector3.zero;int count=0;int group=game.Matter.Groups[anchor];
@@ -43,7 +49,7 @@ namespace GravityBox.Venom
             var patch=support[particle];collider=patch!=null?patch.Shape:null;point=contact[particle];normal=patch!=null?patch.Normal:Vector3.up;
             return patch!=null && !game.Matter.Escaped[particle];
         }
-        public bool HasGrip(int particle)=>support[particle]!=null&&support[particle].Grip(contact[particle]);
+        public bool HasGrip(int particle)=>support[particle]!=null&&game.Matter.SimulationTime>=detachedUntil[particle]&&support[particle].Grip(contact[particle]);
         public void BuildGraph()
         {
             Physics.SyncTransforms();
@@ -130,8 +136,24 @@ namespace GravityBox.Venom
             {
                 if(game.Matter.Escaped[a]||!seen.Add(game.Matter.Groups[a]))continue;
                 Vector3 centre=Centre(a);Order o=Get(a);Vector3 target=centre;
-                int grips=0;
-                for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[a]&&HasGrip(i))grips++;
+                int grips=0;float mass=0,contactMass=0,gripMass=0,strain=0;
+                for(int i=0;i<32;i++)
+                {
+                    if(game.Matter.Groups[i]!=game.Matter.Groups[a]||game.Matter.Escaped[i])continue;
+                    mass+=game.Matter.Bodies[i].mass;strain=Mathf.Max(strain,gripStrain[i]);
+                    if(support[i]!=null)contactMass+=game.Matter.Bodies[i].mass;
+                    if(HasGrip(i)){grips++;gripMass+=game.Matter.Bodies[i].mass;}
+                }
+                float capacity=mass*GripAccelerationLimit*gripMass/Mathf.Max(contactMass,.0001f);
+                float weight=mass*9.81f;
+                strain=grips>=2&&capacity<weight?strain+dt*8*(weight-capacity)/weight:Mathf.Max(0,strain-dt*.25f);
+                bool peeled=strain>.14f&&!game.InTube;
+                for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[a])
+                {
+                    gripStrain[i]=peeled?0:strain;
+                    if(peeled)detachedUntil[i]=game.Matter.SimulationTime+.45f;
+                }
+                if(peeled){Cancel(a);o=null;grips=0;capacity=0;}
                 if(o!=null)
                 {
                     if(grips<2)o.AwaitingContact=true;
@@ -154,15 +176,16 @@ namespace GravityBox.Venom
                     bool atExit=game.ExitAssisting(i);
                     game.Matter.SetFlow(i,game.InTube||atExit?1:.12f);
                     if(!anchored||atExit)continue;
-                    // Muscular tension carries the complete connected body from
-                    // its planted feet. Unsupported tissue keeps its deformable
-                    // bonds, rather than pulling a climbing body off the wall.
+                    // Distribute the finite force transmitted by planted feet
+                    // through the connected body. Gravity keeps acting on all
+                    // tissue, including the unsupported head over a slick patch.
                     Vector3 relative=body.linearVelocity-game.Owner.Rotation.GetComponent<Rigidbody>().GetPointVelocity(body.position);
                     Vector3 acceleration=Vector3.up*9.81f;
                     bool manipulating=game.Attached&&game.Matter.Groups[a]==game.Matter.Groups[Selected];
                     if(!manipulating)acceleration+=Vector3.ClampMagnitude((desired-relative)*26,5);
+                    acceleration=Vector3.ClampMagnitude(acceleration,capacity/Mathf.Max(mass,.0001f));
                     intent[i]=desired/.105f;
-                    if(patch!=null&&patch.Grip(contact[i]))
+                    if(HasGrip(i))
                     {
                         Vector3 n=patch.Normal;
                         float distance=Vector3.Dot(body.position-contact[i],n);
