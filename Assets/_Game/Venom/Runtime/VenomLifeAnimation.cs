@@ -65,6 +65,7 @@ namespace GravityBox.Venom
         public float HeadAmount { get; private set; }
         public float HeadHeight { get; private set; }
         public int TendrilCount { get; private set; }
+        public int SlidingTendrilCount { get; private set; }
         public float CrawlAmount { get; private set; }
         public float DanceAmount { get; private set; }
         public int RaisedTendrilCount { get; private set; }
@@ -89,7 +90,7 @@ namespace GravityBox.Venom
             previousSimulationTime = time;
             clock += dt;
             vertices.Clear(); normals.Clear(); triangles.Clear(); plants.Clear();
-            HeadAmount = HeadHeight = CrawlAmount = DanceAmount = 0; TendrilCount = RaisedTendrilCount = 0;
+            HeadAmount = HeadHeight = CrawlAmount = DanceAmount = 0; TendrilCount = RaisedTendrilCount = SlidingTendrilCount = 0;
             GravitySag=Vector3.zero;
             foreach (var fragment in fragments) if (fragment != null) fragment.Seen = false;
         }
@@ -132,14 +133,17 @@ namespace GravityBox.Venom
             Vector3 exit = level.Outlet.InverseTransformPoint(centre);
             leaving |= level.GateLatched && exit.z > -.06f && new Vector2(exit.x,exit.y).magnitude < .06f;
             bool grounded = contacts > 0 && count >= 3 && !leaving;
-            if(level.Campaign!=null){int grips=0;for(int i=0;i<count;i++)if(level.Campaign.Motion!=null&&level.Campaign.Motion.HasGrip(ids[i]))grips++;grounded&=grips>2;}
+            bool sliding=level.Campaign!=null&&level.Campaign.Definition.Passive&&!level.Campaign.Home;
+            // Contact can support the performance without supplying any grip.
+            // These feet skid visually; only the motion solver can apply force.
+            if(level.Campaign!=null){int grips=0;for(int i=0;i<count;i++)if(level.Campaign.Motion!=null&&level.Campaign.Motion.HasGrip(ids[i]))grips++;grounded&=grips>2||sliding;}
             if (grounded)
             {
                 up.Normalize(); floorPoint /= contacts;
                 state.Up = Vector3.Slerp(state.Up,up,1-Mathf.Exp(-dt*14));
             }
             up = state.Up;
-            float sagAmount=grounded&&level.WallCrawl?Mathf.Clamp01(1-Vector3.Dot(up,Vector3.up)):0;
+            float sagAmount=grounded&&!sliding&&level.WallCrawl?Mathf.Clamp01(1-Vector3.Dot(up,Vector3.up)):0;
             Vector3 sagTarget=Vector3.down*(organism.Profile.ClingingSag*sagAmount*Mathf.Sqrt(count/32f));
             if(physicalDt>0)state.Sag=Vector3.SmoothDamp(state.Sag,sagTarget,ref state.SagRate,.24f,Mathf.Infinity,physicalDt);
             if(state.Sag.sqrMagnitude>GravitySag.sqrMagnitude)GravitySag=state.Sag;
@@ -152,15 +156,16 @@ namespace GravityBox.Venom
             if(level.Locomotion != null)
                 foreach(var fragment in level.Locomotion.Fragments)
                     if(fragment.Group==organism.Groups[ids[0]])state.Squeezing=fragment.Squeeze.Amount;
-            float moving = grounded ? Mathf.Max(Smooth(.010f,.065f,state.Speed),crawlIntent.magnitude*.75f) : 0;
+            float moving = grounded ? sliding?crawlIntent.magnitude:Mathf.Max(Smooth(.010f,.065f,state.Speed),crawlIntent.magnitude*.75f) : 0;
             state.Moving = Mathf.MoveTowards(state.Moving,moving,dt*(grounded ? 4 : 12));
             // The intended direction follows flow/downhill, never the game camera.
             Vector3 intent = tangentVelocity + Vector3.ProjectOnPlane(Vector3.down,up)*.018f + crawlIntent*.08f;
+            if(sliding&&crawlIntent.sqrMagnitude>.001f)intent=crawlIntent*.08f+tangentVelocity*.15f;
             if (grounded && intent.sqrMagnitude > .000025f)
                 state.Forward = Vector3.Slerp(state.Forward,intent.normalized,1-Mathf.Exp(-dt*5));
             state.Forward = Vector3.ProjectOnPlane(state.Forward,up).normalized;
             if (state.Forward.sqrMagnitude < .1f) state.Forward = Vector3.ProjectOnPlane(box.transform.forward,up).normalized;
-            state.Flow += dt*(.24f + state.Speed*8);
+            state.Flow += dt*(.24f + state.Speed*8+(sliding?crawlIntent.magnitude*1.7f:0));
             if (dt > 0)
                 state.Lag = Vector3.SmoothDamp(state.Lag,Vector3.ClampMagnitude(-tangentVelocity*.055f,.009f),
                     ref state.LagRate,.19f,Mathf.Infinity,dt);
@@ -211,7 +216,7 @@ namespace GravityBox.Venom
             if (grounded)
             {
                 FlowBody(state,key,points,count,centre,up,top,bottom,floorPoint);
-                DrawFeet(state,key,points,ids,count,centre,up,floorPoint,support);
+                DrawFeet(state,key,points,ids,count,centre,up,floorPoint,support,sliding);
             }
             if(level.Campaign!=null)CampaignPerformance(points,supports,count,centre,up,velocity,grounded,ids[0]);
             int physicalCount=count;
@@ -265,7 +270,7 @@ namespace GravityBox.Venom
             if(game==null||game.Motion==null)return;
             Vector3 direction=velocity.sqrMagnitude>.001f?velocity.normalized:Vector3.down;
             if(game.Attached)direction=(game.PropContact-centre).normalized;
-            float stretch=game.InTube?1:game.Attached?(game.IsPulling?1.16f:.88f):!grounded?1+Mathf.Clamp(velocity.magnitude*.14f,0,.18f):1-game.Impact*.24f;
+            float stretch=game.InTube?1:game.Attached?(game.IsPulling?1.16f:.88f):!grounded||game.Definition.Passive?1+Mathf.Clamp(velocity.magnitude*.14f,0,.18f):1-game.Impact*.24f;
             for(int i=0;i<count;i++)
             {
                 Vector3 p=transform.TransformPoint(points[i]),d=p-centre;
@@ -479,7 +484,7 @@ namespace GravityBox.Venom
         }
 
         private void DrawFeet(Fragment state, int key, Vector3[] points, int[] ids, int count,
-            Vector3 centre, Vector3 up, Vector3 floor, Collider support)
+            Vector3 centre, Vector3 up, Vector3 floor, Collider support,bool sliding)
         {
             CrawlAmount = Mathf.Max(CrawlAmount,state.Moving);
             int limbCount = count < 8 ? 3 : Arms;
@@ -516,11 +521,19 @@ namespace GravityBox.Venom
                     foot.Reach = .16f+Noise(seed+17)*.18f;
                     foot.Hold = .24f+Noise(seed+29)*.55f;
                     foot.Release = .3f+Noise(seed+43)*.3f;
+                    if(sliding){foot.Reach*=.55f;foot.Hold=.10f;foot.Release=.13f;}
                     foot.ReleaseAt = foot.Reach+foot.Hold;
                     foot.Thickness = .65f+Noise(seed+59)*.5f;
                 }
                 int index = Array.IndexOf(ids,foot.Particle,0,count);
                 if (index < 0 || !foot.Surface.enabled) { foot.Surface = null; continue; }
+                if(sliding&&dt>0&&foot.Surface.TryGetComponent<VenomSurfacePatch>(out var slick))
+                {
+                    Vector3 slip=foot.Surface.transform.TransformPoint(foot.LocalPoint)-state.Forward*(dt*.07f*state.Moving);
+                    Vector3 tip=slick.Closest(slip);
+                    foot.LocalPoint=foot.Surface.transform.InverseTransformPoint(tip);
+                    foot.LocalNormal=foot.Surface.transform.InverseTransformDirection(slick.NormalAt(tip));
+                }
                 Vector3 normal = foot.Surface.transform.TransformDirection(foot.LocalNormal).normalized;
                 Vector3 anchor = foot.Surface.transform.TransformPoint(foot.LocalPoint);
                 Vector3 dir = foot.Surface.transform.TransformDirection(foot.LocalDirection).normalized;
@@ -537,7 +550,7 @@ namespace GravityBox.Venom
                 { foot.Surface = null; foot.WaitUntil = clock+.13f+Noise(seed+67)*.55f; continue; }
                 Vector3 end = Vector3.Lerp(origin,anchor+normal*.0007f,reach*(1-release));
                 end += normal*(Mathf.Sin(release*Mathf.PI)*.005f);
-                if (reach >= .999f && release == 0)
+                if (reach >= .999f && release == 0&&!sliding)
                     plants.Add(new Plant(key,arm,foot.PlantId,foot.Surface,foot.LocalPoint,end));
                 float tension = Mathf.InverseLerp(.025f,.075f,distance);
                 Vector3 bend = Vector3.Cross(normal,dir)*(.0035f*(Noise(seed+2)*2-1)*(1-tension));
@@ -549,6 +562,7 @@ namespace GravityBox.Venom
                 p1+=droop*(1-tension)*.22f;p2+=droop*(1-tension)*.35f;
                 Tube(origin,p1,p2,end,normal,anchor,foot.Thickness*Mathf.Lerp(1,.48f,tension)*(1-release*.5f));
                 TendrilCount++;
+                if(sliding)SlidingTendrilCount++;
             }
         }
         private void DrawGestures(Fragment state, int key, Vector3[] points, int count,

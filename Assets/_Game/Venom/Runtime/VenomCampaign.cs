@@ -97,7 +97,7 @@ namespace GravityBox.Venom
             {
                 if(!patch.isActiveAndEnabled)continue;
                 Vector3 x=patch.transform.InverseTransformPoint(a),y=patch.transform.InverseTransformPoint(b);
-                if(Mathf.Abs(x.z-y.z)>.00001f)
+                if(patch.SphereRadius<=0&&Mathf.Abs(x.z-y.z)>.00001f)
                 {
                     float t=x.z/(x.z-y.z);
                     if(t>=0&&t<=1&&patch.Contains(Vector3.Lerp(x,y,t),radius))return false;
@@ -115,7 +115,8 @@ namespace GravityBox.Venom
             {
                 if(!s.isActiveAndEnabled)continue;
                 Vector3 p=s.transform.InverseTransformPoint(world);
-                if(p.z>-.008f&&p.z<.008f&&s.Contains(p))return true;
+                float distance=s.DistanceInside(world);
+                if(distance>-.008f&&distance<.008f&&s.Contains(p))return true;
             }
             return false;
         }
@@ -134,6 +135,7 @@ namespace GravityBox.Venom
             if(!hadContact&&contacts>4){Impact=Mathf.Clamp01((lastVelocity-velocity).magnitude/.5f);CatchPulse=1;}
             hadContact=contacts>4;lastVelocity=velocity;
             Activity=InTube?"Chảy qua ống":Motion.TryCatchPoint(Motion.Selected,out _)?"Bám vành ống":Cutting?"Phân tách":heldProp!=null?(IsPulling?"Kéo":"Đẩy"):
+                Definition.Passive&&Motion.Get(Motion.Selected)!=null?"Cố bò / trượt":
                 contacts<3?(velocity.magnitude>.06f?"Rơi / trượt":"Trượt"):Motion.Busy(Motion.Selected)?"Giữ":
                 Motion.Get(Motion.Selected)!=null?"Bò / leo":"Idle";
             if(!Home)EvaluateExit();else habitat?.Step(dt);
@@ -371,6 +373,12 @@ namespace GravityBox.Venom
             foreach(var patch in Surfaces)
             {
                 Vector3 p=patch.transform.InverseTransformPoint(world);
+                if(patch.SphereRadius>0)
+                {
+                    if(p.magnitude>patch.SphereRadius&&p.magnitude<patch.SphereRadius+.026f&&patch.Contains(p))
+                    {world=patch.transform.TransformPoint(p.normalized*(patch.SphereRadius-.0006f));normal=skin.InverseTransformDirection(patch.NormalAt(world));}
+                    continue;
+                }
                 if(p.z>=0||p.z<-.026f||!patch.Contains(p))continue;
                 p.z=.0006f;world=patch.transform.TransformPoint(p);normal=skin.InverseTransformDirection(patch.Normal);
             }
@@ -434,6 +442,11 @@ namespace GravityBox.Venom
             }
             if(Home&&chosen>=0){habitat?.Greet();return;}
             if(chosen>=0&&Matter.TotalFragmentCount>1){Motion.Selected=chosen;return;}
+            // The passive sphere still acknowledges the nearest shell point.
+            // Its inward-facing collision mesh alone would select the far wall.
+            if(!Home&&Definition.Passive)
+                foreach(var surface in Surfaces)
+                    if(surface.Selectable&&surface.PickSphere(ray,out var point)){MoveTo(point,surface);return;}
             var hits=Physics.RaycastAll(ray,5);System.Array.Sort(hits,(a,b)=>a.distance.CompareTo(b.distance));
             float obstruction=5;
             bool CanPick(VenomSurfacePatch face)
@@ -441,7 +454,7 @@ namespace GravityBox.Venom
                 if(face==null)return true;
                 // Interior glass is transparent to an entering ray. A lesson can
                 // explicitly expose the near pane as a command surface (03, 08).
-                return face.Selectable&&(face.InterceptExterior||Vector3.Dot(ray.direction,face.Normal)<0);
+                return face.Selectable&&(face.SphereRadius>0||face.InterceptExterior||Vector3.Dot(ray.direction,face.Normal)<0);
             }
             foreach(var hit in hits)
             {
@@ -486,7 +499,8 @@ namespace GravityBox.Venom
         {
             if(heldProp!=null){SetPropTarget(world);return;}
             if(!Home&&Tube!=null&&Vector3.Distance(world,Tube.transform.position)<.085f&&EnterTube())return;
-            Motion.Move(Motion.Selected,world+surface.Normal*.019f);ShowMarker(world,surface.Normal);
+            Vector3 normal=surface.NormalAt(world);
+            Motion.Move(Motion.Selected,world+normal*.019f);ShowMarker(world,normal);
         }
         private void ShowMarker(Vector3 p,Vector3 n)
         {

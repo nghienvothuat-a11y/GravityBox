@@ -14,7 +14,8 @@ Ngày 15/09/2026. Nghiên cứu và triển khai cho mười màn theo bản v�
 | Idle | Mặt thân nhấp nhô lệch nhịp, ngóc một phần thân quan sát; thỉnh thoảng cử chỉ vui | Thời gian nghỉ, không có tác vụ chịu tải |
 | Bò | Khối thân đi trước, nếp mô truyền dọc thân; xúc tu dò, bám, kéo rồi nhả không đồng nhịp | Vận tốc tương đối với mặt đỡ, ý định đi, điểm tiếp xúc |
 | Leo | Chuyển hướng qua mép, giữ các điểm tì; phần bụng rủ theo hướng đất | Normal mặt bám, gravity thế giới và hướng đi |
-| Trượt / rơi | Không chạy chân giả trên vật trơn; khi dấu chân còn lại không chịu nổi tải, nhả chân, thân kéo nhẹ theo vận tốc, xúc tu tìm bám ngắn rồi rút | Tỷ lệ dấu chân bám, quá tải bám, vận tốc, contact |
+| Trượt / rơi | Khi dấu chân còn lại không chịu nổi tải, nhả chân; thân kéo nhẹ theo vận tốc, xúc tu tìm bám ngắn rồi rút | Tỷ lệ dấu chân bám, quá tải bám, vận tốc, contact |
+| Cố bò trên cầu trơn (06) | Chạm điểm: thân gợn theo hướng chỉ, xúc tu liên tục thử bám, trượt ngược rồi rút; cơ thể không tiến nhờ lệnh. Vỏ xoay vẫn tạo chuyển động tương đối và độ trễ của mô | Ý định từ điểm chạm, normal mặt cầu tại tiếp xúc và vận tốc tương đối; không thêm lực vật lý |
 | Bắt vành / đáp đất | Nén thân ngắn, hồi lại; hai xúc tu giữ điểm đã chạm trên vành trong pha hãm, sau đó chuyển sang tư thế bám nghỉ | Tiếp xúc da thật với vành, trạng thái bắt rơi hữu hạn và biến thiên vận tốc |
 | Đẩy | Thân nén theo hướng tác động, hai xúc tu tì vào hộp; các chân sau chống | Điểm tiếp xúc hộp, lực và đích đang kéo/đẩy |
 | Kéo | Thân dài hơn giữa chỗ bám và hộp, xúc tu căng; nhả khi hết thời hạn | Điểm bám đi cùng Rigidbody của hộp, tác vụ kéo |

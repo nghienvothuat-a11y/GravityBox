@@ -205,6 +205,59 @@ namespace GravityBox.Tests
             yield return Load(6);yield return Rotate(Quaternion.Euler(0,0,180));
             yield return Until(15,()=>game.Owner.Completed);Assert.IsTrue(game.Owner.Completed,State);
         }
+        [UnityTest] public IEnumerator SixthLessonTapsAnimateSkiddingWithoutChangingPassivePhysics()
+        {
+            const int frames=150;
+            var baseline=new Vector3[frames,32];float crawl=0,relativeSpeed=0;int skidding=0;
+            for(int trial=0;trial<2;trial++)
+            {
+                yield return Load(6);Steps(240);yield return null;
+                var surface=game.Matter.GetComponent<VenomSurface>();var life=game.Matter.GetComponent<VenomLifeAnimation>();
+                var camera=game.Owner.View;var pivot=game.Owner.Rotation.GetComponent<Rigidbody>();
+                Vector3 localTarget=Vector3.zero;
+                if(trial==1)
+                {
+                    game.TouchPoint(camera.WorldToScreenPoint(game.Root.position+camera.transform.right*.13f));
+                    Assert.NotNull(game.Motion.Get(0),"A tap on the visible curved shell must be acknowledged");
+                    localTarget=game.Motion.Get(0).Target;
+                    Assert.Less(Vector3.Dot(game.Root.TransformPoint(localTarget)-game.Root.position,camera.transform.forward),0,"Select the near shell, not the far side through the sphere");
+                }
+                for(int frame=0;frame<frames;frame++)
+                {
+                    if(frame==60)game.Owner.Rotation.SetTargetOrientation(Quaternion.Euler(0,0,65));
+                    Steps(4);
+                    var positions=new Vector3[32];var velocities=new Vector3[32];
+                    for(int i=0;i<32;i++){positions[i]=game.Matter.Bodies[i].position;velocities[i]=game.Matter.Bodies[i].linearVelocity;}
+                    surface.Rebuild(false);
+                    for(int i=0;i<32;i++)
+                    {
+                        Assert.AreEqual(positions[i],game.Matter.Bodies[i].position,"Animation cannot move collision particles");
+                        Assert.AreEqual(velocities[i],game.Matter.Bodies[i].linearVelocity,"Animation cannot add an impulse");
+                        Assert.IsFalse(game.Motion.HasGrip(i),"Slick sphere never gains traction");
+                        if(trial==0)baseline[frame,i]=positions[i];
+                        else Assert.Less(Vector3.Distance(positions[i],baseline[frame,i]),.0005f,"Taps must preserve the no-command gravity/inertia trajectory");
+                        if(frame>=60)relativeSpeed=Mathf.Max(relativeSpeed,(velocities[i]-pivot.GetPointVelocity(positions[i])).magnitude);
+                    }
+                    if(trial==1)
+                    {
+                        crawl=Mathf.Max(crawl,life.CrawlAmount);skidding=Mathf.Max(skidding,life.SlidingTendrilCount);
+                        Assert.AreEqual(0,life.PlantedFeet.Count,"Attempted footsteps must slide, not lock to the sphere");
+                    }
+                    if(frame%30==0)yield return null;
+                    if(trial==1&&frame==45)Capture("06-trying-to-crawl");
+                }
+                if(trial==1)
+                {
+                    Assert.AreEqual(localTarget,game.Motion.Get(0).Target,"The chosen point must rotate with the shell");
+                    Assert.AreEqual("Cố bò / trượt",game.Activity);
+                    Capture("06-sliding-while-rotated");
+                }
+            }
+            Assert.Greater(crawl,.7f,"A stationary body must visibly try to crawl after a tap");
+            Assert.Greater(skidding,0,"Show tendrils slipping across the curved contact surface");
+            Assert.Greater(relativeSpeed,.05f,"The body must move relative to a rotating shell");
+            game.ResetLevel();Steps(60);Assert.IsNull(game.Motion.Get(0));Assert.AreEqual(Vector3.zero,game.Motion.Intent(0));
+        }
         [UnityTest] public IEnumerator SeventhLessonPushesPullsAndReleasesAfterThreeSeconds()
         {
             yield return Load(7);var prop=game.Props[0];game.SelectProp(prop);

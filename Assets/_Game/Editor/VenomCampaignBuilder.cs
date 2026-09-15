@@ -227,7 +227,7 @@ namespace GravityBox.Editor
             var mesh=new Mesh();mesh.SetVertices(v);mesh.SetTriangles(t,0);mesh.RecalculateNormals();mesh.RecalculateBounds();mesh=Save(mesh);
             var go=new GameObject("Slippery sphere — real opening",typeof(MeshFilter),typeof(MeshRenderer),typeof(MeshCollider),typeof(VenomSurfacePatch));go.transform.SetParent(root,false);go.GetComponent<MeshFilter>().sharedMesh=mesh;go.GetComponent<Renderer>().sharedMaterial=slip;
             var mc=go.GetComponent<MeshCollider>();mc.sharedMesh=mesh;mc.sharedMaterial=slick;
-            var patch=go.GetComponent<VenomSurfacePatch>();patch.Shape=mc;patch.Size=Vector2.zero;patch.Slippery=true;patch.Selectable=false;return patch;
+            var patch=go.GetComponent<VenomSurfacePatch>();patch.Shape=mc;patch.Size=Vector2.zero;patch.SphereRadius=r;patch.Hole=true;patch.HoleRadius=aperture;patch.Slippery=true;patch.Selectable=true;return patch;
         }
         private static void Boss(VenomCampaign game,Transform root,List<VenomSurfacePatch> surfaces,List<VenomMovableProp> props)
         {

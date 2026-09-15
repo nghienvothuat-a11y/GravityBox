@@ -55,7 +55,7 @@ namespace GravityBox.Venom
         public Vector3 Intent(int particle)=>intent[particle];
         public bool Support(int particle,out Collider collider,out Vector3 point,out Vector3 normal)
         {
-            var patch=support[particle];collider=patch!=null?patch.Shape:null;point=contact[particle];normal=patch!=null?patch.Normal:Vector3.up;
+            var patch=support[particle];collider=patch!=null?patch.Shape:null;point=contact[particle];normal=patch!=null?patch.NormalAt(point):Vector3.up;
             return patch!=null && !game.Matter.Escaped[particle];
         }
         public bool HasGrip(int particle)=>support[particle]!=null&&support[particle].Grip(contact[particle])&&
@@ -94,7 +94,7 @@ namespace GravityBox.Venom
             nodes.Clear();links.Clear();
             foreach(var s in game.Surfaces)
             {
-                if(!s.isActiveAndEnabled)continue;
+                if(!s.isActiveAndEnabled||s.SphereRadius>0)continue;
                 int nx=Mathf.Max(1,Mathf.CeilToInt(s.Size.x/.065f)),ny=Mathf.Max(1,Mathf.CeilToInt(s.Size.y/.065f));
                 for(int x=0;x<=nx;x++)for(int y=0;y<=ny;y++)
                 {
@@ -119,7 +119,9 @@ namespace GravityBox.Venom
             var o=new Order{Anchor=anchor,Target=game.Root.InverseTransformPoint(world),Holding=hold,Exit=exit};
             int grips=0;for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[anchor]&&HasGrip(i))grips++;
             o.AwaitingContact=grips<2;
-            FindPath(Centre(anchor),world,o.Path);orders[anchor]=o;
+            if(game.Definition.Passive&&!game.Home)o.Path.Add(o.Target);
+            else FindPath(Centre(anchor),world,o.Path);
+            orders[anchor]=o;
         }
         public bool FindPath(Vector3 start,Vector3 goal,List<Vector3> path)
         {
@@ -217,7 +219,8 @@ namespace GravityBox.Venom
                 {
                     if(!patch.isActiveAndEnabled||game.IsHeldSurface(patch))continue;
                     var local=patch.transform.InverseTransformPoint(p);
-                    if(local.z<-.002f||local.z>.036f||!patch.Contains(local,.001f))continue;
+                    float inside=patch.DistanceInside(p);
+                    if(inside<-.002f||inside>.036f||!patch.Contains(local,.001f))continue;
                     Vector3 q=patch.Closest(p);float d=Vector3.Distance(q,p);
                     // The deformable skin extends beyond each particle centre.
                     // A catch is local to its contact envelope, never a reach from the ceiling.
@@ -276,12 +279,25 @@ namespace GravityBox.Venom
                 Vector3 desired=o!=null?delta.normalized*MoveSpeed:Vector3.zero;
                 if(o!=null&&o.Cursor==o.Path.Count-1)desired=Vector3.ClampMagnitude(delta*4,MoveSpeed);
                 if(caught!=null)desired=Vector3.ClampMagnitude((caught.Surface.transform.TransformPoint(caught.LocalTarget)-centre)*6,.35f);
+                Vector3 passiveIntent=Vector3.zero;
+                if(o!=null&&game.Definition.Passive&&!game.Home)
+                {
+                    Vector3 normal=Vector3.up;
+                    foreach(var s in game.Surfaces)if(s.SphereRadius>0){normal=s.NormalAt(centre);break;}
+                    passiveIntent=Vector3.ProjectOnPlane(delta,normal);
+                    if(passiveIntent.sqrMagnitude<.000001f)passiveIntent=Vector3.ProjectOnPlane(game.Root.forward,normal);
+                    if(passiveIntent.sqrMagnitude<.000001f)passiveIntent=Vector3.ProjectOnPlane(game.Root.right,normal);
+                    passiveIntent.Normalize();
+                }
                 for(int i=0;i<32;i++)
                 {
                     if(game.Matter.Groups[i]!=game.Matter.Groups[a]||game.Matter.Escaped[i])continue;
                     Rigidbody body=game.Matter.Bodies[i];var patch=support[i];
                     bool atExit=game.ExitAssisting(i);
                     game.Matter.SetFlow(i,game.InTube||atExit?1:.12f);
+                    // Visual effort is independent of traction. Slick contact
+                    // receives no drive, adhesion or gravity cancellation.
+                    intent[i]=atExit?Vector3.zero:passiveIntent;
                     if(!anchored||atExit)continue;
                     // Distribute the finite force transmitted by planted feet
                     // through the connected body. Gravity keeps acting on all
