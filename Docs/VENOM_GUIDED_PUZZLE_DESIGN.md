@@ -178,7 +178,7 @@ Màn rất khó tăng sự phụ thuộc giữa các quyết định, phân bổ
 
 ## 10. Chương thử nghiệm 10 màn đề xuất
 
-Đề xuất ban đầu ngày 10/09, giữ để đối chiếu, không phải danh sách scene đã dựng hoặc kế hoạch cố định. Hướng hiện tại là [giải đố thuần](VENOM_PURE_PUZZLE_AND_HOME.md); các dạng level mới sẽ theo bản vẽ và quyết định của người dùng, không theo chuỗi thử tăng chỉ số ngày 11/09.
+Đề xuất ban đầu ngày 10/09, giữ để đối chiếu, không phải danh sách scene đã dựng hoặc kế hoạch cố định. Hướng hiện tại là [giải đố thuần](VENOM_PURE_PUZZLE_AND_HOME.md). Người dùng đã [chốt chương làm quen 01–10](VENOM_CAMPAIGN_01_10.md), trong đó màn 10 lấy màn 4 hiện tại; các dạng level mới sẽ theo bản vẽ và quyết định của người dùng, không theo chuỗi thử tăng chỉ số ngày 11/09 hay boss “Glass Flower” cũ.
 
 Đây là số thứ tự campaign thiết kế mới, không đổi số hay ghi đè các scene thử nghiệm 01–08 hiện có.
 

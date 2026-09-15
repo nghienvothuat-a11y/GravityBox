@@ -1,6 +1,10 @@
 # Các quyết định kiến trúc
 
-**Nhánh Venom hiện tại:** xem ADR V001–V002 và [năm màn Journey đang chạy](VENOM_JOURNEY_01_05.md). Các ADR số 001–026 bên dưới ghi lịch sử prototype bi thép, trong đó ADR 026 đưa tổng số màn bi thép lên 23; không phải trạng thái campaign Venom.
+**Nhánh Venom hiện tại:** xem ADR V001–V003 và [năm màn Journey đang chạy](VENOM_JOURNEY_01_05.md). Các ADR số 001–026 bên dưới ghi lịch sử prototype bi thép, trong đó ADR 026 đưa tổng số màn bi thép lên 23; không phải trạng thái campaign Venom.
+
+## ADR V003 — Mười màn đầu làm quen, màn 10 lấy màn 4 hiện tại
+
+Ngày 15/09/2026, người dùng chốt 10 màn đầu là chương mở đầu để nhận biết khả năng của sinh vật. Người dùng đã thiết kế chín màn đầu; màn 10 dùng màn 4 hiện tại. [Bảng đối chiếu](VENOM_CAMPAIGN_01_10.md) ghi bản vẽ 01–02 đã xem, 03–09 còn thiếu tư liệu gốc trong workspace và giả định nguồn 10 là `VenomJourney04` đang chơi mặc định, chờ xác nhận vì dự án còn màn lab `Venom04` khác. Không renumber scene/save trước khi chốt nguồn và xem đủ chín thiết kế.
 
 ## ADR V002 — Tám kỹ năng và phân tách bằng cơ quan cắt
 

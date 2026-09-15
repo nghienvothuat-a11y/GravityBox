@@ -89,7 +89,7 @@ Về triển khai, cần thư viện mẫu do thiết kế khai báo và bộ ch
 
 ## 8. Cách mở kỹ năng và tăng độ khó
 
-Chưa gán số level cuối cùng. Thứ tự dạy đề xuất: bò → leo → luồn khe không yêu cầu chia → đẩy/kéo đơn giản → phân tách và tụ lại cùng một bài an toàn → luồn có giới hạn lượng vật chất và phối hợp → copy → tổng hợp. Có thể đổi theo bản vẽ; không dựng màn cần một kỹ năng chưa có cơ hội học.
+Chưa gán số level cuối cùng cho từng kỹ năng. Người dùng đã [chốt 10 màn đầu là chương làm quen](VENOM_CAMPAIGN_01_10.md) và chọn màn 10 từ màn 4 hiện tại; bảng kỹ năng của màn 03–09 chỉ được làm sau khi xem thiết kế gốc. Thứ tự dạy tham khảo: bò → leo → luồn khe không yêu cầu chia → đẩy/kéo đơn giản → phân tách và tụ lại cùng một bài an toàn → luồn có giới hạn lượng vật chất và phối hợp → copy → tổng hợp. Có thể đổi theo bản vẽ; không dựng màn cần một kỹ năng chưa có cơ hội học.
 
 Mỗi kỹ năng có nhịp: thử đơn lẻ với đường ra rõ → luyện trong bố trí khác → kết hợp một kỹ năng quen → tình huống đổi vai/thứ tự → ôn nhẹ. Boss mỗi mốc 10 dùng các kỹ năng đã được giới thiệu; không mặc định boss đầu phải dùng đủ tám kỹ năng. Độ khó đo bằng số quyết định có hệ quả, số nhiệm vụ cùng giữ, phụ thuộc thứ tự, phương án phục hồi và độ rõ tín hiệu, không chỉ đếm kỹ năng hoặc kéo dài đường đi.
 
