@@ -146,6 +146,62 @@ namespace GravityBox.Venom
             {float d=(game.Root.TransformPoint(nodes[i])-p).sqrMagnitude;if(d<distance){distance=d;best=i;}}
             return best;
         }
+        private Vector3 EdgeTarget(Order order,int anchor,Vector3 centre,Vector3 target)
+        {
+            // Inflate a convex turn by the living body's current footprint.
+            // The point graph alone clears the head, but can leave the tail on
+            // the other side of a thin panel when the next waypoint descends.
+            foreach(var patch in game.Surfaces)
+            {
+                if(!patch.isActiveAndEnabled||patch.Hole||game.IsHeldSurface(patch))continue;
+                Vector3 goal=patch.transform.InverseTransformPoint(target);
+                if(goal.z>=0)continue;
+                bool blocked=false;
+                for(int i=0;i<32&&!blocked;i++)
+                {
+                    if(game.Matter.Groups[i]!=game.Matter.Groups[anchor]||game.Matter.Escaped[i])continue;
+                    Vector3 p=patch.transform.InverseTransformPoint(game.Matter.Bodies[i].position);
+                    if(p.z<=0)continue;
+                    Vector3 crossing=Vector3.Lerp(p,goal,p.z/(p.z-goal.z));
+                    blocked=patch.Contains(crossing,game.Matter.Profile.ParticleRadius);
+                }
+                if(!blocked)continue;
+                int crest=-1,axis=0;float sign=1,best=float.PositiveInfinity;Vector3 turn=Vector3.zero;
+                for(int k=0;k<order.Path.Count;k++)
+                {
+                    Vector3 p=patch.transform.InverseTransformPoint(game.Root.TransformPoint(order.Path[k]));
+                    if(Mathf.Abs(p.z)>.10f)continue;
+                    for(int d=0;d<2;d++)
+                    {
+                        if(Mathf.Abs(p[d])<=patch.Size[d]*.5f+.002f)continue;
+                        float cost=Mathf.Abs(k-order.Cursor)+Mathf.Abs(p[d])*.1f;
+                        if(cost>=best)continue;
+                        best=cost;crest=k;axis=d;sign=Mathf.Sign(p[d]);turn=p;
+                    }
+                }
+                if(crest<0)continue;
+                Vector3 localCentre=patch.transform.InverseTransformPoint(centre);
+                float extent=0,depth=0;
+                for(int i=0;i<32;i++)
+                {
+                    if(game.Matter.Groups[i]!=game.Matter.Groups[anchor]||game.Matter.Escaped[i])continue;
+                    Vector3 p=patch.transform.InverseTransformPoint(game.Matter.Bodies[i].position)-localCentre;
+                    extent=Mathf.Max(extent,-p[axis]*sign);depth=Mathf.Max(depth,p.z);
+                }
+                turn[axis]=sign*(patch.Size[axis]*.5f+extent+game.Matter.Profile.ParticleRadius+.008f);
+                turn.z=-depth-game.Matter.Profile.ParticleRadius-.016f;
+                order.Cursor=Mathf.Min(order.Path.Count-1,Mathf.Max(order.Cursor,crest+1));
+                return patch.transform.TransformPoint(turn);
+            }
+            return target;
+        }
+        private bool BodyCanReach(int anchor,Vector3 target)
+        {
+            for(int i=0;i<32;i++)
+                if(game.Matter.Groups[i]==game.Matter.Groups[anchor]&&!game.Matter.Escaped[i]&&
+                    !game.Clear(game.Matter.Bodies[i].position,target,game.Matter.Profile.ParticleRadius))return false;
+            return true;
+        }
         public void Step(float dt)
         {
             // Scene children are not enabled yet during the owner's Awake.
@@ -210,9 +266,11 @@ namespace GravityBox.Venom
                 {
                     while(o.Cursor<o.Path.Count-1&&Vector3.Distance(centre,game.Root.TransformPoint(o.Path[o.Cursor]))<.022f)o.Cursor++;
                     target=game.Root.TransformPoint(o.Path[o.Cursor]);
-                    if(Vector3.Distance(centre,game.Root.TransformPoint(o.Target))<.023f&&!o.Holding&&!o.Exit){Cancel(a);o=null;}
+                    if(Vector3.Distance(centre,game.Root.TransformPoint(o.Target))<.023f&&!o.Holding&&!o.Exit&&
+                        BodyCanReach(a,game.Root.TransformPoint(o.Target))){Cancel(a);o=null;}
                 }
                 bool anchored=(grips>=2||caught!=null)&&(!game.Definition.Passive||game.Home)&&!game.InTube;
+                if(o!=null&&caught==null&&anchored)target=EdgeTarget(o,a,centre,target);
                 Vector3 delta=target-centre;
                 Vector3 desired=o!=null?delta.normalized*.105f:Vector3.zero;
                 if(o!=null&&o.Cursor==o.Path.Count-1)desired=Vector3.ClampMagnitude(delta*4,.105f);

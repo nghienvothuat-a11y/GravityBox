@@ -79,6 +79,46 @@ namespace GravityBox.Tests
             yield return Until(35,()=>game.Owner.Completed);Assert.IsTrue(game.Owner.Completed,State);
         }
         [UnityTest] public IEnumerator SecondLessonCrossesLowWallAndClimbs(){yield return Exit(2);}
+        [UnityTest] public IEnumerator SecondLessonCrossesDividerAndReturns()
+        {
+            yield return Load(2);
+            foreach(float x in new[]{.16f,-.16f,.16f,-.16f})
+            {
+                Vector3 target=new Vector3(x,-.278f,-.16f);
+                game.Motion.Move(0,target);
+                yield return Until(18,()=>game.Motion.Get(0)==null);
+                Capture(x>0?"02-crossed":"02-returned");
+                if(Vector3.Distance(game.Motion.Centre(0),target)>=.03f)
+                {
+                    string particles="";
+                    for(int i=0;i<32;i++){game.Motion.Support(i,out var c,out _,out _);particles+=$"\n{i}: {game.Matter.Bodies[i].position:F5}, v={game.Matter.Bodies[i].linearVelocity:F5}, support={c?.name}, grip={game.Motion.HasGrip(i)}";}
+                    Debug.Log("DIVIDER STALL "+State+particles);
+                }
+                Assert.Less(Vector3.Distance(game.Motion.Centre(0),target),.03f,"Must cross the divider in either direction: "+State);
+                Assert.IsNull(game.Motion.Get(0),"Finish the command after the tail clears: "+State);
+                foreach(var body in game.Matter.Bodies)
+                    Assert.Greater(body.position.x*Mathf.Sign(x),.017f,"The whole body, including the tail, must clear the divider");
+                Assert.AreEqual(1,game.Matter.TotalFragmentCount,"Climbing must not tear off material");
+            }
+            AimExit();yield return Until(30,()=>game.Owner.Completed);Assert.IsTrue(game.Owner.Completed,State);
+        }
+        [UnityTest] public IEnumerator SecondLessonCanReverseWhileStraddlingDivider()
+        {
+            yield return Load(2);
+            Vector3 start=new Vector3(-.16f,-.278f,-.16f),far=new Vector3(.16f,-.278f,-.16f);
+            for(int pass=0;pass<3;pass++)
+            {
+                game.Motion.Move(0,far);
+                yield return Until(18,()=>Mathf.Abs(game.Motion.Centre(0).x)<.02f&&game.Motion.Centre(0).y>-.19f);
+                Assert.Greater(game.Motion.Centre(0).y,-.19f,"Reach the top before reversing: "+State);
+                game.Motion.Move(0,start);
+                yield return Until(18,()=>game.Motion.Get(0)==null);
+                Assert.Less(Vector3.Distance(game.Motion.Centre(0),start),.03f,"Reverse at the rim: "+State);
+                foreach(var body in game.Matter.Bodies)
+                    Assert.Less(body.position.x,-.017f,"No tissue left behind after reversing");
+            }
+            AimExit();yield return Until(30,()=>game.Owner.Completed);Assert.IsTrue(game.Owner.Completed,State);
+        }
         [UnityTest] public IEnumerator ThirdLessonCanReachRearExit(){yield return Exit(3);}
         [UnityTest] public IEnumerator AllTenScenesLoadAndKeepMaterialInside()
         {
