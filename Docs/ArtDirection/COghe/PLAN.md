@@ -1,7 +1,7 @@
 # COghe — Định hướng đồ hoạ và kế hoạch triển khai
 
 Ngày: 15/09/2026. Nhánh tham chiếu: `Venom`, commit `c103b31`.
-Trạng thái: đề xuất art direction và concept; chưa triển khai bộ đồ hoạ này trong Unity.
+Trạng thái cập nhật 16/09/2026: đã dựng bản mẫu Day Lab cho màn 07 trong Unity; xem [bản dựng và kiểm tra](Runtime/README.md). Các mốc khác bên dưới vẫn là kế hoạch.
 
 ## 1. Quyết định đề xuất
 
@@ -124,4 +124,4 @@ Mỗi mốc có capture hoặc video cùng bản chạy. Không dùng tranh conc
 
 Ảnh được tạo bằng **imagegen tích hợp** từ screenshot runtime, không dùng CLI/API riêng. Prompt chính xác được lưu trong [Prompts](Prompts/). Ảnh cuối, nguồn tham chiếu, giới hạn và kết quả kiểm tra bằng mắt được ghi trong [README](README.md) và [QA](QA.md).
 
-Đợt này chỉ tạo tài liệu và concept trong `Docs/ArtDirection/COghe`; không đổi scene, physics hoặc build ứng dụng.
+Đợt concept ngày 15/09 chỉ tạo tài liệu và ảnh. Đợt 16/09 tiếp tục dựng art màn 07 và build macOS để đánh giá; giữ nguyên physics và các màn khác.

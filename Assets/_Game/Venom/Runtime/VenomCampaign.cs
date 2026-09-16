@@ -53,9 +53,11 @@ namespace GravityBox.Venom
         private LineRenderer marker;
         private GUIStyle title,body,button,small;
         private VenomHabitat habitat;
+        private COgheDayLabPresentation dayLab;
 
         public void Initialize(VenomLevelController owner)
         {
+            dayLab=GetComponent<COgheDayLabPresentation>();
             Owner=owner;Progress=VenomCampaignSave.Read();
             owner.InitializeCampaignMatter();
             Motion=new VenomCampaignMotion(this);
@@ -521,6 +523,7 @@ namespace GravityBox.Venom
         private void OnGUI()
         {
             if(Owner==null)return;
+            if(dayLab!=null&&dayLab.enabled)return;
             float s=Mathf.Min(Screen.width/540f,Screen.height/960f),h=Screen.height/s;
             GUI.matrix=Matrix4x4.TRS(new Vector3((Screen.width-540*s)*.5f,0,0),Quaternion.identity,Vector3.one*s);
             if(title==null)

@@ -36,4 +36,4 @@ Tạo bằng **imagegen tích hợp**, dùng screenshot local làm tham chiếu 
 
 Các hình là concept, không phải bản build Unity hoặc bằng chứng performance. Độ mờ nền trong tranh có thể thay bằng nền chuẩn bị sẵn khi triển khai; phản xạ/bóng cần giản lược theo ngân sách thiết bị. Chi tiết khe, bo cạnh và ray cơ quan phải được dựng và kiểm chứng theo kích thước gameplay thật.
 
-Đợt bàn giao này thêm tài liệu/ảnh trong thư mục COghe, chưa đổi tên ứng dụng hoặc thay bộ art đang chạy.
+Ngày 16/09/2026: đã triển khai [bản mẫu Day Lab màn 07 trong Unity](Runtime/README.md), giữ cơ chế đẩy/kéo và bộ mô phỏng cũ. Các màn còn lại chưa đổi art; tên ứng dụng vẫn giữ nguyên. Ba ảnh phía trên vẫn là concept, không phải ảnh bản build.

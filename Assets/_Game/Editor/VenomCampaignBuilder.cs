@@ -128,7 +128,8 @@ namespace GravityBox.Editor
                 var cam=new GameObject("Camera",typeof(Camera),typeof(AudioListener)).GetComponent<Camera>();cam.transform.SetParent(owner.transform,false);cam.tag="MainCamera";
                 cam.orthographic=true;cam.orthographicSize=1;cam.nearClipPlane=.005f;cam.farClipPlane=10;cam.clearFlags=CameraClearFlags.SolidColor;cam.backgroundColor=new Color(.016f,.031f,.030f);owner.View=cam;
                 cam.transform.rotation=Quaternion.Euler(data.CameraEuler);cam.transform.position=-cam.transform.forward*2;
-                Lighting();string path=Folder+"/VenomOrigin"+number.ToString("00")+".unity";EditorSceneManager.SaveScene(scene,path);scenePaths.Add(new EditorBuildSettingsScene(path,true));
+                Lighting();if(number==7)COgheDayLabBuilder.Apply(game);
+                string path=Folder+"/VenomOrigin"+number.ToString("00")+".unity";EditorSceneManager.SaveScene(scene,path);scenePaths.Add(new EditorBuildSettingsScene(path,true));
             }
             EditorBuildSettings.scenes=scenePaths.ToArray();AssetDatabase.SaveAssets();Debug.Log("ORIGIN GENERATED: ten authored levels.");
         }
