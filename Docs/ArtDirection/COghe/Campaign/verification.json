@@ -1,0 +1,192 @@
+{
+  "date": "2026-09-16",
+  "reference": "8718849",
+  "unity": "6000.3.19f1",
+  "tests": {
+    "total": "25",
+    "passed": "25",
+    "failed": "0",
+    "result": "Passed",
+    "start-time": "2026-09-16 03:16:52Z",
+    "end-time": "2026-09-16 03:17:30Z",
+    "duration": "37.6045413"
+  },
+  "test_cases": [
+    {
+      "name": "AllTenScenesLoadAndKeepMaterialInside",
+      "result": "Passed"
+    },
+    {
+      "name": "BossRequiresCutHoldReuniteAndEscape",
+      "result": "Passed"
+    },
+    {
+      "name": "BossWinUnlocksCollectionOnceAndOnlyBoss",
+      "result": "Passed"
+    },
+    {
+      "name": "EighthLessonCatchesRingBeforePlayerTapsTube",
+      "result": "Passed"
+    },
+    {
+      "name": "EighthLessonCeilingAcceptsScreenTap",
+      "result": "Passed"
+    },
+    {
+      "name": "EighthLessonFallsCatchesAndFlowsThroughTube",
+      "result": "Passed"
+    },
+    {
+      "name": "EighthLessonMissedRingKeepsFalling",
+      "result": "Passed"
+    },
+    {
+      "name": "FifthLessonFlipsSlipperyCeilingDown",
+      "result": "Passed"
+    },
+    {
+      "name": "FirstLessonAcceptsVisibleHoleTapAndExits",
+      "result": "Passed"
+    },
+    {
+      "name": "FirstLessonCrawlsToFarFloorExit",
+      "result": "Passed"
+    },
+    {
+      "name": "FourthLessonPeelsAndFallsWhenClimbingIntoSlipperyBand",
+      "result": "Passed"
+    },
+    {
+      "name": "FourthLessonRoutesAroundSlipperyPatch",
+      "result": "Passed"
+    },
+    {
+      "name": "NinthLessonCoverFallsAwayUnderGravity",
+      "result": "Passed"
+    },
+    {
+      "name": "SecondLessonCanReverseWhileStraddlingDivider",
+      "result": "Passed"
+    },
+    {
+      "name": "SecondLessonCrossesDividerAndReturns",
+      "result": "Passed"
+    },
+    {
+      "name": "SecondLessonCrossesLowWallAndClimbs",
+      "result": "Passed"
+    },
+    {
+      "name": "SeventhLessonBoxAcceptsScreenTap",
+      "result": "Passed"
+    },
+    {
+      "name": "SeventhLessonCanPullBoxAwayFromGlass",
+      "result": "Passed"
+    },
+    {
+      "name": "SeventhLessonNeedsStepAndClimbsAfterPlacement",
+      "result": "Passed"
+    },
+    {
+      "name": "SeventhLessonPushesPullsAndReleasesAfterThreeSeconds",
+      "result": "Passed"
+    },
+    {
+      "name": "SixthLessonRotatesHoleToPassiveBody",
+      "result": "Passed"
+    },
+    {
+      "name": "SixthLessonTapsAnimateSkiddingWithoutChangingPassivePhysics",
+      "result": "Passed"
+    },
+    {
+      "name": "ThirdLessonCanReachRearExit",
+      "result": "Passed"
+    },
+    {
+      "name": "ThirdLessonFrontGlassInterceptsUntilRotated",
+      "result": "Passed"
+    },
+    {
+      "name": "UnmergedDepartureFailsBeforeOtherPieceCanFollow",
+      "result": "Passed"
+    }
+  ],
+  "generated_art_meshes_only": [
+    {
+      "level": 1,
+      "generated_mesh_assets": 5,
+      "vertices": 8174,
+      "triangles": 11218
+    },
+    {
+      "level": 2,
+      "generated_mesh_assets": 5,
+      "vertices": 8174,
+      "triangles": 11218
+    },
+    {
+      "level": 3,
+      "generated_mesh_assets": 5,
+      "vertices": 8174,
+      "triangles": 11218
+    },
+    {
+      "level": 4,
+      "generated_mesh_assets": 5,
+      "vertices": 8174,
+      "triangles": 11218
+    },
+    {
+      "level": 5,
+      "generated_mesh_assets": 5,
+      "vertices": 8174,
+      "triangles": 11218
+    },
+    {
+      "level": 6,
+      "generated_mesh_assets": 3,
+      "vertices": 592,
+      "triangles": 866
+    },
+    {
+      "level": 7,
+      "generated_mesh_assets": 10,
+      "vertices": 12584,
+      "triangles": 17698
+    },
+    {
+      "level": 8,
+      "generated_mesh_assets": 5,
+      "vertices": 16638,
+      "triangles": 22866
+    },
+    {
+      "level": 9,
+      "generated_mesh_assets": 7,
+      "vertices": 11702,
+      "triangles": 16402
+    },
+    {
+      "level": 10,
+      "generated_mesh_assets": 10,
+      "vertices": 11702,
+      "triangles": 16402
+    }
+  ],
+  "mobile_performance_measured": false,
+  "macos_build": {
+    "result": "Passed",
+    "path": "Builds/Venom/macOS/Venom.app",
+    "command": "bash Tools/build-venom.sh",
+    "log": "Artifacts/Venom01/build-macOS.log"
+  },
+  "native_macos_checks": [
+    "Selected Boss through level strip; no lesson or solution text",
+    "Clicked blade, saw two fragments, switched to Phan 2 via HUD",
+    "Entered existing unlocked Home, used feed/play actions",
+    "Zoomed level 08; trim hidden, creature visible",
+    "Tapped level 01 exit; automatic advance to level 02 verified"
+  ]
+}

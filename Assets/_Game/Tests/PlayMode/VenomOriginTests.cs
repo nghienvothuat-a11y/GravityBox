@@ -20,8 +20,20 @@ namespace GravityBox.Tests
         {Time.timeScale=1;Physics.simulationMode=previousSimulation;VenomCampaignSave.PersistenceEnabled=true;yield return null;}
         private IEnumerator Load(int n)
         {
-            Time.timeScale=1;yield return SceneManager.LoadSceneAsync("VenomOrigin"+n.ToString("00"));yield return null;
-            game=Object.FindFirstObjectByType<VenomCampaign>();Assert.NotNull(game);game.AutoAdvance=false;game.Owner.enabled=false;game.Owner.Rotation.enabled=false;
+            // Physics.SimulationMode.Script does not suppress FixedUpdate. Stop
+            // force-producing components in sceneLoaded, before the first tick,
+            // so paired trials start from the same state regardless of render time.
+            void Loaded(Scene scene,LoadSceneMode mode)
+            {
+                game=Object.FindFirstObjectByType<VenomCampaign>();
+                if(game==null)return;
+                game.AutoAdvance=false;game.Owner.enabled=false;game.Owner.Rotation.enabled=false;
+            }
+            Time.timeScale=1;SceneManager.sceneLoaded+=Loaded;
+            try{yield return SceneManager.LoadSceneAsync("VenomOrigin"+n.ToString("00"));}
+            finally{SceneManager.sceneLoaded-=Loaded;}
+            Assert.NotNull(game);Assert.AreEqual(0,game.Matter.SimulationTime,"No simulation ticks before the scripted trial");
+            yield return null;
             Steps(60);
             if(n==2||n==8)DumpGraph(n);
         }
@@ -185,7 +197,7 @@ namespace GravityBox.Tests
         }
         [UnityTest] public IEnumerator FifthLessonFlipsSlipperyCeilingDown()
         {
-            yield return Load(5);yield return Rotate(Quaternion.Euler(0,0,180));AimExit();
+            yield return Load(5);yield return Rotate(Quaternion.Euler(0,0,180));Capture("05-inverted");AimExit();
             yield return Until(12,()=>game.Owner.Completed);
             for(int t=0;t<1800&&!game.Owner.Completed;t++)
             {
@@ -381,6 +393,7 @@ namespace GravityBox.Tests
         {
             yield return Load(9);var cover=game.Props[0];yield return Rotate(Quaternion.Euler(0,0,180));
             yield return Until(3,()=>false);Assert.IsTrue(game.Clear(game.Owner.Outlet.position-game.Owner.Outlet.forward*.06f,game.Owner.Outlet.position+game.Owner.Outlet.forward*.06f),"Fallen cover must leave the actual mouth clear");
+            Capture("09-cover-fallen");
             AimExit();yield return Until(30,()=>game.Owner.Completed);Assert.IsTrue(game.Owner.Completed,State);
         }
         [UnityTest] public IEnumerator BossRequiresCutHoldReuniteAndEscape()

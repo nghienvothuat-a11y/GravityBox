@@ -12,12 +12,13 @@ namespace GravityBox.Editor
 {
     /// <summary>Authored Unity mesh kit. Only presentation is replaced; the level's
     /// original surface patches, physics meshes, transforms and masses stay intact.</summary>
-    public static class COgheDayLabBuilder
+    public static partial class COgheDayLabBuilder
     {
         public const string Folder = "Assets/_Game/Venom/Art/DayLab";
         private const string ArtRoot = "COghe · Day Lab art";
-        private static Material ivory, graphite, alloy, amber, floor, mint, ink;
+        private static Material ivory, graphite, alloy, amber, floor, mint, ink, worldLabels;
         private static int serial;
+        private static string meshDirectory="Meshes";
 
         [MenuItem("Gravity Box/COghe/Rebuild Day Lab · Level 07")]
         public static void RebuildLevel07()
@@ -32,23 +33,12 @@ namespace GravityBox.Editor
         public static void Apply(VenomCampaign game)
         {
             if(game == null || game.Definition.Order != 7) throw new InvalidOperationException("Day Lab prototype requires level 07.");
-            Directory.CreateDirectory(Folder+"/Meshes"); AssetDatabase.Refresh(); serial=0;
+            meshDirectory="Meshes";Directory.CreateDirectory(Folder+"/Meshes"); AssetDatabase.Refresh(); serial=0;
             var owner=game.GetComponent<VenomLevelController>();
             var root=owner.Rotation.transform;
             Remove(root,ArtRoot); Remove(owner.transform,"Day Lab studio");
             foreach(var prop in game.Props) Remove(prop.transform,"Amber resin shell");
-            ivory=Lit("Warm porcelain",new Color(.91f,.88f,.81f),.08f,.42f);
-            graphite=Lit("Graphite fittings",new Color(.065f,.10f,.12f),.55f,.56f);
-            alloy=Lit("Brushed aluminium",new Color(.65f,.74f,.77f),.60f,.61f);
-            amber=Lit("Amber resin",new Color(.84f,.61f,.32f),.03f,.52f);
-            floor=Lit("Pearl tray",new Color(.77f,.83f,.84f),.08f,.38f);
-            mint=Lit("Quiet mint light",new Color(.32f,.70f,.59f),.10f,.6f);
-            mint.EnableKeyword("_EMISSION");mint.SetColor("_EmissionColor",new Color(.10f,.27f,.19f));
-            ink=Lit("Label ink",new Color(.10f,.17f,.21f),0,.3f);
-            Material skin=Lit("COghe obsidian",new Color(.022f,.030f,.035f),.32f,.80f);
-            var profile=SaveAsset("Day Lab matter.asset",()=>ScriptableObject.CreateInstance<VenomProfile>());
-            EditorUtility.CopySerialized(AssetDatabase.LoadAssetAtPath<VenomProfile>(VenomCampaignBuilder.Folder+"/Matter.asset"),profile);
-            profile.Skin=skin;EditorUtility.SetDirty(profile);owner.MatterProfile=profile;owner.IndicatorMaterial=mint;
+            InitializeMaterials(owner);
 
             Material clear=Glass("Clear optical glass",.025f,0,false);
             Material coat=Glass("Ice satin coating",.24f,1,true);
@@ -65,6 +55,31 @@ namespace GravityBox.Editor
             }
             foreach(var line in owner.Outlet.GetComponentsInChildren<LineRenderer>()) line.sharedMaterial=mint;
 
+            BuildApprovedLevel07(game,owner,root);
+        }
+
+        private static void InitializeMaterials(VenomLevelController owner)
+        {
+            ivory=Lit("Warm porcelain",new Color(.91f,.88f,.81f),.08f,.42f);
+            graphite=Lit("Graphite fittings",new Color(.065f,.10f,.12f),.55f,.56f);
+            alloy=Lit("Brushed aluminium",new Color(.65f,.74f,.77f),.60f,.61f);
+            amber=Lit("Amber resin",new Color(.84f,.61f,.32f),.03f,.52f);
+            floor=Lit("Pearl tray",new Color(.77f,.83f,.84f),.08f,.38f);
+            mint=Lit("Quiet mint light",new Color(.32f,.70f,.59f),.10f,.6f);
+            mint.EnableKeyword("_EMISSION");mint.SetColor("_EmissionColor",new Color(.10f,.27f,.19f));
+            ink=Lit("Label ink",new Color(.10f,.17f,.21f),0,.3f);
+            worldLabels=SaveAsset("World labels.mat",()=>new Material(Shader.Find("COghe/World Label")));
+            worldLabels.shader=Shader.Find("COghe/World Label");
+            worldLabels.mainTexture=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf").material.mainTexture;
+            EditorUtility.SetDirty(worldLabels);
+            Material skin=Lit("COghe obsidian",new Color(.022f,.030f,.035f),.32f,.80f);
+            var profile=SaveAsset("Day Lab matter.asset",()=>ScriptableObject.CreateInstance<VenomProfile>());
+            EditorUtility.CopySerialized(AssetDatabase.LoadAssetAtPath<VenomProfile>(VenomCampaignBuilder.Folder+"/Matter.asset"),profile);
+            profile.Skin=skin;EditorUtility.SetDirty(profile);owner.MatterProfile=profile;owner.IndicatorMaterial=mint;
+
+        }
+        private static void BuildApprovedLevel07(VenomCampaign game,VenomLevelController owner,Transform root)
+        {
             var art=Child(root,ArtRoot);
             var nearCorner=Child(art,"Near corner · hide for inspection");
             // All external trim lives outside the original 0.6 m play volume.
@@ -121,6 +136,7 @@ namespace GravityBox.Editor
             Lighting(owner,studio);
             var presentation=owner.GetComponent<COgheDayLabPresentation>();
             if(presentation==null)presentation=owner.gameObject.AddComponent<COgheDayLabPresentation>();
+            ConfigureWorldLabels(presentation);
             presentation.Step=game.Props[0].transform;presentation.StepShadow=stepShadow;
             // Static mesh batching reduces the cost of the decorative fasteners
             // and frame. The movable crate is combined separately and stays dynamic.
@@ -133,6 +149,7 @@ namespace GravityBox.Editor
             foreach(string guid in AssetDatabase.FindAssets("t:Mesh",new[]{Folder+"/Meshes"}))
             {
                 string path=AssetDatabase.GUIDToAssetPath(guid),name=Path.GetFileNameWithoutExtension(path);
+                if(Path.GetDirectoryName(path)!=Folder+"/Meshes")continue;
                 if(name.StartsWith("LabMesh")&&int.TryParse(name.Substring(7),out int index)&&index>=serial)AssetDatabase.DeleteAsset(path);
             }
             EditorUtility.SetDirty(owner);
@@ -202,7 +219,7 @@ namespace GravityBox.Editor
         }
         private static Mesh SavedMesh(Mesh source)
         {
-            string path=$"Meshes/LabMesh{serial++:000}.asset";var mesh=SaveAsset(path,()=>new Mesh());EditorUtility.CopySerialized(source,mesh);Object.DestroyImmediate(source);return mesh;
+            string path=$"{meshDirectory}/LabMesh{serial++:000}.asset";var mesh=SaveAsset(path,()=>new Mesh());EditorUtility.CopySerialized(source,mesh);Object.DestroyImmediate(source);return mesh;
         }
         private static void Box(Transform root,string name,Vector3 p,Vector3 size,float radius,Material material)
         {
@@ -239,7 +256,12 @@ namespace GravityBox.Editor
             var t=Child(parent,"Label · "+text);t.localPosition=p;t.localRotation=rotation;
             var label=t.gameObject.AddComponent<TextMesh>();label.text=text;label.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");label.fontSize=96;label.characterSize=height*.35f;label.anchor=TextAnchor.MiddleCenter;label.alignment=TextAlignment.Center;label.color=material.GetColor("_BaseColor");
             t.GetComponent<Renderer>().shadowCastingMode=ShadowCastingMode.Off;
-            t.GetComponent<Renderer>().sharedMaterial=label.font.material;
+            t.GetComponent<Renderer>().sharedMaterial=worldLabels;
+        }
+        private static void ConfigureWorldLabels(COgheDayLabPresentation presentation)
+        {
+            presentation.WorldTextMaterial=worldLabels;
+            presentation.WorldTextFont=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         }
         private static void CombineByMaterial(Transform root,Transform exclude=null)
         {

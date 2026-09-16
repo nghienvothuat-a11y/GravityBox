@@ -558,6 +558,8 @@ namespace GravityBox.Venom
             {if(GUI.Button(new Rect(60,h-124,200,36),"CHO ĂN",button))habitat?.Feed();if(GUI.Button(new Rect(280,h-124,200,36),"CHƠI CÙNG",button))habitat?.Greet();}
         }
         public float Greeting=>Home?(habitat?.Greeting??0):0;
+        public void FeedHome(){if(Home)habitat?.Feed();}
+        public void GreetHome(){if(Home)habitat?.Greet();}
         public void EnterHome()
         {
             if(!Progress.HomeUnlocked)return;

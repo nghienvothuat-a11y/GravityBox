@@ -2,17 +2,42 @@ using UnityEngine;
 
 namespace GravityBox.Venom
 {
-    /// <summary>Level 07's light laboratory HUD. All commands delegate to the
+    /// <summary>Day Lab campaign presentation. All commands delegate to the
     /// existing campaign; this component never writes simulation state directly.</summary>
     public sealed class COgheDayLabPresentation : MonoBehaviour
     {
         public Renderer[] FocusOccluders;
         public Transform Step,StepShadow;
+        public Renderer[] FadingFloors;
+        public VenomSurfacePatch[] GlassSurfaces;
+        public Material WorldTextMaterial;
+        public Font WorldTextFont;
         private VenomCampaign game;
         private GUIStyle brand, caption, title, body, chip, selected, action, status, footer;
         private Texture2D tile, chosen, pressed;
+        private MaterialPropertyBlock block;
+        private readonly bool[] seenGroups=new bool[32];
         private static readonly Color Ink=new Color(.19f,.29f,.34f);
-        private void Awake()=>game=GetComponent<VenomCampaign>();
+        private void Awake()
+        {
+            game=GetComponent<VenomCampaign>();block=new MaterialPropertyBlock();
+            Font.textureRebuilt+=RefreshFontAtlas;RefreshFontAtlas(WorldTextFont);
+            if(GlassSurfaces==null)return;
+            foreach(var p in GlassSurfaces)
+            {
+                if(p==null)continue;var r=p.GetComponent<Renderer>();r.GetPropertyBlock(block);
+                block.SetFloat("_HasGrip",p.RingGrip?1:0);block.SetVector("_GripCentre",new Vector4(p.HoleCentre.x,p.HoleCentre.y,p.GripRadius,0));
+                block.SetFloat("_RegionOnly",p.HasSlipRegion?1:0);
+                block.SetVector("_SlipRect",new Vector4(p.SlipRegion.xMin,p.SlipRegion.yMin,p.SlipRegion.xMax,p.SlipRegion.yMax));
+                bool internalProp=p.GetComponentInParent<VenomMovableProp>()!=null||p.name.StartsWith("Low wall");
+                block.SetFloat("_NearFade",internalProp?0:1);block.SetFloat("_Spherical",p.SphereRadius>0?1:0);r.SetPropertyBlock(block);
+            }
+        }
+        private void RefreshFontAtlas(Font font)
+        {
+            if(font!=null&&font==WorldTextFont&&WorldTextMaterial!=null)
+                WorldTextMaterial.mainTexture=font.material.mainTexture;
+        }
         private void LateUpdate()
         {
             if(game==null||FocusOccluders==null)return;
@@ -22,6 +47,14 @@ namespace GravityBox.Venom
             // This authored room is locked upright. The contact patch follows
             // the existing moving crate on its flat floor; it never adds force.
             if(Step!=null&&StepShadow!=null)StepShadow.position=new Vector3(Step.position.x,-.2997f,Step.position.z);
+            if(FadingFloors!=null&&game.Owner!=null)
+                foreach(var r in FadingFloors)
+                {
+                    if(r==null)continue;
+                    float dot=Vector3.Dot(r.transform.forward,(game.Owner.View.transform.position-r.bounds.center).normalized);
+                    float alpha=Mathf.Lerp(.045f,.93f,Mathf.SmoothStep(0,1,Mathf.InverseLerp(-.12f,.2f,dot)));
+                    r.GetPropertyBlock(block);block.SetColor("_BaseColor",new Color(.77f,.83f,.84f,alpha));r.SetPropertyBlock(block);
+                }
         }
         private Texture2D Tile(Color color)
         {
@@ -59,13 +92,14 @@ namespace GravityBox.Venom
             GUI.color=GUI.backgroundColor=GUI.contentColor=Color.white;
             if(game.Zoom)GUI.Box(new Rect(17,8,506,167),GUIContent.none,chip);
             GUI.Label(new Rect(26,13,240,48),"COghe",brand);
-            GUI.Label(new Rect(300,20,214,30),"D A Y   L A B   /   0 7",caption);
+            GUI.Label(new Rect(300,20,214,30),game.Home?"A  P L A C E  T O  B E L O N G":(game.Definition.Boss?"B O S S   /   ":"D A Y   L A B   /   ")+game.Definition.Order.ToString("00"),caption);
             for(int i=1;i<=10;i++)
-                if(GUI.Button(new Rect(26+(i-1)*49,68,43,28),i==10?"BOSS":i.ToString("00"),i==7?selected:chip))game.Load(i);
+                if(GUI.Button(new Rect(26+(i-1)*49,68,43,28),i==10?"BOSS":i.ToString("00"),i==game.Definition.Order?selected:chip))game.Load(i);
             if(!game.Owner.Completed)
             {
-                GUI.Label(new Rect(24,108,492,33),"Cùng nhau dịch chuyển",title);
-                GUI.Label(new Rect(34,141,472,30),"Chạm thùng, rồi chạm nơi muốn đẩy hoặc kéo tới.",body);
+                GUI.Label(new Rect(24,108,492,33),game.Home?"Nhà của COghe":game.Definition.Order==7?"Cùng nhau dịch chuyển":game.Definition.Title,title);
+                if(!game.Definition.Boss&&!game.Home)
+                    GUI.Label(new Rect(34,141,472,40),game.Definition.Order==7?"Chạm thùng, rồi chạm nơi muốn đẩy hoặc kéo tới.":game.Definition.Lesson,body);
             }
             if(game.Owner.Lost)
             {
@@ -74,20 +108,40 @@ namespace GravityBox.Venom
                 if(GUI.Button(new Rect(155,h*.40f+88,230,38),"Thử lại",action))game.ResetLevel();
             }
             else if(game.Owner.Completed)
+            {
                 GUI.Label(new Rect(25,h-195,490,45),"Chúng mình làm được rồi!",title);
+                if(game.Definition.Boss&&game.Owner.Celebration.ReadyForNext&&GUI.Button(new Rect(126,h-137,288,40),"Đã mở Nhà của COghe",action))game.EnterHome();
+            }
             else
             {
                 string activity=game.Owner.Paused?"Đang nghỉ một chút":game.Attached?(game.IsPulling?"COghe đang kéo thùng":"COghe đang giữ thùng"):(game.Activity=="Idle"?"COghe đang chờ được chỉ đường":game.Activity);
                 GUI.Label(new Rect(26,h-154,488,30),activity,status);
                 if(game.Attached&&GUI.Button(new Rect(183,h-119,174,29),"Buông thùng",chip))game.ReleaseProp();
+                if(game.Matter.TotalFragmentCount>1)
+                {
+                    System.Array.Clear(seenGroups,0,seenGroups.Length);int slot=0;
+                    for(int i=0;i<32;i++)
+                    {
+                        int group=game.Matter.Groups[i];if(seenGroups[group])continue;seenGroups[group]=true;
+                        if(GUI.Button(new Rect(105+slot*170,h-119,160,29),"Phần "+(slot+1),game.Matter.Groups[game.Motion.Selected]==group?selected:chip))game.Motion.Selected=i;
+                        slot++;
+                    }
+                }
             }
-            if(GUI.Button(new Rect(26,h-77,152,42),"Làm lại",action))game.ResetLevel();
-            if(GUI.Button(new Rect(194,h-77,152,42),game.Owner.Paused?"Tiếp tục":"Tạm dừng",action))game.Owner.TogglePause();
-            if(GUI.Button(new Rect(362,h-77,152,42),game.Zoom?"Thu nhỏ":"Nhìn gần",action))game.Zoom=!game.Zoom;
+            bool homeAvailable=game.Progress.HomeUnlocked;float width=homeAvailable?112:152,gap=homeAvailable?125:168;
+            if(GUI.Button(new Rect(26,h-77,width,42),"Làm lại",action))game.ResetLevel();
+            if(GUI.Button(new Rect(26+gap,h-77,width,42),game.Owner.Paused?"Tiếp tục":"Tạm dừng",action))game.Owner.TogglePause();
+            if(GUI.Button(new Rect(26+gap*2,h-77,width,42),game.Zoom?"Thu nhỏ":"Nhìn gần",action))game.Zoom=!game.Zoom;
+            if(homeAvailable&&GUI.Button(new Rect(26+gap*3,h-77,width,42),game.Home?"Chào bạn":"Nhà",action)){if(game.Home)game.GreetHome();else game.EnterHome();}
+            if(game.Home)
+            {
+                if(GUI.Button(new Rect(100,h-119,160,29),"Cho ăn",chip))game.FeedHome();
+                if(GUI.Button(new Rect(280,h-119,160,29),"Chơi cùng",chip))game.GreetHome();
+            }
             GUI.Label(new Rect(26,h-29,488,20),"COghe  /  PHÒNG NGHIÊN CỨU",footer);
             GUI.matrix=old;GUI.color=oldColor;GUI.backgroundColor=oldBackground;GUI.contentColor=oldContent;
         }
         private void OnDestroy()
-        {if(tile!=null)Destroy(tile);if(chosen!=null)Destroy(chosen);if(pressed!=null)Destroy(pressed);}
+        {Font.textureRebuilt-=RefreshFontAtlas;if(tile!=null)Destroy(tile);if(chosen!=null)Destroy(chosen);if(pressed!=null)Destroy(pressed);}
     }
 }

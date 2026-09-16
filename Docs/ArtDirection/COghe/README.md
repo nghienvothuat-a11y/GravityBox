@@ -1,6 +1,8 @@
 # COghe — Phòng nghiên cứu trở thành nhà
 
-Concept và kế hoạch ngày 15/09/2026. **Hướng đề xuất chính: 3D cách điệu, phòng nghiên cứu vũ trụ sáng và ấm áp.** Sinh vật dựa trên hình ảnh runtime hiện tại của nhánh Venom.
+Concept và kế hoạch ngày 15/09/2026. **Đã chốt Day Lab ngày 16/09/2026: 3D cách điệu, phòng nghiên cứu vũ trụ sáng và ấm áp.** Sinh vật dựa trên hình ảnh runtime hiện tại của nhánh Venom.
+
+Chuẩn áp dụng hiện tại: [STYLE_RULES](STYLE_RULES.md). Xem [10 màn trong Unity và kết quả kiểm chứng](Campaign/README.md). Các concept phía dưới là lịch sử định hướng; Boss hiện dùng cùng Day Lab sáng, chưa áp concept Night Trial.
 
 Bối cảnh do người dùng cung cấp: NASA tìm thấy sinh vật trong vật thể lạ rơi xuống Trái Đất; nghiên cứu qua các hộp thử nghiệm, phát hiện trí tuệ/cảm xúc và trở nên thân thiết. Tên sinh vật và game: **COghe**.
 
@@ -36,4 +38,4 @@ Tạo bằng **imagegen tích hợp**, dùng screenshot local làm tham chiếu 
 
 Các hình là concept, không phải bản build Unity hoặc bằng chứng performance. Độ mờ nền trong tranh có thể thay bằng nền chuẩn bị sẵn khi triển khai; phản xạ/bóng cần giản lược theo ngân sách thiết bị. Chi tiết khe, bo cạnh và ray cơ quan phải được dựng và kiểm chứng theo kích thước gameplay thật.
 
-Ngày 16/09/2026: đã triển khai [bản mẫu Day Lab màn 07 trong Unity](Runtime/README.md), giữ cơ chế đẩy/kéo và bộ mô phỏng cũ. Các màn còn lại chưa đổi art; tên ứng dụng vẫn giữ nguyên. Ba ảnh phía trên vẫn là concept, không phải ảnh bản build.
+Ngày 16/09/2026: từ [bản mẫu Day Lab màn 07 trong Unity](Runtime/README.md) đã được người dùng duyệt, bộ art được mở rộng cho cả 10 màn Origin. Giữ cơ chế, đường giải và bộ mô phỏng cũ; tên ứng dụng vẫn giữ Venom. Ba ảnh phía trên vẫn là concept, không phải ảnh bản build.

@@ -1,7 +1,7 @@
 # COghe — Định hướng đồ hoạ và kế hoạch triển khai
 
 Ngày: 15/09/2026. Nhánh tham chiếu: `Venom`, commit `c103b31`.
-Trạng thái cập nhật 16/09/2026: đã dựng bản mẫu Day Lab cho màn 07 trong Unity; xem [bản dựng và kiểm tra](Runtime/README.md). Các mốc khác bên dưới vẫn là kế hoạch.
+Trạng thái cập nhật 16/09/2026: người dùng đã duyệt bản Unity màn 07. Đã áp bộ Day Lab cho cả 10 màn; xem [quy chuẩn đã chốt](STYLE_RULES.md) và [bản dựng, gallery, kiểm tra](Campaign/README.md). Nội dung dưới là kế hoạch ban đầu: Night Trial, Nhà theo concept và đo mobile vẫn là phần việc tương lai. Khi thông số khác nhau, STYLE_RULES là chuẩn hiện hành (cubemap 128 px, không post-processing bắt buộc, Boss dùng Day Lab sáng).
 
 ## 1. Quyết định đề xuất
 
@@ -124,4 +124,4 @@ Mỗi mốc có capture hoặc video cùng bản chạy. Không dùng tranh conc
 
 Ảnh được tạo bằng **imagegen tích hợp** từ screenshot runtime, không dùng CLI/API riêng. Prompt chính xác được lưu trong [Prompts](Prompts/). Ảnh cuối, nguồn tham chiếu, giới hạn và kết quả kiểm tra bằng mắt được ghi trong [README](README.md) và [QA](QA.md).
 
-Đợt concept ngày 15/09 chỉ tạo tài liệu và ảnh. Đợt 16/09 tiếp tục dựng art màn 07 và build macOS để đánh giá; giữ nguyên physics và các màn khác.
+Đợt concept ngày 15/09 chỉ tạo tài liệu và ảnh. Đợt 16/09 dựng art màn 07, được duyệt rồi mở rộng cho 10 màn Origin; giữ nguyên physics. Bộ dựng hiện có là `COgheDayLabBuilder` (hai file partial), `COgheDayLabPresentation` và các shader/asset dùng chung. Các tên profile/module ở phần 7 là hướng mở rộng, không phải API hiện hành.

@@ -1,6 +1,12 @@
-# Venom — Living Matter Prototype
+# COghe — Day Lab Puzzle Prototype
 
 Bản mặc định là **Venom Origin — 10 màn theo bản vẽ**, trên nhánh `Venom`. Chạm để hướng dẫn sinh vật; kéo để xoay hộp. Màn 07–08 khóa xoay. Sinh vật dùng mô mềm có khối lượng, lực bám, va chạm và trọng lực thế giới.
+
+**Phong cách đã chốt: Day Lab**, lấy bản Unity màn 07 ngày 16/09 làm chuẩn: kính sạch, vỏ sứ ấm, viền nhôm, resin hổ phách, vùng trơn xanh băng và COghe đen bóng. Bộ này áp dụng cho cả **10 màn Origin**, gồm khối cầu, ống nối, nắp rơi và cơ quan Boss. Toàn bộ dựng bằng Unity; giữ nguyên dữ liệu vật lý và đường giải.
+
+Đọc [STYLE_RULES — quy chuẩn đồ hoạ bắt buộc](Docs/ArtDirection/COghe/STYLE_RULES.md) trước khi sửa art, shader, ánh sáng hoặc HUD. [AGENTS.md](AGENTS.md) dẫn tới quy chuẩn này cho các lần phát triển sau. [Bản mẫu màn 07](Docs/ArtDirection/COghe/Runtime/README.md) · [Gallery và kiểm chứng 10 màn](Docs/ArtDirection/COghe/Campaign/README.md).
+
+Áp lại art vào các scene hiện có: **Gravity Box → COghe → Apply Day Lab · All 10 Origin levels**. Lệnh giữ collider, cơ quan và cấu hình màn; mesh trang trí nằm trong thư mục riêng theo màn. Bộ Generate Origin cũng tự áp style. Sàn trong hơn khi lật về camera; chi tiết khung được ẩn khi zoom. Boss không có hướng dẫn lời giải. Tên app/bundle/save vẫn giữ `Venom` để duy trì tiến trình hiện có.
 
 | Màn | Trọng tâm |
 | --- | --- |

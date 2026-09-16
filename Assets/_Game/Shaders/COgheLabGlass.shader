@@ -6,6 +6,10 @@ Shader "COghe/Lab Glass"
         _Frost("Slip coating", Range(0,1)) = 0
         _GripCentre("Grip centre and radius", Vector) = (0,.05,.15,0)
         _HasGrip("Clear grip disk", Float) = 0
+        _SlipRect("Slippery rectangle bounds", Vector) = (0,0,0,0)
+        _RegionOnly("Restrict coating to rectangle", Float) = 0
+        _NearFade("Clear foreground pane", Float) = 0
+        _Spherical("Spherical inner normal", Float) = 0
     }
     SubShader
     {
@@ -23,32 +27,42 @@ Shader "COghe/Lab Glass"
             CBUFFER_START(UnityPerMaterial)
                 half4 _BaseColor;
                 float4 _GripCentre;
-                float _Frost, _HasGrip;
+                float _Frost, _HasGrip, _RegionOnly, _NearFade, _Spherical;
+                float4 _SlipRect;
             CBUFFER_END
             struct Attributes { float4 positionOS:POSITION; float3 normalOS:NORMAL; };
-            struct Varyings { float4 positionCS:SV_POSITION; float3 world:TEXCOORD0; float3 normal:TEXCOORD1; float2 local:TEXCOORD2; };
+            struct Varyings { float4 positionCS:SV_POSITION; float3 world:TEXCOORD0; float3 normal:TEXCOORD1; float3 local:TEXCOORD2; };
             Varyings Vert(Attributes v)
             {
                 Varyings o;
                 o.world=TransformObjectToWorld(v.positionOS.xyz);
                 o.positionCS=TransformWorldToHClip(o.world);
                 o.normal=TransformObjectToWorldNormal(v.normalOS);
-                o.local=v.positionOS.xy;
+                o.local=v.positionOS.xyz;
                 return o;
             }
             half4 Frag(Varyings i):SV_Target
             {
                 float3 view=normalize(_WorldSpaceCameraPos-i.world);
-                float edge=pow(1-abs(dot(normalize(i.normal),view)),4);
-                float grip=1-smoothstep(_GripCentre.z-.001,_GripCentre.z+.001,length(i.local-_GripCentre.xy));
+                float3 normal=normalize(i.normal);
+                if(_Spherical>.5)normal=TransformObjectToWorldNormal(-normalize(i.local));
+                float facing=dot(normal,view);
+                float edge=pow(1-abs(facing),4);
+                float grip=1-smoothstep(_GripCentre.z-.001,_GripCentre.z+.001,length(i.local.xy-_GripCentre.xy));
                 float frost=_Frost*(1-grip*_HasGrip);
+                float2 inRect=step(_SlipRect.xy,i.local.xy)*step(i.local.xy,_SlipRect.zw);
+                frost*=lerp(1,inRect.x*inRect.y,_RegionOnly);
                 // Surface-local fine satin grain. No scene-color copy, refraction,
                 // depth texture or runtime reflection capture is required.
                 float stripe=.5+.5*sin((i.local.x+i.local.y*.25)*470);
                 float sheen=pow(saturate(1-abs(i.local.x+i.local.y*.35-.06)*4),8);
                 half3 tint=lerp(_BaseColor.rgb,half3(.48,.66,.77),frost*.6);
                 tint+=sheen*.13+stripe*frost*.018;
-                float alpha=_BaseColor.a+edge*.08+frost*.22;
+                float baseAlpha=lerp(_BaseColor.a,.025,_RegionOnly*(1-inRect.x*inRect.y));
+                // Preserve the visible satin coating on a foreground wall: it
+                // communicates a gameplay property even when clear glass fades.
+                float nearVisibility=lerp(.20,.58,saturate(frost));
+                float alpha=(baseAlpha+edge*.08+frost*.22)*lerp(1,nearVisibility,_NearFade*saturate(-facing*4));
                 return half4(tint,saturate(alpha));
             }
             ENDHLSL

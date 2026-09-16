@@ -2,6 +2,8 @@
 
 Ngày 16/09/2026. Bản mẫu đồ hoạ chạy thật của concept Day Lab, dựng hoàn toàn bằng Unity/C#. Không dùng Blender, FBX hay tranh concept làm nền gameplay.
 
+Tài liệu này lưu **mốc bản mẫu màn 07 tại `8718849`**, trước khi nhân rộng. Bản hiện tại đã áp cho 10 màn: xem [Campaign](../Campaign/README.md) và [STYLE_RULES](../STYLE_RULES.md).
+
 ## Phạm vi
 
 - Màn 07: vỏ thiết bị màu sứ ấm, khung nhôm, gá bo cạnh, đầu vít, đế và nhãn COghe.
