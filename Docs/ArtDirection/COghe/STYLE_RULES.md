@@ -164,3 +164,17 @@ low metal handles and porcelain socket corners. Show only one usable handle per
 module; a tap on the deck remains a locomotion command. Socket lamps read the
 real end catch and must extinguish after a reverse pull. The art never moves a
 bridge, provides a hidden walking surface, or gates the exit.
+
+## 10. Campaign camera framing (17/09/2026)
+
+Fit the chamber's authored static bounds to the portrait area between title and
+rotation/fragment controls, including safe-area clearance. Preserve each level's
+camera heading and the physical rotation pivot. Do not fit to every renderer each
+frame or allow a moving prop to resize the overview. Sphere framing uses its true
+radius. Follow mode tracks the selected creature smoothly; selecting an authored
+camera zone inspects that compartment without changing puzzle state. Zones are
+optional data in the campaign definition, currently used by 08, 19 and 20. Boss
+zones are viewpoint selectors only, never solution hints. Keep a visible overview
+return and prevent selector taps from issuing movement/rotation commands. Use the
+production camera path for portrait verification captures. See
+[framing and verification](../../COGHE_CAMERA.md).

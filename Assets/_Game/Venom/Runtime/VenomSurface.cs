@@ -16,6 +16,9 @@ namespace GravityBox.Venom
         private float[] field = Array.Empty<float>(); private Vector3[] gradient = Array.Empty<Vector3>();
         private readonly Vector3[] corners = new Vector3[8], cornerNormals = new Vector3[8];
         private readonly float[] values = new float[8];
+        private readonly Vector3[] edgePoints = new Vector3[64], edgeNormals = new Vector3[64];
+        private readonly int[] edgeVersions = new int[64];
+        private int cellVersion;
         private readonly int[] inside = new int[4], outside = new int[4];
         private readonly int[] seen = new int[CohesiveOrganism.ParticleCount];
         private readonly Vector3[] points = new Vector3[CohesiveOrganism.ParticleCount+6];
@@ -60,6 +63,9 @@ namespace GravityBox.Venom
         }
         public void Rebuild(bool interpolate = true)
         {
+            COgheMobileMetrics.Begin(0);
+            level.Campaign?.PrepareSkinConstraints(transform);
+            Array.Clear(edgeVersions,0,edgeVersions.Length);cellVersion=0;
             vertices.Clear(); normals.Clear(); triangles.Clear(); int seenCount = 0;
             toFloor = floor.transform.worldToLocalMatrix*transform.localToWorldMatrix;
             fromFloor = transform.worldToLocalMatrix*floor.transform.localToWorldMatrix;
@@ -76,8 +82,9 @@ namespace GravityBox.Venom
                     }
                 if(count>0) BuildFragment(life.Decorate(points,supports,weights,particleIds,count));
             }
-            mesh.Clear(); mesh.SetVertices(vertices); mesh.SetNormals(normals); mesh.SetTriangles(triangles,0); mesh.RecalculateBounds();
+            mesh.Clear(); mesh.SetVertices(vertices); mesh.SetNormals(normals); mesh.SetTriangles(triangles,0,false); mesh.RecalculateBounds();
             life.EndFrame();
+            COgheMobileMetrics.End(0);
         }
         private void BuildFragment(int count)
         {
@@ -91,9 +98,10 @@ namespace GravityBox.Venom
             Vector3 min=points[0]-Vector3.one*supports[0], max=points[0]+Vector3.one*supports[0];
             for(int i=1;i<count;i++){min=Vector3.Min(min,points[i]-Vector3.one*supports[i]);max=Vector3.Max(max,points[i]+Vector3.one*supports[i]);}
             Vector3 size=max-min; float cell=Mathf.Max(organism.Profile.MeshCell,Mathf.Max(size.x,size.y,size.z)/64);
+            level.Campaign?.PrepareSkinFragment(new Bounds((min+max)*.5f,size+Vector3.one*cell*2));
             int nx=Mathf.CeilToInt(size.x/cell)+1, ny=Mathf.CeilToInt(size.y/cell)+1,nz=Mathf.CeilToInt(size.z/cell)+1;
             int length=nx*ny*nz;
-            if(field.Length<length){field=new float[length];gradient=new Vector3[length];}
+            if(field.Length<length){int capacity=Mathf.NextPowerOfTwo(length);field=new float[capacity];gradient=new Vector3[capacity];}
             Array.Clear(field,0,length);Array.Clear(gradient,0,length);
             for(int p=0;p<count;p++)
             {
@@ -115,9 +123,16 @@ namespace GravityBox.Venom
                 {
                     Vector3Int o=offsets[c];int index=x+o.x+nx*(y+o.y+ny*(z+o.z));
                     values[c]=field[index];if(values[c]>=threshold)above++;
-                    corners[c]=min+new Vector3(x+o.x,y+o.y,z+o.z)*cell;cornerNormals[c]=gradient[index];
                 }
                 if(above==0||above==8)continue;
+                cellVersion++;
+                // Empty/full cells need no corner positions or normals. Keep
+                // the same field, tetrahedra and mesh density at the boundary.
+                for(int c=0;c<8;c++)
+                {
+                    Vector3Int o=offsets[c];int index=x+o.x+nx*(y+o.y+ny*(z+o.z));
+                    corners[c]=min+new Vector3(x+o.x,y+o.y,z+o.z)*cell;cornerNormals[c]=gradient[index];
+                }
                 for(int t=0;t<6;t++)
                 {
                     int ni=0,no=0;
@@ -136,11 +151,17 @@ namespace GravityBox.Venom
         }
         private void Edge(int a,int b,out Vector3 p,out Vector3 n)
         {
+            // Adjacent tetrahedra share crossings. Compute and constrain each
+            // directed edge once per cell, preserving the original arithmetic
+            // order and emitted triangle/vertex order exactly.
+            int key=a*8+b;
+            if(edgeVersions[key]==cellVersion){p=edgePoints[key];n=edgeNormals[key];return;}
             float t=(organism.Profile.SkinThreshold-values[a])/(values[b]-values[a]);p=Vector3.Lerp(corners[a],corners[b],t);n=Vector3.Lerp(cornerNormals[a],cornerNormals[b],t).normalized;
+            ConstrainFloor(ref p,ref n);
+            edgeVersions[key]=cellVersion;edgePoints[key]=p;edgeNormals[key]=n;
         }
         private void Triangle(Vector3 a,Vector3 b,Vector3 c,Vector3 an,Vector3 bn,Vector3 cn)
         {
-            ConstrainFloor(ref a,ref an); ConstrainFloor(ref b,ref bn); ConstrainFloor(ref c,ref cn);
             if (Vector3.Cross(b-a,c-a).sqrMagnitude < 1e-18f) return;
             if(Vector3.Dot(Vector3.Cross(b-a,c-a),an+bn+cn)<0){(b,c)=(c,b);(bn,cn)=(cn,bn);}
             int i=vertices.Count;vertices.Add(a);vertices.Add(b);vertices.Add(c);normals.Add(an);normals.Add(bn);normals.Add(cn);triangles.Add(i);triangles.Add(i+1);triangles.Add(i+2);
@@ -148,7 +169,7 @@ namespace GravityBox.Venom
         private void ConstrainFloor(ref Vector3 point,ref Vector3 normal)
         {
             if(level.Celebration.Active)return;
-            if(level.Campaign!=null){level.Campaign.ConstrainSkin(ref point,ref normal,transform);return;}
+            if(level.Campaign!=null){level.Campaign.ConstrainSkinCached(ref point,ref normal);return;}
             Vector3 local=toFloor.MultiplyPoint3x4(point);
             if(climbing && local.y>floor.Top)
             {

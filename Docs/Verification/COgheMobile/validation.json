@@ -1,0 +1,41 @@
+{
+  "date": "2026-09-17",
+  "unity": "6000.3.19f1",
+  "platform": "Editor PlayMode, macOS",
+  "result": "Failed(Child)",
+  "total": 76,
+  "passed": 74,
+  "failed": 2,
+  "durationSeconds": 93.9981791,
+  "failures": [
+    {
+      "name": "GravityBox.Tests.COgheMechanismExpansionTests.Level20FullSolutionUsesMassOrderThreeRolesAndMergedEscape",
+      "message": "  A and B must remain separate from the C operator; ; activity=Giữ; groups=0:10 at (-0.460, -0.284, 0.160) route=7/8 | 1:22 at (0.092, -0.285, 0.138) route=6/7; escaped=0; Reunion gate=0.0000/0.170,locked=True,force=0.000; Reunion gate=0.0000/0.170,locked=True,force=0.000; I gravity knife=0.1500/0.150,locked=True,force=0.000; II gravity knife=0.1500/0.150,locked=True,force=0.000; G heavy gear carriage=0.1185/0.120,locked=False,force=0.000; C winch handle=0.0000/0.055,locked=False,force=0.000; H heavy final cover=0.0000/0.145,locked=True,force=0.000; A input clutch measured tissue load=0.030/0.018; B output clutch measured tissue load=0.033/0.015; I gravity knife controller phase=Ready blade=(-0.4100, -0.0750, -0.1600); II gravity knife controller phase=Ready blade=(0.0000, -0.0750, -0.1700)\n  Expected: 3\n  But was:  2\n"
+    },
+    {
+      "name": "GravityBox.Tests.VenomOriginTests.FourthLessonPeelsAndFallsWhenClimbingIntoSlipperyBand",
+      "message": "  After a slip, a new safe route must still complete the level: centre=(0.27, -0.28, 0.03), groups=1, escaped=0, Idle, ; cursor=, path=\n  Expected: True\n  But was:  False\n"
+    }
+  ],
+  "level14Stress": {
+    "maximumHingeErrorMeters": 0.000473,
+    "maximumRailErrorMeters": 0.00011,
+    "maximumGateAngleDegrees": 0,
+    "stepsPerOrientation": 600,
+    "orientations": 5,
+    "physicsHz": 120
+  },
+  "baselineCommit": "a80110259c1b0935c645e4f03e7085dd0a4e8c2a",
+  "baselineApkSha256": "cf64a542942cbf4c2b6c87a84016cf20a74db0f73686592c4f8604069c715d6a",
+  "optimizedBenchmarkApkSha256": "609122607ac4613b009c9adda3ed46d0340a1b74a8beaafdc2199ea557b5dfec",
+  "releaseBuild": {
+    "date": "2026-09-17",
+    "apk": "Builds/Venom/Android/COghe.apk",
+    "bytes": 35008645,
+    "sha256": "94c4d925d66722fc6340cb56d89f65718c8ca88df45dab6a527592d4421f6a85",
+    "sceneCount": 20,
+    "benchmarkEnabled": false,
+    "macApp": "Builds/Venom/macOS/Venom.app"
+  },
+  "releaseInstalledAndHashVerified": true
+}

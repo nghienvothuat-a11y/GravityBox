@@ -23,6 +23,7 @@ namespace GravityBox.Venom
         public VenomCampaignMotion Motion {get;private set;}
         public VenomCampaignSave Progress {get;private set;}
         public bool Zoom;
+        public VenomCampaignCamera CameraRig {get;private set;}
         public bool InTube {get;private set;}
         public enum BladePhase { Ready, Warning, Falling, Returning, AwaitClear }
         public BladePhase KnifePhase {get;private set;}
@@ -75,7 +76,7 @@ namespace GravityBox.Venom
             Feedback=GetComponent<COgheControlFeedback>();
             if(Feedback==null)Feedback=gameObject.AddComponent<COgheControlFeedback>();
             Feedback.Initialize(this);
-            InitializeMechanisms();EnhancedTouchSupport.Enable();ResetLevel();
+            InitializeMechanisms();CameraRig=new VenomCampaignCamera(this);EnhancedTouchSupport.Enable();ResetLevel();
         }
         public void ResetLevel()
         {
@@ -85,7 +86,7 @@ namespace GravityBox.Venom
             foreach(var p in Props)p.ResetTo(Root);
             ResetBody(Knife,knifeRest);ResetBody(ExitCover,exitRest);ResetBody(ButtonCover,buttonRest);
             heldProp=approachProp=climbingStep=null;tubeIntent=false;InTube=false;cutClock=-1;holdTime=0;Failure=null;Activity="Idle";
-            hasExited=false;advanceAt=-1;GateOpen=PadA==null;Zoom=false;Home=false;
+            hasExited=false;advanceAt=-1;GateOpen=PadA==null;Zoom=false;Home=false;CameraRig?.Reset();
             KnifePhase=BladePhase.Ready;cutDone=false;MassA=MassB=0;
             Owner.Rotation.InputEnabled=Definition.CanRotate;
             if(GateOpen)Owner.LatchGuidedGate();
@@ -121,7 +122,7 @@ namespace GravityBox.Venom
                 if(patch.Shape!=null&&patch.Shape.Raycast(new Ray(a,delta.normalized),out var hit,delta.magnitude-.002f))return false;
             }
             foreach(var p in Props)
-                foreach(var collider in p.GetComponentsInChildren<Collider>())
+                foreach(var collider in p.CollisionShapes)
                     if(collider.Raycast(new Ray(a,delta.normalized),out _,delta.magnitude-.002f))return false;
             return true;
         }
@@ -410,18 +411,20 @@ namespace GravityBox.Venom
             {Progress.Win(Definition);Owner.SetCampaignOutcome(true);advanceAt=Matter.SimulationTime+VenomCelebration.Duration;}
         }
         public bool ExitAssisting(int particle)
+            =>ExitAssisting(particle,FinalExitAvailable);
+        internal bool ExitAssisting(int particle,bool exitAvailable)
         {
             // Mouth capture is physical assistance, not permission to win.
             // Small fragments otherwise lose their last ceiling contact over
             // the bore and fall forever before EvaluateExit can reject them.
             // The complete roster must still be fused when tissue crosses out.
-            if(Home||!FinalExitAvailable||Matter.Escaped[particle])return false;
+            if(Home||!exitAvailable||Matter.Escaped[particle])return false;
             Vector3 p=Owner.Outlet.InverseTransformPoint(Matter.Bodies[particle].position);
             Vector3 capture=Owner.Outlet.TransformPoint(Vector3.back*.022f);
             bool eligible=hasExited&&p.magnitude<.25f&&Clear(Matter.Bodies[particle].position,capture)||
                 p.z>-.050f&&p.z<.03f&&new Vector2(p.x,p.y).magnitude<Owner.ApertureRadius+.017f&&Owner.ExitAssistClear(Matter.Bodies[particle].position);
             if(!eligible)return false;
-            foreach(var mechanism in Mechanisms)
+            foreach(var mechanism in transportMechanisms)
                 if(mechanism.isActiveAndEnabled&&!mechanism.AllowsExitAssist(particle,capture))return false;
             return true;
         }
@@ -459,7 +462,7 @@ namespace GravityBox.Venom
         public void Load(int number)
         {if(number<1||number>LevelCount)return;Time.timeScale=1;SceneManager.LoadScene("VenomOrigin"+number.ToString("00"));}
         private bool PlayArea(Vector2 p)
-        {float scale=Mathf.Min(Screen.width/540f,Screen.height/960f);return p.y>165*scale&&p.y<Screen.height-195*scale;}
+        {return CameraRig.AllowsPointer(p,Screen.width,Screen.height);}
         public void BeginPointer(Vector2 p){if(!Owner.CanControl||!PlayArea(p))return;pointerDown=true;pointerMoved=false;pointerStart=pointerPrevious=p;}
         public void MovePointer(Vector2 p)
         {
@@ -478,7 +481,7 @@ namespace GravityBox.Venom
                 var ks=new[]{k.digit1Key,k.digit2Key,k.digit3Key,k.digit4Key,k.digit5Key,k.digit6Key,k.digit7Key,k.digit8Key,k.digit9Key,k.digit0Key};
                 for(int i=0;i<10;i++)if(ks[i].wasPressedThisFrame){Load(i+1+(k.leftShiftKey.isPressed||k.rightShiftKey.isPressed?10:0));return;}
                 if(k.rKey.wasPressedThisFrame)ResetLevel();if(k.pKey.wasPressedThisFrame||k.escapeKey.wasPressedThisFrame)Owner.TogglePause();
-                if(k.zKey.wasPressedThisFrame)Zoom=!Zoom;
+                if(k.zKey.wasPressedThisFrame)CameraRig.ToggleFollow();
             }
             if(AutoAdvance&&Owner.Completed&&Matter.SimulationTime>=advanceAt&&!Definition.Boss&&Definition.Order<LevelCount){Load(Definition.Order+1);return;}
             if(!Owner.CanControl){ResetPointerInput();return;}
@@ -597,14 +600,7 @@ namespace GravityBox.Venom
         {
             if(Owner==null)return;
             if(Owner.Completed){Owner.Celebration.Frame(Screen.width,Screen.height);return;}
-            var cam=Owner.View;cam.orthographic=true;cam.transform.rotation=Quaternion.Euler(Definition.CameraEuler);
-            Vector3 focus=Zoom?Motion.Centre(Motion.Selected):Root.position;
-            float size=Zoom?.20f:Mathf.Max(Definition.ViewRadius,Definition.ViewRadius*Screen.height/(Screen.width*.87f));
-            // Reserve a quiet strip below the chamber for the rotation legend.
-            // Only camera framing changes; the physical pivot is unchanged.
-            if(!Zoom&&Definition.Order>=3){size*=1.10f;focus-=cam.transform.up*size*.08f;}
-            cam.transform.position=focus-cam.transform.forward*2;
-            cam.orthographicSize=Mathf.Lerp(cam.orthographicSize,size,1-Mathf.Exp(-Time.unscaledDeltaTime*6));
+            CameraRig.Frame(Screen.width,Screen.height,Time.unscaledDeltaTime,false,Screen.safeArea);
         }
         private void OnGUI()
         {
@@ -620,6 +616,12 @@ namespace GravityBox.Venom
             GUI.Label(new Rect(15,20,510,38),Home?"NHÀ CỦA SINH VẬT":Definition.Title,title);
             for(int i=1;i<=LevelCount;i++)if(GUI.Button(new Rect(20+(i-1)%10*51,67+(i-1)/10*34,47,29),(i%10==0?"B"+i:i.ToString("00")),button))Load(i);
             if(!Definition.Boss&&!Owner.Completed&&!Home)GUI.Label(new Rect(24,143,492,54),Definition.Lesson,small);
+            if(CameraRig.ShowZones)
+                for(int i=-1;i<CameraRig.ZoneCount;i++)
+                {
+                    float width=500f/(CameraRig.ZoneCount+1);
+                    if(GUI.Button(new Rect(20+(i+1)*width,202,width-5,36),i<0?"Toàn cảnh":Definition.CameraZones[i].Label,button))CameraRig.SelectZone(i);
+                }
             if(Owner.Lost)
             {GUI.Box(new Rect(25,h*.40f,490,145),"");GUI.Label(new Rect(43,h*.40f+12,454,80),Failure,body);if(GUI.Button(new Rect(150,h*.40f+94,240,38),"THỬ LẠI",button))ResetLevel();}
             else if(Owner.Completed)
@@ -638,7 +640,7 @@ namespace GravityBox.Venom
             }
             if(GUI.Button(new Rect(20,h-72,120,36),"THỬ LẠI",button))ResetLevel();
             if(GUI.Button(new Rect(150,h-72,110,36),Owner.Paused?"TIẾP":"DỪNG",button))Owner.TogglePause();
-            if(GUI.Button(new Rect(270,h-72,110,36),Zoom?"THU NHỎ":"ZOOM",button))Zoom=!Zoom;
+            if(GUI.Button(new Rect(270,h-72,110,36),Zoom?"TOÀN CẢNH":"THEO COghe",button))CameraRig.ToggleFollow();
             if(Progress.HomeUnlocked&&GUI.Button(new Rect(390,h-72,130,36),Home?"CHÀO BẠN":"COLLECTION",button)){if(Home)habitat?.Greet();else EnterHome();}
             if(Home)
             {if(GUI.Button(new Rect(60,h-124,200,36),"CHO ĂN",button))habitat?.Feed();if(GUI.Button(new Rect(280,h-124,200,36),"CHƠI CÙNG",button))habitat?.Greet();}

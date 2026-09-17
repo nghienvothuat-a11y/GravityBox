@@ -43,7 +43,8 @@ namespace GravityBox.Venom
         {
             if(game==null||FocusOccluders==null)return;
             // Leave forceRenderingOff to the victory camera. Only the near
-            // decorative corner disappears during close inspection.
+            // decorative corner disappears while following the creature.
+            // Compartment views retain the frame as a spatial reference.
             foreach(var r in FocusOccluders)if(r!=null&&r.enabled==game.Zoom)r.enabled=!game.Zoom;
             // This authored room is locked upright. The contact patch follows
             // the existing moving crate on its flat floor; it never adds force.
@@ -91,7 +92,7 @@ namespace GravityBox.Venom
             float s=Mathf.Min(Screen.width/540f,Screen.height/960f),h=Screen.height/s;
             GUI.matrix=Matrix4x4.TRS(new Vector3((Screen.width-540*s)*.5f,0,0),Quaternion.identity,Vector3.one*s);
             GUI.color=GUI.backgroundColor=GUI.contentColor=Color.white;
-            if(game.Zoom)GUI.Box(new Rect(17,8,506,191),GUIContent.none,chip);
+            if(game.CameraRig.Inspecting)GUI.Box(new Rect(17,8,506,game.CameraRig.ShowZones?237:191),GUIContent.none,chip);
             GUI.Label(new Rect(26,13,240,48),"COghe",brand);
             GUI.Label(new Rect(300,20,214,30),game.Home?"A  P L A C E  T O  B E L O N G":(game.Definition.Boss?"B O S S   /   ":"D A Y   L A B   /   ")+game.Definition.Order.ToString("00"),caption);
             if(GUI.Button(new Rect(26,61,98,25),"01–10",game.LevelPage==0?selected:chip))game.LevelPage=0;
@@ -106,6 +107,13 @@ namespace GravityBox.Venom
                 GUI.Label(new Rect(24,125,492,33),game.Home?"Nhà của COghe":game.Definition.Order==7?"Cùng nhau dịch chuyển":game.Definition.Title,title);
                 if(!game.Definition.Boss&&!game.Home)
                     GUI.Label(new Rect(34,158,472,35),cooperation!=null?cooperation.Hint:game.Definition.Order==7?"Chạm thùng, rồi chạm nơi muốn đẩy hoặc kéo tới.":game.Definition.Lesson,body);
+            }
+            if(game.CameraRig.ShowZones)
+            {
+                float cell=488f/(game.CameraRig.ZoneCount+1);
+                for(int i=-1;i<game.CameraRig.ZoneCount;i++)
+                    if(GUI.Button(new Rect(26+(i+1)*cell,201,cell-6,37),i<0?"Toàn cảnh":game.Definition.CameraZones[i].Label,
+                        !game.Zoom&&game.CameraRig.Zone==i?selected:chip))game.CameraRig.SelectZone(i);
             }
             if(game.Owner.Lost)
             {
@@ -143,7 +151,7 @@ namespace GravityBox.Venom
             bool homeAvailable=game.Progress.HomeUnlocked;float width=homeAvailable?112:152,gap=homeAvailable?125:168;
             if(GUI.Button(new Rect(26,h-77,width,42),"Làm lại",action))game.ResetLevel();
             if(GUI.Button(new Rect(26+gap,h-77,width,42),game.Owner.Paused?"Tiếp tục":"Tạm dừng",action))game.Owner.TogglePause();
-            if(GUI.Button(new Rect(26+gap*2,h-77,width,42),game.Zoom?"Thu nhỏ":"Nhìn gần",action))game.Zoom=!game.Zoom;
+            if(GUI.Button(new Rect(26+gap*2,h-77,width,42),game.Zoom?"Toàn cảnh":"Theo COghe",action))game.CameraRig.ToggleFollow();
             if(homeAvailable&&GUI.Button(new Rect(26+gap*3,h-77,width,42),game.Home?"Chào bạn":"Nhà",action)){if(game.Home)game.GreetHome();else game.EnterHome();}
             if(game.Home)
             {

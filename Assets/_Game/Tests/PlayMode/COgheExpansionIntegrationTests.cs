@@ -76,9 +76,7 @@ namespace GravityBox.Tests
             if(SystemInfo.graphicsDeviceType==GraphicsDeviceType.Null)return;
             string dir="Artifacts/COgheExpansion/Frames";Directory.CreateDirectory(dir);
             var camera=game.Owner.View;camera.aspect=720f/1280;
-            camera.transform.rotation=Quaternion.Euler(game.Definition.CameraEuler);
-            camera.orthographicSize=game.Definition.ViewRadius*1280/(720*.87f)*1.10f;
-            camera.transform.position=-camera.transform.forward*2-camera.transform.up*camera.orthographicSize*.08f;
+            game.CameraRig.Frame(720,1280,0,true);
             game.Matter.GetComponent<VenomSurface>().Rebuild(false);game.Feedback?.Refresh();
             var target=new RenderTexture(720,1280,24){antiAliasing=4};target.Create();
             var old=RenderTexture.active;var picture=new Texture2D(720,1280,TextureFormat.RGBA32,false);

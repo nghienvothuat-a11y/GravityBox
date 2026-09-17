@@ -110,7 +110,7 @@ namespace GravityBox.Venom
             joint.linearLimit=new SoftJointLimit{limit=(upper-lower)*.5f,bounciness=0,contactDistance=contactDistance};
         }
 
-        private void FixedUpdate() { if (!Paused && !Lost) Step(Time.fixedDeltaTime); }
+        private void FixedUpdate() { if (!Paused && !Lost) { COgheMobileMetrics.Begin(1);Step(Time.fixedDeltaTime);COgheMobileMetrics.End(1); } }
         public void Step(float dt)
         {
             if (Paused || Lost || dt <= 0) return;
@@ -195,6 +195,8 @@ namespace GravityBox.Venom
                 if (collider != null && collider.enabled && collider.Raycast(ray, out _, distance)) return true;
             return false;
         }
+
+        internal void CaptureAnimationBoundaries(VenomBoundaryQueries queries)=>queries.Capture(boundaries);
 
         public bool IsBoundary(Collider collider) => System.Array.IndexOf(boundaries, collider) >= 0;
 

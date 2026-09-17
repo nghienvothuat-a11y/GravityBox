@@ -16,6 +16,8 @@ Chỉnh riêng ngoại hình Boss: **Gravity Box → COghe → Rebuild Day Lab �
 
 [Phản hồi điều khiển](Docs/COGHE_CONTROL_FEEDBACK.md): vòng sóng và viền sáng xác nhận mặt vừa chạm, dấu đích theo mặt kính, mũi tên chọn phần sinh vật. Các màn 01/07/08 có dấu hướng dẫn riêng; biểu tượng xoay hoặc cấm xoay nằm dưới hộp từ màn 03. Nắp màn 09 có thành dày 14 mm, khối lượng 180 g và xử lý tiếp xúc khi xoay để tránh rung/xuyên vỏ hộp; vẫn rơi tự do khi lật hộp.
 
+[Camera gần và xem từng khoang](Docs/COGHE_CAMERA.md): toàn cảnh của cả 20 màn tự vừa vùng chơi dọc, chừa HUD và biểu tượng xoay. **Theo COghe** theo phần đang chọn; bấm **Toàn cảnh** để quay lại. Màn 08 có nút Hộp 1/2, màn 19 có Khoang 1/2 và Boss 20 có Khoang 1/2/3. Các nút chỉ đổi góc quan sát, không xoay vật lý hoặc giải cơ quan thay người chơi.
+
 **Chọn mặt và lực bám là hai quy tắc riêng:** nóc hộp ở mọi màn đều nhận chạm, kể cả màn khóa xoay. Mặt trơn vẫn nhận lệnh và hiện animation cố bò/trượt xúc tu, nhưng không sinh lực bám; sinh vật chỉ trượt hoặc rơi theo trọng lực, quán tính và va chạm.
 
 | Màn | Trọng tâm |
@@ -33,11 +35,13 @@ Chỉnh riêng ngoại hình Boss: **Gravity Box → COghe → Rebuild Day Lab �
 
 [Chương mới 11–20: cơ quan, điều khiển, kiến trúc và kiểm chứng](Docs/COGHE_EXPANSION_11_20.md). Dựng riêng chương này bằng **Gravity Box → COghe → Generate Expansion 11–20**.
 
-**Kiểm chứng mới nhất 17/09/2026:** 66/69 PlayMode test đạt. Màn 12 qua đủ ba
-lượt leo–trượt–bay–bám–thoát bằng chạm; còn ba ca chưa đạt ở màn 04, 14 và 20.
-[Chi tiết lỗi còn lại](Docs/COGHE_EXPANSION_11_20.md).
-Kết quả: `Artifacts/COgheExpansion/verification.xml`; chạy lại bằng
+**Kiểm chứng hiệu năng 17/09/2026:** đã đo trực tiếp các màn 11–20 trên OPPO CPH2591,
+đối chiếu APK trước/sau tối ưu. Giữ 32 hạt, vật lý 120 Hz, độ mịn mô và animation Day Lab.
+[Báo cáo hiệu năng, số đo và giới hạn kiểm chứng](Docs/COGHE_MOBILE_PERFORMANCE.md).
+Chạy lại bộ kiểm thử bằng
 `bash Tools/verify-coghe-expansion.sh`.
+
+**Boss 20 trên macOS:** [lời giải, bản trình diễn và kết quả tối ưu](Docs/COGHE_BOSS20_PLAYTEST.md). Đã giải trọn màn bằng lệnh điều khiển thông thường; tối ưu bộ tìm đường và việc cập nhật khi cơ quan chuyển động. Số đo Mac tách riêng khỏi phép đo OPPO phía trên.
 
 **Màn 19 — Cùng nhau:** camera gần hơn, cơ quan A/B và hai cửa có hình dáng/đèn rõ ràng, HUD nhắc theo trạng thái. Tách đôi → giữ A bằng một phần → dùng phần kia bám B và chạm mũi tên để kéo → đưa hai phần chạm nhau → thoát. [Chi tiết màn 19](Docs/LevelDesign/COghe/Level19/README.md).
 
@@ -59,7 +63,7 @@ Thắng Boss lần đầu mở **Collection “Nhà của sinh vật”** với 
 
 Kiểm tra Origin 01–20: `bash Tools/verify-coghe-expansion.sh`. Kiểm tra bộ Journey cũ: `bash Tools/verify-venom.sh` (tạm đăng ký scene Journey cho hồi quy rồi phục hồi danh sách Origin). Build mặc định: `bash Tools/build-venom.sh`. Sinh lại dữ liệu tác giả trong Unity: **Gravity Box → Venom → Generate Origin Campaign 01–10**; lệnh này giữ các scene mở rộng đã có trong catalog. Lệnh Generate tạo lại scene và hình học của chương tương ứng, vì vậy cần lưu các chỉnh sửa tay trước khi chạy.
 
-Build Android từ catalog 20 màn: `bash Tools/build-venom-android.sh` → `Builds/Venom/Android/COghe.apk`, ứng dụng **COghe**, package riêng `com.gravityboxlab.venom`. APK đã cài trước đợt mở rộng vẫn là bản 10 màn; cần build/cài lại mới có chương mới. [Cài và test trên điện thoại](Docs/COGHE_ANDROID_PLAYTEST.md).
+Build Android từ catalog 20 màn: `bash Tools/build-venom-android.sh` → `Builds/Venom/Android/COghe.apk`, ứng dụng **COghe**, package riêng `com.gravityboxlab.venom`. APK hiện tại chứa đủ 20 màn, gồm đợt tối ưu mobile ngày 17/09. [Cài và test trên điện thoại](Docs/COGHE_ANDROID_PLAYTEST.md).
 
 Bộ Journey 5 màn cũ vẫn giữ để đối chiếu: `bash Tools/build-venom.sh --journey`; [tài liệu Journey](Docs/VENOM_JOURNEY_01_05.md). [Kỹ năng nền](Docs/VENOM_CREATURE_SKILLS.md) và [định hướng giải đố thuần / ngôi nhà](Docs/VENOM_PURE_PUZZLE_AND_HOME.md) tiếp tục áp dụng; Copy vật thể và hệ nội thất đầy đủ thuộc giai đoạn sau.
 
@@ -84,7 +88,7 @@ Nhánh vẫn giữ bảy scene thử nghiệm **01–05, 07–08**. Dùng `bash 
 - Màn 05 giữ điều khiển bò/xoay/Zoom của màn 04. Đưa cơ thể tới dao trên trần, dẫn mảnh lớn vào khe hộp nhỏ; mảnh còn lại bám chờ đến khi chủ thể vào hẳn mới tự chui theo.
 - Màn 07/08: **chạm/click đặt đích**, **kéo để xoay hộp**. **Nhớ lại** lặp điều đã học; **R** giữ trí nhớ khi thử lại, **Quên** xóa trí nhớ của màn hiện tại. Trí nhớ được giữ giữa các lần mở app. [Thiết kế điều khiển và trí nhớ](Docs/VENOM_CONTROLS_07_08.md).
 - Chạy Unity **6000.3.19f1**: mở `Assets/_Game/Venom/Venom01.unity`, `Venom02.unity`, `Venom03.unity`, `Venom04.unity`, `Venom05.unity`, `Venom07.unity` hoặc `Venom08.unity`, Game View **9:16**, Play.
-- Build bộ cũ: `bash Tools/build-venom.sh --lab` (đóng Unity đang mở project trước). APK đã cài từ lượt trước chứa 10 màn Origin; chưa được build lại trong lượt cập nhật 11–20 này.
+- Build bộ cũ: `bash Tools/build-venom.sh --lab` (đóng Unity đang mở project trước). APK mặc định là bản 20 màn Origin; các bộ thí nghiệm cũ được build riêng.
 - [Thiết kế màn 01](Docs/VENOM_PROTOTYPE_01.md) · [Điều khiển, navigation và kiến trúc màn 02–03](Docs/VENOM_CONTROLS_02_03.md) · [Bò tường và xoay hộp màn 04](Docs/VENOM_CONTROLS_04.md) · [Dao, khe hẹp và phối hợp màn 05](Docs/VENOM_CONTROLS_05.md).
 
 Camera màn 02 nhìn gần thẳng từ trên xuống (**88°**) để dễ chọn hai phần/căn công tắc; màn 03 nhìn **3/4 từ góc trái đầu xuất phát**, cao **45°** và chéo **45°** để thấy rõ chuyển động thân và phần đi theo. Cả hộp nằm trong khung hình; giữ–kéo được căn theo hướng nhìn mới.

@@ -20,7 +20,22 @@ namespace GravityBox.Venom
         private bool captured;
 
         public override void InitializeMechanism(VenomCampaign game)
-        {bridgeRest=Quaternion.Inverse(game.Root.rotation)*Bridge.rotation;captured=true;}
+        {
+            bridgeRest=Quaternion.Inverse(game.Root.rotation)*Bridge.rotation;captured=true;
+            // Rotating a kinematic chamber sweeps thin rail gates sideways.
+            // Speculative CCD includes angular motion; translation-only CCD
+            // misses it. Joint projection recovers only solver drift, never
+            // the hinge angle or the gate's freely sliding coordinate.
+            foreach(var body in new[]{Bridge,ExitGate})
+            {
+                body.collisionDetectionMode=CollisionDetectionMode.ContinuousSpeculative;
+                body.solverIterations=32;body.solverVelocityIterations=12;
+            }
+            var rail=ExitGate.GetComponent<ConfigurableJoint>();
+            rail.projectionMode=JointProjectionMode.PositionAndRotation;rail.projectionDistance=.0005f;rail.projectionAngle=.5f;
+            var limit=rail.linearLimit;limit.contactDistance=.006f;rail.linearLimit=limit;
+            rail.enablePreprocessing=false;
+        }
 
         public override void ResetMechanism(VenomCampaign game)
         {if(!captured)InitializeMechanism(game);BridgeTravel=GateDisplacement=0;}

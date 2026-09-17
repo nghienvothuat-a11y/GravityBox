@@ -18,6 +18,13 @@ namespace GravityBox.Editor
             c.Definition.Boss = number == 20;
             c.Definition.CameraEuler = number==20 ? new Vector3(40,12,0) : number==19 ? new Vector3(40,18,0) : new Vector3(32,18,0);
             c.Definition.ViewRadius = number == 20 ? .68f : number == 19 ? .57f : .50f;
+            c.Definition.CameraZones=number==19?new[]{
+                new VenomCameraZone("Khoang 1",new Vector3(-.24f,-.06f,0),new Vector3(.516f,.516f,.636f)),
+                new VenomCameraZone("Khoang 2",new Vector3(.24f,-.06f,0),new Vector3(.516f,.516f,.636f))}:
+                number==20?new[]{
+                new VenomCameraZone("Khoang 1",new Vector3(-.4f,-.06f,0),new Vector3(.436f,.516f,.636f)),
+                new VenomCameraZone("Khoang 2",new Vector3(0,-.06f,0),new Vector3(.436f,.516f,.636f)),
+                new VenomCameraZone("Khoang 3",new Vector3(.4f,-.06f,0),new Vector3(.436f,.516f,.636f))}:System.Array.Empty<VenomCameraZone>();
             c.Outward = Vector3.right;
             c.Exit = new Vector3(number == 20 ? .60f : number == 19 ? .48f : .30f, -.19f, .16f);
             c.Spawn = new Vector3(number == 20 ? -.48f : number == 19 ? -.35f : -.22f, -.267f, -.17f);

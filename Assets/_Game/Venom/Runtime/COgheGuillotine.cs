@@ -5,6 +5,7 @@ namespace GravityBox.Venom
     /// <summary>Reusable gravity knife with a one-second warning, actual bond cuts and clear-to-rearm.</summary>
     public sealed class COgheGuillotine : COgheMechanism
     {
+        public override bool SeparatesTissue=>true;
         public COgheRailSlider Rail;
         public Transform Sensor;
         public Vector3 SensorHalfSize = new Vector3(.027f,.04f,.065f);

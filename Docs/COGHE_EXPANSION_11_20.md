@@ -331,3 +331,12 @@ Player.log không có exception/assertion. Chưa build APK hoặc đo hiệu nă
 ### Màn 19 — rõ cơ quan và thao tác (17/09/2026)
 
 Camera 40°/18°, ViewRadius 0.57; nút A có đế/nắp lún, tay nắm B và mũi tên kéo, hai cửa đánh số với đèn trạng thái. HUD hướng dẫn theo cơ quan và nút chọn phần cho biết trái/phải/giữ A. Tốc độ nâng riêng màn 19 tăng lên 0.10 m/s để một lệnh kéo đủ mở hai cửa trước khi tự buông sau 3 giây. Kiểm chứng màn 19 và liên động: **4/4 đạt**, `cooperation19-final.xml`; có đường giải bằng chạm màn hình đến thoát đủ cơ thể. [Cách chơi và kiểm chứng](LevelDesign/COghe/Level19/README.md).
+
+
+## Tối ưu OPPO — 17/09/2026
+
+Đã bổ sung phép đo trên thiết bị thật cho từng màn 11–20, tối ưu dựng mô, dò vật cản của xúc tu, đồ thị đường đi và truy vấn mô–cơ quan. Cầu bản lề/cửa ray màn 14 dùng CCD cho chuyển động quay và giới hạn khớp ổn định hơn. [Báo cáo mới nhất, dữ liệu và các ca kiểm thử còn chưa đạt](COGHE_MOBILE_PERFORMANCE.md). Các kết quả “chưa đo mobile” phía trên là lịch sử trước đợt này.
+
+## Boss 20 — giải trọn màn và giảm khựng trên Mac
+
+Đã kiểm chứng đường giải: cắt lệch để giữ A/nâng G, đưa phần C sang khoang 3 trước rồi vòng phần B ra sau giá G, giữ ba vai trò mở cửa, tụ lại kéo H và thoát đủ cơ thể. Không thay luật puzzle để ép test qua. Bộ PlayMode mới **80/81 đạt**, chỉ còn đường thử hồi phục màn 04 chưa đạt. [Hướng dẫn, số đo và cách chạy lại trình diễn](COGHE_BOSS20_PLAYTEST.md).

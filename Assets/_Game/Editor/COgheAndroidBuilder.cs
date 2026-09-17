@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace GravityBox.Editor
 {
-    /// <summary>Builds the current ten Origin scenes as a locally signed ARM64 APK.</summary>
+    /// <summary>Builds all current Origin scenes as a locally signed ARM64 APK.</summary>
     public static class COgheAndroidBuilder
     {
         public const string Output="Builds/Venom/Android/COghe.apk";
@@ -41,7 +41,9 @@ namespace GravityBox.Editor
                 EditorUserBuildSettings.exportAsGoogleAndroidProject=false;
                 Directory.CreateDirectory(Path.GetDirectoryName(Output));
                 var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{
-                    scenes=scenes,target=BuildTarget.Android,locationPathName=Output,options=BuildOptions.None});
+                    scenes=scenes,target=BuildTarget.Android,locationPathName=Output,options=BuildOptions.None,
+                    extraScriptingDefines=Environment.GetEnvironmentVariable("COGHE_BENCHMARK")=="1"?
+                        new[]{"COGHE_MOBILE_BENCHMARK"}:Array.Empty<string>()});
                 if(report.summary.result!=BuildResult.Succeeded)
                     throw new Exception("COghe Android build failed: "+report.summary.result);
                 Debug.Log("COGHE ANDROID BUILD SUCCESS: "+Path.GetFullPath(Output));

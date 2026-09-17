@@ -1,0 +1,36 @@
+{
+  "date": "2026-09-17",
+  "platform": "macOS",
+  "device": "Mac17,2 / Apple M5",
+  "renderPixels": [
+    960,
+    1600
+  ],
+  "frameCap": 60,
+  "buildType": "Development",
+  "method": "Real-time scripted gameplay commands, full Boss20 solution; no transforms, body groups, gate states, or completion overrides",
+  "tests": {
+    "total": "81",
+    "passed": "80",
+    "failed": "1",
+    "duration": "87.2696414",
+    "start-time": "2026-09-17 11:51:10Z",
+    "end-time": "2026-09-17 11:52:37Z"
+  },
+  "failures": [
+    {
+      "test": "GravityBox.Tests.VenomOriginTests.FourthLessonPeelsAndFallsWhenClimbingIntoSlipperyBand",
+      "message": "  After a slip, a new safe route must still complete the level: centre=(0.27, -0.28, 0.03), groups=1, escaped=0, Idle, ; cursor=, path=\n  Expected: True\n  But was:  False\n"
+    }
+  ],
+  "fullSolutionPassed": true,
+  "sourceHashes": {
+    "Assets/_Game/Venom/Runtime/VenomCampaignMotion.cs": "e263129cf5c22ef7624bb7bf17a8ef17fa818a3ab422b23314d34a38bb37da00",
+    "Assets/_Game/Venom/Runtime/VenomNavigationRevision.cs": "1df59d62ea7673e46ba4a7c508c30df50c2cbc03116293b8c616d76cebfd3db9",
+    "Assets/_Game/Venom/Runtime/VenomNavigationSnapshot.cs": "af3fbfc69febb58dc33c34e095d8ed631eb15b536322301d756c8a22c5ebad80",
+    "Assets/_Game/Venom/Runtime/COgheMacPlaytest.cs": "743b80cfecdececa9bc44c0481b765f2315ec18ccc99897ed0fab62a3ee7a855",
+    "Assets/_Game/Venom/Runtime/COgheMacPlaytestDemo.cs": "f51ebfad8d32cb6fe08175233ba514d8a9b58ec770b0ceb17cfff4ad85c28597"
+  },
+  "fullPlayerSolutionPassed": true,
+  "metricsFinished": true
+}

@@ -7,6 +7,7 @@ namespace GravityBox.Venom
     {
         public const int LevelCount=20;
         public COgheMechanism[] Mechanisms { get; private set; }=Array.Empty<COgheMechanism>();
+        private COgheMechanism[] transportMechanisms=Array.Empty<COgheMechanism>(),fusionBarriers=Array.Empty<COgheMechanism>(),exitControllers=Array.Empty<COgheMechanism>();
         public int LevelPage {get;set;}
         private Vector3[] graphSurfacePositions;
         private Quaternion[] graphSurfaceRotations;
@@ -16,6 +17,9 @@ namespace GravityBox.Venom
         {
             Mechanisms=Owner.Apparatus.GetComponentsInChildren<COgheMechanism>(true);
             foreach(var mechanism in Mechanisms)mechanism.InitializeMechanism(this);
+            transportMechanisms=Array.FindAll(Mechanisms,m=>m.TransportsTissue);
+            fusionBarriers=Array.FindAll(Mechanisms,m=>m.SeparatesTissue);
+            exitControllers=Array.FindAll(Mechanisms,m=>m.ControlsExit);
             LevelPage=(Definition.Order-1)/10;
         }
         private void ResetMechanisms()
@@ -44,26 +48,26 @@ namespace GravityBox.Venom
             get
             {
                 if(!GateOpen)return false;
-                foreach(var m in Mechanisms)if(m.isActiveAndEnabled&&m.ControlsExit&&!m.ExitUnlocked)return false;
+                foreach(var m in exitControllers)if(m.isActiveAndEnabled&&m.ControlsExit&&!m.ExitUnlocked)return false;
                 return true;
             }
         }
         public bool MechanismSuppressesMotion(int particle)
         {
             if(Home)return false;
-            foreach(var m in Mechanisms)if(m.isActiveAndEnabled&&m.SuppressesMotion(particle))return true;
+            foreach(var m in transportMechanisms)if(m.isActiveAndEnabled&&m.SuppressesMotion(particle))return true;
             return false;
         }
         public bool IsFlowing(int particle)
         {
             if(InTube&&Matter.Groups[particle]==Matter.Groups[tubeAnchor])return true;
             if(Home)return false;
-            foreach(var m in Mechanisms)if(m.isActiveAndEnabled&&m.IsFlowing(particle))return true;
+            foreach(var m in transportMechanisms)if(m.isActiveAndEnabled&&m.IsFlowing(particle))return true;
             return false;
         }
         private bool MechanismBlocksFusion(int a,int b)
         {
-            foreach(var m in Mechanisms)if(m.isActiveAndEnabled&&m.BlocksFusion(a,b))return true;
+            foreach(var m in fusionBarriers)if(m.isActiveAndEnabled&&m.BlocksFusion(a,b))return true;
             return false;
         }
         private bool TouchMechanism(Ray ray,float obstruction)

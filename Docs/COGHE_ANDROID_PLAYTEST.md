@@ -1,6 +1,6 @@
 # COghe — bản Android trên thiết bị thật
 
-Build đúng mười scene `VenomOrigin01`…`VenomOrigin10` bằng Unity 6000.3.19f1:
+Build đúng hai mươi scene `VenomOrigin01`…`VenomOrigin20` bằng Unity 6000.3.19f1:
 
 ```sh
 bash Tools/build-venom-android.sh
@@ -23,9 +23,13 @@ adb -s "$COGHE_ANDROID_DEVICE" shell am start -W -n com.gravityboxlab.venom/com.
 
 `COGHE_ANDROID_DEVICE` là serial trả về từ `adb devices -l`; không lưu serial cá nhân trong repository. Nếu máy hỏi cho phép USB hoặc cài đặt, xác nhận trực tiếp trên điện thoại. Không gỡ app hoặc xóa dữ liệu để xử lý lỗi chữ ký mà chưa kiểm tra dữ liệu cần giữ.
 
-Trong game, chạm số màn ở hàng trên; **BOSS** là màn 10. Chạm kính để chỉ đường, kéo để xoay ở màn cho phép. Màn 07, 08 và 10 khóa xoay; chọn từng phần ở hàng nút dưới khi đã phân tách.
+Trong game, chọn tab **01–10 / 11–20**, rồi chạm số màn ở hàng trên; **BOSS** là màn 10 và 20. Chạm kính để chỉ đường, kéo để xoay ở màn cho phép. Màn 07, 08 và 10 khóa xoay; chọn từng phần ở hàng nút dưới khi đã phân tách.
 
-## Lần kết nối ngày 16/09/2026
+## Đợt tối ưu ngày 17/09/2026
+
+Đo tự động từng màn 11–20 trên OPPO, bằng APK ARM64 IL2CPP Release có instrumentation tùy chọn. Bản chơi cuối đã cài lên OPPO bằng ADB, kiểm tra SHA-256 khớp và mở game thành công; giữ dữ liệu ứng dụng. Bản chơi bình thường không tự chạy benchmark. Xem [số đo, cách tái hiện và giới hạn](COGHE_MOBILE_PERFORMANCE.md).
+
+## Lịch sử kết nối ngày 16/09/2026
 
 OPPO báo model `CPH2591`, Android 15 / API 35, hỗ trợ ARM64, độ phân giải 720×1612. Build thành công; APK mới nhất 33,645,477 byte (khoảng 32.1 MiB), chứa đủ `level0`…`level9` tương ứng 10 màn Origin. Package/nhãn/ARM64 đã được kiểm tra từ manifest APK.
 

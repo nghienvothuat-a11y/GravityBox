@@ -48,6 +48,9 @@ namespace GravityBox.Editor
                 var data=Asset<VenomCampaignDefinition>("Definitions/Level"+number.ToString("00")+".asset",()=>ScriptableObject.CreateInstance<VenomCampaignDefinition>());
                 data.Id="venom.origin."+number.ToString("00");data.Order=number;data.Title=number.ToString("00")+" · "+Names[number-1];data.Lesson=Lessons[number-1];
                 data.CanRotate=number!=7&&number!=8&&number!=10;data.Boss=number==10;data.Passive=number==6;data.ViewRadius=number==8?.52f:number==7?.44f:.46f;
+                data.CameraZones=number==8?new[]{
+                    new VenomCameraZone("Hộp 1",new Vector3(-.34f,0,0),Vector3.one*.5f),
+                    new VenomCameraZone("Hộp 2",new Vector3(.34f,0,0),Vector3.one*.5f)}:System.Array.Empty<VenomCameraZone>();
                 // Look into the inlet from the left. A steeper pitch would put
                 // the selectable ceiling over the inlet's touch target.
                 // View 07 from the creature's side of the step so the crate

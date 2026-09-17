@@ -268,11 +268,14 @@ namespace GravityBox.Tests
             Vector3 aroundLeft=game.Root.TransformPoint(new Vector3(-.18f,-.265f,-.06f));
             game.Motion.Move(0,aroundLeft);yield return Until(18,()=>Vector3.Distance(game.Motion.Centre(0),aroundLeft)<.050f);
             Assert.Less(Vector3.Distance(game.Motion.Centre(0),aroundLeft),.060f,"The floor route must pass around the solid pedestal's left edge. "+State);
-            Vector3 climbBottom=climb.Closest(game.Root.TransformPoint(new Vector3(-.10f,-.278f,-.08f)))+climb.Normal*.019f;
+            Vector3 climbBottom=climb.Closest(game.Root.TransformPoint(new Vector3(-.04f,-.278f,-.08f)))+climb.Normal*.019f;
             game.MoveTo(climbBottom-climb.Normal*.019f,climb);yield return Until(14,()=>Vector3.Distance(game.Motion.Centre(0),climbBottom)<.055f);
             Assert.Less(Vector3.Distance(game.Motion.Centre(0),climbBottom),.065f,"The strip must make real contact with the floor route. "+State);
-            Vector3 climbTop=climb.Closest(game.Root.TransformPoint(new Vector3(-.08f,.035f,-.22f)))+climb.Normal*.019f;
-            game.MoveTo(climbTop-climb.Normal*.019f,climb);yield return Until(24,()=>Vector3.Distance(game.Motion.Centre(0),climbTop)<.055f);
+            // The hanging bridge covers the upper part of the pedestal's front.
+            // Command its exposed front, not a point inside/behind its solid slab.
+            var bridgeFront=System.Array.Find(assembly.Bridge.GetComponentsInChildren<VenomSurfacePatch>(),p=>Vector3.Dot(p.Normal,game.Root.forward)>.9f);
+            Vector3 climbTop=bridgeFront.Closest(game.Root.TransformPoint(new Vector3(-.04f,.018f,-.06f)))+bridgeFront.Normal*.019f;
+            game.MoveTo(climbTop-bridgeFront.Normal*.019f,bridgeFront);yield return Until(24,()=>Vector3.Distance(game.Motion.Centre(0),climbTop)<.055f);
             Evidence("14-climb-top");Assert.Less(Vector3.Distance(game.Motion.Centre(0),climbTop),.065f,"The body must physically crawl to the top of the gripping strip. "+State);
             var departurePatch=System.Array.Find(game.Surfaces,p=>p.name=="Bridge departure perch");Assert.NotNull(departurePatch);
             Vector3 cornerSurface=game.Root.TransformPoint(new Vector3(-.08f,.04f,-.150f));

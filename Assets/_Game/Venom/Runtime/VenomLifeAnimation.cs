@@ -80,8 +80,10 @@ namespace GravityBox.Venom
             tendrils.MarkDynamic(); go.GetComponent<MeshFilter>().sharedMesh = tendrils;
             go.GetComponent<MeshRenderer>().sharedMaterial = source.Profile.Skin;
         }
+        private readonly VenomBoundaryQueries boundaryQueries=new VenomBoundaryQueries();
         public void BeginFrame()
         {
+            level.CaptureAnimationBoundaries(boundaryQueries);
             float time = organism.SimulationTime;
             bool reset = time < previousSimulationTime;
             if (reset) { Array.Clear(fragments,0,fragments.Length); clock = 0; }
@@ -237,7 +239,7 @@ namespace GravityBox.Venom
             Vector3 side = Vector3.Cross(up,forward).normalized;
             float clearance = lift+.03f;
             for (int p = -1; p <= 1; p++)
-                if (level.RaycastBoundary(anchor+side*(p*.014f),direction,clearance,out var hit)) clearance = hit.distance;
+                if (boundaryQueries.Raycast(anchor+side*(p*.014f),direction,clearance,out var hit)) clearance = hit.distance;
             lift = Mathf.Min(lift,Mathf.Max(0,clearance-.026f));
             float head = expression*Mathf.Clamp01(lift/Mathf.Max(.001f,desiredLift));
             HeadAmount = Mathf.Max(HeadAmount,head); HeadHeight = Mathf.Max(HeadHeight,lift);
@@ -254,7 +256,7 @@ namespace GravityBox.Venom
                 source += (side*Mathf.Sin(beat-t*1.8f)*.012f+forward*Mathf.Sin(beat*.73f-t)*.007f)*state.Dance*t*t;
                 // Keep the growing crest on this side of nearby apparatus.
                 Vector3 growth=source-anchor;
-                if(growth.sqrMagnitude>1e-10f && level.RaycastBoundary(anchor,growth.normalized,growth.magnitude+.015f,out var obstruction))
+                if(growth.sqrMagnitude>1e-10f && boundaryQueries.Raycast(anchor,growth.normalized,growth.magnitude+.015f,out var obstruction))
                     source=anchor+growth.normalized*Mathf.Max(0,obstruction.distance-.015f);
                 points[count] = transform.InverseTransformPoint(source);
                 supports[count] = Mathf.Lerp(.029f,.018f,t);
@@ -423,7 +425,7 @@ namespace GravityBox.Venom
             for (int i = 0; i < 7; i++)
             {
                 Vector3 direction = Quaternion.AngleAxis(i*51.43f+Noise(seed)*85,up)*forward;
-                float distance = level.RaycastBoundary(centre,direction,.16f,out var hit) ? hit.distance : .16f;
+                float distance = boundaryQueries.Raycast(centre,direction,.16f,out var hit) ? hit.distance : .16f;
                 if (distance < .036f) continue;
                 float score = .16f-distance+Noise(seed+i*13)*.045f;
                 if (score > best) { best = score; result = direction; }
@@ -478,7 +480,7 @@ namespace GravityBox.Venom
                 // Remove common translation before constraining visual
                 // displacement against nearby apparatus. Never cross a thin wall.
                 float length = delta.magnitude;
-                if (length > .00001f && level.RaycastBoundary(world,delta/length,length+.014f,out var hit))
+                if (length > .00001f && boundaryQueries.Raycast(world,delta/length,length+.014f,out var hit))
                     delta *= Mathf.Clamp01((hit.distance-.014f)/length);
                 Vector3 target = world+delta;
                 target += up*Mathf.Max(0,organism.Profile.ParticleRadius-Vector3.Dot(target-floor,up));
@@ -515,8 +517,8 @@ namespace GravityBox.Venom
                     Vector3 goal = root+direction*organism.Profile.TendrilReach*Mathf.Lerp(.65f,1.25f,Noise(seed+7));
                     goal -= up*Vector3.Dot(goal-floor,up);
                     foot.WaitUntil = clock+.18f+Noise(seed+3)*.43f;
-                    if (!level.RaycastBoundary(goal+up*.025f,-up,.04f,out var hit) || Vector3.Dot(hit.normal,up)<.75f) continue;
-                    if (level.SegmentBlocked(root,hit.point+up*.001f)) continue;
+                    if (!boundaryQueries.Raycast(goal+up*.025f,-up,.04f,out var hit) || Vector3.Dot(hit.normal,up)<.75f) continue;
+                    if (boundaryQueries.SegmentBlocked(root,hit.point+up*.001f)) continue;
                     foot.Surface = hit.collider; foot.LocalPoint = hit.collider.transform.InverseTransformPoint(hit.point);
                     foot.LocalNormal = hit.collider.transform.InverseTransformDirection(hit.normal);
                     foot.LocalDirection = hit.collider.transform.InverseTransformDirection(direction);
@@ -542,7 +544,7 @@ namespace GravityBox.Venom
                 Vector3 dir = foot.Surface.transform.TransformDirection(foot.LocalDirection).normalized;
                 Vector3 origin = transform.TransformPoint(points[index])+dir*.003f;
                 float distance = Vector3.Distance(origin,anchor);
-                if (distance > .095f || level.SegmentBlocked(origin,anchor+normal*.001f))
+                if (distance > .095f || boundaryQueries.SegmentBlocked(origin,anchor+normal*.001f))
                 { foot.Surface = null; continue; }
                 foot.Age += dt;
                 if ((distance > .055f || distance < .009f || state.Moving < .12f) && foot.Age > foot.Reach)
@@ -627,14 +629,14 @@ namespace GravityBox.Venom
             {
                 float t=step/(float)Segments,u=1-t;
                 Vector3 p=u*u*u*p0+3*u*u*t*p1+3*u*t*t*p2+t*t*t*p3;
-                if(step>0 && (p-previous).sqrMagnitude>1e-10f && level.SegmentBlocked(previous,p))return false;
+                if(step>0 && (p-previous).sqrMagnitude>1e-10f && boundaryQueries.SegmentBlocked(previous,p))return false;
                 float radius=Mathf.Lerp(.006f,.00055f,Mathf.Pow(t,.55f))*thickness+.001f;
                 // Both the swept centreline and the tube's thickness need room.
                 // Shorten a flourish when close to glass, a blade or the cover.
                 for(int axis=0;axis<3;axis++)for(int sign=-1;sign<=1;sign+=2)
                 {
                     Vector3 direction=axis==0?Vector3.right:axis==1?Vector3.up:Vector3.forward;
-                    if(level.RaycastBoundary(p,direction*sign,radius,out _))return false;
+                    if(boundaryQueries.Raycast(p,direction*sign,radius,out _))return false;
                 }
                 previous=p;
             }

@@ -56,8 +56,7 @@ namespace GravityBox.Tests
         {
             if(SystemInfo.graphicsDeviceType==GraphicsDeviceType.Null)return;
             string directory="Artifacts/COgheExpansion/Pipes";Directory.CreateDirectory(directory);
-            var camera=game.Owner.View;camera.aspect=720f/1280;camera.transform.rotation=Quaternion.Euler(game.Definition.CameraEuler);
-            camera.transform.position=-camera.transform.forward*3;camera.orthographicSize=game.Definition.ViewRadius*1280/(720*.87f);
+            var camera=game.Owner.View;game.CameraRig.Frame(720,1280,0,true);
             game.Matter.GetComponent<VenomSurface>().Rebuild(false);
             var target=new RenderTexture(720,1280,24){antiAliasing=4};target.Create();var old=RenderTexture.active;
             var picture=new Texture2D(720,1280,TextureFormat.RGBA32,false);

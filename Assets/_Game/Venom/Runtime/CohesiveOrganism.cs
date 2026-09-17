@@ -36,6 +36,7 @@ namespace GravityBox.Venom
         private readonly int[] search = new int[ParticleCount];
         private readonly bool[] visited = new bool[ParticleCount];
         private readonly Vector3[] start = new Vector3[ParticleCount];
+        private readonly Vector3[] stepPositions=new Vector3[ParticleCount],stepVelocities=new Vector3[ParticleCount];
         private readonly Collider[] support = new Collider[ParticleCount];
         private readonly Vector3[] supportPoint = new Vector3[ParticleCount], supportNormal = new Vector3[ParticleCount];
         private readonly float[] supportTime = new float[ParticleCount], supportScore = new float[ParticleCount];
@@ -92,12 +93,15 @@ namespace GravityBox.Venom
         public void Step(float dt)
         {
             SimulationTime += dt; FusionGlow = Mathf.MoveTowards(FusionGlow, 0, dt);
+            // AddForce queues impulses until PhysX simulates. These values stay
+            // constant throughout this force-accumulation pass.
+            for(int i=0;i<ParticleCount;i++){stepPositions[i]=Bodies[i].position;stepVelocities[i]=Bodies[i].linearVelocity;}
             for (int i = 0; i < ParticleCount; i++) Bodies[i].AddForce(Vector3.down * 9.81f, ForceMode.Acceleration);
             ApplySoftContacts();
             for (int k = bonds.Count - 1; k >= 0; k--)
             {
                 Bond bond = bonds[k];
-                Vector3 delta = Bodies[bond.B].position - Bodies[bond.A].position;
+                Vector3 delta = stepPositions[bond.B] - stepPositions[bond.A];
                 float distance = delta.magnitude;
                 if (distance < .00001f) continue;
                 Vector3 axis = delta / distance;
@@ -114,7 +118,7 @@ namespace GravityBox.Venom
                 }
                 bond.Rest = Mathf.Lerp(bond.Rest, Mathf.Clamp(distance, Profile.Spacing,
                     Mathf.Lerp(Profile.BondReach,.075f,yielding)), Mathf.Lerp(Profile.Plasticity,Profile.FlowPlasticity,yielding) * dt);
-                Vector3 relative = Bodies[bond.B].linearVelocity - Bodies[bond.A].linearVelocity;
+                Vector3 relative = stepVelocities[bond.B] - stepVelocities[bond.A];
                 Vector3 force = axis * ((distance - bond.Rest) * Profile.Stiffness * Mathf.Lerp(1,Profile.FlowStiffness,yielding)) + relative * Profile.Viscosity;
                 force = Vector3.ClampMagnitude(force, .16f) * bond.Strength;
                 Bodies[bond.A].AddForce(force); Bodies[bond.B].AddForce(-force);
@@ -123,8 +127,8 @@ namespace GravityBox.Venom
             for (int i = 0; i < ParticleCount; i++) for (int j = i + 1; j < ParticleCount; j++)
             {
                 if (connected[i,j] || Escaped[i] != Escaped[j] || SimulationTime < healAt[i] || SimulationTime < healAt[j]) continue;
-                if (Vector3.SqrMagnitude(Bodies[i].position - Bodies[j].position) > Profile.Spacing * Profile.Spacing * 1.32f) continue;
-                if (level != null && (level.SegmentBlocked(Bodies[i].position, Bodies[j].position) || level.Journey!=null&&!level.Journey.CanFuse(i,j) || level.Campaign!=null&&!level.Campaign.CanFuse(i,j))) continue;
+                if (Vector3.SqrMagnitude(stepPositions[i] - stepPositions[j]) > Profile.Spacing * Profile.Spacing * 1.32f) continue;
+                if (level != null && (level.SegmentBlocked(stepPositions[i], stepPositions[j]) || level.Journey!=null&&!level.Journey.CanFuse(i,j) || level.Campaign!=null&&!level.Campaign.CanFuse(i,j))) continue;
                 fused |= Groups[i] != Groups[j];
                 Link(i, j, .03f);
             }
@@ -145,7 +149,7 @@ namespace GravityBox.Venom
             float diameter=Profile.ParticleRadius*2;
             for(int i=0;i<ParticleCount;i++)for(int j=i+1;j<ParticleCount;j++)
             {
-                Vector3 delta=Bodies[j].position-Bodies[i].position;
+                Vector3 delta=stepPositions[j]-stepPositions[i];
                 float distance=delta.magnitude;
                 bool yielding=Groups[i]==Groups[j] && Mathf.Max(flow[i],flow[j])>.05f;
                 // Tissue inside a squeezing fragment has compliant pressure,
@@ -156,7 +160,7 @@ namespace GravityBox.Venom
                 { Physics.IgnoreCollision(shapes[i],shapes[j],soft);softContacts[i,j]=soft; }
                 if(!soft || distance>=diameter || distance<.00001f)continue;
                 Vector3 axis=delta/distance;
-                float separation=Vector3.Dot(Bodies[j].linearVelocity-Bodies[i].linearVelocity,axis);
+                float separation=Vector3.Dot(stepVelocities[j]-stepVelocities[i],axis);
                 float pressure=Mathf.Clamp((diameter-distance)*Profile.TissuePressure-separation*Profile.TissueDamping,0,.05f);
                 Vector3 force=axis*pressure;
                 Bodies[i].AddForce(-force);Bodies[j].AddForce(force);

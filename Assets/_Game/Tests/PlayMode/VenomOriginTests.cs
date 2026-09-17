@@ -44,9 +44,7 @@ namespace GravityBox.Tests
         {
             if(SystemInfo.graphicsDeviceType==GraphicsDeviceType.Null)return;
             string dir="Artifacts/Venom01/OriginFrames";Directory.CreateDirectory(dir);
-            var cam=game.Owner.View;cam.aspect=720f/1280;cam.transform.rotation=Quaternion.Euler(game.Definition.CameraEuler);
-            Vector3 focus=game.Home?game.Motion.Centre(0):Vector3.zero;cam.transform.position=focus-cam.transform.forward*2;
-            cam.orthographicSize=game.Home?.22f:game.Definition.ViewRadius*1280/(720*.87f);
+            var cam=game.Owner.View;game.CameraRig.Frame(720,1280,0,true);
             game.Matter.GetComponent<VenomSurface>().Rebuild(false);
             game.Feedback?.Refresh();
             var target=new RenderTexture(720,1280,24){antiAliasing=4};target.Create();var old=RenderTexture.active;var picture=new Texture2D(720,1280,TextureFormat.RGBA32,false);
@@ -455,7 +453,7 @@ namespace GravityBox.Tests
             {
                 Vector3 screen=game.Owner.View.WorldToViewportPoint(game.Root.TransformPoint(new Vector3(x,y,z)));
                 Assert.That(screen.x,Is.InRange(.025f,.975f),"Keep outer frame rails visible");
-                Assert.That(screen.y,Is.InRange(.18f,.81f),"Keep the chambers clear of the HUD");
+                Assert.That(screen.y,Is.InRange(.245f,.750f),"Keep the chambers clear of the HUD and view selector");
             }
         }
         [UnityTest] public IEnumerator EighthLessonCeilingAcceptsScreenTap()

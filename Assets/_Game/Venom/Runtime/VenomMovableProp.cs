@@ -15,6 +15,8 @@ namespace GravityBox.Venom
         public Transform ManipulationPlane;
         public Vector3 InitialPosition;
         public Quaternion InitialRotation;
+        private Collider[] collisionShapes;
+        public Collider[] CollisionShapes=>collisionShapes??(collisionShapes=GetComponentsInChildren<Collider>());
         public void Capture(Transform root){InitialPosition=root.InverseTransformPoint(Body.position);InitialRotation=Quaternion.Inverse(root.rotation)*Body.rotation;}
         public void ResetTo(Transform root)
         {Body.position=root.TransformPoint(InitialPosition);Body.rotation=root.rotation*InitialRotation;Body.linearVelocity=Body.angularVelocity=Vector3.zero;}

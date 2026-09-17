@@ -19,6 +19,21 @@ namespace GravityBox.Venom
         private readonly List<Vector3> nodes=new List<Vector3>();
         private readonly List<VenomSurfacePatch> nodeSurfaces=new List<VenomSurfacePatch>();
         private readonly List<List<int>> links=new List<List<int>>();
+        private readonly List<List<int>> linkStorage=new List<List<int>>();
+        private readonly List<Vector3> worldNodes=new List<Vector3>();
+        private readonly VenomNavigationSnapshot navigation=new VenomNavigationSnapshot();
+        private readonly VenomNavigationRevision graphRevision=new VenomNavigationRevision();
+        private float[] costs=System.Array.Empty<float>();
+        private int[] parents=System.Array.Empty<int>(),heap=System.Array.Empty<int>(),heapPositions=System.Array.Empty<int>();
+        private bool[] done=System.Array.Empty<bool>();
+        private int heapCount;
+        public int GraphBuildCount {get;private set;}
+        private readonly Dictionary<Vector3Int,List<int>> cells=new Dictionary<Vector3Int,List<int>>();
+        private readonly List<List<int>> cellStorage=new List<List<int>>();
+        private readonly List<int> neighbours=new List<int>(128);
+        private readonly HashSet<int> seenGroups=new HashSet<int>();
+        private VenomSurfaceSnapshot[] contactWindows=System.Array.Empty<VenomSurfaceSnapshot>();
+        private static Vector3Int Cell(Vector3 p)=>new Vector3Int(Mathf.FloorToInt(p.x/.1f),Mathf.FloorToInt(p.y/.1f),Mathf.FloorToInt(p.z/.1f));
         private readonly Order[] orders=new Order[32];
         private readonly VenomSurfacePatch[] support=new VenomSurfacePatch[32];
         private readonly Vector3[] contact=new Vector3[32], intent=new Vector3[32];
@@ -41,7 +56,7 @@ namespace GravityBox.Venom
         private int nextCommandId;
         public int RouteCount=>nodes.Count;
         public VenomCampaignMotion(VenomCampaign owner){game=owner;}
-        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);System.Array.Clear(gripStrain,0,32);System.Array.Clear(detachedUntil,0,32);System.Array.Clear(detachedSurfaces,0,32);System.Array.Clear(ringCatches,0,32);Selected=0;nextCommandId=0;BuildGraph();}
+        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);System.Array.Clear(gripStrain,0,32);System.Array.Clear(detachedUntil,0,32);System.Array.Clear(detachedSurfaces,0,32);System.Array.Clear(ringCatches,0,32);Selected=0;nextCommandId=0;BuildGraph(true);}
         public Vector3 Centre(int anchor)
         {
             Vector3 c=Vector3.zero;int count=0;int group=game.Matter.Groups[anchor];
@@ -130,28 +145,50 @@ namespace GravityBox.Venom
             caught=new RingCatch{Surface=ring,LocalPoint=local,LocalTarget=new Vector3(footprint.x,footprint.y,.022f),Until=game.Matter.SimulationTime+.55f};
             SetCatch(anchor,caught);Cancel(anchor);return caught;
         }
-        public void BuildGraph()
+        public void BuildGraph(bool force=false)
         {
+            if(!force&&graphRevision.Matches(game))return;
+            COgheMobileMetrics.Begin(2);GraphBuildCount++;
             Physics.SyncTransforms();
-            nodes.Clear();nodeSurfaces.Clear();links.Clear();
+            navigation.Capture(game);
+            nodes.Clear();worldNodes.Clear();nodeSurfaces.Clear();links.Clear();cells.Clear();int cellCount=0;
+            Matrix4x4 toRoot=game.Root.worldToLocalMatrix;
             foreach(var s in game.Surfaces)
             {
                 if(!s.isActiveAndEnabled||s.SphereRadius>0)continue;
+                Matrix4x4 toWorld=s.transform.localToWorldMatrix;
                 int nx=Mathf.Max(1,Mathf.CeilToInt(s.Size.x/.065f)),ny=Mathf.Max(1,Mathf.CeilToInt(s.Size.y/.065f));
                 for(int x=0;x<=nx;x++)for(int y=0;y<=ny;y++)
                 {
                     float ix=Mathf.Min(.017f,s.Size.x*.25f),iy=Mathf.Min(.017f,s.Size.y*.25f);
                     var p=new Vector3(Mathf.Lerp(-s.Size.x*.5f+ix,s.Size.x*.5f-ix,x/(float)nx),Mathf.Lerp(-s.Size.y*.5f+iy,s.Size.y*.5f-iy,y/(float)ny),.021f);
-                    if(!s.Contains(p)||game.Occupied(s.transform.TransformPoint(p)))continue;
-                    nodes.Add(game.Root.InverseTransformPoint(s.transform.TransformPoint(p)));nodeSurfaces.Add(s);links.Add(new List<int>(8));
+                    Vector3 world=toWorld.MultiplyPoint3x4(p);
+                    if(!s.Contains(p)||navigation.Occupied(world))continue;
+                    int index=nodes.Count;Vector3 local=toRoot.MultiplyPoint3x4(world);
+                    nodes.Add(local);worldNodes.Add(world);nodeSurfaces.Add(s);
+                    if(linkStorage.Count<=index)linkStorage.Add(new List<int>(8));
+                    var connections=linkStorage[index];connections.Clear();links.Add(connections);
+                    Vector3Int cell=Cell(local);
+                    if(!cells.TryGetValue(cell,out var bucket))
+                    {
+                        if(cellStorage.Count<=cellCount)cellStorage.Add(new List<int>(16));
+                        bucket=cellStorage[cellCount++];bucket.Clear();cells.Add(cell,bucket);
+                    }
+                    bucket.Add(index);
                 }
             }
-            for(int i=0;i<nodes.Count;i++)for(int j=i+1;j<nodes.Count;j++)
+            for(int i=0;i<nodes.Count;i++)
             {
-                if((nodes[i]-nodes[j]).sqrMagnitude>.10f*.10f)continue;
-                if(game.Clear(game.Root.TransformPoint(nodes[i]),game.Root.TransformPoint(nodes[j]),.006f))
+                neighbours.Clear();var cell=Cell(nodes[i]);
+                for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)for(int z=-1;z<=1;z++)
+                    if(cells.TryGetValue(cell+new Vector3Int(x,y,z),out var bucket))
+                        foreach(int j in bucket)if(j>i&&(nodes[i]-nodes[j]).sqrMagnitude<=.10f*.10f)neighbours.Add(j);
+                // Preserve the original deterministic edge order for equal-cost routes.
+                neighbours.Sort();
+                foreach(int j in neighbours)if(navigation.Clear(worldNodes[i],worldNodes[j],.006f))
                 {links[i].Add(j);links[j].Add(i);}
             }
+            graphRevision.Capture(game);COgheMobileMetrics.End(2);
         }
         public void Move(int anchor,Vector3 world,bool hold=false,bool exit=false)
         {
@@ -167,26 +204,55 @@ namespace GravityBox.Venom
         }
         public bool FindPath(Vector3 start,Vector3 goal,List<Vector3> path)
         {
+            COgheMobileMetrics.Begin(3);
             path.Clear();int n=nodes.Count;
-            if(n==0){path.Add(game.Root.InverseTransformPoint(goal));return false;}
+            if(n==0){path.Add(game.Root.InverseTransformPoint(goal));COgheMobileMetrics.End(3);return false;}
             int a=Nearest(start),b=Nearest(goal);
-            var costs=new float[n];var parents=new int[n];var done=new bool[n];
-            for(int i=0;i<n;i++){costs[i]=float.PositiveInfinity;parents[i]=-1;}costs[a]=0;
-            for(int k=0;k<n;k++)
+            if(costs.Length<n)
             {
-                int current=-1;float best=float.PositiveInfinity;
-                for(int i=0;i<n;i++)if(!done[i]&&costs[i]<best){best=costs[i];current=i;}
-                if(current<0||current==b)break;done[current]=true;
-                foreach(int next in links[current])
-                {float d=costs[current]+Vector3.Distance(nodes[current],nodes[next]);if(d<costs[next]){costs[next]=d;parents[next]=current;}}
+                int capacity=Mathf.NextPowerOfTwo(n);costs=new float[capacity];parents=new int[capacity];
+                done=new bool[capacity];heap=new int[capacity];heapPositions=new int[capacity];
             }
-            if(float.IsPositiveInfinity(costs[b])){Debug.LogWarning($"Disconnected surface route {game.Definition.Order}: {nodes[a]} -> {nodes[b]}, {nodes.Count} nodes");path.Add(game.Root.InverseTransformPoint(goal));return false;}
+            for(int i=0;i<n;i++){costs[i]=float.PositiveInfinity;parents[i]=-1;done[i]=false;heapPositions[i]=-1;}
+            heapCount=0;costs[a]=0;Queue(a);
+            while(heapCount>0)
+            {
+                int current=Pop();if(current==b)break;done[current]=true;
+                foreach(int next in links[current])
+                {
+                    if(done[next])continue;
+                    float d=costs[current]+Vector3.Distance(nodes[current],nodes[next]);
+                    if(d<costs[next]){costs[next]=d;parents[next]=current;Queue(next);}
+                }
+            }
+            if(float.IsPositiveInfinity(costs[b])){Debug.LogWarning($"Disconnected surface route {game.Definition.Order}: {nodes[a]} -> {nodes[b]}, {nodes.Count} nodes");path.Add(game.Root.InverseTransformPoint(goal));COgheMobileMetrics.End(3);return false;}
             for(int at=b;at>=0;at=parents[at])
             {
                 path.Add(nodes[at]);if(at==a)break;
                 if(TryInsideCorner(parents[at],at,out var corner))path.Add(corner);
             }
-            path.Reverse();path.Add(game.Root.InverseTransformPoint(goal));return true;
+            path.Reverse();path.Add(game.Root.InverseTransformPoint(goal));COgheMobileMetrics.End(3);return true;
+        }
+        // Dijkstra with a decrease-key heap. Equal costs retain the old scan's
+        // lowest-node-index tie break, so this optimization does not reroute puzzles.
+        private bool Before(int a,int b)=>costs[a]<costs[b]||(costs[a]==costs[b]&&a<b);
+        private void Swap(int a,int b)
+        {int node=heap[a];heap[a]=heap[b];heap[b]=node;heapPositions[heap[a]]=a;heapPositions[heap[b]]=b;}
+        private void Queue(int node)
+        {
+            int at=heapPositions[node];if(at<0){at=heapCount++;heap[at]=node;heapPositions[node]=at;}
+            while(at>0){int parent=(at-1)/2;if(!Before(heap[at],heap[parent]))break;Swap(at,parent);at=parent;}
+        }
+        private int Pop()
+        {
+            int node=heap[0];heapPositions[node]=-1;heapCount--;if(heapCount==0)return node;
+            heap[0]=heap[heapCount];heapPositions[heap[0]]=0;int at=0;
+            while(at*2+1<heapCount)
+            {
+                int child=at*2+1;if(child+1<heapCount&&Before(heap[child+1],heap[child]))child++;
+                if(!Before(heap[child],heap[at]))break;Swap(child,at);at=child;
+            }
+            return node;
         }
         private bool TryInsideCorner(int from,int to,out Vector3 corner)
         {
@@ -274,16 +340,22 @@ namespace GravityBox.Venom
             // Scene children are not enabled yet during the owner's Awake.
             // Build after they join the physics scene, not against an empty graph.
             if(nodes.Count==0&&(!game.Definition.Passive||game.Home))BuildGraph();
+            if(contactWindows.Length!=game.Surfaces.Length)contactWindows=new VenomSurfaceSnapshot[game.Surfaces.Length];
+            for(int s=0;s<contactWindows.Length;s++)
+            {contactWindows[s].CaptureContact(game.Surfaces[s]);contactWindows[s].Active&=!game.IsHeldSurface(game.Surfaces[s]);}
+            var chamberBody=game.Owner.Rotation.GetComponent<Rigidbody>();bool exitAvailable=game.FinalExitAvailable;
             // Establish local contact first. No force can be anchored to a remote surface.
             for(int i=0;i<32;i++)
             {
                 support[i]=null;intent[i]=Vector3.zero;
                 var p=game.Matter.Bodies[i].position;float best=.034f;
-                foreach(var patch in game.Surfaces)
+                for(int s=0;s<contactWindows.Length;s++)
                 {
-                    if(!patch.isActiveAndEnabled||game.IsHeldSurface(patch))continue;
+                    ref var window=ref contactWindows[s];
+                    if(!window.Active||p.x<window.SkinMin.x||p.x>window.SkinMax.x||p.y<window.SkinMin.y||p.y>window.SkinMax.y||p.z<window.SkinMin.z||p.z>window.SkinMax.z)continue;
+                    var patch=window.Patch;
                     var local=patch.transform.InverseTransformPoint(p);
-                    float inside=patch.DistanceInside(p);
+                    float inside=patch.SphereRadius>0?patch.SphereRadius-local.magnitude:local.z;
                     if(inside<-.002f||inside>.036f||!patch.Contains(local,.001f))continue;
                     Vector3 q=patch.Closest(p);float d=Vector3.Distance(q,p);
                     // The deformable skin extends beyond each particle centre.
@@ -293,7 +365,7 @@ namespace GravityBox.Venom
                     best=d;support[i]=patch;contact[i]=q;
                 }
             }
-            var seen=new HashSet<int>();
+            var seen=seenGroups;seen.Clear();
             for(int a=0;a<32;a++)
             {
                 if(game.Matter.Escaped[a]||!seen.Add(game.Matter.Groups[a]))continue;
@@ -363,7 +435,7 @@ namespace GravityBox.Venom
                 {
                     if(game.Matter.Groups[i]!=game.Matter.Groups[a]||game.Matter.Escaped[i])continue;
                     Rigidbody body=game.Matter.Bodies[i];var patch=support[i];
-                    bool atExit=game.ExitAssisting(i);
+                    bool atExit=game.ExitAssisting(i,exitAvailable);
                     game.Matter.SetFlow(i,game.IsFlowing(i)||atExit?1:.12f);
                     // Visual effort is independent of traction. Slick contact
                     // receives no drive, adhesion or gravity cancellation.
@@ -372,7 +444,7 @@ namespace GravityBox.Venom
                     // Distribute the finite force transmitted by planted feet
                     // through the connected body. Gravity keeps acting on all
                     // tissue, including the unsupported head over a slick patch.
-                    Vector3 relative=body.linearVelocity-game.Owner.Rotation.GetComponent<Rigidbody>().GetPointVelocity(body.position);
+                    Vector3 relative=body.linearVelocity-chamberBody.GetPointVelocity(body.position);
                     Vector3 acceleration=Vector3.up*9.81f;
                     bool manipulating=game.Attached&&game.Matter.Groups[a]==game.Matter.Groups[Selected];
                     if(!manipulating)acceleration+=Vector3.ClampMagnitude((desired-relative)*(caught!=null?35:26),caught!=null?18:5);

@@ -270,6 +270,8 @@ namespace GravityBox.Tests
                 yield return WaitFor(8,()=>knife.Phase==VenomCampaign.BladePhase.Ready,"Knife clears and rearms before a new physical cut");
                 int before=game.Matter.CutCount;game.Motion.Move(anchor,knife.Sensor.position+game.Root.right*offset,true);
                 yield return WaitFor(20,()=>game.Matter.CutCount>before,"Biased first cut occurs");
+                // Let the real cutting impulse separate both pieces before issuing the next command.
+                for(int i=0;i<60;i++)Tick();
                 var parts=Anchors();if(parts.Count!=2)continue;
                 int largest=Count(parts[0])>Count(parts[1])?parts[0]:parts[1];int small=largest==parts[0]?parts[1]:parts[0];
                 if(Count(largest)>=19&&Count(small)>=7)yield break;
@@ -289,10 +291,20 @@ namespace GravityBox.Tests
             int oldGroup=game.Matter.Groups[worker];var workerParticles=new HashSet<int>();for(int i=0;i<32;i++)if(game.Matter.Groups[i]==oldGroup)workerParticles.Add(i);
             int oldCuts=game.Matter.CutCount;game.SelectFragment(worker);game.Motion.Move(worker,knives[1].Sensor.position,true);
             yield return WaitFor(25,()=>game.Matter.CutCount>oldCuts&&game.Matter.TotalFragmentCount>=3,"Second physical cut creates the B and C operators");
+            for(int i=0;i<60;i++)Tick();
             Assert.IsTrue(winch.Input.Active,"The scoped second cut must leave the A holder in place");
-            var candidates=new List<int>();foreach(int a in Anchors())if(workerParticles.Contains(a))candidates.Add(a);candidates.Sort((a,b)=>Count(b).CompareTo(Count(a)));
-            Assert.GreaterOrEqual(candidates.Count,2);int holdB=candidates[0],pullC=candidates[1];
-            yield return HoldPad(holdB,winch.Output);yield return ThroughPipe(pullC,pipes[1]);
+            var candidates=new List<int>();foreach(int a in Anchors())if(workerParticles.Contains(a))candidates.Add(a);
+            candidates.Sort((a,b)=>game.Root.InverseTransformPoint(game.Motion.Centre(a)).x.CompareTo(game.Root.InverseTransformPoint(game.Motion.Centre(b)).x));
+            Assert.AreEqual(2,candidates.Count,"Second cut should create two working parts; "+State);
+            // Keep the physical left/right cut order: crossing the two routes
+            // makes the living tissue fuse, exactly as the proximity rule says.
+            int holdB=candidates[0],pullC=candidates[1];
+            Debug.Log("BOSS_SECOND_CUT "+State);
+            yield return Walk(pullC,game.Root.TransformPoint(new Vector3(.13f,-.274f,-.24f)),25,.025f);
+            yield return ThroughPipe(pullC,pipes[1]);
+            yield return Walk(holdB,game.Root.TransformPoint(new Vector3(-.13f,-.274f,.22f)),25,.025f);
+            yield return HoldPad(holdB,winch.Output);
+            Assert.AreEqual(3,game.Matter.TotalFragmentCount,"A and B must remain separate from the C operator; "+State);
             yield return Pull(pullC,winch.Handle,1,()=>winch.Complete,30);
             Assert.IsFalse(winch.ExitUnlocked,"The coordinated mechanism only retracts the heavy cover pin");
             yield return Reunion(game.Root.TransformPoint(new Vector3(.42f,-.274f,.12f)));

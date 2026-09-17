@@ -95,6 +95,22 @@ namespace GravityBox.Venom
         private int flexibleTick;
         private int nextTravelCommand;
         private Collider[] solidColliders=Array.Empty<Collider>();
+        private Matrix4x4 skinToLocal,skinToWorld;
+        private Quaternion skinRotation;
+        private int skinFrame=-1;
+        private int skinEntryCount;
+        private float skinShellRadius;
+        public override bool HasSkinConstraint=>true;
+        public override bool TransportsTissue=>true;
+        public override bool SeparatesTissue=>true;
+        public override void PrepareSkinFrame()
+        {
+            if(root==null)return;
+            skinToLocal=root.worldToLocalMatrix;skinToWorld=root.localToWorldMatrix;skinRotation=root.rotation;skinFrame=Time.frameCount;
+            skinEntryCount=0;skinShellRadius=0;
+            foreach(Node node in Nodes)if(node.Terminal==TerminalKind.Entry){skinShellRadius+=node.LocalPosition.magnitude;skinEntryCount++;}
+            if(skinEntryCount>0)skinShellRadius/=skinEntryCount;
+        }
 
         public void Configure(Node[] nodes,Edge[] edges,float radius,float junctionRadius=.052f)
         {Nodes=nodes??Array.Empty<Node>();Edges=edges??Array.Empty<Edge>();Radius=radius;JunctionRadius=junctionRadius;PrepareGraph();}
@@ -120,16 +136,34 @@ namespace GravityBox.Venom
 
         public override bool IsFlowing(int particle)=>SuppressesMotion(particle);
 
+        public override bool MayConstrainSkin(Bounds worldBounds)
+        {
+            if(root==null)return false;
+            // The legacy multi-mouth sphere also supplies shell normals away
+            // from the tube bodies, so retain its exact per-vertex query.
+            if(skinEntryCount>=4)return true;
+            Vector3 centre=skinToLocal.MultiplyPoint3x4(worldBounds.center),e=worldBounds.extents;
+            Vector3 x=skinToLocal.MultiplyVector(Vector3.right*e.x),y=skinToLocal.MultiplyVector(Vector3.up*e.y),z=skinToLocal.MultiplyVector(Vector3.forward*e.z);
+            Vector3 extent=new Vector3(Mathf.Abs(x.x)+Mathf.Abs(y.x)+Mathf.Abs(z.x),Mathf.Abs(x.y)+Mathf.Abs(y.y)+Mathf.Abs(z.y),Mathf.Abs(x.z)+Mathf.Abs(y.z)+Mathf.Abs(z.z));
+            var fragment=new Bounds(centre,(extent+Vector3.one*(Radius+.0301f))*2);
+            foreach(var edge in Edges)
+                if(edge.Path!=null&&edge.Path.Length>=2&&fragment.Intersects(edge.LocalBounds))return true;
+            return false;
+        }
+
         public override bool ConstrainSkin(ref Vector3 world,out Vector3 normal)
         {
             normal=Vector3.up;if(root==null)return false;
-            Vector3 localWorld=root.InverseTransformPoint(world);float best=float.PositiveInfinity;
+            if(skinFrame!=Time.frameCount)PrepareSkinFrame();
+            Vector3 localWorld=skinToLocal.MultiplyPoint3x4(world);float best=float.PositiveInfinity;
             Vector3 bestCentre=Vector3.zero;
             foreach(Edge edge in Edges)
             {
                 if(edge.Path==null||edge.Path.Length<2)continue;
                 float reach=Radius+.03f;
-                if(edge.LocalBounds.SqrDistance(localWorld)>reach*reach)continue;
+                Vector3 min=edge.LocalBounds.min,max=edge.LocalBounds.max;
+                float dx=Mathf.Max(Mathf.Max(min.x-localWorld.x,0),localWorld.x-max.x),dy=Mathf.Max(Mathf.Max(min.y-localWorld.y,0),localWorld.y-max.y),dz=Mathf.Max(Mathf.Max(min.z-localWorld.z,0),localWorld.z-max.z);
+                if(dx*dx+dy*dy+dz*dz>reach*reach)continue;
                 Closest(edge,localWorld,out Vector3 centre,out _,out _);
                 float distance=Vector3.Distance(localWorld,centre);
                 if(distance<best){best=distance;bestCentre=centre;}
@@ -137,16 +171,14 @@ namespace GravityBox.Venom
             if(best>Radius+.03f)return IsApertureSkin(localWorld,ref normal);
             Vector3 radial=localWorld-bestCentre;
             if(radial.sqrMagnitude<.000001f)radial=Vector3.up;
-            normal=root.TransformDirection(radial.normalized);
-            if(best>Radius-.0005f)world=root.TransformPoint(bestCentre+radial.normalized*(Radius-.0005f));
+            normal=skinRotation*radial.normalized;
+            if(best>Radius-.0005f)world=skinToWorld.MultiplyPoint3x4(bestCentre+radial.normalized*(Radius-.0005f));
             return true;
         }
 
         private bool IsApertureSkin(Vector3 localWorld,ref Vector3 normal)
         {
-            float shellRadius=0;int entryCount=0;
-            foreach(Node node in Nodes)if(node.Terminal==TerminalKind.Entry){shellRadius+=node.LocalPosition.magnitude;entryCount++;}
-            if(entryCount<4)return false;shellRadius/=entryCount;
+            if(skinEntryCount<4)return false;float shellRadius=skinShellRadius;
             if(shellRadius<.1f||Mathf.Abs(localWorld.magnitude-shellRadius)>.032f)return false;
             Vector3 direction=localWorld.normalized;
             foreach(Node node in Nodes)

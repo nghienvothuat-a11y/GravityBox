@@ -9,6 +9,13 @@ namespace GravityBox.Venom
         public virtual bool TryTouch(VenomCampaign game, Ray ray, float nearestSolidDistance) => false;
         public virtual bool SuppressesMotion(int particle) => false;
         public virtual bool IsFlowing(int particle) => false;
+        public virtual bool HasSkinConstraint => false;
+        // Register expensive tissue queries only on mechanisms implementing
+        // them. A rail, lamp or pressure sensor does not transport/cut skin.
+        public virtual bool TransportsTissue => false;
+        public virtual bool SeparatesTissue => false;
+        public virtual void PrepareSkinFrame() { }
+        public virtual bool MayConstrainSkin(Bounds worldBounds) => true;
         public virtual bool ConstrainSkin(ref Vector3 world, out Vector3 normal) { normal = Vector3.up; return false; }
         public virtual bool BlocksFusion(int a, int b) => false;
         public virtual bool AllowsExitAssist(int particle, Vector3 capturePoint) => true;
