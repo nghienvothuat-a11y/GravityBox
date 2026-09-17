@@ -79,9 +79,9 @@ Kéo là phần bắt buộc của bài: khi đã đẩy kịch vào kính vẫn
 
 Người chơi dẫn sinh vật lên nóc và chọn vị trí tiến tới vùng trơn. Nó mất bám, rơi dưới trọng lực; người chơi phải căn điểm rời nóc/quỹ đạo rơi để cơ thể **tiếp xúc được vành bám**. Không vươn xúc tu từ nóc để bỏ qua cú rơi, không hút từ xa vào vành và không tự chọn điểm rơi tối ưu thay người chơi. Việc bắt vành là phản ứng bám khi tiếp xúc hợp lệ; không yêu cầu thao tác bấm đúng một frame để bắt.
 
-Từ vành, cơ thể kéo dài và **chảy qua ống như một dòng nước**, toàn bộ vật chất lần lượt sang khoang thứ hai rồi thu lại thành một sinh vật. Đây là biểu diễn biến dạng liên tục, không tự phân tách thành các phần độc lập và không dịch chuyển tức thời sang đầu ống. Ống là đường chuyển khoang, **không phải cửa thoát cuối**; đi qua đây không kích hoạt thắng/thua do thoát.
+Sau khi bắt vành và hãm lại, sinh vật **tự chui vào ống, không cần chạm thêm**. Cơ thể kéo dài và **chảy qua ống như một dòng nước**, toàn bộ vật chất lần lượt sang khoang thứ hai rồi thu lại thành một sinh vật. Đây là biểu diễn biến dạng liên tục, không tự phân tách thành các phần độc lập và không dịch chuyển tức thời sang đầu ống. Ống là đường chuyển khoang, **không phải cửa thoát cuối**; đi qua đây không kích hoạt thắng/thua do thoát.
 
-Nếu rơi hụt vành, sinh vật rơi xuống sàn hộp đầu và có đường leo lại để thử. Vành phải nhìn rõ, có bề rộng và độ bám đủ cho một khoảng sai số chơi được; độ khó nằm ở chọn điểm rơi. Không cho kỹ năng đã nhớ tự chọn toàn bộ chuỗi rơi–bắt–qua ống ở lần chơi lại.
+Nếu rơi hụt vành, sinh vật rơi xuống sàn hộp đầu và có đường leo lại để thử. Vành phải nhìn rõ, có bề rộng và độ bám đủ cho một khoảng sai số chơi được; độ khó nằm ở chọn điểm rơi. Người chơi vẫn tự chọn vị trí lên nóc và căn cú rơi; chỉ đoạn qua ống tự thực hiện sau tiếp xúc vành thành công.
 
 ### 09 — Lật đi
 

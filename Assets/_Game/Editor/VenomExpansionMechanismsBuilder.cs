@@ -16,8 +16,8 @@ namespace GravityBox.Editor
                 number==19?"Chọn từng phần để phối hợp. Khi gặp nhau, các phần tự hợp thể.":"";
             c.Definition.CanRotate = number == 18;
             c.Definition.Boss = number == 20;
-            c.Definition.CameraEuler = number==20 ? new Vector3(40,12,0) : new Vector3(32,18,0);
-            c.Definition.ViewRadius = number == 20 ? .87f : number == 19 ? .70f : .50f;
+            c.Definition.CameraEuler = number==20 ? new Vector3(40,12,0) : number==19 ? new Vector3(40,18,0) : new Vector3(32,18,0);
+            c.Definition.ViewRadius = number == 20 ? .68f : number == 19 ? .57f : .50f;
             c.Outward = Vector3.right;
             c.Exit = new Vector3(number == 20 ? .60f : number == 19 ? .48f : .30f, -.19f, .16f);
             c.Spawn = new Vector3(number == 20 ? -.48f : number == 19 ? -.35f : -.22f, -.267f, -.17f);
@@ -33,7 +33,7 @@ namespace GravityBox.Editor
         private static void ExpansionShell(ExpansionContext c, float halfX)
         {
             Panel(c.Root,"Laboratory floor",new Vector3(0,-.30f,0),Vector3.up,new Vector2(halfX*2,.60f),stone,false,Vector2.zero,0,c.Surfaces);
-            Panel(c.Root,"Laboratory ceiling",new Vector3(0,.30f,0),Vector3.down,new Vector2(halfX*2,.60f),glass,false,Vector2.zero,0,c.Surfaces);
+            Panel(c.Root,"Laboratory ceiling",new Vector3(0,.30f,0),Vector3.down,new Vector2(halfX*2,.60f),glass,false,Vector2.zero,0,c.Surfaces).InterceptExterior=true;
             Panel(c.Root,"Laboratory front",new Vector3(0,0,-.30f),Vector3.forward,new Vector2(halfX*2,.60f),glass,false,Vector2.zero,0,c.Surfaces);
             Panel(c.Root,"Laboratory rear",new Vector3(0,0,.30f),Vector3.back,new Vector2(halfX*2,.60f),glass,false,Vector2.zero,0,c.Surfaces);
             Panel(c.Root,"Laboratory left",new Vector3(-halfX,0,0),Vector3.right,new Vector2(.60f,.60f),glass,false,Vector2.zero,0,c.Surfaces);
@@ -181,12 +181,14 @@ namespace GravityBox.Editor
 
         private static void BuildTogether(ExpansionContext c)
         {
-            var gate=ExpansionDivider(c,0,true);ExpansionKnife(c,"Divider gravity knife",-.03f,-.19f);
+            var gate=ExpansionDivider(c,0,true);
+            var knife=ExpansionKnife(c,"Divider gravity knife",-.03f,-.19f);
+            knife.TouchHalfSize=new Vector3(.030f,.10f,.08f);
             var pad=ExpansionPad(c,"A",new Vector3(-.32f,-.297f,.16f),.012f);
             var handle=ExpansionRail(c,"B pulling handle",new Vector3(.28f,-.255f,-.16f),Vector3.right,.055f,0,new Vector3(.045f,.052f,.045f),.10f,.04f,false,true);
             var exit=ExpansionRail(c,"Outlet shutter",new Vector3(.470f,-.19f,.16f),Vector3.up,.16f,0,new Vector3(.012f,.12f,.12f),.035f,.015f,true,false);
             var winch=new GameObject("A lock B cable winch",typeof(COgheCooperativeWinch)).GetComponent<COgheCooperativeWinch>();winch.transform.SetParent(c.Root,false);
-            winch.Input=pad;winch.Handle=handle;winch.HandleForce=.065f;winch.Doors=new[]{gate,exit};ExpansionLinkage(c,winch);
+            winch.Input=pad;winch.Handle=handle;winch.HandleForce=.065f;winch.DoorSpeed=.10f;winch.Doors=new[]{gate,exit};ExpansionLinkage(c,winch);
         }
 
         private static void BuildThreeRoles(ExpansionContext c)

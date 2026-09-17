@@ -11,7 +11,7 @@ namespace GravityBox.Editor
         private static bool BuildExpansion15To16(int number,ExpansionContext c)
         {
             if(number==15){BuildPipeMaze(c);return true;}
-            if(number==16){BuildSixWays(c);return true;}
+            if(number==16){BuildAssemblyBridge(c);return true;}
             return false;
         }
 
@@ -57,46 +57,7 @@ namespace GravityBox.Editor
                 // itself was correct.
                 Edge("E–Ra",5,9,n,new Vector3(.26f,.08f,.12f))
             };
-            TubeNetwork(c.Root,"Interwoven pipe network",n,e,.034f,glass,false);
-        }
-
-        private static void BuildSixWays(ExpansionContext c)
-        {
-            c.Definition.Title="16 · Sáu ngả!";
-            c.Definition.Lesson="Mặt cầu trơn. Xoay để tới miệng ống rồi thử từng đường.";
-            c.Definition.CanRotate=true;c.Definition.Passive=true;
-            c.Definition.CameraEuler=new Vector3(24,-28,0);c.Definition.ViewRadius=.50f;
-            c.Spawn=new Vector3(-.055f,-.15f,-.04f);c.Owner.ApertureRadius=.041f;
-            const float sphereRadius=.24f,tubeRadius=.037f;
-            var directions=new[]{Vector3.right,Vector3.left,Vector3.up,Vector3.down,Vector3.forward,Vector3.back};
-            c.Surfaces.Add(MultiApertureSphere(c.Root,sphereRadius,tubeRadius,directions));
-            var nodes=new COgheTubeNetwork.Node[12];var edges=new COgheTubeNetwork.Edge[6];
-            for(int i=0;i<6;i++)
-            {
-                Vector3 d=directions[i],mouth=d*sphereRadius;
-                nodes[i]=new COgheTubeNetwork.Node("Miệng "+(i+1),mouth,COgheTubeNetwork.TerminalKind.Entry,d);
-                Vector3 side=Vector3.Cross(d,Mathf.Abs(Vector3.Dot(d,Vector3.up))>.8f?Vector3.forward:Vector3.up).normalized;
-                Vector3 tip=d*(sphereRadius+.245f)+side*((i%2==0?1:-1)*(.045f+.012f*i));
-                // The initial world-down mouth is deliberately capped.  The
-                // true +Z route only becomes the low mouth after the player
-                // rotates the sphere, preserving level 06's gravity lesson.
-                bool exit=i==4;
-                nodes[i+6]=new COgheTubeNetwork.Node(exit?"Đầu hở thật":"Đầu bịt "+(i+1),tip,exit?COgheTubeNetwork.TerminalKind.Exit:COgheTubeNetwork.TerminalKind.Closed,d);
-                var controls=new Vector3[7];
-                for(int p=0;p<controls.Length;p++)
-                {
-                    float t=p/(float)(controls.Length-1);
-                    controls[p]=Vector3.Lerp(mouth,tip,t)+side*Mathf.Sin(t*Mathf.PI)*(.028f+(i%3)*.007f);
-                }
-                // A fixed radial collar keeps the flexible hose tangent matched
-                // to the spherical aperture. Flex begins after this straight
-                // segment, so rubber motion cannot sweep the bore into the shell.
-                controls[1]=mouth+d*.045f;
-                edges[i]=new COgheTubeNetwork.Edge("Ống cao su "+(i+1),i,i+6,controls).FlexibleFromRoot(true);
-                if(exit){c.Exit=tip;c.Outward=d;}
-            }
-            var tubes=TubeNetwork(c.Root,"Six flexible rubber tubes",nodes,edges,tubeRadius,glass,true);
-            tubes.AutoCaptureEntries=true;
+            TubeNetwork(c.Root,"Interwoven pipe network",n,e,.034f,glass,false).CaptureSurfaceCommandsWhileInside=true;
         }
 
         private static COgheTubeNetwork.Edge Edge(string name,int a,int b,COgheTubeNetwork.Node[] nodes,params Vector3[] middle)
@@ -200,25 +161,5 @@ namespace GravityBox.Editor
             var mesh=new Mesh{name="Open branch chamber"};mesh.SetVertices(vertices);mesh.SetTriangles(triangles,0);mesh.RecalculateNormals();mesh.RecalculateBounds();return mesh;
         }
 
-        private static VenomSurfacePatch MultiApertureSphere(Transform root,float radius,float aperture,IReadOnlyList<Vector3> holes)
-        {
-            const int rings=40,sectors=80;var vertices=new List<Vector3>();var triangles=new List<int>();
-            for(int y=0;y<=rings;y++)for(int x=0;x<=sectors;x++)
-            {float v=y/(float)rings*Mathf.PI,u=x/(float)sectors*Mathf.PI*2;vertices.Add(new Vector3(Mathf.Sin(v)*Mathf.Cos(u),Mathf.Cos(v),Mathf.Sin(v)*Mathf.Sin(u))*radius);}
-            float opening=aperture/radius*1.06f;
-            bool Open(Vector3 point){Vector3 d=point.normalized;foreach(Vector3 hole in holes)if(Vector3.Cross(d,hole).magnitude<opening&&Vector3.Dot(d,hole)>0)return true;return false;}
-            for(int y=0;y<rings;y++)for(int x=0;x<sectors;x++)
-            {
-                int a=y*(sectors+1)+x,b=a+1,c=a+sectors+1,d=c+1;
-                if(!Open((vertices[a]+vertices[c]+vertices[b])/3)){triangles.Add(a);triangles.Add(c);triangles.Add(b);}
-                if(!Open((vertices[b]+vertices[c]+vertices[d])/3)){triangles.Add(b);triangles.Add(c);triangles.Add(d);}
-            }
-            var mesh=new Mesh{name="Slippery sphere with six real apertures"};mesh.SetVertices(vertices);mesh.SetTriangles(triangles,0);mesh.RecalculateNormals();mesh.RecalculateBounds();mesh=Save(mesh);
-            var go=new GameObject("Slippery sphere — six real openings",typeof(MeshFilter),typeof(MeshRenderer),typeof(MeshCollider),typeof(VenomSurfacePatch));go.transform.SetParent(root,false);
-            go.GetComponent<MeshFilter>().sharedMesh=mesh;go.GetComponent<MeshRenderer>().sharedMaterial=slip;
-            var collider=go.GetComponent<MeshCollider>();collider.sharedMesh=mesh;collider.sharedMaterial=slick;
-            var patch=go.GetComponent<VenomSurfacePatch>();patch.Shape=collider;patch.SphereRadius=radius;patch.Slippery=true;patch.Selectable=true;
-            return patch;
-        }
     }
 }

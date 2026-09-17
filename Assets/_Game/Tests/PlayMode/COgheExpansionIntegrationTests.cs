@@ -40,6 +40,23 @@ namespace GravityBox.Tests
                 Assert.AreEqual($"venom.origin.{n:00}",game.Definition.Id);
                 Assert.AreEqual(n,game.Definition.Order);Assert.AreEqual(n%10==0,game.Definition.Boss);
                 Assert.AreEqual((n-1)/10,game.LevelPage);
+                foreach(var surface in game.Surfaces)
+                {
+                    if(surface.Slippery||surface.HasSlipRegion)
+                        Assert.IsTrue(surface.Selectable,$"Level {n}: slick surface {surface.name} must accept commands.");
+                    if(surface.name!="Glass face 5"&&surface.name!="Laboratory ceiling")continue;
+                    Assert.IsTrue(surface.Selectable&&surface.InterceptExterior,$"Level {n}: roof must remain pickable even without rotation.");
+                    bool selected=false;
+                    foreach(float x in new[]{-.3f,0f,.3f})foreach(float y in new[]{-.3f,0f,.3f})
+                    {
+                        game.Feedback.ResetFeedback();
+                        var point=surface.transform.TransformPoint(new Vector3(x*surface.Size.x,y*surface.Size.y,0));
+                        game.TouchPoint(game.Owner.View.WorldToScreenPoint(point));
+                        selected|=game.Feedback.CommandSurface==surface;
+                    }
+                    Assert.IsTrue(selected,$"Level {n}: visible roof {surface.name} must accept an actual screen tap.");
+                }
+                game.ResetLevel();Physics.SyncTransforms();
                 if(n<11)continue;
                 for(int tick=0;tick<600;tick++)
                 {game.Owner.Step(1f/120);game.Owner.Rotation.Step(1f/120);Physics.Simulate(1f/120);if(tick%240==0)yield return null;}

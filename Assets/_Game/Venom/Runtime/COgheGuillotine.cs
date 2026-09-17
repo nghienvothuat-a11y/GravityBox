@@ -10,6 +10,7 @@ namespace GravityBox.Venom
         public Vector3 SensorHalfSize = new Vector3(.027f,.04f,.065f);
         public Vector3 CutHalfSize = new Vector3(.005f,.065f,.065f);
         public Renderer[] Lamps;
+        public Vector3 TouchHalfSize; // Optional input-only envelope; never a cutting or collision volume.
         public VenomCampaign.BladePhase Phase { get; private set; }
         private float clock;
         private VenomCampaign owner;
@@ -21,6 +22,17 @@ namespace GravityBox.Venom
         public override bool BlocksFusion(int a, int b) => owner != null && owner.Matter.CrossesBlade(Rail.Body.transform, CutHalfSize, a, b);
         public override bool TryTouch(VenomCampaign game, Ray ray, float nearestSolidDistance)
         {
+            if(TouchHalfSize.sqrMagnitude>0)
+            {
+                var frame=Rail.transform;
+                var localRay=new Ray(frame.InverseTransformPoint(ray.origin),frame.InverseTransformDirection(ray.direction));
+                if(new Bounds(Vector3.zero,TouchHalfSize*2).IntersectRay(localRay,out float distance))
+                {
+                    var point=frame.TransformPoint(localRay.GetPoint(distance));
+                    if(Vector3.Distance(ray.origin,point)<=nearestSolidDistance+.002f)
+                    {game.Motion.Move(game.Motion.Selected,Sensor.position,true);return true;}
+                }
+            }
             foreach (var shape in Rail.GetComponentsInChildren<Collider>())
                 if (shape.Raycast(ray, out var hit, nearestSolidDistance + .002f))
                 { game.Motion.Move(game.Motion.Selected, Sensor.position, true); return true; }

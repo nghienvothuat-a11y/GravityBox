@@ -9,6 +9,10 @@ namespace GravityBox.Venom
         public Rigidbody Body;
         public bool Manipulable;
         public bool ProvidesStep;
+        [Tooltip("Optional reachable handle; forward points from the prop toward the creature.")]
+        public Transform ManipulationGrip;
+        public bool ManipulationHandleOnly;
+        public Transform ManipulationPlane;
         public Vector3 InitialPosition;
         public Quaternion InitialRotation;
         public void Capture(Transform root){InitialPosition=root.InverseTransformPoint(Body.position);InitialRotation=Quaternion.Inverse(root.rotation)*Body.rotation;}

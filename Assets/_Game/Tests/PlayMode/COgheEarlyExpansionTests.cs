@@ -138,23 +138,82 @@ namespace GravityBox.Tests
         }
 
         [UnityTest] public IEnumerator Level12_GravityCreatesSlideFlightThenActualWallContactPrecedesExit()
+        {foreach(float lateral in new[]{0f,-.025f,.025f})yield return SlideRoute(lateral);}
+
+        private IEnumerator SlideRoute(float lateral)
         {
             yield return Load(12);
             var monitor=Object.FindFirstObjectByType<COgheSlideLaunchMonitor>();Assert.NotNull(monitor);
             var first=System.Array.Find(monitor.SlideSurfaces,p=>p.name=="Slippery trough 1");Assert.NotNull(first);
-            Vector3 staging=game.Root.TransformPoint(new Vector3(-.115f,.168f,0));
-            game.Motion.Move(0,staging);yield return Until(28,()=>Vector3.Distance(game.Motion.Centre(0),staging)<.045f);
+            Vector3 staging=game.Root.TransformPoint(new Vector3(-.115f,.168f,lateral));
+            Evidence("12-before-climb");
+            foreach(float x in new[]{-.31f,.31f})foreach(float y in new[]{-.31f,.31f})foreach(float z in new[]{-.31f,.31f})
+            {
+                Vector3 screen=game.Owner.View.WorldToViewportPoint(game.Root.TransformPoint(new Vector3(x,y,z)));
+                Assert.That(screen.x,Is.InRange(.025f,.975f));Assert.That(screen.y,Is.InRange(.18f,.81f));
+            }
+            var deck=System.Array.Find(game.Surfaces,p=>p.name=="Launch platform");Assert.NotNull(deck);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(deck.Closest(staging)));
+            Assert.AreEqual(deck,game.Feedback.CommandSurface,"A tap on the visible launch deck must select the deck, not a transparent wall/roof.");
+            yield return Until(28,()=>Vector3.Distance(game.Motion.Centre(0),staging)<.045f);
             Evidence("12-staging");
             Assert.Less(Vector3.Distance(game.Motion.Centre(0),staging),.055f,"The separate gripping climb must reach the launch platform. "+State);
-            game.MoveTo(first.Closest(game.Root.TransformPoint(new Vector3(-.066f,.137f,0))),first);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(first.Closest(game.Root.TransformPoint(new Vector3(-.066f,.137f,lateral)))));
+            CollectionAssert.Contains(monitor.SlideSurfaces,game.Feedback.CommandSurface,"The visible curved trough must accept a tap, including its real sidewall.");
+            Assert.LessOrEqual(System.Array.IndexOf(monitor.SlideSurfaces,game.Feedback.CommandSurface),2,"The entry tap must select an upper segment, including its sidewall.");
             yield return Until(8,()=>monitor.EnteredSlide);if(!monitor.EnteredSlide)Evidence("12-missed-entry");Assert.IsTrue(monitor.EnteredSlide,State);
             yield return Until(8,()=>monitor.Launched);Evidence("12-launched");if(!monitor.Launched)Debug.Log("L12 LAUNCH BLOCKERS\n"+RouteDiagnostics(game.Root.TransformPoint(new Vector3(.24f,-.09f,0))));
             Assert.IsTrue(monitor.Launched,$"Every particle must physically clear the lip collider during flight. airborne={monitor.AirborneParticleCount}, actualContacts={monitor.ActualContactCount}, slideContacts={monitor.SlideContactCount}, supports={monitor.SupportContactCount}, speed={monitor.CurrentSpeed:F3}, peakSlide={monitor.PeakSlideSpeed:F3}, airFrames={monitor.AirborneFrames}; {State}");
             Assert.IsFalse(game.Owner.Completed,"Leaving the lip is not a win; tissue must physically catch and cross the real aperture.");
             yield return Until(8,()=>monitor.Caught);Evidence("12-caught");if(!monitor.Caught)Debug.Log("L12 CATCH BLOCKERS\n"+RouteDiagnostics(game.Owner.Outlet.position-game.Owner.Outlet.forward*.022f));Assert.IsTrue(monitor.Caught,"At least one real gripping contact must reach the catch wall. "+State);
             Assert.Greater(monitor.PeakAirSpeed,.12f,"The launch must carry measurable physical momentum.");
-            game.Motion.Move(0,game.Owner.Outlet.position-game.Owner.Outlet.forward*.022f,false,true);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Owner.Outlet.position));
+            Assert.IsTrue(game.Motion.Get(0)?.Exit??false,"The catch-wall exit must accept a screen tap.");
             yield return Until(25,()=>game.Owner.Completed);Evidence("12-solved");Assert.IsTrue(game.Owner.Completed,State);
+        }
+
+        [UnityTest] public IEnumerator Level13_ClosedLidVisitCanBeCancelledToReturnToLever()
+        {
+            yield return Load(13);
+            var sequence=Object.FindFirstObjectByType<COgheLatchedAccessSequence>();
+            var lid=sequence.TubeLid;
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(lid.position));
+            Steps(2400);yield return null;Evidence("13-closed-lid-visit");
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(sequence.Lever.position));
+            yield return Until(25,()=>game.Attached);
+            Evidence("13-closed-lid-return");
+            if(!game.Attached)Debug.Log("L13 RETURN "+RouteDiagnostics(sequence.Lever.position));
+            Assert.IsTrue(game.Attached,"A visit to closed cover B must not trap the creature or prevent returning to lever A. "+State);
+            Assert.IsFalse(sequence.DoorLatched);Assert.IsFalse(sequence.TubeLatched);
+        }
+
+        [UnityTest] public IEnumerator Level13_ExteriorBelowClosedInletCanReturnToLever()
+        {
+            yield return Load(13);
+            var sequence=Object.FindFirstObjectByType<COgheLatchedAccessSequence>();
+            // Reach the same rear wall where the reported body became stranded,
+            // using normal locomotion rather than placing tissue in the collider.
+            Vector3 rear=game.Root.TransformPoint(new Vector3(.095f,-.230f,.204f));
+            game.Motion.Move(0,rear);
+            yield return Until(18,()=>Vector3.Distance(game.Motion.Centre(0),rear)<.027f);
+            Assert.Less(Vector3.Distance(game.Motion.Centre(0),rear),.04f,"Reach the rear of the closed inlet: "+State);
+            Evidence("13-rear-wall");
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(sequence.Lever.position));
+            yield return Until(25,()=>game.Attached);
+            if(!game.Attached)Debug.Log("L13 REAR RETURN "+State+"\n"+RouteDiagnostics(sequence.Lever.position));
+            Assert.IsTrue(game.Attached,"The exterior of the small chamber must provide a route back to lever A. "+State);
+            Assert.IsFalse(sequence.DoorLatched);Assert.IsFalse(sequence.TubeLatched);
+        }
+
+        [UnityTest] public IEnumerator Level13_IdleKeepsLeverAndBothShuttersClosed()
+        {
+            yield return Load(13);
+            var sequence=Object.FindFirstObjectByType<COgheLatchedAccessSequence>();
+            yield return Until(15,()=>sequence.DoorLatched);
+            Evidence("13-idle");
+            Assert.IsFalse(sequence.DoorLatched,"Lever A must not fall open under its own weight before the player pulls it.");
+            Assert.Less(sequence.DoorOpening,.012f);Assert.IsFalse(sequence.TubeLatched);
+            Assert.Greater(Vector3.Distance(game.Motion.Centre(0),sequence.Lever.position),.30f,"Spawn must be visibly far from the lever.");
         }
 
         [UnityTest] public IEnumerator Level13_LeverThenMeasuredButtonOpenTheWindingTubeAndResetRelatchesBoth()
@@ -165,24 +224,34 @@ namespace GravityBox.Tests
             Assert.NotNull(sequence);Assert.NotNull(tube);Assert.IsFalse(game.FinalExitAvailable);Assert.IsFalse(tube.IsEntryOpen(0));
 
             var lever=sequence.Lever.GetComponent<VenomMovableProp>();Assert.NotNull(lever);
-            game.SelectProp(lever);yield return Until(16,()=>game.Attached);Assert.IsTrue(game.Attached,"The creature must reach and grasp lever A before it can move.");
-            Vector3 pulled=game.Root.TransformPoint(new Vector3(-.275f,-.215f,-.17f));
-            for(int i=0;i<1200&&!sequence.DoorLatched;i++)
-            {game.SetPropTarget(pulled);Steps(1);if(i%240==0)yield return null;}
+            Evidence("13-start");
+            Assert.IsFalse(sequence.DoorLatched);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(lever.Body.position));yield return Until(16,()=>game.Attached);Assert.IsTrue(game.Attached,"The creature must reach and grasp lever A before it can move.");
+            Assert.IsFalse(sequence.DoorLatched,"Approaching the lever must not open the door before the pull command.");
+            Vector3 pulled=game.Root.TransformPoint(new Vector3(-.275f,-.299f,-.225f));
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(pulled));
+            yield return Until(2.9f,()=>sequence.DoorLatched);
             Assert.IsTrue(sequence.DoorLatched,"Only actual hinge travel beyond the detent may latch door A. "+State);
             game.ReleaseProp();
             yield return Until(5,()=>sequence.DoorOpening>sequence.DoorTravel*.82f);
             Evidence("13-door-open");Assert.Greater(sequence.DoorOpening,sequence.DoorTravel*.82f,$"door={sequence.DoorOpening:F4}/{sequence.DoorTravel:F4}; "+State);
 
+            // Guide through the visible doorway before selecting the interior pad.
+            Vector3 doorway=game.Root.TransformPoint(new Vector3(.082f,-.299f,-.21f));
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(doorway));
+            yield return Until(22,()=>Vector3.Distance(game.Motion.Centre(0),doorway+game.Root.up*.019f)<.04f);
+            Assert.Less(Vector3.Distance(game.Motion.Centre(0),doorway+game.Root.up*.019f),.05f,"Reach the open doorway: "+State);
             Vector3 button=sequence.Button.transform.position+game.Root.up*.023f;
-            game.Motion.Move(0,button,true);yield return Until(28,()=>sequence.TubeLatched);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(sequence.Button.transform.position+game.Root.up*.006f));
+            yield return Until(28,()=>sequence.TubeLatched);
             Assert.IsTrue(sequence.Button.Pressed,"Button B must measure actual tissue mass. "+State);
             Assert.IsTrue(sequence.TubeLatched,State);yield return Until(5,()=>tube.IsEntryOpen(0));Evidence("13-button-and-lid");
             Assert.IsTrue(tube.IsEntryOpen(0),$"lid={sequence.LidOpening:F4}/{sequence.LidTravel:F4}; blocker={tube.EntryBlocker?.bounds}; "+State);
 
             Vector3 inlet=game.Root.TransformPoint(tube.Nodes[0].LocalPosition);
-            game.Motion.Move(0,inlet-game.Root.forward*.024f);yield return Until(24,()=>Vector3.Distance(game.Motion.Centre(0),inlet)<.10f);
-            Assert.IsTrue(tube.TryChoose(0,0),"The whole connected body must physically reach the clear inlet.");
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(inlet));
+            yield return Until(24,()=>tube.IsParticleInside(0));
+            Assert.IsTrue(tube.IsParticleInside(0),"A screen tap must guide the creature to and into the clear inlet. "+State);
             yield return Until(30,()=>game.Owner.Completed);Evidence("13-solved");
             if(!game.Owner.Completed)Debug.Log($"L13 TUBE FAILURE {tube.DebugState(0)}\n{tube.DebugEntryState(0,0)}\n{tube.DebugExitRoster()}\n{RouteDiagnostics(inlet)}");
             Assert.IsTrue(game.Owner.Completed,"The continuous winding path must deliver all tissue through the final opening. "+State);

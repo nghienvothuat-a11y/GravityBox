@@ -40,8 +40,8 @@ namespace GravityBox.Editor
         private static void BuildExpansion12(ExpansionContext c)
         {
             c.Definition.Title="12 · Trượt rồi bay!";
-            c.Definition.Lesson="Leo lên bệ, trượt theo trọng lực rồi bám vùng đón.";
-            c.Definition.CanRotate=false;c.Definition.CameraEuler=new Vector3(20,32,0);c.Definition.ViewRadius=.49f;
+            c.Definition.Lesson="Chạm bệ hổ phách để leo, rồi chạm đầu máng tím.";
+            c.Definition.CanRotate=false;c.Definition.CameraEuler=new Vector3(16,-24,0);c.Definition.ViewRadius=.43f;
             c.Spawn=new Vector3(-.235f,-.265f,.13f);c.Exit=new Vector3(.3f,.015f,0);c.Outward=Vector3.right;
             var faces=Cube(c.Root,Vector3.zero,.3f,c.Exit,c.Outward,c.Owner.ApertureRadius,c.Surfaces);
             for(int i=1;i<6;i++)
@@ -62,8 +62,8 @@ namespace GravityBox.Editor
             var slide=EarlyCurvedTrough(c.Root,points,.17f,.052f,slip,c.Surfaces);
             for(int i=0;i<points.Length-1;i++)
             {
-                EarlySlideWall(c.Root,$"Trough wall L {i+1}",points[i],points[i+1],.091f,.052f,.012f,metal,false);
-                EarlySlideWall(c.Root,$"Trough wall R {i+1}",points[i],points[i+1],-.091f,.052f,.012f,metal,false);
+                EarlySlideWall(c.Root,$"Trough wall L {i+1}",points[i],points[i+1],.091f,.052f,.007f,metal,false);
+                EarlySlideWall(c.Root,$"Trough wall R {i+1}",points[i],points[i+1],-.091f,.052f,.007f,metal,false);
             }
             var plane=new GameObject("Physical launch plane").transform;plane.SetParent(c.Root,false);plane.localPosition=points[points.Length-1];
             plane.localRotation=Quaternion.LookRotation((points[points.Length-1]-points[points.Length-2]).normalized,Vector3.up);
@@ -75,22 +75,37 @@ namespace GravityBox.Editor
         {
             c.Definition.Title="13 · Mở đường!";
             c.Definition.Lesson="Kéo cần A, vào phòng nhấn B, rồi chui qua ống.";
-            c.Definition.CanRotate=false;c.Definition.CameraEuler=new Vector3(27,31,0);c.Definition.ViewRadius=.50f;
-            c.Spawn=new Vector3(-.205f,-.265f,-.22f);c.Exit=new Vector3(.3f,.10f,.10f);c.Outward=Vector3.right;
+            c.Definition.CanRotate=false;c.Definition.CameraEuler=new Vector3(34,22,0);c.Definition.ViewRadius=.46f;
+            c.Spawn=new Vector3(-.225f,-.265f,.215f);c.Exit=new Vector3(.3f,.10f,.10f);c.Outward=Vector3.right;
             Cube(c.Root,Vector3.zero,.3f,c.Exit,c.Outward,c.Owner.ApertureRadius,c.Surfaces);
 
             const float front=-.115f,back=.175f,left=-.045f,right=.235f,roof=-.055f;
             Vector3 inlet=new Vector3(.095f,-.165f,back-.008f);
             Panel(c.Root,"Inner room roof",new Vector3((left+right)*.5f,roof,(front+back)*.5f),Vector3.down,new Vector2(right-left,back-front),stone,false,Vector2.zero,0,c.Surfaces);
-            Panel(c.Root,"Inner room left wall",new Vector3(left,(roof-.3f)*.5f,(front+back)*.5f),Vector3.right,new Vector2(back-front,.3f-roof),glass,false,Vector2.zero,0,c.Surfaces);
-            Panel(c.Root,"Inner room right wall",new Vector3(right,(roof-.3f)*.5f,(front+back)*.5f),Vector3.left,new Vector2(back-front,.3f-roof),glass,false,Vector2.zero,0,c.Surfaces);
+            Panel(c.Root,"Inner room left wall",new Vector3(left,(roof-.3f)*.5f,(front+back)*.5f),Vector3.right,new Vector2(back-front,.3f+roof),glass,false,Vector2.zero,0,c.Surfaces);
+            Panel(c.Root,"Inner room right wall",new Vector3(right,(roof-.3f)*.5f,(front+back)*.5f),Vector3.left,new Vector2(back-front,.3f+roof),glass,false,Vector2.zero,0,c.Surfaces);
             Vector3 backCentre=new Vector3((left+right)*.5f,(roof-.3f)*.5f,back);
             Quaternion backFrame=Quaternion.LookRotation(Vector3.back,Vector3.up);
             Vector3 inletOnBack=Quaternion.Inverse(backFrame)*(inlet-backCentre);
-            Panel(c.Root,"Inner room tube wall",backCentre,Vector3.back,new Vector2(right-left,.3f-roof),glass,true,new Vector2(inletOnBack.x,inletOnBack.y),.043f,c.Surfaces);
+            Panel(c.Root,"Inner room tube wall",backCentre,Vector3.back,new Vector2(right-left,.3f+roof),glass,true,new Vector2(inletOnBack.x,inletOnBack.y),.043f,c.Surfaces);
             Panel(c.Root,"Door frame left",new Vector3(-.012f,-.18f,front),Vector3.back,new Vector2(.066f,.24f),glass,false,Vector2.zero,0,c.Surfaces);
             Panel(c.Root,"Door frame right",new Vector3(.19f,-.18f,front),Vector3.back,new Vector2(.09f,.24f),glass,false,Vector2.zero,0,c.Surfaces);
             Panel(c.Root,"Door frame header",new Vector3(.082f,-.075f,front),Vector3.back,new Vector2(.12f,.03f),glass,false,Vector2.zero,0,c.Surfaces);
+
+            // These panels have an 8 mm solid collider, but unlike the outer
+            // chamber both sides are reachable. Register their existing rear
+            // faces for adhesion/navigation without adding overlapping shapes.
+            foreach(var face in c.Surfaces.ToArray())
+            {
+                if(!face.name.StartsWith("Inner room")&&!face.name.StartsWith("Door frame"))continue;
+                var reverse=new GameObject("Exterior grip: "+face.name,typeof(VenomSurfacePatch)).GetComponent<VenomSurfacePatch>();
+                reverse.transform.SetParent(face.transform,false);
+                reverse.transform.localPosition=Vector3.back*.008f;
+                reverse.transform.localRotation=Quaternion.Euler(0,180,0);
+                reverse.Size=face.Size;reverse.Shape=face.Shape;reverse.Hole=face.Hole;
+                reverse.HoleCentre=new Vector2(-face.HoleCentre.x,face.HoleCentre.y);reverse.HoleRadius=face.HoleRadius;
+                reverse.Selectable=false;c.Surfaces.Add(reverse);
+            }
 
             // Run the shutter on the outside track, clear of the stationary
             // frame edges throughout its joint-limited vertical stroke.
@@ -98,13 +113,13 @@ namespace GravityBox.Editor
             door.Body.mass=.14f;door.Manipulable=false;c.Props.Add(door);
             EarlySlider(door.Body,c.Root.GetComponent<Rigidbody>(),door.transform.localPosition,Vector3.up,.145f);
 
-            var lever=Prop(c.Root,"Lever A",new Vector3(-.19f,-.215f,-.17f),new Vector3(.028f,.15f,.028f),true,plastic,c.Surfaces);
+            var lever=Prop(c.Root,"Lever A",new Vector3(-.19f,-.215f,-.225f),new Vector3(.028f,.15f,.028f),true,plastic,c.Surfaces);
             lever.Body.mass=.055f;lever.Body.centerOfMass=Vector3.up*.012f;c.Props.Add(lever);
             var hinge=lever.gameObject.AddComponent<HingeJoint>();hinge.connectedBody=c.Root.GetComponent<Rigidbody>();hinge.autoConfigureConnectedAnchor=false;
             hinge.anchor=Vector3.down*.075f;hinge.connectedAnchor=lever.transform.localPosition+Vector3.down*.075f;hinge.axis=Vector3.forward;
             hinge.useLimits=true;hinge.limits=new JointLimits{min=-7,max=52,bounciness=0,contactDistance=2};
-            hinge.useSpring=true;hinge.spring=new JointSpring{spring=.0007f,damper=.0003f,targetPosition=0};hinge.enableCollision=true;
-            EarlyLabel(c.Root,"A",new Vector3(-.19f,-.105f,-.172f),new Vector3(.045f,.035f,.008f),mint);
+            hinge.useSpring=true;hinge.spring=new JointSpring{spring=.065f,damper=.004f,targetPosition=0};hinge.enableCollision=true;
+            EarlyLabel(c.Root,"A",new Vector3(-.19f,-.105f,-.227f),new Vector3(.045f,.035f,.008f),mint);
 
             Vector3 buttonAt=new Vector3(.095f,-.287f,.015f);
             var buttonGo=new GameObject("Latched pressure button B",typeof(Rigidbody),typeof(VenomPressurePlate));buttonGo.transform.SetParent(c.Root,false);buttonGo.transform.localPosition=buttonAt;
@@ -133,6 +148,7 @@ namespace GravityBox.Editor
             var sequence=c.Root.gameObject.AddComponent<COgheLatchedAccessSequence>();
             sequence.Lever=lever.Body;sequence.LeverJoint=hinge;sequence.Button=button;sequence.RoomDoor=door.Body;sequence.TubeLid=lid.Body;
             sequence.RoomDoorRest=door.transform.localPosition;sequence.TubeLidRest=lid.transform.localPosition;
+            sequence.TubeApertureFaces=c.Surfaces.FindAll(face=>face.name.Contains("Inner room tube wall")).ToArray();
             sequence.DoorAxis=Vector3.up;sequence.LidAxis=Vector3.right;sequence.DoorTravel=.145f;sequence.LidTravel=.085f;
         }
 
@@ -237,6 +253,7 @@ namespace GravityBox.Editor
             var mesh=new Mesh{name="Continuous curved trough"};mesh.SetVertices(vertices);mesh.SetTriangles(triangles,0);mesh.RecalculateNormals();mesh.RecalculateBounds();
             var colliderObject=new GameObject("Continuous curved trough collider",typeof(MeshCollider));colliderObject.transform.SetParent(root,false);
             var shape=colliderObject.GetComponent<MeshCollider>();shape.sharedMesh=Save(mesh);shape.sharedMaterial=slick;shape.contactOffset=.0003f;
+            var pick=colliderObject.AddComponent<COgheSurfacePickProxy>();pick.Surfaces=patches.ToArray();pick.TrianglesPerSurface=6;
             return patches;
         }
 
@@ -298,7 +315,32 @@ namespace GravityBox.Editor
                     c.Exit-Vector3.right*.035f,c.Exit)
             };
             var tube=TubeNetwork(c.Root,"Winding transfer pipe",nodes,edges,.035f,glass);
-            tube.EntryBlocker=gate;tube.EntryClearance=.006f;
+            tube.EntryBlocker=gate;tube.EntryClearance=.006f;tube.SolidExterior=true;
+            // The bore mesh faces inward. Tissue crawling outside the room must
+            // also hit the OUTSIDE of this pipe, otherwise a stray lobe enters
+            // through its back face and cannot be pulled back out of the bore.
+            var outside=new Mesh{name="Winding pipe outer collision shell"};
+            var inside=new Mesh();
+            var path=COgheTubeNetwork.SampleCurve(edges[0].ControlPoints,6);
+            COgheTubeNetwork.BuildSweptMesh(path,.039f,false,outside);
+            COgheTubeNetwork.BuildSweptMesh(path,.035f,false,inside);
+            var vertices=new List<Vector3>(outside.vertices);int innerOffset=vertices.Count;
+            vertices.AddRange(inside.vertices);
+            var triangles=new List<int>();var outerTriangles=outside.triangles;
+            for(int i=0;i<outerTriangles.Length;i+=3)
+                triangles.AddRange(new[]{outerTriangles[i],outerTriangles[i+2],outerTriangles[i+1]});
+            const int sides=16;
+            foreach(int start in new[]{0,(path.Length-1)*sides})
+                for(int s=0;s<sides;s++)
+                {
+                    int a=start+s,b=start+(s+1)%sides,innerA=a+innerOffset,innerB=b+innerOffset;
+                    if(start==0)triangles.AddRange(new[]{a,b,innerA,b,innerB,innerA});
+                    else triangles.AddRange(new[]{a,innerA,b,b,innerA,innerB});
+                }
+            outside.Clear();outside.SetVertices(vertices);outside.SetTriangles(triangles,0);outside.RecalculateBounds();
+            Object.DestroyImmediate(inside);
+            var shell=new GameObject("Pipe exterior collision",typeof(MeshCollider));shell.transform.SetParent(tube.transform,false);
+            var shape=shell.GetComponent<MeshCollider>();shape.sharedMesh=Save(outside);shape.sharedMaterial=slick;shape.contactOffset=.0003f;
         }
     }
 }

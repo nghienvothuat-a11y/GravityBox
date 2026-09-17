@@ -116,7 +116,7 @@ namespace GravityBox.Venom
                 if(patch.SphereRadius<=0&&Mathf.Abs(x.z-y.z)>.00001f)
                 {
                     float t=x.z/(x.z-y.z);
-                    if(t>=0&&t<=1&&patch.Contains(Vector3.Lerp(x,y,t),radius))return false;
+                    if(t>=0&&t<=1&&patch.ContainsForNavigation(Vector3.Lerp(x,y,t),radius))return false;
                 }
                 if(patch.Shape!=null&&patch.Shape.Raycast(new Ray(a,delta.normalized),out var hit,delta.magnitude-.002f))return false;
             }
@@ -155,7 +155,7 @@ namespace GravityBox.Venom
             if(!hadContact&&contacts>4){Impact=Mathf.Clamp01((lastVelocity-velocity).magnitude/.5f);CatchPulse=1;}
             hadContact=contacts>4;lastVelocity=velocity;
             Activity=InTube?"Chảy qua ống":Motion.TryCatchPoint(Motion.Selected,out _)?"Bám vành ống":KnifePhase==BladePhase.Warning?"Cảnh giác":KnifePhase==BladePhase.Falling?"Phân tách":heldProp!=null?(IsPulling?"Kéo":"Đẩy"):
-                Definition.Passive&&Motion.Get(Motion.Selected)!=null?"Cố bò / trượt":
+                (Definition.Passive||contacts<2)&&Motion.Get(Motion.Selected)!=null&&Motion.Intent(Motion.Selected).sqrMagnitude>.001f?"Cố bò / trượt":
                 contacts<3?(velocity.magnitude>.06f?"Rơi / trượt":"Trượt"):Motion.Busy(Motion.Selected)?"Giữ":
                 Motion.Get(Motion.Selected)!=null?"Bò / leo":"Idle";
             if(!Home){Activity=MechanismActivity()??Activity;EvaluateExit();}else habitat?.Step(dt);
@@ -181,7 +181,7 @@ namespace GravityBox.Venom
             {
                 Vector3 c=Motion.Centre(Motion.Selected);Vector3 p=PropSideContact(approachProp,c);
                 if(Vector3.Distance(c,p)<.060f)
-                {heldProp=approachProp;approachProp=null;gripLocal=Quaternion.Inverse(heldProp.Body.rotation)*(p-heldProp.Body.position);gripNormalLocal=Quaternion.Inverse(heldProp.Body.rotation)*Vector3.ProjectOnPlane(p-heldProp.Body.position,Vector3.up).normalized;PropContact=p;lastPropInput=Matter.SimulationTime;propTarget=heldProp.Body.position;Motion.Cancel(Motion.Selected);}
+                {heldProp=approachProp;approachProp=null;gripLocal=Quaternion.Inverse(heldProp.Body.rotation)*(p-heldProp.Body.position);gripNormalLocal=Quaternion.Inverse(heldProp.Body.rotation)*(heldProp.ManipulationGrip!=null?heldProp.ManipulationGrip.forward:Vector3.ProjectOnPlane(p-heldProp.Body.position,Vector3.up).normalized);PropContact=p;lastPropInput=Matter.SimulationTime;propTarget=heldProp.Body.position;Motion.Cancel(Motion.Selected);}
             }
             if(heldProp==null)return;
             if(Matter.SimulationTime-lastPropInput>=3){ReleaseProp();return;}
@@ -194,7 +194,14 @@ namespace GravityBox.Venom
                 // A yawed crate touches the wall with its corner before its
                 // centre reaches the threshold of an axis-aligned .18 m box.
                 // Use the real top edge and preserve the original 15 mm reach.
-                if(top!=null&&Owner.Outlet.InverseTransformPoint(top.Closest(Owner.Outlet.position)).z>-.015f)
+                float leadingEdge=float.NegativeInfinity;
+                if(top!=null)
+                    for(int x=-1;x<=1;x+=2)for(int y=-1;y<=1;y+=2)
+                    {
+                        Vector3 corner=top.transform.TransformPoint(new Vector3(x*top.Size.x*.5f,y*top.Size.y*.5f,0));
+                        leadingEdge=Mathf.Max(leadingEdge,Owner.Outlet.InverseTransformPoint(corner).z);
+                    }
+                if(top!=null&&leadingEdge>-.015f)
                 {ReleaseProp();climbingStep=step;stepTop=top.Closest(rb.position+Vector3.up)+Vector3.up*.024f;Motion.Move(Motion.Selected,stepTop);return;}
             }
             Vector3 velocity=Vector3.ClampMagnitude(desired*2,.085f);
@@ -223,11 +230,12 @@ namespace GravityBox.Venom
         {
             climbingStep=null;ReleaseProp();approachProp=prop;
             Vector3 c=Motion.Centre(Motion.Selected),p=PropSideContact(prop,c);
-            Vector3 d=Vector3.ProjectOnPlane(c-prop.Body.position,Vector3.up).normalized;
+            Vector3 d=prop.ManipulationGrip!=null?prop.ManipulationGrip.forward:Vector3.ProjectOnPlane(c-prop.Body.position,Vector3.up).normalized;
             Motion.Move(Motion.Selected,p+d*.045f);
         }
         private Vector3 PropSideContact(VenomMovableProp prop,Vector3 centre)
         {
+            if(prop.ManipulationGrip!=null)return prop.ManipulationGrip.position;
             Vector3 nearest=prop.Body.position;float best=float.PositiveInfinity;
             foreach(var face in prop.GetComponentsInChildren<VenomSurfacePatch>())
             {
@@ -336,6 +344,7 @@ namespace GravityBox.Venom
             tubeIntent=true;
             int contactCount=0;
             for(int i=0;i<32;i++)if(Matter.Groups[i]==Matter.Groups[Motion.Selected]&&Motion.HasGrip(i)&&
+                Motion.Support(i,out var shape,out _,out _)&&shape==Tube.Entrance.Shape&&
                 Vector3.Distance(Matter.Bodies[i].position,Tube.transform.position)<.11f)contactCount++;
             if(contactCount<2)return false;
             // Finish braking against the new contact before the gentler tube
@@ -350,7 +359,9 @@ namespace GravityBox.Venom
         }
         private void StepTube(float dt)
         {
-            if(!InTube&&tubeIntent)EnterTube();
+            // Auto-entry still requires real grip contacts and braking in EnterTube;
+            // the roof, slippery wall and missed falls cannot start the flow.
+            if(!InTube&&(tubeIntent||Tube!=null&&Tube.AutoEnterOnContact))EnterTube();
             if(!InTube||Tube==null)return;
             bool through=true;
             for(int i=0;i<32;i++)if(Matter.Groups[i]==Matter.Groups[tubeAnchor])
@@ -503,18 +514,33 @@ namespace GravityBox.Venom
             // Its inward-facing collision mesh alone would select the far wall.
             var hits=Physics.RaycastAll(ray,5);System.Array.Sort(hits,(a,b)=>a.distance.CompareTo(b.distance));
             float obstruction=5;
+            VenomSurfacePatch PickPatch(RaycastHit hit)
+            {
+                var face=hit.collider.GetComponent<VenomSurfacePatch>();
+                var proxy=hit.collider.GetComponent<COgheSurfacePickProxy>();
+                return face!=null?face:proxy!=null?proxy.Resolve(hit.triangleIndex):null;
+            }
             bool CanPick(VenomSurfacePatch face)
             {
                 if(face==null)return true;
-                // Interior glass is transparent to an entering ray. A lesson can
-                // explicitly expose the near pane as a command surface (03, 08).
+                // Interior glass is transparent to an entering ray. Roofs also
+                // accept exterior taps; lesson 03 exposes its near front pane.
                 return face.Selectable&&(face.SphereRadius>0||face.InterceptExterior||Vector3.Dot(ray.direction,face.Normal)<0);
             }
             foreach(var hit in hits)
             {
                 if(hit.collider.GetComponent<VenomContact>()!=null)continue;
-                var face=hit.collider.GetComponent<VenomSurfacePatch>();if(!CanPick(face))continue;
+                var face=PickPatch(hit);if(!CanPick(face))continue;
                 obstruction=hit.distance;break;
+            }
+            // Assembly handles aim on their visible deck plane. A tall moving
+            // front face must not swallow every command toward its socket.
+            if(heldProp!=null&&heldProp.ManipulationPlane!=null)
+            {
+                var plane=heldProp.ManipulationPlane;
+                if(new Plane(plane.up,plane.position).Raycast(ray,out float distance))
+                {var target=ray.GetPoint(distance);SetPropTarget(target);ShowMarker(target,plane.up,plane);}
+                return;
             }
             if(TouchMechanism(ray,obstruction))return;
             if(!Home&&Definition.Passive)
@@ -527,17 +553,21 @@ namespace GravityBox.Venom
             foreach(var hit in hits)
             {
                 if(hit.collider.GetComponent<VenomContact>()!=null)continue;
-                var patch=hit.collider.GetComponent<VenomSurfacePatch>();
+                var patch=PickPatch(hit);
                 // Glass facing away from the inspection side can be seen through;
                 // explicitly selectable front panes still intercept hidden destinations (03).
                 if(!CanPick(patch))continue;
                 var prop=hit.collider.GetComponentInParent<VenomMovableProp>();
                 if(heldProp!=null){SetPropTarget(hit.point);ShowMarker(new Vector3(propTarget.x,-.299f,propTarget.z),Vector3.up,Root);return;}
-                if(prop!=null&&prop.Manipulable){SelectProp(prop);ShowMarker(hit.point,hit.normal,prop.transform,patch);return;}
+                if(prop!=null&&prop.Manipulable&&(!prop.ManipulationHandleOnly||prop.ManipulationGrip!=null&&hit.collider.transform.IsChildOf(prop.ManipulationGrip))){SelectProp(prop);ShowMarker(hit.point,hit.normal,prop.transform,patch);return;}
                 if(Knife!=null&&hit.collider.attachedRigidbody==Knife){RequestCut();ShowMarker(Root.TransformPoint(new Vector3(knifeRest.x,-.299f,knifeRest.z)),Root.up,Root);return;}
                 if(PadA!=null&&(hit.collider.transform==PadA||hit.collider.transform==PadB))
                 {Motion.Move(Motion.Selected,hit.point+Root.up*.018f,true);ShowMarker(hit.point,Root.up,hit.collider.transform,patch);return;}
-                if(patch!=null){MoveTo(hit.point,patch);return;}
+                if(patch!=null)
+                {
+                    var proxy=hit.collider.GetComponent<COgheSurfacePickProxy>();
+                    MoveTo(proxy!=null?proxy.CommandPoint(patch,hit.point):hit.point,patch);return;
+                }
                 return; // An opaque cover intercepts commands to the mechanism behind it.
             }
             // A bore is empty; pick its disk only if no nearer selectable surface occludes it.

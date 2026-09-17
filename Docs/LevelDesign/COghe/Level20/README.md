@@ -187,3 +187,11 @@ Kết quả chỉ rà chuỗi phụ thuộc và hồi phục. Nó không chứng
 ## Nguồn hình
 
 Ảnh tạo bằng công cụ image_gen tích hợp; không dùng CLI/API fallback. Prompt và hai lượt chỉnh: [generation-prompts.md](generation-prompts.md). Bản cuối được lưu trong thư mục này.
+
+## Camera bản Unity — 17/09/2026
+
+Theo yêu cầu playtest, khung tổng quan được đưa gần hơn: `ViewRadius` từ 0.87 xuống 0.68, cơ quan lớn hơn khoảng 28%. Giữ góc 40° pitch / 12° yaw để nhìn ba khoang cùng lúc. Thay đổi nằm trong asset Level20 và builder để sinh lại màn vẫn giữ camera mới. Nút Nhìn gần tiếp tục theo sinh vật đang chọn; không đổi cơ quan hoặc vật lý.
+
+![Khung hình mới](camera-after.png)
+
+Kiểm chứng: `Artifacts/COgheExpansion/camera20.xml` — 2/2 đạt (tải/render/idle/reset catalog 20 màn, liên động ba vai trò Boss 20). Kiểm tra này không thay thế test toàn bộ đường giải Boss. [Ảnh trước thay đổi](camera-before.png).

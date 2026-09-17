@@ -15,6 +15,15 @@ namespace GravityBox.Venom
         public Rect SlipRegion;
         public Collider Shape;
         public float SphereRadius;
+        // A closed shutter can block an authored aperture for route planning
+        // without changing its collider, adhesion or touch selection.
+        [NonSerialized] public bool NavigationHoleBlocked;
+        public bool ContainsForNavigation(Vector3 local,float margin=0)
+        {
+            if(NavigationHoleBlocked&&Hole&&SphereRadius<=0)
+                return Mathf.Abs(local.x)<=Size.x*.5f+margin&&Mathf.Abs(local.y)<=Size.y*.5f+margin;
+            return Contains(local,margin);
+        }
         public Vector3 Normal=>transform.forward;
         public Vector3 NormalAt(Vector3 world)=>SphereRadius>0?(transform.position-world).normalized:Normal;
         public float DistanceInside(Vector3 world)

@@ -13,6 +13,7 @@ namespace GravityBox.Venom
         public Material WorldTextMaterial;
         public Font WorldTextFont;
         private VenomCampaign game;
+        private COgheCooperationPresentation cooperation;
         private GUIStyle brand, caption, title, body, chip, selected, action, status, footer;
         private Texture2D tile, chosen, pressed;
         private MaterialPropertyBlock block;
@@ -20,7 +21,7 @@ namespace GravityBox.Venom
         private static readonly Color Ink=new Color(.19f,.29f,.34f);
         private void Awake()
         {
-            game=GetComponent<VenomCampaign>();block=new MaterialPropertyBlock();
+            game=GetComponent<VenomCampaign>();cooperation=GetComponent<COgheCooperationPresentation>();block=new MaterialPropertyBlock();
             Font.textureRebuilt+=RefreshFontAtlas;RefreshFontAtlas(WorldTextFont);
             if(GlassSurfaces==null)return;
             foreach(var p in GlassSurfaces)
@@ -104,7 +105,7 @@ namespace GravityBox.Venom
             {
                 GUI.Label(new Rect(24,125,492,33),game.Home?"Nhà của COghe":game.Definition.Order==7?"Cùng nhau dịch chuyển":game.Definition.Title,title);
                 if(!game.Definition.Boss&&!game.Home)
-                    GUI.Label(new Rect(34,158,472,35),game.Definition.Order==7?"Chạm thùng, rồi chạm nơi muốn đẩy hoặc kéo tới.":game.Definition.Lesson,body);
+                    GUI.Label(new Rect(34,158,472,35),cooperation!=null?cooperation.Hint:game.Definition.Order==7?"Chạm thùng, rồi chạm nơi muốn đẩy hoặc kéo tới.":game.Definition.Lesson,body);
             }
             if(game.Owner.Lost)
             {
@@ -123,7 +124,7 @@ namespace GravityBox.Venom
             }
             else
             {
-                string activity=game.Owner.Paused?"Đang nghỉ một chút":game.Attached?(game.IsPulling?"COghe đang kéo thùng":"COghe đang giữ thùng"):(game.Activity=="Idle"?"COghe đang chờ được chỉ đường":game.Activity);
+                string activity=game.Owner.Paused?"Đang nghỉ một chút":game.Attached?(game.IsPulling?"COghe đang kéo vật":"COghe đang giữ vật"):(game.Activity=="Idle"?"COghe đang chờ được chỉ đường":game.Activity);
                 GUI.Label(new Rect(26,h-154,game.Attached?316:488,30),activity,status);
                 if(game.Attached&&GUI.Button(new Rect(350,h-154,164,29),"Buông vật",chip))game.ReleaseProp();
                 if(game.Matter.TotalFragmentCount>1)
@@ -134,7 +135,7 @@ namespace GravityBox.Venom
                     for(int i=0;i<32;i++)
                     {
                         int group=game.Matter.Groups[i];if(seenGroups[group]||game.Matter.Escaped[i])continue;seenGroups[group]=true;
-                        if(GUI.Button(new Rect(26+(slot%columns)*cell,h-119-(slot/columns)*32,cell-6,29),"Phần "+(slot+1),game.Matter.Groups[game.Motion.Selected]==group?selected:chip))game.SelectFragment(i);
+                        if(GUI.Button(new Rect(26+(slot%columns)*cell,h-119-(slot/columns)*32,cell-6,29),cooperation!=null?cooperation.FragmentLabel(i,slot+1):"Phần "+(slot+1),game.Matter.Groups[game.Motion.Selected]==group?selected:chip))game.SelectFragment(i);
                         slot++;
                     }
                 }

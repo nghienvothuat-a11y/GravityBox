@@ -13,6 +13,7 @@ namespace GravityBox.Venom
         public HingeJoint LeverJoint;
         public VenomPressurePlate Button;
         public Rigidbody RoomDoor,TubeLid;
+        public VenomSurfacePatch[] TubeApertureFaces;
         public Vector3 RoomDoorRest,TubeLidRest;
         public Vector3 DoorAxis=Vector3.up,LidAxis=Vector3.up;
         public float DoorTravel=.145f,LidTravel=.105f,LeverLatchAngle=31f;
@@ -25,15 +26,32 @@ namespace GravityBox.Venom
         public override string Activity => !DoorLatched ? "Kéo cần A" : !TubeLatched ? "Nhấn nút B" : "Ống đã mở";
         private Quaternion leverRest;
         private bool captured;
+        private COgheTubeNetwork tube;
 
         public override void InitializeMechanism(VenomCampaign game)
-        {leverRest=Quaternion.Inverse(game.Root.rotation)*Lever.rotation;captured=true;}
+        {
+            leverRest=Quaternion.Inverse(game.Root.rotation)*Lever.rotation;captured=true;
+            tube=game.Root.GetComponentInChildren<COgheTubeNetwork>();
+            SetApertureRoute(true);
+        }
+
+        private void UpdateApertureRoute()
+        {
+            bool blocked=tube==null||!tube.IsEntryOpen(0);
+            SetApertureRoute(blocked);
+        }
+        private void SetApertureRoute(bool blocked)
+        {
+            if(TubeApertureFaces==null)return;
+            foreach(var face in TubeApertureFaces)if(face!=null)face.NavigationHoleBlocked=blocked;
+        }
 
         public override void ResetMechanism(VenomCampaign game)
         {
             if(!captured)InitializeMechanism(game);
             DoorLatched=false;TubeLatched=false;DoorOpening=LidOpening=0;
             Button?.ResetPlate(game.Root);
+            SetApertureRoute(true);
         }
 
         public override void StepMechanism(VenomCampaign game,float dt)
@@ -49,6 +67,7 @@ namespace GravityBox.Venom
             Drive(game,RoomDoor,RoomDoorRest,DoorAxis,DoorLatched?DoorTravel:0,out float door);
             Drive(game,TubeLid,TubeLidRest,LidAxis,TubeLatched?LidTravel:0,out float lid);
             DoorOpening=door;LidOpening=lid;
+            UpdateApertureRoute();
         }
 
         private static void Drive(VenomCampaign game,Rigidbody body,Vector3 rest,Vector3 localAxis,float target,out float displacement)

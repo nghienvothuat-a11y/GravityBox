@@ -27,7 +27,7 @@ namespace GravityBox.Venom
         // Available traction is finite (N = kg * m/s² * adhering fraction).
         // Sustained excess load peels the footprint before it can reattach.
         private const float GripAccelerationLimit=36f;
-        private const float MoveSpeed=.126f; // m/s; 20% above the original .105 m/s.
+        private const float MoveSpeed=.1638f; // m/s; +30% from the previous .126 m/s.
         private readonly float[] gripStrain=new float[32], detachedUntil=new float[32];
         private readonly HashSet<VenomSurfacePatch>[] detachedSurfaces=new HashSet<VenomSurfacePatch>[32];
         private sealed class RingCatch
@@ -220,7 +220,7 @@ namespace GravityBox.Venom
             // the other side of a thin panel when the next waypoint descends.
             foreach(var patch in game.Surfaces)
             {
-                if(!patch.isActiveAndEnabled||patch.Hole||game.IsHeldSurface(patch))continue;
+                if(!patch.isActiveAndEnabled||(patch.Hole&&!patch.NavigationHoleBlocked)||game.IsHeldSurface(patch))continue;
                 Vector3 goal=patch.transform.InverseTransformPoint(target);
                 if(goal.z>=0)continue;
                 bool blocked=false;
@@ -230,7 +230,7 @@ namespace GravityBox.Venom
                     Vector3 p=patch.transform.InverseTransformPoint(game.Matter.Bodies[i].position);
                     if(p.z<=0)continue;
                     Vector3 crossing=Vector3.Lerp(p,goal,p.z/(p.z-goal.z));
-                    blocked=patch.Contains(crossing,game.Matter.Profile.ParticleRadius);
+                    blocked=patch.ContainsForNavigation(crossing,game.Matter.Profile.ParticleRadius);
                 }
                 if(!blocked)continue;
                 int crest=-1,axis=0;float sign=1,best=float.PositiveInfinity;Vector3 turn=Vector3.zero;
@@ -347,9 +347,12 @@ namespace GravityBox.Venom
                 bool railManipulation=game.TryRailManipulationIntent(a,out var handleTarget,out var handleVelocity);
                 if(railManipulation){delta=handleTarget-centre;desired=handleVelocity;}
                 Vector3 passiveIntent=Vector3.zero;
-                if(o!=null&&game.Definition.Passive&&!game.Home)
+                if(o!=null&&!game.Home&&(game.Definition.Passive||(!suppressed&&!anchored&&contactMass>0)))
                 {
-                    Vector3 normal=Vector3.up;
+                    Vector3 normal=Vector3.zero;
+                    for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[a]&&support[i]!=null)
+                        normal+=support[i].NormalAt(contact[i]);
+                    normal=normal.sqrMagnitude>.000001f?normal.normalized:Vector3.up;
                     foreach(var s in game.Surfaces)if(s.SphereRadius>0){normal=s.NormalAt(centre);break;}
                     passiveIntent=Vector3.ProjectOnPlane(delta,normal);
                     if(passiveIntent.sqrMagnitude<.000001f)passiveIntent=Vector3.ProjectOnPlane(game.Root.forward,normal);

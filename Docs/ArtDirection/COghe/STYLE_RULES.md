@@ -144,3 +144,23 @@ and must fall away under gravity when the chamber is inverted.
    images and an honest record of checks and limits.
 5. Build the macOS prototype so the user can assess the result. Build APK only when
    the user asks for it. Update README links when the visual workflow changes.
+
+## 8. Level 15 pipe maze readability
+
+Use teal transparent bores, thin copper longitudinal ribs and porcelain end
+couplings to distinguish the maze from the blue-gray chamber glass. Keep junction
+windows clear enough to see COghe and the available branches. Ribs follow the
+actual trimmed bore mesh; never invent a visual connection between crossing pipes.
+Decorative geometry has no colliders or input targets and is batched by material.
+Rebuild through `Gravity Box → COghe → Rebuild Day Lab · Pipe Maze 15`; the
+expansion art generator also applies this treatment automatically.
+
+## 9. Assembly bridge (replacement level 16)
+
+User-authorized redesign on 17/09/2026 replaces the sphere and hoses with three
+manually assembled bridge modules. The old geometry is not a constraint for this
+replacement. Use amber gripping decks, lavender transparent slippery sidewalls,
+low metal handles and porcelain socket corners. Show only one usable handle per
+module; a tap on the deck remains a locomotion command. Socket lamps read the
+real end catch and must extinguish after a reverse pull. The art never moves a
+bridge, provides a hidden walking surface, or gates the exit.

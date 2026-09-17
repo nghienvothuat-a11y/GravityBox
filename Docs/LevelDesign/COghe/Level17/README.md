@@ -54,4 +54,4 @@ Kiểm tra đường tiếp cận hai tay nắm, không kẹp sinh vật ở ray
 
 ## Nguồn hình
 
-Tạo bằng công cụ image_gen tích hợp theo skill imagegen. Mockup màn 16 chỉ làm tham chiếu nét vẽ. Prompt ban đầu và lượt chỉnh: [generation-prompts.md](generation-prompts.md).
+Tạo bằng công cụ image_gen tích hợp theo skill imagegen. Mockup màn 16 cũ từng làm tham chiếu nét vẽ; bản đó đã bị loại bỏ khi thiết kế lại màn 16. Prompt ban đầu và lượt chỉnh: [generation-prompts.md](generation-prompts.md).

@@ -47,7 +47,7 @@ namespace GravityBox.Editor
                 var game=owner.gameObject.AddComponent<VenomCampaign>();
                 var data=Asset<VenomCampaignDefinition>("Definitions/Level"+number.ToString("00")+".asset",()=>ScriptableObject.CreateInstance<VenomCampaignDefinition>());
                 data.Id="venom.origin."+number.ToString("00");data.Order=number;data.Title=number.ToString("00")+" · "+Names[number-1];data.Lesson=Lessons[number-1];
-                data.CanRotate=number!=7&&number!=8&&number!=10;data.Boss=number==10;data.Passive=number==6;data.ViewRadius=number==8?.59f:number==7?.44f:.46f;
+                data.CanRotate=number!=7&&number!=8&&number!=10;data.Boss=number==10;data.Passive=number==6;data.ViewRadius=number==8?.52f:number==7?.44f:.46f;
                 // Look into the inlet from the left. A steeper pitch would put
                 // the selectable ceiling over the inlet's touch target.
                 // View 07 from the creature's side of the step so the crate
@@ -84,14 +84,14 @@ namespace GravityBox.Editor
                     // Top edge of the slippery wall is the departure into the fall.
                     left[5].HasSlipRegion=true;left[5].SlipRegion=new Rect(.17f,-.23f,.07f,.46f);
                     var tubeGo=new GameObject("Transfer tube",typeof(VenomTransferTube));tubeGo.transform.SetParent(root.transform,false);tubeGo.transform.localPosition=new Vector3(-.11f,0,0);tubeGo.transform.localRotation=Quaternion.LookRotation(Vector3.right,Vector3.up);
-                    game.Tube=tubeGo.GetComponent<VenomTransferTube>();game.Tube.Entrance=entrance;game.Tube.Length=.22f;game.Tube.Radius=.021f;
+                    game.Tube=tubeGo.GetComponent<VenomTransferTube>();game.Tube.Entrance=entrance;game.Tube.Length=.22f;game.Tube.Radius=.021f;game.Tube.AutoEnterOnContact=true;
                     TubeWall(tubeGo.transform,.22f,.021f);
                     Ring(entrance.transform,Vector2.zero,.077f,.002f,mint);
                 }
                 else
                 {
                     var faces=Cube(root.transform,Vector3.zero,.3f,exit,outward,owner.ApertureRadius,surfaces);
-                    faces[1].Selectable=number==3;faces[1].InterceptExterior=number==3;
+                    faces[1].InterceptExterior=number==3;
                     if(number==2)
                     {Panel(root.transform,"Low wall left",new Vector3(-.008f,-.24f,0),Vector3.left,new Vector2(.60f,.12f),glass,false,Vector2.zero,0,surfaces);
                      Panel(root.transform,"Low wall right",new Vector3(.008f,-.24f,0),Vector3.right,new Vector2(.60f,.12f),glass,false,Vector2.zero,0,surfaces);
@@ -167,9 +167,9 @@ namespace GravityBox.Editor
                 Vector3 n=normals[i],p=c-n*half;bool open=Vector3.Dot(n,-outward)>.9f;
                 Quaternion q=Quaternion.LookRotation(n,Mathf.Abs(n.y)>.9f?Vector3.forward:Vector3.up);Vector3 hp=Quaternion.Inverse(q)*(hole-p);
                 result[i]=Panel(root,"Glass face "+i,p,n,Vector2.one*(half*2),i==0?stone:glass,open,new Vector2(hp.x,hp.y),radius,list);
-                // Only the initial front pane is a tutorial-specific pass-through.
-                // The ceiling remains commandable when rotation reveals its interior.
-                result[i].Selectable=i!=1;
+                // Every pane is commandable regardless of its traction material.
+                // Roofs also accept outside-facing taps in rotation-locked rooms.
+                result[i].Selectable=true;result[i].InterceptExterior=i==5;
             }
             return result;
         }

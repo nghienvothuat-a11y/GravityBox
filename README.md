@@ -8,9 +8,15 @@ Bản mặc định là **Venom Origin — 20 màn theo bản vẽ**, trên nhá
 
 Áp lại art vào các scene hiện có: **Gravity Box → COghe → Apply Day Lab · All 10 Origin levels**. Lệnh giữ collider, cơ quan và cấu hình màn; mesh trang trí nằm trong thư mục riêng theo màn. Bộ Generate Origin cũng tự áp style. Sàn trong hơn khi lật về camera; chi tiết khung được ẩn khi zoom. Boss không có hướng dẫn lời giải. Tên app/bundle/save vẫn giữ `Venom` để duy trì tiến trình hiện có.
 
+Màn 16 được thay hoàn toàn bằng **Ghép cầu**: COghe đẩy/kéo ba mô-đun trên ray rồi leo qua dải trơn tới lỗ. [Thiết kế và phác thảo mới](Docs/LevelDesign/COghe/Level16/README.md).
+
+Màn 15 dùng thân ống xanh ngọc, gân đồng mảnh và khớp nối màu sứ để phân biệt với kính hộp. Dựng lại riêng bằng **Gravity Box → COghe → Rebuild Day Lab · Pipe Maze 15**; xem [thiết kế và kiểm thử](Docs/COGHE_EXPANSION_11_20.md).
+
 Chỉnh riêng ngoại hình Boss: **Gravity Box → COghe → Rebuild Day Lab · Boss 10**. Đế nút A/B là xám bạc nhạt; dao có mặt thép bạc xước, pháp tuyến phẳng và cạnh vát đánh bóng. Lệnh này giữ nguyên cơ chế chém, lực bám, hợp thể và độ lún nút.
 
 [Phản hồi điều khiển](Docs/COGHE_CONTROL_FEEDBACK.md): vòng sóng và viền sáng xác nhận mặt vừa chạm, dấu đích theo mặt kính, mũi tên chọn phần sinh vật. Các màn 01/07/08 có dấu hướng dẫn riêng; biểu tượng xoay hoặc cấm xoay nằm dưới hộp từ màn 03. Nắp màn 09 có thành dày 14 mm, khối lượng 180 g và xử lý tiếp xúc khi xoay để tránh rung/xuyên vỏ hộp; vẫn rơi tự do khi lật hộp.
+
+**Chọn mặt và lực bám là hai quy tắc riêng:** nóc hộp ở mọi màn đều nhận chạm, kể cả màn khóa xoay. Mặt trơn vẫn nhận lệnh và hiện animation cố bò/trượt xúc tu, nhưng không sinh lực bám; sinh vật chỉ trượt hoặc rơi theo trọng lực, quán tính và va chạm.
 
 | Màn | Trọng tâm |
 | --- | --- |
@@ -21,16 +27,19 @@ Chỉnh riêng ngoại hình Boss: **Gravity Box → COghe → Rebuild Day Lab �
 | 05 — Trượt đi | Lật nóc trơn xuống dưới, nghiêng để trượt vào lỗ |
 | 06 — Xoay tròn | Sinh vật trượt thụ động trong cầu; đưa lỗ tới nó |
 | 07 — Đẩy | Đẩy/kéo hộp làm bậc, tự buông sau 3 giây không điều khiển |
-| 08 — Chui qua lỗ | Căn rơi bắt vành bám, chảy qua ống sang hộp thứ hai |
+| 08 — Chui qua lỗ | Căn rơi bắt vành bám, tự chảy qua ống sang hộp thứ hai |
 | 09 — Lật đi | Lật hộp để nắp rời rơi khỏi lỗ theo trọng lực |
 | 10 — BOSS · Chờ nhau | Phối hợp các phần cơ thể; không hướng dẫn trong màn |
 
 [Chương mới 11–20: cơ quan, điều khiển, kiến trúc và kiểm chứng](Docs/COGHE_EXPANSION_11_20.md). Dựng riêng chương này bằng **Gravity Box → COghe → Generate Expansion 11–20**.
 
-**Kiểm chứng 17/09/2026:** 67/67 PlayMode test đạt, gồm đường giải hoàn chỉnh 11–20,
-mọi nhánh cụt của mê cung 15, hồi quy 01–10 và kiểm tra tải/reset toàn bộ campaign.
+**Kiểm chứng mới nhất 17/09/2026:** 66/69 PlayMode test đạt. Màn 12 qua đủ ba
+lượt leo–trượt–bay–bám–thoát bằng chạm; còn ba ca chưa đạt ở màn 04, 14 và 20.
+[Chi tiết lỗi còn lại](Docs/COGHE_EXPANSION_11_20.md).
 Kết quả: `Artifacts/COgheExpansion/verification.xml`; chạy lại bằng
 `bash Tools/verify-coghe-expansion.sh`.
+
+**Màn 19 — Cùng nhau:** camera gần hơn, cơ quan A/B và hai cửa có hình dáng/đèn rõ ràng, HUD nhắc theo trạng thái. Tách đôi → giữ A bằng một phần → dùng phần kia bám B và chạm mũi tên để kéo → đưa hai phần chạm nhau → thoát. [Chi tiết màn 19](Docs/LevelDesign/COghe/Level19/README.md).
 
 Mở `Builds/Venom/macOS/Venom.app`. Chọn tab **11–20** để test chương mới. **1–9, 0** chọn màn 01–10; **Shift + 1–9, 0** chọn màn 11–20; **R** thử lại; **P/Esc** tạm dừng; **Z** zoom. Khi có nhiều phần, chạm một phần hoặc nút chọn phần ở cuối màn hình. Bộ chọn mở cả hai mươi màn để test.
 
@@ -167,3 +176,7 @@ bash Tools/build.sh iOS-Simulator
 Có thể đặt `UNITY_EDITOR` tới executable đúng phiên bản. XML/log vào `Artifacts/`, build vào `Builds/`; hai thư mục này không commit. Validator kiểm tra catalog, prefab, scale, spawn và aperture; tests kiểm tra luật chuyển động, contact, đường biên/lõi rỗng, độ rộng lối đi và lifecycle. Đường giải 16 màn cũ không còn là cổng nghiệm thu của physics lab.
 
 Android cần module và SDK/NDK/JDK tương ứng. iOS export cần module iOS; compile/cài cần Xcode và signing phù hợp. `bash Tools/run-ios-simulator.sh` export, compile và cài lên simulator đang boot trên Apple Silicon; có thể truyền UDID làm tham số đầu. Telemetry chỉ lưu CSV local. Trạng thái build/chạy thực tế được ghi riêng trong nhật ký; tests không tự chứng minh cảm giác chơi đã đạt.
+
+Màn 12 cập nhật đường nhận chạm trên máng cong và camera bên hông; lối leo hổ phách, máng tím và thành cyan trong giúp quan sát leo–trượt–bay–bám. [Chi tiết thao tác và kiểm chứng](Docs/COGHE_EXPANSION_11_20.md).
+
+Màn 13: xuất phát xa cần gạt; cần A mở cửa hộp nhỏ, nút B mở nắp ống. Đã sửa cần tự đổ mở cửa; thêm khung hộp, ray cửa, nút nhấn và đèn A/B. Hai kiểm thử riêng màn 13 đạt. [Thiết kế và cách thử](Docs/COGHE_EXPANSION_11_20.md).

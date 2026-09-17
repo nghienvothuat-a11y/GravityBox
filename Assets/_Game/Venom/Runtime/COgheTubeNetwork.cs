@@ -65,6 +65,9 @@ namespace GravityBox.Venom
         public float EntryClearance=.012f;
         public bool GateOpenOverride=true;
         public bool AutoCaptureEntries;
+        [Tooltip("While inside this network, taps can only choose connected pipe branches; chamber surfaces do not receive movement commands.")]
+        public bool CaptureSurfaceCommandsWhileInside;
+        public bool SolidExterior;
         public bool HighlightLastCommand=true;
         public int FlexibleGeometryInterval=3;
 
@@ -168,6 +171,12 @@ namespace GravityBox.Venom
             if(travel==null||travel.Edge<0)return true;
             Edge edge=Edges[travel.Edge];int target=travel.Direction>0?edge.B:edge.A;
             if(Nodes[target].Terminal!=TerminalKind.Exit)return true;
+            if(SolidExterior)
+            {
+                Closest(edge,root.InverseTransformPoint(game.Matter.Bodies[particle].position),out _,out _,out float along);
+                float remaining=travel.Direction>0?edge.Length-along:along;
+                if(remaining>Radius*.5f)return false;
+            }
             // Campaign recovery assistance pulls in a straight line. Keep the
             // tube's centreline servo in control until that line lies wholly
             // inside the real final collar; otherwise it cuts across a curved
@@ -217,9 +226,12 @@ namespace GravityBox.Venom
                 if(adjacency[entry].Count==1)return TryChoose(anchor,adjacency[entry][0]);
                 return true;
             }
-            if(travel.Edge>=0)return false;
+            if(travel.Edge>=0)return CaptureSurfaceCommandsWhileInside;
             int chosen=PickAdjacent(travel.Node,ray,nearestSolidDistance);
-            return chosen>=0&&TryChoose(anchor,chosen);
+            if(chosen>=0&&TryChoose(anchor,chosen))return true;
+            // Consume invalid taps as well, so the campaign cannot fall through
+            // to a surface destination or show a misleading touch marker.
+            return CaptureSurfaceCommandsWhileInside;
         }
 
         public bool TryChoose(int anchor,int edgeIndex)
@@ -348,6 +360,21 @@ namespace GravityBox.Venom
                 // tail inside an otherwise clear bore.
                 float radialDrive=openTerminal&&beyond>0?Mathf.Clamp01(1-beyond/openLead):1;
                 Vector3 desired=worldTangent*speed+Vector3.ClampMagnitude(radial*8*radialDrive,.12f);
+                int source=travel.Direction>0?edge.A:edge.B;
+                if(SolidExterior&&Nodes[source].Terminal==TerminalKind.Entry)
+                {
+                    Vector3 mouth=NodeWorld(source),axis=EntryInwardWorld(source);
+                    Vector3 offset=body.position-mouth;
+                    float depth=Vector3.Dot(offset,axis);
+                    float skin=game.Matter.Profile.ParticleRadius;
+                    float offAxis=Vector3.ProjectOnPlane(offset,axis).magnitude;
+                    float fromEntry=travel.Direction>0?along:edge.Length-along;
+                    // Gather the tail in front of the actual mouth before
+                    // advancing it. Pulling a spread tail towards the nearest
+                    // curve point would press it against a solid outer wall.
+                    if(fromEntry<Radius&&depth<Radius*1.5f&&offAxis>Radius-skin-.003f)
+                        desired=Vector3.ClampMagnitude((mouth-axis*(skin+.012f)-body.position)*6,.14f);
+                }
                 Vector3 acceleration=Vector3.up*9.81f+Vector3.ClampMagnitude((desired-relative)*24,7);
                 // Once the real exit detector captures a particle, the shared
                 // campaign exit controller owns its force. Applying both

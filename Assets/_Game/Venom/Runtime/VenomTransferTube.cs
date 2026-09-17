@@ -8,6 +8,7 @@ namespace GravityBox.Venom
     {
         public float Length=.22f, Radius=.026f;
         public VenomSurfacePatch Entrance;
+        public bool AutoEnterOnContact;
         public Vector3 End=>transform.TransformPoint(Vector3.forward*Length);
     }
 }

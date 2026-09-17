@@ -87,7 +87,7 @@ namespace GravityBox.Tests
         }
         [UnityTest] public IEnumerator CampaignQueuedMouseDragRotatesBeforeCursorRestorationAndNeverBecomesATap()
         {
-            yield return Load(16);inputMouse=InputSystem.AddDevice<Mouse>();
+            yield return Load(18);inputMouse=InputSystem.AddDevice<Mouse>();
             Vector2 start=new Vector2(Screen.width*.35f,Screen.height*.5f);
             Quaternion before=game.Owner.Rotation.Orientation;
             QueueFastMouseDrag(start);ConsumeInputFrame();
@@ -111,7 +111,7 @@ namespace GravityBox.Tests
         }
         [UnityTest] public IEnumerator CampaignQueuedMouseInputIsDiscardedAcrossPauseResetAndDisable()
         {
-            yield return Load(16);inputMouse=InputSystem.AddDevice<Mouse>();
+            yield return Load(18);inputMouse=InputSystem.AddDevice<Mouse>();
             Vector2 start=new Vector2(Screen.width*.35f,Screen.height*.5f);
             for(int interruption=0;interruption<3;interruption++)
             {
@@ -359,6 +359,38 @@ namespace GravityBox.Tests
             Assert.Greater(relativeSpeed,.05f,"The body must move relative to a rotating shell");
             game.ResetLevel();Steps(60);Assert.IsNull(game.Motion.Get(0));Assert.AreEqual(Vector3.zero,game.Motion.Intent(0));
         }
+        [UnityTest] public IEnumerator SlickPlanarContactAcceptsCommandsAndAnimatesWithoutTraction()
+        {
+            const int frames=120;var baseline=new Vector3[frames,32];float crawl=0;
+            for(int trial=0;trial<2;trial++)
+            {
+                yield return Load(1);
+                var floor=System.Array.Find(game.Surfaces,p=>p.name=="Glass face 0");
+                // A planar slick fixture in a normally active level verifies the
+                // same traction rule outside passive sphere lesson 06.
+                floor.Slippery=true;Steps(60);
+                if(trial==1)
+                {
+                    game.TouchPoint(game.Owner.View.WorldToScreenPoint(new Vector3(.09f,-.3f,-.16f)));
+                    Assert.AreSame(floor,game.Feedback.CommandSurface);
+                    Assert.NotNull(game.Motion.Get(0));
+                }
+                for(int frame=0;frame<frames;frame++)
+                {
+                    Steps(4);game.Matter.GetComponent<VenomSurface>().Rebuild(false);
+                    for(int i=0;i<32;i++)
+                    {
+                        Assert.IsFalse(game.Motion.HasGrip(i));
+                        if(trial==0)baseline[frame,i]=game.Matter.Bodies[i].position;
+                        else Assert.Less(Vector3.Distance(baseline[frame,i],game.Matter.Bodies[i].position),.0005f,
+                            "Slick commands must not change the physical trajectory.");
+                    }
+                    if(trial==1) crawl=Mathf.Max(crawl,game.Matter.GetComponent<VenomLifeAnimation>().CrawlAmount);
+                    if(frame%30==0)yield return null;
+                }
+            }
+            Assert.Greater(crawl,.5f,"Show effort even when planar slick contact supplies no traction.");
+        }
         [UnityTest] public IEnumerator SeventhLessonPushesPullsAndReleasesAfterThreeSeconds()
         {
             yield return Load(7);var prop=game.Props[0];game.SelectProp(prop);
@@ -374,7 +406,7 @@ namespace GravityBox.Tests
         [UnityTest] public IEnumerator SeventhLessonNeedsStepAndClimbsAfterPlacement()
         {yield return SolveSeventhLessonWithStep(0);}
         [UnityTest] public IEnumerator SeventhLessonCanClimbACratePlacedAtAnAngle()
-        {yield return SolveSeventhLessonWithStep(12);}
+        {yield return SolveSeventhLessonWithStep(12);yield return SolveSeventhLessonWithStep(-12);}
         private IEnumerator SolveSeventhLessonWithStep(float initialYaw)
         {
             yield return Load(7);AimExit();yield return Until(12,()=>game.Owner.Completed);Assert.IsFalse(game.Owner.Completed,"The plain wall must not bypass the box puzzle");
@@ -412,6 +444,20 @@ namespace GravityBox.Tests
             game.SetPropTarget(new Vector3(.02f,-.21f,-.13f));yield return Until(2.4f,()=>false);
             Assert.Less(prop.Body.position.x,atWall.x-.025f,"Pull away from glass: "+State);
         }
+        [UnityTest] public IEnumerator EighthCloserCameraKeepsBothRoomsAndTubeInPortraitFrame()
+        {
+            yield return Load(8);
+            Assert.AreEqual(.52f,game.Definition.ViewRadius,.0001f);
+            Assert.IsTrue(game.Tube.AutoEnterOnContact);
+            COgheExpansionIntegrationTests.Capture(game,"08-closer-overview");
+            // Both glass boxes plus their frame rails, in actual portrait framing.
+            foreach(float x in new[]{-.588f,.588f})foreach(float y in new[]{-.248f,.248f})foreach(float z in new[]{-.248f,.248f})
+            {
+                Vector3 screen=game.Owner.View.WorldToViewportPoint(game.Root.TransformPoint(new Vector3(x,y,z)));
+                Assert.That(screen.x,Is.InRange(.025f,.975f),"Keep outer frame rails visible");
+                Assert.That(screen.y,Is.InRange(.18f,.81f),"Keep the chambers clear of the HUD");
+            }
+        }
         [UnityTest] public IEnumerator EighthLessonCeilingAcceptsScreenTap()
         {
             yield return Load(8);yield return null;Vector3 target=new Vector3(-.49f,.23f,0);
@@ -437,7 +483,7 @@ namespace GravityBox.Tests
             Assert.IsTrue(game.Motion.Get(0)?.Exit??false,"The final exit must also accept a screen tap from the fixed camera");
             yield return Until(25,()=>game.Owner.Completed);Assert.IsTrue(game.Owner.Completed,State);
         }
-        [UnityTest] public IEnumerator EighthLessonCatchesRingBeforePlayerTapsTube()
+        [UnityTest] public IEnumerator EighthLessonAutomaticallyEntersTubeAfterCatchingRing()
         {foreach(float offset in new[]{0f,-.035f,.035f})yield return CatchTubeFromRoof(offset);}
         [UnityTest] public IEnumerator EighthRoofHintGuidesClimbThenFallOntoCatchRing()
         {
@@ -484,15 +530,13 @@ namespace GravityBox.Tests
                 touched|=contacts>=2;
                 caught=grips>=2&&Mathf.Abs(velocity.y)<.18f&&Vector3.Distance(game.Motion.Centre(0),game.Tube.transform.position)<.13f;
                 if(t%24==0){samples+=$" [{t/120f:F1}s c={game.Motion.Centre(0):F3} vy={velocity.y:F2} ring={contacts} grip={grips}]";yield return null;}
+                if(game.InTube){caught=true;break;}
                 if(caught)break;
             }
             Assert.IsTrue(touched,"The fall must actually contact the ring: "+State+samples);
             Assert.IsTrue(caught,$"A real ring contact must arrest the fall without a timed second tap (offset {offset}): "+State+samples);
-            Assert.IsFalse(game.InTube,"Catching is separate from entering the tube");
-            yield return Until(.6f,()=>false);
-            Assert.Less(Vector3.Distance(game.Motion.Centre(0),game.Tube.transform.position),.13f,"Remain attached long enough to give the next instruction");
-            game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Tube.transform.position));
-            yield return Until(4,()=>game.InTube);Assert.IsTrue(game.InTube,"Accept the tube command after catching: "+State);
+            // No additional tap: a real catch arms the existing physical flow.
+            yield return Until(4,()=>game.InTube);Assert.IsTrue(game.InTube,"Automatically enter after catching, without a second command: "+State);
             yield return Until(20,()=>!game.InTube);Assert.Greater(game.Motion.Centre(0).x,.11f,"Pass through after the catch: "+State);
         }
         [UnityTest] public IEnumerator EighthLessonMissedRingKeepsFalling()

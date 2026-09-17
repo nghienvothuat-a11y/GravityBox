@@ -223,6 +223,42 @@ namespace GravityBox.Tests
             yield return Leave(Anchors()[0]);
         }
 
+        [UnityTest] public IEnumerator Level19OnePullCommandOpensBothDoorsBeforeIdleRelease()
+        {
+            yield return Load(19);
+            var knife=game.Owner.Apparatus.GetComponentInChildren<COgheGuillotine>();
+            var winch=game.Owner.Apparatus.GetComponentInChildren<COgheCooperativeWinch>();
+            COgheExpansionIntegrationTests.Capture(game,"19-overview-new");
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(knife.Rail.transform.position+game.Root.up*.066f));
+            yield return WaitFor(22,()=>game.Matter.TotalFragmentCount>1,"Cut into two physical parts");
+            var parts=Anchors();parts.Sort((a,b)=>game.Motion.Centre(a).x.CompareTo(game.Motion.Centre(b).x));
+            game.SelectFragment(parts[0]);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(winch.Input.transform.position));
+            yield return WaitFor(25,()=>winch.Input.Active,"Screen tap reaches A");
+            game.SelectFragment(parts[parts.Count-1]);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(winch.Handle.transform.position));
+            yield return WaitFor(25,()=>game.Attached,"Grasp B");
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Root.TransformPoint(new Vector3(.445f,-.288f,-.16f))));
+            yield return WaitFor(3,()=>winch.Complete,"A single pull must finish before the 3 second idle release");
+            game.ReleaseProp();
+            COgheExpansionIntegrationTests.Capture(game,"19-doors-open");
+            game.SelectFragment(parts[0]);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Root.TransformPoint(new Vector3(.30f,-.30f,.12f))));
+            yield return WaitFor(30,()=>Vector3.Distance(game.Motion.Centre(parts[0]),game.Root.TransformPoint(new Vector3(.30f,-.28f,.12f)))<.035f,"Screen command crosses the reunion door");
+            game.SelectFragment(parts[parts.Count-1]);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Root.TransformPoint(new Vector3(.29f,-.30f,.23f))));
+            yield return WaitFor(30,()=>game.Matter.TotalFragmentCount==1,"Screen commands bring both parts together");
+            game.SelectFragment(Anchors()[0]);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Owner.Outlet.position));
+            yield return WaitFor(40,()=>game.Owner.Completed,"Screen tap on the real outlet completes level 19");
+            Assert.AreEqual(32,game.Matter.EscapedCount);
+            game.ResetLevel();for(int i=0;i<120;i++)Tick();
+            Assert.IsFalse(winch.Complete);Assert.IsFalse(winch.Input.Active);
+            foreach(var door in winch.Doors)Assert.Less(door.Position,.002f);
+            Assert.AreEqual(1,game.Matter.TotalFragmentCount);
+
+        }
+
         private IEnumerator PrepareBossFirstCut(COgheGuillotine knife)
         {
             // Physical cuts are biased by moving the body relative to the fixed blade, never by assigning groups.

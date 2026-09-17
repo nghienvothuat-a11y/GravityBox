@@ -1,6 +1,6 @@
 # COghe — Level 19: Cùng nhau!
 
-**Trạng thái: mockup đề xuất, chưa triển khai hoặc kiểm chứng trong Unity.** Hình minh họa bố cục và quan hệ cơ quan, không chốt kích thước, lực, camera hay hành trình cơ khí.
+**Trạng thái: đã triển khai trong Unity; cập nhật khả năng quan sát và thao tác ngày 17/09/2026.** Phác thảo bên dưới là ý đồ ban đầu; scene và builder là bố cục đang chạy.
 
 ![Mockup vẽ tay](mockup-cung-nhau-v1.png)
 
@@ -8,11 +8,11 @@
 
 Hộp lớn chia thành hai ngăn có cơ quan riêng. COghe đi qua máy chém để chia thành hai phần, phối hợp xử lý cơ quan đồng thời ở hai ngăn, sau đó tụ lại và thoát khỏi hộp lớn.
 
-## Phương án trong bản phác
+## Cơ chế đang triển khai
 
 Hai vai trò khác nhau: **giữ nút A ở ngăn trái** và **kéo cần B ở ngăn phải**. A rút chốt khóa B. Khi A đang được giữ, B mới di chuyển được. Kéo B hết hành trình mở cửa gặp lại ở vách giữa và cửa che lỗ thoát trên vỏ hộp. Chốt giữ hai cửa mở, cho phép cả hai phần rời cơ quan để hợp thể.
 
-Đây là cách cụ thể hóa đề xuất của người dùng; số lượng cơ quan, cách liên động và bố trí dưới đây chưa phải yêu cầu đã được người dùng xác nhận riêng.
+Màn này dạy phối hợp hai phần qua cơ quan liên động; hộp khóa xoay.
 
 | Thành phần | Vị trí / vai trò |
 | --- | --- |
@@ -26,14 +26,14 @@ Hai vai trò khác nhau: **giữ nút A ở ngăn trái** và **kéo cần B ở
 
 Mái và vỏ trước vẽ nhạt/cắt bớt để nhìn cơ quan; trong game chúng vẫn là bề mặt kín. Cửa gặp lại tạo đường đoàn tụ an toàn sau khi giải. Cửa máy chém không bị khóa tùy tiện để cưỡng ép hai phần phải ở riêng.
 
-## Trình tự chơi dự kiến
+## Cách chơi
 
 1. Sinh vật bắt đầu nguyên khối ở ngăn trái. Người chơi chỉ nó qua cửa máy chém vào ngăn phải.
 2. Máy chém cắt phần cơ thể thực sự giao với lưỡi. Hai phần được đẩy tách vừa đủ, vẫn nằm trong hộp và có thể điều khiển riêng.
 3. Chọn phần ở ngăn trái, chỉ tới A. Nó đứng trên nút, nút lún xuống, đèn sáng và chốt ở B rút ra.
 4. Chuyển sang phần bên phải. Nó bám tay nắm B rồi kéo theo chỉ dẫn. Trong lúc kéo, phần trái tiếp tục đứng giữ A.
-5. Kéo hết hành trình: hai cửa mở hoàn toàn và được chốt giữ. Có phản hồi nhìn/nghe được cho thời điểm chốt bắt.
-6. Chỉ phần trái đi qua cửa gặp lại, đưa hai phần lại gần nhau; chúng tự hợp thể theo luật hiện có.
+5. Kéo hết hành trình: hai cửa mở hoàn toàn và được chốt giữ. Đèn cửa chuyển xanh để báo đã chốt mở.
+6. Chỉ phần trái đi qua cửa gặp lại, rồi chỉ phần phải đi qua vị trí phần trái để chúng chạm nhau và hợp thể. Chạm trực tiếp một phần sẽ chọn phần đó, không phải lệnh đi tới nó.
 7. Chỉ bản thể đã hợp nhất tới lỗ thoát. Toàn bộ cơ thể thoát ra ngoài mới thắng.
 
 Đồng thời ở đây là hai trạng thái cùng tồn tại: A có tải trong lúc B được kéo. Người chơi chọn từng phần, không cần hai ngón tay điều khiển hai nhân vật cùng lúc, không cần bấm đúng cùng một khung hình.
@@ -97,3 +97,26 @@ Chưa chạy các kiểm chứng trên: hiện chỉ tạo mockup và tài liệ
 ## Nguồn hình
 
 Tạo bằng image_gen tích hợp, không dùng CLI/API fallback. Prompt gốc và lượt chỉnh: [generation-prompts.md](generation-prompts.md).
+
+![Bố cục đang chạy trong Unity](unity-overview.png)
+
+## Cập nhật khả năng đọc màn 19
+
+- Camera nghiêng 40°, yaw 18°, ViewRadius 0.57 (trước 0.70): cơ quan lớn hơn khoảng 23% trong cùng khung hình.
+- Vách chia trong hơn; máy chém có khung kim loại, vạch vùng cắt và cảnh báo một giây. Vùng nhận chạm được nới quanh dao riêng màn 19; không thay collider hoặc vùng cắt vật lý.
+- A có đế sứ, nắp amber lún theo tải. Đèn A/B và dây dẫn cho biết A mở khóa B.
+- Chạm B để bám, rồi chạm mũi tên bên phải B để kéo. Hai cửa có ray, số 1/2 và đèn báo đã chốt mở.
+- Tốc độ nâng cửa riêng màn 19 là 0.10 m/s; vẫn sử dụng lực hữu hạn và tải thật. Cấu hình Boss 20 giữ nguyên.
+- HUD nhắc thao tác theo trạng thái thực: tách → giữ A → chọn phần kia/bám B → kéo → hợp thể → thoát. Presentation chỉ đọc cơ quan, không tự giải màn.
+- Nguyên nhân thao tác cũ khó hoàn tất: cửa nâng 0.025 m/s cần hơn 6 giây, nhưng sinh vật tự buông sau 3 giây không có lệnh mới. Test một lệnh kéo tái hiện cửa chỉ mở khoảng 0.057/0.170 m.
+
+## Kiểm chứng 17/09/2026
+
+`Artifacts/COgheExpansion/cooperation19-final.xml`: **4/4 đạt**, 19.18 giây.
+
+- Toàn bộ đường giải với mô phỏng vật lý: cắt, giữ A, kéo B, hợp thể và thoát đủ 32 phần tử.
+- Đường giải bằng `TouchPoint` qua camera thật: chạm dao, A, B, mũi tên; một lệnh kéo hoàn tất trước 3 giây; đưa phần giữ A tới sàn trống bên phải, dẫn phần kia đi chạm vào, chạm lỗ để thoát. Reset phục hồi cả hai cửa.
+- Mất tải A áp phanh ngay; một cửa chưa mở hết không được chốt hoàn thành.
+- Kiểm tra cấu trúc ba vai trò và khóa nắp cuối của Boss 20 vẫn đạt. Đây không phải tuyên bố toàn bộ đường giải Boss 20 đã đạt.
+
+Không tự hợp thể bằng script, không di chuyển cơ thể hay cửa bằng teleport.

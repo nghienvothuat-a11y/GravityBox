@@ -38,7 +38,21 @@ namespace GravityBox.Editor
         }
 
         [MenuItem("Gravity Box/COghe/Generate Expansion 11–20")]
-        public static void GenerateExpansion()
+        public static void GenerateExpansion()=>GenerateExpansionRange(11,VenomCampaign.LevelCount);
+
+        [MenuItem("Gravity Box/COghe/Rebuild Slide Level 12")]
+        public static void GenerateSlideLevel12()=>GenerateExpansionRange(12,12);
+
+        [MenuItem("Gravity Box/COghe/Rebuild Access Level 13")]
+        public static void GenerateAccessLevel13()=>GenerateExpansionRange(13,13);
+
+        [MenuItem("Gravity Box/COghe/Rebuild Assembly Bridge Level 16")]
+        public static void GenerateAssemblyBridgeLevel16()=>GenerateExpansionRange(16,16);
+
+        [MenuItem("Gravity Box/COghe/Rebuild Cooperation Level 19")]
+        public static void GenerateCooperationLevel19()=>GenerateExpansionRange(19,19);
+
+        private static void GenerateExpansionRange(int firstLevel,int lastLevel)
         {
             Directory.CreateDirectory(Folder+"/Meshes");
             Directory.CreateDirectory(Folder+"/Definitions");
@@ -55,7 +69,7 @@ namespace GravityBox.Editor
             stepContact=AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(Folder+"/Weighted step.physicMaterial");
             var profile=AssetDatabase.LoadAssetAtPath<VenomProfile>(Folder+"/Matter.asset");
             if (profile==null||glass==null||contact==null) throw new InvalidOperationException("Origin campaign assets are required");
-            for (int n=11;n<=VenomCampaign.LevelCount;n++)
+            for (int n=firstLevel;n<=lastLevel;n++)
             {
                 meshSerial=n*1000;
                 var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
@@ -97,7 +111,7 @@ namespace GravityBox.Editor
             var scenes=new List<EditorBuildSettingsScene>();
             foreach(string path in CampaignScenePaths())scenes.Add(new EditorBuildSettingsScene(path,true));
             EditorBuildSettings.scenes=scenes.ToArray();AssetDatabase.SaveAssets();
-            Debug.Log("COGHE EXPANSION GENERATED: 11–20; original 01–10 retained.");
+            Debug.Log($"COGHE EXPANSION GENERATED: {firstLevel}–{lastLevel}; other scenes retained.");
         }
     }
 }

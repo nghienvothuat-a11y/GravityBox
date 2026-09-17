@@ -136,7 +136,7 @@ namespace GravityBox.Venom
             bool sliding=level.Campaign!=null&&level.Campaign.Definition.Passive&&!level.Campaign.Home;
             // Contact can support the performance without supplying any grip.
             // These feet skid visually; only the motion solver can apply force.
-            if(level.Campaign!=null){int grips=0;for(int i=0;i<count;i++)if(level.Campaign.Motion!=null&&level.Campaign.Motion.HasGrip(ids[i]))grips++;grounded&=grips>2||sliding;}
+            if(level.Campaign!=null){int grips=0;for(int i=0;i<count;i++)if(level.Campaign.Motion!=null&&level.Campaign.Motion.HasGrip(ids[i]))grips++;sliding|=grips<2&&contacts>0;grounded&=grips>2||sliding;}
             if (grounded)
             {
                 up.Normalize(); floorPoint /= contacts;

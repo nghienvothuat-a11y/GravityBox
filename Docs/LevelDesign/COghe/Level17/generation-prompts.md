@@ -1,7 +1,7 @@
 # Level 17 mockup — generation prompts
 
 Tool: built-in image_gen, no CLI/API fallback.
-Reference: ../Level16/mockup-sau-nga-v1.png (style only).
+Historical style reference: retired Level 16 sketch (removed when Level 16 was redesigned).
 
 ## Initial generation
 

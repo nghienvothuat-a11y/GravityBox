@@ -139,9 +139,28 @@ namespace GravityBox.Tests
         public IEnumerator MazeBranchCanBeChosenByAnActualScreenTap()
         {
             yield return Load(15);var tube=Object.FindFirstObjectByType<COgheTubeNetwork>();Assert.NotNull(tube);
+            Vector3[] outside={new Vector3(.24f,.299f,.24f),new Vector3(.24f,-.299f,-.24f)};
+            void Tap(Vector3 local)=>game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Root.TransformPoint(local)));
+            void AssertSurfaceTapsIgnored()
+            {
+                int edge=tube.LastChosenEdge;Vector3 marker=game.Feedback.CommandPoint;
+                var face=game.Feedback.CommandSurface;
+                foreach(var point in outside)
+                {
+                    Tap(point);
+                    Assert.IsNull(game.Motion.Get(0),"Inside the maze, a shell tap must not create a crawl destination.");
+                    Assert.AreEqual(edge,tube.LastChosenEdge,"A shell tap must not choose another pipe.");
+                    Assert.AreEqual(marker,game.Feedback.CommandPoint,"Rejected shell taps must not move the destination marker.");
+                    Assert.AreSame(face,game.Feedback.CommandSurface);
+                }
+            }
+            Tap(outside[0]);Assert.NotNull(game.Motion.Get(0),"Before entry, the creature still accepts surface guidance.");
+            game.ResetLevel();Steps(30);
             Assert.IsTrue(tube.TryChoose(0,0));
+            AssertSurfaceTapsIgnored(); // Flowing between junctions.
             yield return Until(8,()=>tube.LastReachedNode==1);
             Assert.AreEqual(1,tube.LastReachedNode,"entry did not reach junction A; "+tube.DebugState(0));
+            AssertSurfaceTapsIgnored(); // Waiting for a branch selection.
 
             // Tap the visible early section of A–C through the campaign's real
             // screen input path. The fixed frame and perspective camera must
@@ -151,6 +170,8 @@ namespace GravityBox.Tests
             Assert.AreEqual(2,tube.LastChosenEdge,"screen tap did not select the visible A–C branch; "+tube.DebugState(0));
             yield return Until(8,()=>tube.LastReachedNode==3);
             Assert.AreEqual(3,tube.LastReachedNode,"screen-selected A–C branch did not physically reach C; "+tube.DebugState(0));
+            game.ResetLevel();Steps(30);Tap(outside[0]);
+            Assert.NotNull(game.Motion.Get(0),"Reset must restore normal surface input before the new entry.");
         }
 
         [UnityTest]
@@ -173,31 +194,7 @@ namespace GravityBox.Tests
             Capture("15-true-exit");
         }
 
-        [UnityTest]
-        public IEnumerator SixWaysHasSixRealFlexibleBoresFiveCapsAndNoSphereTraction()
-        {
-            yield return Load(16);var tube=Object.FindFirstObjectByType<COgheTubeNetwork>();Assert.NotNull(tube);
-            Assert.IsTrue(game.Definition.Passive);Assert.AreEqual(6,tube.Edges.Length);
-            int exits=0,closed=0;
-            foreach(var node in tube.Nodes)
-            {if(node.Terminal==COgheTubeNetwork.TerminalKind.Exit)exits++;if(node.Terminal==COgheTubeNetwork.TerminalKind.Closed)closed++;}
-            Assert.AreEqual(1,exits);Assert.AreEqual(5,closed);
-            foreach(var edge in tube.Edges)
-            {Assert.IsTrue(edge.Flexible);Assert.NotNull(edge.Collider);Assert.IsFalse(edge.Collider.convex);}
 
-            Vector3 centre=game.Motion.Centre(0),normal=(centre-game.Root.position).normalized;
-            Vector3 target=centre+Vector3.ProjectOnPlane(game.Root.right,normal).normalized*.12f;
-            game.Motion.Move(0,target);Steps(1);
-            Assert.Greater(game.Motion.Intent(0).sqrMagnitude,.1f,"touch produces visible attempt intent");
-            Assert.IsFalse(game.Motion.HasGrip(0),"the satin sphere supplies no traction");
-
-            MeshCollider flexible=tube.Edges[0].Collider;Bounds before=flexible.bounds;
-            game.Owner.Rotation.SetTargetOrientation(Quaternion.Euler(0,0,90));
-            yield return Until(4,()=>Quaternion.Angle(game.Root.rotation,Quaternion.Euler(0,0,90))<1);
-            Steps(60);Bounds after=flexible.bounds;
-            Assert.Greater(Vector3.Distance(before.center,after.center)+Vector3.Distance(before.size,after.size),.002f,
-                "the updated collider follows the constrained rubber centreline");
-        }
 
         [UnityTest]
         public IEnumerator FusionIsOpenAtAMouthButBlockedAcrossRealTubeAndCapGeometry()
@@ -225,40 +222,7 @@ namespace GravityBox.Tests
             Assert.AreEqual(CohesiveOrganism.ParticleCount,game.Matter.Bodies.Length);
         }
 
-        [UnityTest]
-        public IEnumerator SixWaysRotatesTheTrueMouthDownThenFlowsToTheOnlyDistalExit()
-        {
-            yield return Load(16);var tube=Object.FindFirstObjectByType<COgheTubeNetwork>();Assert.NotNull(tube);
-            Assert.IsFalse(game.FinalExitAvailable);
-            // The initial low route is capped. Contact captures it physically,
-            // reaches the rubber cap, then accepts the same edge in reverse.
-            yield return Until(8,()=>tube.LastReachedNode==9);
-            Assert.AreEqual(9,tube.LastReachedNode,"initial false tube did not stop at its real cap; "+tube.DebugState(0));
-            Assert.IsFalse(game.Owner.Completed);Assert.IsTrue(tube.TryChoose(0,3));
-            // Rotate while the false hose is returning the tissue. Waiting
-            // until after release leaves the same aperture world-low, so
-            // gravity simply drops the body back out before a 90° turn can
-            // finish. Rotation during physical reverse flow is player input.
-            Quaternion target=Quaternion.Euler(90,0,0);game.Owner.Rotation.SetTargetOrientation(target);
-            yield return Until(8,()=>!tube.IsParticleInside(0));
-            Assert.IsFalse(tube.IsParticleInside(0),"the false tube must physically return to its sphere mouth; "+tube.DebugState(0));
-            string returnedInside=tube.DebugOutsideState(0);float returnedMaxRadius=0;
-            for(int i=0;i<CohesiveOrganism.ParticleCount;i++)if(!game.Matter.Escaped[i])
-                returnedMaxRadius=Mathf.Max(returnedMaxRadius,game.Root.InverseTransformPoint(game.Matter.Bodies[i].position).magnitude);
-            Assert.Less(returnedMaxRadius,.235f,"reverse flow must place every particle inside the real sphere shell; "+returnedInside);
-            // +Z becomes world down. The body then reaches that real sphere
-            // aperture under gravity before any tube command can be accepted.
-            yield return Until(5,()=>Quaternion.Angle(game.Root.rotation,target)<1);
-            yield return Until(7,()=>tube.LastChosenEdge==4&&tube.IsParticleInside(0));
-            Assert.AreEqual(4,tube.LastChosenEdge,"gravity contact did not enter the rotated true mouth; returned="+returnedInside+" now="+tube.DebugState(0));
-            yield return Until(14,()=>game.Owner.Completed);
-            Assert.IsTrue(tube.ExitReached,"flexible flow did not reach the distal terminal; "+tube.DebugState(0));
-            Assert.IsFalse(game.Owner.Lost,"true distal flow was lost before the complete roster crossed; "+tube.DebugExitRoster());
-            Assert.IsTrue(game.Owner.Completed,"true distal detector did not record the complete merged roster; "+tube.DebugExitRoster());
-            Assert.AreEqual(CohesiveOrganism.ParticleCount,game.Matter.EscapedCount,
-                "winning occurs only after the merged body clears the flexible distal detector");
-            Capture("16-true-flexible-exit");
-        }
+
 
         private static int[] Adjacent(COgheTubeNetwork tube,int node)
         {

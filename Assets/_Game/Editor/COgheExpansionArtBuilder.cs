@@ -44,6 +44,8 @@ namespace GravityBox.Editor
                     renderer.sharedMaterial=shellCoating;
                 var oldOverlay=patch.transform.Find("Visible slippery coating");
                 if(oldOverlay!=null)oldOverlay.GetComponent<Renderer>().enabled=false;
+                // The dry approach must read as a separate climbable route beside the lavender slide.
+                if(number==12&&(name=="gripping climb"||name=="launch platform"))renderer.sharedMaterial=amber;
                 if(patch.SphereRadius>0){sphere=patch;renderer.sharedMaterial=Glass("Satin sphere",.075f,.7f,false);}
                 if(renderer.sharedMaterial.shader.name=="COghe/Lab Glass")panes.Add(patch);
                 if(isFloor)floors.Add(renderer);
@@ -57,6 +59,33 @@ namespace GravityBox.Editor
                 }
             }
             var art=Child(root,ArtRoot);
+            if(number==12)
+            {
+                // Render the exact continuous collision shape. Separate little
+                // planes/boxes overlap on bends and hide the creature in stripes.
+                foreach(var renderer in root.GetComponentsInChildren<MeshRenderer>())
+                    if(renderer.name.StartsWith("Trough wall ")||renderer.name.StartsWith("Slippery trough "))renderer.enabled=false;
+                var proxy=root.GetComponentInChildren<COgheSurfacePickProxy>();
+                if(proxy!=null)
+                {
+                    var source=proxy.GetComponent<MeshCollider>().sharedMesh;
+                    var floorIndices=new List<int>();var wallIndices=new List<int>();var indices=source.triangles;
+                    for(int t=0;t<indices.Length/3;t++)
+                    {
+                        var dest=t%6<2?floorIndices:wallIndices;
+                        for(int v=0;v<3;v++)dest.Add(indices[t*3+v]);
+                    }
+                    void TroughVisual(string name,List<int> triangles,Material material)
+                    {
+                        var mesh=new Mesh{name=name};mesh.vertices=source.vertices;mesh.SetTriangles(triangles,0);mesh.RecalculateNormals();mesh.RecalculateBounds();
+                        var go=Child(art,name);go.position=proxy.transform.position;go.rotation=proxy.transform.rotation;
+                        go.gameObject.AddComponent<MeshFilter>().sharedMesh=mesh;
+                        var renderer=go.gameObject.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;renderer.shadowCastingMode=ShadowCastingMode.Off;
+                    }
+                    TroughVisual("Continuous lavender slide",floorIndices,Glass("Slide satin coating",.24f,1,false));
+                    TroughVisual("Clear cyan slide walls",wallIndices,tube);
+                }
+            }
             if(sphere!=null)
             {
                 float r=sphere.SphereRadius+.003f;
@@ -92,7 +121,7 @@ namespace GravityBox.Editor
                 if(plate.name.EndsWith(" B"))Label(plate.transform,"B",new Vector3(0,.009f,0),Quaternion.Euler(90,0,0),.019f,ink);
             foreach(var prop in game.Props)
             {
-                if(!prop.Manipulable)continue;
+                if(!prop.Manipulable||number==16&&prop.ManipulationHandleOnly)continue;
                 string[] words=prop.name.Split(' ');string key=words[0];
                 if(key.Length!=1)key=words[words.Length-1];if(key.Length!=1)continue;
                 // Props can use six separate contact faces instead of a root
@@ -113,6 +142,10 @@ namespace GravityBox.Editor
             if(sphere==null)
                 Label(art,number.ToString("00"),bounds.min+new Vector3(.055f,bounds.size.y-.047f,-.008f),Quaternion.identity,.019f,ink);
             foreach(var rim in owner.Outlet.GetComponentsInChildren<LineRenderer>())rim.sharedMaterial=mint;
+            if(number==13)BuildAccessSequenceArt(game,art);
+            if(number==15)BuildPipeMazeArt(game,art);
+            if(number==16)BuildAssemblyBridgeArt(game,art);
+            if(number==19)BuildCooperationArt(game,art);
             var studio=Child(owner.transform,"Day Lab studio");
             float deskY=game.Definition.CanRotate?-Mathf.Max(.70f,bounds.extents.magnitude+.13f):bounds.min.y-.11f;
             Box(studio,"Laboratory bench",new Vector3(0,deskY-.015f,0),new Vector3(12,.03f,12),.004f,ivory);
