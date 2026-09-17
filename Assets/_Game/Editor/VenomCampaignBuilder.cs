@@ -12,7 +12,7 @@ using Object=UnityEngine.Object;
 
 namespace GravityBox.Editor
 {
-    public static class VenomCampaignBuilder
+    public static partial class VenomCampaignBuilder
     {
         public const string Folder="Assets/_Game/Venom/Campaign";
         private static Material glass,stone,mint,slip,metal,plastic,skin;
@@ -47,12 +47,12 @@ namespace GravityBox.Editor
                 var game=owner.gameObject.AddComponent<VenomCampaign>();
                 var data=Asset<VenomCampaignDefinition>("Definitions/Level"+number.ToString("00")+".asset",()=>ScriptableObject.CreateInstance<VenomCampaignDefinition>());
                 data.Id="venom.origin."+number.ToString("00");data.Order=number;data.Title=number.ToString("00")+" · "+Names[number-1];data.Lesson=Lessons[number-1];
-                data.CanRotate=number!=7&&number!=8;data.Boss=number==10;data.Passive=number==6;data.ViewRadius=number==8?.59f:number==7?.44f:.46f;
+                data.CanRotate=number!=7&&number!=8&&number!=10;data.Boss=number==10;data.Passive=number==6;data.ViewRadius=number==8?.59f:number==7?.44f:.46f;
                 // Look into the inlet from the left. A steeper pitch would put
                 // the selectable ceiling over the inlet's touch target.
                 // View 07 from the creature's side of the step so the crate
                 // cannot hide its push/pull contact, climb or approach to the exit.
-                data.CameraEuler=number==8?new Vector3(30,42,0):number==7?new Vector3(27,38,0):new Vector3(number==3?14:25,-24,0);EditorUtility.SetDirty(data);game.Definition=data;
+                data.CameraEuler=number==10?new Vector3(37,15,0):number==8?new Vector3(30,42,0):number==7?new Vector3(27,38,0):new Vector3(number==3?14:25,-24,0);EditorUtility.SetDirty(data);game.Definition=data;
                 owner.Apparatus=new GameObject("Apparatus").transform;owner.Apparatus.SetParent(owner.transform,false);
                 var root=new GameObject("Box pivot",typeof(Rigidbody),typeof(BoxRotationController));root.transform.SetParent(owner.Apparatus,false);
                 var rb=root.GetComponent<Rigidbody>();rb.isKinematic=true;rb.useGravity=false;owner.Rotation=root.GetComponent<BoxRotationController>();
@@ -113,6 +113,7 @@ namespace GravityBox.Editor
                         var prop=cup.GetComponent<VenomMovableProp>();prop.Body=body;props.Add(prop);
                         DynamicFace(cup.transform,"Cover top",Vector3.up*.05f,Vector3.up,new Vector2(.15f,.15f),glass,surfaces);
                         foreach(var n in new[]{Vector3.left,Vector3.right,Vector3.forward,Vector3.back})DynamicFace(cup.transform,"Cover side",n*.075f,n,new Vector2(.15f,.10f),glass,surfaces);
+                        ConfigureLooseCover(prop);
                     }
                     if(number==10)Boss(game,root.transform,surfaces,props);
                 }
@@ -131,7 +132,14 @@ namespace GravityBox.Editor
                 Lighting();COgheDayLabBuilder.ApplyCampaignLevel(game);
                 string path=Folder+"/VenomOrigin"+number.ToString("00")+".unity";EditorSceneManager.SaveScene(scene,path);scenePaths.Add(new EditorBuildSettingsScene(path,true));
             }
-            EditorBuildSettings.scenes=scenePaths.ToArray();AssetDatabase.SaveAssets();Debug.Log("ORIGIN GENERATED: ten authored levels.");
+            // Regenerating the tutorial must not remove already-authored later
+            // chapters from level selection or the next player build.
+            for(int number=11;number<=VenomCampaign.LevelCount;number++)
+            {
+                string expansion=Folder+"/VenomOrigin"+number.ToString("00")+".unity";
+                if(System.IO.File.Exists(expansion))scenePaths.Add(new EditorBuildSettingsScene(expansion,true));
+            }
+            EditorBuildSettings.scenes=scenePaths.ToArray();AssetDatabase.SaveAssets();Debug.Log("ORIGIN GENERATED: ten authored levels; existing expansion retained.");
         }
         private static T Asset<T>(string name,Func<T> make) where T:Object
         {string path=Folder+"/"+name;var a=AssetDatabase.LoadAssetAtPath<T>(path);if(a==null){a=make();AssetDatabase.CreateAsset(a,path);}return a;}
@@ -159,7 +167,9 @@ namespace GravityBox.Editor
                 Vector3 n=normals[i],p=c-n*half;bool open=Vector3.Dot(n,-outward)>.9f;
                 Quaternion q=Quaternion.LookRotation(n,Mathf.Abs(n.y)>.9f?Vector3.forward:Vector3.up);Vector3 hp=Quaternion.Inverse(q)*(hole-p);
                 result[i]=Panel(root,"Glass face "+i,p,n,Vector2.one*(half*2),i==0?stone:glass,open,new Vector2(hp.x,hp.y),radius,list);
-                result[i].Selectable=i!=1&&i!=5;
+                // Only the initial front pane is a tutorial-specific pass-through.
+                // The ceiling remains commandable when rotation reveals its interior.
+                result[i].Selectable=i!=1;
             }
             return result;
         }
@@ -252,6 +262,61 @@ namespace GravityBox.Editor
             var mesh=game.Knife.GetComponent<MeshFilter>();var bladeMesh=Object.Instantiate(mesh.sharedMesh);var vv=bladeMesh.vertices;for(int i=0;i<vv.Length;i++)vv[i]=Vector3.Scale(vv[i],new Vector3(.006f,.12f,.13f));bladeMesh.vertices=vv;bladeMesh.RecalculateBounds();mesh.sharedMesh=Save(bladeMesh);
             var joint=game.Knife.gameObject.AddComponent<ConfigurableJoint>();joint.connectedBody=root.GetComponent<Rigidbody>();joint.autoConfigureConnectedAnchor=false;joint.connectedAnchor=new Vector3(0,-.18f,-.13f);joint.axis=Vector3.right;joint.secondaryAxis=Vector3.up;
             joint.xMotion=joint.zMotion=ConfigurableJointMotion.Locked;joint.yMotion=ConfigurableJointMotion.Limited;joint.angularXMotion=joint.angularYMotion=joint.angularZMotion=ConfigurableJointMotion.Locked;joint.linearLimit=new SoftJointLimit{limit=.05f,contactDistance=.006f};joint.enableCollision=true;
+            ConfigureBossMechanics(game);
+        }
+        private static void ConfigureBossMechanics(VenomCampaign game)
+        {
+            var root=game.GetComponent<VenomLevelController>().Rotation.transform;
+            game.Definition.CanRotate=false;game.Definition.CameraEuler=new Vector3(37,15,0);EditorUtility.SetDirty(game.Definition);
+            game.Knife.position=root.TransformPoint(new Vector3(0,-.08f,-.13f));
+            game.Knife.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;
+            game.Knife.maxDepenetrationVelocity=.25f;game.Knife.solverIterations=20;game.Knife.solverVelocityIterations=8;
+            var joint=game.Knife.GetComponent<ConfigurableJoint>();
+            joint.anchor=Vector3.zero;
+            joint.connectedAnchor=new Vector3(0,-.155f,-.13f);
+            joint.linearLimit=new SoftJointLimit{limit=.075f,contactDistance=.001f};
+        }
+        [MenuItem("Gravity Box/COghe/Upgrade mechanism readability")]
+        public static void UpgradeMechanismReadability()
+        {
+            for(int n=1;n<=10;n++)
+            {
+                var scene=EditorSceneManager.OpenScene(Folder+$"/VenomOrigin{n:00}.unity");
+                var game=Object.FindFirstObjectByType<VenomCampaign>();
+                if(n==10)ConfigureBossMechanics(game);
+                COgheDayLabBuilder.ApplyCampaignLevel(game);EditorSceneManager.SaveScene(scene);
+            }
+            AssetDatabase.SaveAssets();Debug.Log("COGHE READABILITY UPGRADE SUCCESS");
+        }
+        private static void ConfigureLooseCover(VenomMovableProp prop)
+        {
+            var body=prop.Body;body.mass=.18f;body.useGravity=false;
+            body.collisionDetectionMode=CollisionDetectionMode.ContinuousSpeculative;
+            body.solverIterations=32;body.solverVelocityIterations=12;
+            body.maxDepenetrationVelocity=1.5f;body.linearDamping=.05f;body.angularDamping=.3f;
+            var contact=Asset<PhysicsMaterial>("Reinforced lid contact.physicMaterial",()=>new PhysicsMaterial());
+            contact.staticFriction=.5f;contact.dynamicFriction=.35f;contact.bounciness=0;
+            contact.frictionCombine=PhysicsMaterialCombine.Average;contact.bounceCombine=PhysicsMaterialCombine.Minimum;EditorUtility.SetDirty(contact);
+            foreach(var box in prop.GetComponentsInChildren<BoxCollider>())
+            {
+                var size=box.size;size.z=.014f;box.size=size;box.center=Vector3.back*.007f;
+                box.contactOffset=.0005f;box.sharedMaterial=contact;EditorUtility.SetDirty(box);
+            }
+            if(prop.GetComponent<VenomPropContainment>()==null)prop.gameObject.AddComponent<VenomPropContainment>();
+            body.ResetCenterOfMass();body.ResetInertiaTensor();EditorUtility.SetDirty(body);
+        }
+        [MenuItem("Gravity Box/COghe/Upgrade controls and reinforced lid")]
+        public static void UpgradeControlsAndCover()
+        {
+            for(int n=1;n<=10;n++)
+            {
+                var scene=EditorSceneManager.OpenScene(Folder+$"/VenomOrigin{n:00}.unity");
+                var game=Object.FindFirstObjectByType<VenomCampaign>();
+                COgheDayLabBuilder.ConfigureControlFeedback(game);
+                if(n==9){ConfigureLooseCover(game.Props[0]);COgheDayLabBuilder.ApplyCampaignLevel(game);}
+                EditorSceneManager.SaveScene(scene);
+            }
+            AssetDatabase.SaveAssets();Debug.Log("COGHE CONTROLS AND LID SUCCESS");
         }
         private static void Lighting()
         {
@@ -261,7 +326,7 @@ namespace GravityBox.Editor
         }
         public static void BuildMac()
         {
-            var scenes=new string[10];for(int i=0;i<10;i++)scenes[i]=Folder+"/VenomOrigin"+(i+1).ToString("00")+".unity";
+            var scenes=CampaignScenePaths();
             Directory.CreateDirectory("Builds/Venom/macOS");string previous=PlayerSettings.productName;
             try{PlayerSettings.productName="Venom";var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=scenes,target=BuildTarget.StandaloneOSX,locationPathName="Builds/Venom/macOS/Venom.app",options=BuildOptions.Development});if(report.summary.result!=BuildResult.Succeeded)throw new Exception("Origin build failed: "+report.summary.result);Debug.Log("ORIGIN BUILD SUCCESS");}
             finally{PlayerSettings.productName=previous;}

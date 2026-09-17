@@ -1,11 +1,11 @@
 # Venom Origin — Hướng dẫn test 10 màn
 
-Bản thử nghiệm macOS ngày 15/09/2026. Chạy `Builds/Venom/macOS/Venom.app`. Nội dung mới nằm trong `Assets/_Game/Venom/Campaign/`; Journey và lab cũ vẫn giữ riêng để đối chiếu.
+Bản thử nghiệm macOS cập nhật ngày 16/09/2026. Chạy `Builds/Venom/macOS/Venom.app`. Nội dung mới nằm trong `Assets/_Game/Venom/Campaign/`; Journey và lab cũ vẫn giữ riêng để đối chiếu.
 
 ## Điều khiển
 
 - Chạm một điểm trên bề mặt để hướng dẫn sinh vật. Kéo trên vùng chơi để xoay cả hộp quanh tâm, với tốc độ và gia tốc quay có giới hạn. Trọng lực luôn hướng xuống thế giới.
-- 07–08 khóa xoay. Riêng nóc của hộp đầu màn 08 nhận chạm trực tiếp để người chơi có thể chỉ đường lên đó từ camera cố định.
+- 07, 08 và 10 khóa xoay. Riêng nóc của hộp đầu màn 08 nhận chạm trực tiếp để người chơi có thể chỉ đường lên đó từ camera cố định.
 - Camera 07 nhìn 3/4 từ phía trái, nhìn xuống 27°, yaw 38°, khung hình gần hơn khoảng 5%. Góc này nhìn vào mặt thùng nơi sinh vật bám để đẩy/kéo, đồng thời thấy nóc thùng và mặt trong của vách có lỗ. Camera giữ nguyên hướng trong lúc thao tác để điểm chạm ổn định.
 - Camera 08 nhìn 3/4 từ bên trái, góc nhìn xuống 30°, yaw 42°, khung hình gần hơn khoảng 10%. Nóc, vành bám/miệng ống và lỗ cuối cùng đều chọn được từ góc cố định này; nóc không chắn đường chọn miệng ống.
 - Kính ngoài trong suốt không chặn chọn bề mặt bên trong. Màn 03 chủ động giữ mặt kính trước làm bề mặt nhận lệnh, nên phải xoay để chỉ vào lỗ phía sau. Vật cản và nắp thật vẫn chặn điểm chạm.
@@ -26,13 +26,24 @@ Bản thử nghiệm macOS ngày 15/09/2026. Chạy `Builds/Venom/macOS/Venom.ap
 | 07 | Chạm hộp nhựa để bám, chạm đích để đẩy/kéo. Đẩy kịch kính vẫn kéo ra được. 3 giây không lệnh mới thì buông; pause không ăn thời hạn. Khi đặt đúng bậc dưới vùng bám, sinh vật tiếp nối leo lên và đi tới lỗ |
 | 08 | Chỉ lên phần nóc còn bám được, hướng tới mép có vật liệu trơn, căn cú rơi vào vành. Sinh vật bắt vành, hãm lại và chờ chỉ vào ống; nếu đã có lệnh chui ống thì giữ lệnh tới khi ổn định. Không cần chạm lần hai đúng khoảnh khắc đang rơi. Quan sát dòng mô xuyên ống, đuôi đi hết, rồi tụ hình trong khoang bên kia |
 | 09 | Nắp trong suốt rơi, va chạm và nằm lại trong hộp. Không biến mất theo góc xoay |
-| 10 | Boss không có dòng tutorial hoặc lời giải trong HUD. Kiểm chứng sự phối hợp và luật hợp thể mới |
+| 10 | Hộp khóa xoay. Dao thép trên cao báo 1 giây sau khi mô vào vùng cảm biến; thử đổi vị trí hoặc né ra trong lúc báo. Dao phải cắt theo vị trí lúc rơi, nâng về vị trí chờ và không chém lặp khi còn mô trong vùng. Nút A/B lún và đổi đèn khi có tải; nhả lên khi rời. Boss không có tutorial; kiểm chứng phối hợp, hợp thể và Collection |
 
 Mỗi màn dùng chung profile sinh vật. Khoảng cách, hình hộp, vùng bám và cơ quan tạo khác biệt; không có chỉ số nâng cấp làm một màn mất khả năng giải.
+
+## Nhận diện vật liệu
+
+- Màn 02: thanh nhựa cứng trong màu hổ phách, thấy được độ dày và mép; khác kính hộp.
+- Vật liệu trơn: tím lavender có vân satin, gồm mảng, nóc và cầu. Vành bám vẫn trong và đúng kích thước vật lý.
+- Màn 08: ống cyan trong, vòng nối sứ và mép kim loại xanh; nhìn được dòng mô qua lòng ống.
+- Boss: dao thép có cạnh mài, bốn đèn báo thời gian và vùng cảm biến; nút tròn hổ phách có chữ A/B, đế tối và viền sứ. Không dùng chữ mô tả lời giải.
 
 ## Thắng, thua và Collection
 
 Mọi phần phải hợp thể **trước khi cơ thể bắt đầu thoát qua lỗ cuối**. Một phần ra trước sẽ thua và hiện đúng dòng `bạn phải hợp thể trước khi chui ra`. Không cứu được bằng việc tụ ngoài hộp. Một cơ thể đi đầu trước, đuôi sau vẫn hợp lệ; camera ăn mừng chỉ bắt đầu sau khi toàn bộ vật chất đã thoát.
+
+**Hợp thể tự động theo khoảng cách:** mô hai phần đủ gần và không bị vật cản ngăn thì nối lại, không phụ thuộc trạng thái di chuyển/Idle/giữ nút hoặc điểm đích. Không có thời gian khóa hợp thể sau chém ở Origin; khi lưỡi dao còn nằm giữa hai phần, chính vùng cắt ngăn chúng nối xuyên dao. Nếu đưa hai phần gặp nhau rồi để dao nâng khỏi chỗ tiếp xúc, chúng có thể nhập lại ngay. Lệnh còn hiệu lực mới nhất được giữ sau hợp thể; khối lượng không đổi.
+
+Cú chém hất hai phần sang hai bên bằng lực vật lý để khoảng cách giữa mô lớn hơn ngưỡng hợp thể. Tốc độ tương đối bổ sung tối đa 0,8 m/s, giới hạn mỗi bên 0,6 m/s; chia theo khối lượng để tổng động lượng của cú hất bằng 0. Không thêm vận tốc theo chiều đứng hoặc teleport. Chơi thử: để yên sau chém phải thấy hai phần tách biệt; dẫn chúng lại gần phải nhập ngay, kể cả một phần còn giữ nút.
 
 Hỗ trợ gần miệng chỉ khởi động cho một cơ thể thống nhất khi đường không bị chắn. Khi thân đã chui qua, phần đuôi được kéo tiếp theo cơ thể qua cùng miệng, bằng lực có giới hạn và giữ va chạm. Không xóa hạt hoặc teleport để thắng. Ống ở 08 là chuyển khoang, không ghi nhận thắng/thua do lỗ cuối.
 
@@ -60,6 +71,22 @@ Chạy `bash Tools/verify-venom.sh` để kiểm tra Origin và các suite Venom
 `VenomOriginTests` kiểm tra các đường giải bằng lực, lệnh di chuyển và bộ quay thật. Các phép dịch chuyển trực tiếp chỉ xuất hiện trong fixture riêng kiểm tra bộ phát hiện thua; không dùng làm đường giải màn. Test có tình huống không dùng bậc không thắng ở 07, kéo hộp khỏi kính, chọn nóc bằng điểm màn hình, tách–giữ–tụ–thoát ở Boss và mở Nhà.
 
 Kết quả chạy Origin riêng được lưu ở `Artifacts/Venom01/origin-tests.xml`, kết quả hồi quy ở `Artifacts/Venom01/origin-regression.xml`, ảnh khung hình ở `Artifacts/Venom01/OriginFrames/`; đây là dữ liệu QA local, không đưa vào Git. Kiến trúc hiện tại và những phần còn là đề xuất được phân biệt trong [tài liệu kiến trúc](VENOM_LEVEL_ARCHITECTURE.md).
+
+## Hợp thể theo khoảng cách và cú hất sau chém — 16/09/2026
+
+- **35/35 kiểm thử Origin đạt**, kết thúc 2026-09-16 05:33:24Z. Kiểm tra mới: cú hất giữ hai phần tách biệt khi không ra lệnh, khoảng cách mô vượt ngưỡng tự nối, không văng lên/ra vỏ; dẫn lại gần thì hợp thể. Ba tình huống nhập khi đang giữ nút, Idle và hai đích khác nhau đều đạt; giữ lệnh mới nhất sau nhập, mở cửa và thoát hợp lệ.
+- Fixture tiếp xúc riêng kiểm tra phần xa không nhập, phần gần không nhập xuyên vách, và phần gần không bị ngăn thì nhập ngay trong tick mô phỏng kế tiếp, không chờ cooldown. Fixture này sắp vị trí hạt để cô lập phép kiểm tra; đường giải Boss dùng lực và lệnh thật.
+- Báo cáo: `Artifacts/COgheFusion/origin-35.xml`; ảnh cú hất: `Artifacts/Venom01/OriginFrames/10-cut-separated.png`.
+- Build macOS thành công; đã mở binary mới, chạm vùng chém ở Boss và xác nhận khi để yên sau lượt chém vẫn có hai phần riêng cùng hai nút chọn phần. Để sẵn màn 10 ở trạng thái này cho người chơi thử; R bắt đầu lại nếu muốn quan sát cú hất từ đầu.
+
+## Sửa rơi khi leo sau phân tách — 16/09/2026
+
+- Đã tái hiện hai lỗi bằng thử nghiệm đầy đủ từ dao và A/B: phần nhỏ rơi khi đường đi cắt chéo góc tường–trần; sau khi sửa góc, phần chưa hợp thể vẫn rơi ở miệng lỗ do hỗ trợ thoát bị tắt.
+- Navigation thêm điểm chuyển ở góc lõm, đi sát cả hai mặt; không tăng lực bám, tắt trọng lực, thay vật liệu trơn hay dịch chuyển trực tiếp sinh vật. Mép lồi của vật cản vẫn dùng xử lý đưa cả đuôi qua mép.
+- Hỗ trợ miệng lỗ áp dụng cho từng phần ở gần cửa đã mở. Điều kiện hợp thể vẫn được kiểm tra khi mô thực sự xuyên qua cửa; một phần ra trước báo `bạn phải hợp thể trước khi chui ra`, không ghi chiến thắng hoặc mở Collection.
+- **30/30 kiểm thử Origin đạt**, kết thúc 2026-09-16 05:21:38Z. Hai kiểm tra mới: cả hai phần leo/giữ trần 3 giây, hợp thể ngay trên trần rồi thắng; đưa một phần từ nút tới lỗ khi chưa hợp thể thì thua đúng luật và Retry phục hồi. Đường giải hợp thể trên sàn, các màn vật liệu trơn, qua vách và bắt vành ống vẫn đạt.
+- Báo cáo trước/sau: `Artifacts/COgheBossClimb/`; ảnh thực tế `Artifacts/Venom01/OriginFrames/10-split-ceiling.png`.
+- Build macOS thành công; đã đóng tiến trình cũ, mở binary mới và để sẵn màn 10. Đường leo/hợp thể/thoát được kiểm tra tự động trong Unity; lần mở binary này chỉ xác nhận nạp màn và giao diện.
 
 ## Kết quả kiểm tra 15/09/2026
 

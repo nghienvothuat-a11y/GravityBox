@@ -1,6 +1,6 @@
 # COghe — Day Lab design rules
 
-Status: **approved by the user, 16/09/2026**. Version 1.0.
+Status: **approved by the user, 16/09/2026**. Version 1.3 (control feedback and reinforced lid, 16/09/2026).
 
 The visual reference is the Unity level 07 shipped at commit `8718849`, with
 [runtime images](Runtime/README.md). The Day Lab concept is supporting inspiration;
@@ -29,20 +29,29 @@ pixel colors. Keep shared materials in `Assets/_Game/Venom/Art/DayLab`.
 | Equipment casing | .91, .88, .81 | .08 / .42 | Warm porcelain, small rounded edges |
 | Structural trim | .65, .74, .77 | .60 / .61 | Narrow aluminium strips; no mirror-chrome cage |
 | Sockets/feet | .065, .10, .12 | .55 / .56 | Dark, small, recessed accents |
+| Pressure sensor housing | .69, .77, .79 | .25 / .48 | Pale blue-grey beneath the porcelain bezel; no broad black plate |
+| Cutting blade | .88, .91, .94 | .58 / .78 | Silver steel, flat face normals, subtle 128×128 brushed grain |
+| Honed edge | .95, .97, 1 | .66 / .88 | Narrow polished silver edge, distinct from the dark clamp |
 | Movable resin | .84, .61, .32 | .03 / .52 | Amber; warm, solid, softly rounded |
 | Tray | .77, .83, .84 | .08 / .38 | Pearl blue; reveal the creature when viewed from below |
 | Active indicator | .32, .70, .59 | .10 / .60 | Quiet mint; emission .10, .27, .19 |
 | Labels | .10, .17, .21 | 0 / .30 | Readable blue-grey, few words |
 | COghe | .022, .030, .035 | .32 / .80 | Dark wet body with broad restrained highlights |
-| Glass/coating | .64, .78, .82 | Custom glass shader | Clear glass, ice-blue satin slippery coating |
+| Chamber glass | .64, .78, .82 | Custom glass shader | Clear and quiet |
+| Fixed rigid plastic divider | .91, .56, .20 | Transparent, alpha .36 | Amber panel, visible thickness and amber edges |
+| Slippery coating | .43, .37, .76 | Custom glass satin shader | Lavender, distinct from the blue floor and amber plastic |
+| Transfer pipe | .16, .55, .67 | Transparent, alpha .32 | Cyan bore, porcelain collars and blue metal gaskets; keep flow visible |
 
 - Slippery areas need a visible boundary and satin grain, not only a color change.
   The clear grip island must match the real `HoleCentre` and `GripRadius`.
 - Movable lids must read as separate objects. Transparent lids use a thin amber
   edge; do not make a solid plug where the simulation uses an open-bottom cap.
-- Pressure pads use labels/shapes and real active state as well as color. A visual
-  light must never imply a latch or button is active before simulation says so.
-- Blades use restrained dark metal and a distinct cutting edge; covers/rails use
+- Pressure pads use amber circular caps, a pale blue-grey socket, porcelain bezel and A/B
+  labels. Caps depress 6 mm under measured tissue load and rise when released.
+  The mint status light follows the real 12 g activation threshold. Visual travel
+  does not change the authored sensing area or collision surface.
+- A visual light must never imply a latch or button is active before simulation says so.
+- Blades use brushed steel and a distinct honed cutting edge; covers/rails use
   the same porcelain/amber language. Avoid horror effects.
 - World-space labels must depth-test against opaque equipment; text on a sensor
   cannot show through its closed cover. Keep font-atlas updates in presentation.
@@ -78,6 +87,16 @@ pixel colors. Keep shared materials in `Assets/_Game/Venom/Art/DayLab`.
   selection, Collection access and its food/play actions.
 - Boss 10 uses a more elaborate version of this same lab kit. It has **no tutorial
   or solution hints**. Preserve the Collection unlock and the merged-body win rule.
+- Command feedback uses quiet mint: an expanding touch ring, a brief outline of
+  the actual picked face and a smaller destination ring attached to that surface.
+  Inset the outline from opaque frame trim. A short, faint wash can identify an
+  unperforated pane; never paint a quad across an actual opening.
+  Fragment selection uses one mint arrow above the selected body. Amber arrows
+  identify the first exit, the level 07 crate and the level 08 roof departure.
+  All cues disappear during victory, failure and Home. A locked-rotation icon is
+  control feedback, not a Boss solution hint.
+- The rotation legend occupies the strip below the chamber. Overview framing from
+  level 03 reserves space for it; zoom still follows the selected creature.
 
 ## 5. Architecture and cost
 
@@ -93,7 +112,28 @@ pixel colors. Keep shared materials in `Assets/_Game/Venom/Art/DayLab`.
 - Validate the look in real Unity renders, not concept images. Measure mobile
   performance on hardware before making FPS claims.
 
-## 6. Required checks for art changes
+## 6. Boss 10 mechanism revision
+
+User-authorized on 16/09/2026: lock box rotation for the entire Boss. The metal
+blade parks high, starts a four-lamp warning when actual tissue enters the marked
+sensor area, waits one simulation second, then drops under world gravity. Players
+can change the creature’s position during the warning. Cut actual intersected
+bonds at impact; do not centre the body or force equal fragments. A missed strike
+is valid. Lift the blade back, then require the sensor area to clear before rearming.
+Camera 37° pitch / 15° yaw keeps the A pad visible beside the blade.
+
+This revision intentionally changes only Boss rotation, framing and blade rail
+configuration. Presentation-only geometry rules continue to apply to levels 01–09.
+
+Additional user-authorized level 09 fix: the loose lid has 14 mm walls, a mass of
+180 g, non-bouncy contact, more solver iterations and speculative continuous
+collision detection. Its amber resin shell shows the real wall thickness and an
+open bottom. Contact recovery against the rotating chamber prevents a missed wall
+collision from ejecting this oversized lid; do not apply this constraint to props
+which are designed to fit through an opening. The lid remains a free dynamic body
+and must fall away under gravity when the chamber is inverted.
+
+## 7. Required checks for art changes
 
 1. Compare collider/Rigidbody/joint data and gameplay definitions before/after.
 2. Inspect all affected levels in portrait view, including the rotating floor,

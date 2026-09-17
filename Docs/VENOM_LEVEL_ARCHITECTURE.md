@@ -1,5 +1,10 @@
 # Venom — Kiến trúc level và kế hoạch xây dựng chương 01–10
 
+**Mở rộng 17/09/2026:** chương 11–20 dùng chung mô phỏng và lớp cơ quan
+`COgheMechanism`, đã tách driver ray trượt, dao, cảm biến, bộ truyền, tời và mạng
+ống khỏi logic scene cụ thể. Xem [kiến trúc hiện tại của chương 11–20](COGHE_EXPANSION_11_20.md).
+Phần dưới ghi lại phạm vi và kiến trúc của đợt 01–10 ban đầu.
+
 Ngày 15/09/2026. Thiết kế [campaign 01–10](VENOM_CAMPAIGN_01_10.md) đã được triển khai thành mười scene Origin cùng dùng chung runtime. Phần dưới vẫn giữ kiến trúc đích và kế hoạch mở rộng; không coi mọi interface/prefab được đề xuất là đã có trong code.
 
 ## Trạng thái triển khai prototype
@@ -138,7 +143,7 @@ Trạng thái đề xuất: `Playing → TraversingFinalExit → Won`, hoặc `P
 
 `MatterTopology` giữ roster đầy đủ của lần spawn và nhóm vật chất sau cắt/tụ. **Không dùng `FragmentCount` hiện tại để quyết định thắng**, vì code loại nhóm đã thoát hoàn toàn khỏi số phần trong hộp. Không dùng `MergeCount > 0`: đã từng nhập không đảm bảo hiện đã nhập đủ. Không dùng mesh nhìn dính: hai phần chưa có liên kết thật vẫn là hai phần.
 
-Hợp thể đạt khi toàn bộ roster thuộc một cơ thể kết nối hợp lệ sau điều kiện kết dính hiện có; không đổi cooldown dao/bảo vệ nhiệm vụ để nhập giả. Cắt vẫn do cơ quan cắt, không do việc proxy hạt giãn khi chui ống. Liên kết vật lý biến dạng và sự kiện tách cơ thể cần được phân biệt để sai số solver không trở thành cơ chế cắt thứ hai.
+Hợp thể đạt khi toàn bộ roster thuộc một cơ thể kết nối hợp lệ. Theo luật chốt 16/09/2026, các phần đủ gần và không có vật cản thì tự nối, không có cooldown dao hay điều kiện bảo vệ lệnh giữ nút/điểm đích. Cú chém tạo xung lực tách sang hai phía để các phần nằm ngoài khoảng kết dính; không đặt trạng thái cấm nhập sau đó. Khi nối, runtime gộp các lệnh cùng nhóm và giữ lệnh còn hiệu lực mới nhất. Cắt vẫn do cơ quan cắt, không do việc proxy hạt giãn khi chui ống. Liên kết vật lý biến dạng và sự kiện tách cơ thể cần được phân biệt để sai số solver không trở thành cơ chế cắt thứ hai.
 
 Trình tự kiểm tra đề xuất:
 
@@ -150,7 +155,7 @@ Trình tự kiểm tra đề xuất:
 
 Hai nhóm đi qua trong cùng physics tick vẫn thua; kết quả không phụ thuộc thứ tự vòng lặp hạt. Việc hợp thể phải được xác nhận khi toàn bộ vật chất còn bên trong trước lần vượt ra đầu tiên. Tick đồng thời có dấu hiệu vừa nhập vừa vượt cửa chưa chứng minh được thứ tự thì cần chia bước kiểm tra/sweep tại cửa; không cập nhật merge ở cuối tick rồi cho qua hồi tố. Pause và frame chậm không thay luật.
 
-Exit assist giữ lực hữu hạn, va chạm và điều kiện lỗ thông, không kéo xuyên nắp/vùng trơn. Khi chưa hợp thể, không tự dùng assist gom/đẩy các phần ra ngoài; người chơi vẫn có thể đi/rơi qua cửa thật và nhận thua. Không dựng một bức tường vô hình ngăn hết mọi trường hợp để né luật thua mới. Việc tới gần lỗ không phải lý do tự gọi phần đang giữ nút bỏ việc.
+Exit assist giữ lực hữu hạn, va chạm và điều kiện lỗ thông, không kéo xuyên nắp/vùng trơn. Cập nhật 16/09/2026: hỗ trợ cục bộ ở miệng lỗ áp dụng cả cho phần chưa hợp thể để không rơi lặp lại trước cửa trần; topology vẫn quyết định thua ngay khi một phần ra trước. Không gọi phần ở xa về hoặc tự giải lệnh giữ nút để hợp thể. Không dựng một bức tường vô hình ngăn hết mọi trường hợp để né luật thua mới.
 
 ## 8. Boss, tri thức và phần thưởng
 

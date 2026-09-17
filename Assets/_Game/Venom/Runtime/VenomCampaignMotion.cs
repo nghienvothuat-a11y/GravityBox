@@ -12,10 +12,12 @@ namespace GravityBox.Venom
             public Vector3 Target;
             public readonly List<Vector3> Path=new List<Vector3>();
             public int Cursor;
+            public int CommandId;
             public bool Holding, Exit, AwaitingContact;
         }
         private readonly VenomCampaign game;
         private readonly List<Vector3> nodes=new List<Vector3>();
+        private readonly List<VenomSurfacePatch> nodeSurfaces=new List<VenomSurfacePatch>();
         private readonly List<List<int>> links=new List<List<int>>();
         private readonly Order[] orders=new Order[32];
         private readonly VenomSurfacePatch[] support=new VenomSurfacePatch[32];
@@ -36,9 +38,10 @@ namespace GravityBox.Venom
         }
         private readonly RingCatch[] ringCatches=new RingCatch[32];
         public int Selected;
+        private int nextCommandId;
         public int RouteCount=>nodes.Count;
         public VenomCampaignMotion(VenomCampaign owner){game=owner;}
-        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);System.Array.Clear(gripStrain,0,32);System.Array.Clear(detachedUntil,0,32);System.Array.Clear(detachedSurfaces,0,32);System.Array.Clear(ringCatches,0,32);Selected=0;BuildGraph();}
+        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);System.Array.Clear(gripStrain,0,32);System.Array.Clear(detachedUntil,0,32);System.Array.Clear(detachedSurfaces,0,32);System.Array.Clear(ringCatches,0,32);Selected=0;nextCommandId=0;BuildGraph();}
         public Vector3 Centre(int anchor)
         {
             Vector3 c=Vector3.zero;int count=0;int group=game.Matter.Groups[anchor];
@@ -51,7 +54,46 @@ namespace GravityBox.Venom
         public void Cancel(int anchor)
         {for(int i=0;i<32;i++)if(orders[i]!=null&&game.Matter.Groups[i]==game.Matter.Groups[anchor])orders[i]=null;}
         public void StopAll(){System.Array.Clear(orders,0,32);}
+        public void ReconcileAfterFusion()
+        {
+            // Several fragments may now share a body. Keep the newest command,
+            // not whichever old pad/route happens to have the lowest particle ID.
+            for(int a=0;a<32;a++)
+            {
+                var winner=orders[a];if(winner==null)continue;
+                int count=0;
+                for(int i=0;i<32;i++)
+                    if(orders[i]!=null&&game.Matter.Groups[i]==game.Matter.Groups[a])
+                    {count++;if(orders[i].CommandId>winner.CommandId)winner=orders[i];}
+                if(count<2)continue;
+                Cancel(a);orders[winner.Anchor]=winner;winner.Cursor=0;
+                FindPath(Centre(winner.Anchor),game.Root.TransformPoint(winner.Target),winner.Path);
+                SetCatch(winner.Anchor,null);
+            }
+        }
         public bool Busy(int anchor)=>Get(anchor)?.Holding??false;
+        public void BraceAgainstManipulation(int anchor,Vector3 reaction)
+        {
+            int group=game.Matter.Groups[anchor],feet=0;
+            float mass=0,contactMass=0,gripMass=0;
+            for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group&&!game.Matter.Escaped[i])
+            {
+                float m=game.Matter.Bodies[i].mass;mass+=m;
+                if(support[i]!=null)contactMass+=m;
+                if(HasGrip(i)){feet++;gripMass+=m;}
+            }
+            if(feet<2)return;
+            float available=Mathf.Max(0,mass*GripAccelerationLimit*gripMass/Mathf.Max(contactMass,.0001f)-mass*9.81f);
+            Vector3 bracing=Vector3.ClampMagnitude(reaction,available)/feet;
+            // The hand still receives the full equal/opposite object reaction.
+            // Real planted feet carry its load into their actual supporting surface.
+            for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group&&HasGrip(i))
+            {
+                game.Matter.Bodies[i].AddForce(bracing);
+                var floor=support[i].Shape.attachedRigidbody;
+                if(floor!=null&&!floor.isKinematic)floor.AddForceAtPosition(-bracing,contact[i]);
+            }
+        }
         public Vector3 Intent(int particle)=>intent[particle];
         public bool Support(int particle,out Collider collider,out Vector3 point,out Vector3 normal)
         {
@@ -91,7 +133,7 @@ namespace GravityBox.Venom
         public void BuildGraph()
         {
             Physics.SyncTransforms();
-            nodes.Clear();links.Clear();
+            nodes.Clear();nodeSurfaces.Clear();links.Clear();
             foreach(var s in game.Surfaces)
             {
                 if(!s.isActiveAndEnabled||s.SphereRadius>0)continue;
@@ -101,7 +143,7 @@ namespace GravityBox.Venom
                     float ix=Mathf.Min(.017f,s.Size.x*.25f),iy=Mathf.Min(.017f,s.Size.y*.25f);
                     var p=new Vector3(Mathf.Lerp(-s.Size.x*.5f+ix,s.Size.x*.5f-ix,x/(float)nx),Mathf.Lerp(-s.Size.y*.5f+iy,s.Size.y*.5f-iy,y/(float)ny),.021f);
                     if(!s.Contains(p)||game.Occupied(s.transform.TransformPoint(p)))continue;
-                    nodes.Add(game.Root.InverseTransformPoint(s.transform.TransformPoint(p)));links.Add(new List<int>(8));
+                    nodes.Add(game.Root.InverseTransformPoint(s.transform.TransformPoint(p)));nodeSurfaces.Add(s);links.Add(new List<int>(8));
                 }
             }
             for(int i=0;i<nodes.Count;i++)for(int j=i+1;j<nodes.Count;j++)
@@ -116,7 +158,7 @@ namespace GravityBox.Venom
             if(game.Props.Length>0)BuildGraph();
             SetCatch(anchor,null);
             Cancel(anchor);
-            var o=new Order{Anchor=anchor,Target=game.Root.InverseTransformPoint(world),Holding=hold,Exit=exit};
+            var o=new Order{Anchor=anchor,Target=game.Root.InverseTransformPoint(world),Holding=hold,Exit=exit,CommandId=++nextCommandId};
             int grips=0;for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[anchor]&&HasGrip(i))grips++;
             o.AwaitingContact=grips<2;
             if(game.Definition.Passive&&!game.Home)o.Path.Add(o.Target);
@@ -139,8 +181,30 @@ namespace GravityBox.Venom
                 {float d=costs[current]+Vector3.Distance(nodes[current],nodes[next]);if(d<costs[next]){costs[next]=d;parents[next]=current;}}
             }
             if(float.IsPositiveInfinity(costs[b])){Debug.LogWarning($"Disconnected surface route {game.Definition.Order}: {nodes[a]} -> {nodes[b]}, {nodes.Count} nodes");path.Add(game.Root.InverseTransformPoint(goal));return false;}
-            for(int at=b;at>=0;at=parents[at]){path.Add(nodes[at]);if(at==a)break;}
+            for(int at=b;at>=0;at=parents[at])
+            {
+                path.Add(nodes[at]);if(at==a)break;
+                if(TryInsideCorner(parents[at],at,out var corner))path.Add(corner);
+            }
             path.Reverse();path.Add(game.Root.InverseTransformPoint(goal));return true;
+        }
+        private bool TryInsideCorner(int from,int to,out Vector3 corner)
+        {
+            corner=Vector3.zero;
+            var first=nodeSurfaces[from];var second=nodeSurfaces[to];
+            if(first==second||Mathf.Abs(Vector3.Dot(first.Normal,second.Normal))>.001f)return false;
+            Vector3 a=game.Root.TransformPoint(nodes[from]),b=game.Root.TransformPoint(nodes[to]);
+            // A short diagonal across an inside corner can leave a small fragment
+            // out of reach of BOTH panes. Travel into the corner before turning.
+            // Convex divider crests still use EdgeTarget's body-clearance route.
+            if(first.DistanceInside(b)<.02f||second.DistanceInside(a)<.02f)return false;
+            Vector3 p=(a+b)*.5f;
+            p+=first.Normal*(.021f-first.DistanceInside(p));
+            p+=second.Normal*(.021f-second.DistanceInside(p));
+            if(!first.Contains(first.transform.InverseTransformPoint(p))||
+                !second.Contains(second.transform.InverseTransformPoint(p))||
+                !game.Clear(a,p,.006f)||!game.Clear(p,b,.006f))return false;
+            corner=game.Root.InverseTransformPoint(p);return true;
         }
         private int Nearest(Vector3 p)
         {
@@ -248,7 +312,8 @@ namespace GravityBox.Venom
                 if(caught!=null){capacity=mass*GripAccelerationLimit;strain=0;}
                 float weight=mass*9.81f;
                 strain=grips>=2&&capacity<weight?strain+dt*8*(weight-capacity)/weight:Mathf.Max(0,strain-dt*.25f);
-                bool peeled=strain>.14f&&!game.InTube;
+                bool suppressed=game.MechanismSuppressesMotion(a)||game.IsFlowing(a);
+                bool peeled=strain>.14f&&!suppressed;
                 HashSet<VenomSurfacePatch> released=null;
                 if(peeled)
                 {
@@ -273,12 +338,14 @@ namespace GravityBox.Venom
                     if(Vector3.Distance(centre,game.Root.TransformPoint(o.Target))<.023f&&!o.Holding&&!o.Exit&&
                         BodyCanReach(a,game.Root.TransformPoint(o.Target))){Cancel(a);o=null;}
                 }
-                bool anchored=(grips>=2||caught!=null)&&(!game.Definition.Passive||game.Home)&&!game.InTube;
+                bool anchored=(grips>=2||caught!=null)&&(!game.Definition.Passive||game.Home)&&!suppressed;
                 if(o!=null&&caught==null&&anchored)target=EdgeTarget(o,a,centre,target);
                 Vector3 delta=target-centre;
                 Vector3 desired=o!=null?delta.normalized*MoveSpeed:Vector3.zero;
                 if(o!=null&&o.Cursor==o.Path.Count-1)desired=Vector3.ClampMagnitude(delta*4,MoveSpeed);
                 if(caught!=null)desired=Vector3.ClampMagnitude((caught.Surface.transform.TransformPoint(caught.LocalTarget)-centre)*6,.35f);
+                bool railManipulation=game.TryRailManipulationIntent(a,out var handleTarget,out var handleVelocity);
+                if(railManipulation){delta=handleTarget-centre;desired=handleVelocity;}
                 Vector3 passiveIntent=Vector3.zero;
                 if(o!=null&&game.Definition.Passive&&!game.Home)
                 {
@@ -294,7 +361,7 @@ namespace GravityBox.Venom
                     if(game.Matter.Groups[i]!=game.Matter.Groups[a]||game.Matter.Escaped[i])continue;
                     Rigidbody body=game.Matter.Bodies[i];var patch=support[i];
                     bool atExit=game.ExitAssisting(i);
-                    game.Matter.SetFlow(i,game.InTube||atExit?1:.12f);
+                    game.Matter.SetFlow(i,game.IsFlowing(i)||atExit?1:.12f);
                     // Visual effort is independent of traction. Slick contact
                     // receives no drive, adhesion or gravity cancellation.
                     intent[i]=atExit?Vector3.zero:passiveIntent;
@@ -312,7 +379,7 @@ namespace GravityBox.Venom
                     {
                         Vector3 n=patch.Normal;
                         float distance=Vector3.Dot(body.position-contact[i],n);
-                        float grip=o!=null&&Vector3.Dot(delta,n)>.018f?0:1;
+                        float grip=(o!=null||railManipulation)&&Vector3.Dot(delta,n)>.018f?0:1;
                         acceleration+=n*((.012f-distance)*700-Vector3.Dot(relative,n)*22)*grip;
                         var prop=patch.Shape.attachedRigidbody;
                         if(prop!=null&&!prop.isKinematic)prop.AddForceAtPosition(-Vector3.ClampMagnitude(acceleration,28)*body.mass,contact[i]);

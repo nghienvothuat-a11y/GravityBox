@@ -152,7 +152,7 @@ namespace GravityBox.Venom
             Vector3 crawlIntent = level.Locomotion != null ? level.Locomotion.IntentForParticle(ids[0]) : Vector3.zero;
             if(level.Campaign?.Motion!=null)crawlIntent=level.Campaign.Motion.Intent(ids[0]);
             state.Squeezing = 0;
-            if(level.Campaign!=null&&level.Campaign.InTube)state.Squeezing=1;
+            if(level.Campaign!=null&&level.Campaign.IsFlowing(ids[0]))state.Squeezing=1;
             if(level.Locomotion != null)
                 foreach(var fragment in level.Locomotion.Fragments)
                     if(fragment.Group==organism.Groups[ids[0]])state.Squeezing=fragment.Squeeze.Amount;
@@ -268,16 +268,19 @@ namespace GravityBox.Venom
         {
             var game=level.Campaign;
             if(game==null||game.Motion==null)return;
+            bool attached=game.Attached&&game.Matter.Groups[anchor]==game.Matter.Groups[game.Motion.Selected];
             Vector3 direction=velocity.sqrMagnitude>.001f?velocity.normalized:Vector3.down;
-            if(game.Attached)direction=(game.PropContact-centre).normalized;
-            float stretch=game.InTube?1:game.Attached?(game.IsPulling?1.16f:.88f):!grounded||game.Definition.Passive?1+Mathf.Clamp(velocity.magnitude*.14f,0,.18f):1-game.Impact*.24f;
+            if(attached)direction=(game.PropContact-centre).normalized;
+            float stretch=game.IsFlowing(anchor)?1:attached?(game.IsPulling?1.16f:.88f):!grounded||game.Definition.Passive?1+Mathf.Clamp(velocity.magnitude*.14f,0,.18f):1-game.Impact*.24f;
             for(int i=0;i<count;i++)
             {
                 Vector3 p=transform.TransformPoint(points[i]),d=p-centre;
-                if(game.InTube)
+                if(game.IsFlowing(anchor))
                 {
                     // Small travelling ripples on the actual flow, without moving collision particles.
-                    p+=game.Tube.transform.up*(Mathf.Sin(clock*9-Vector3.Dot(p,game.Tube.transform.forward)*60)*.001f);
+                    Vector3 flowAxis=game.Tube!=null?game.Tube.transform.forward:direction;
+                    Vector3 rippleAxis=game.Tube!=null?game.Tube.transform.up:Vector3.Cross(flowAxis,Vector3.right).normalized;
+                    p+=rippleAxis*(Mathf.Sin(clock*9-Vector3.Dot(p,flowAxis)*60)*.001f);
                     supports[i]*=.88f;
                 }
                 else
@@ -288,7 +291,7 @@ namespace GravityBox.Venom
                 }
                 points[i]=transform.InverseTransformPoint(p);
             }
-            if(game.Attached)
+            if(attached)
             {
                 Vector3 side=Vector3.Cross(up,direction).normalized;
                 for(int arm=0;arm<2;arm++)
@@ -310,7 +313,7 @@ namespace GravityBox.Venom
                     TendrilCount++;
                 }
             }
-            else if(!grounded&&!game.InTube&&velocity.magnitude>.12f)
+            else if(!grounded&&!game.IsFlowing(anchor)&&velocity.magnitude>.12f)
             {
                 // Brief searching filaments retract when no support is found.
                 Vector3 side=Vector3.Cross(direction,level.View.transform.forward).normalized;

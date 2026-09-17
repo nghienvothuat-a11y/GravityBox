@@ -180,6 +180,13 @@ namespace GravityBox.Venom
             return false;
         }
 
+        public bool CrossesBlade(Transform blade,Vector3 halfSize,int first,int second)
+        {
+            Vector3 a=blade.InverseTransformPoint(Bodies[first].position),b=blade.InverseTransformPoint(Bodies[second].position);
+            if(a.x*b.x>=0)return false;
+            Vector3 crossing=Vector3.Lerp(a,b,-a.x/(b.x-a.x));
+            return Mathf.Abs(crossing.y)<=halfSize.y+Profile.ParticleRadius&&Mathf.Abs(crossing.z)<=halfSize.z+Profile.ParticleRadius;
+        }
         public int Cut(Transform blade, Vector3 halfSize)
         {
             int removed = 0, before = FragmentCount;
@@ -187,12 +194,11 @@ namespace GravityBox.Venom
             {
                 Bond bond = bonds[k];
                 if (Escaped[bond.A] || Escaped[bond.B]) continue;
-                Vector3 a = blade.InverseTransformPoint(Bodies[bond.A].position), b = blade.InverseTransformPoint(Bodies[bond.B].position);
-                if (a.x * b.x >= 0) continue;
-                float t = -a.x / (b.x - a.x); Vector3 crossing = Vector3.Lerp(a, b, t);
-                if (Mathf.Abs(crossing.y) > halfSize.y + Profile.ParticleRadius || Mathf.Abs(crossing.z) > halfSize.z + Profile.ParticleRadius) continue;
+                if(!CrossesBlade(blade,halfSize,bond.A,bond.B))continue;
                 connected[bond.A,bond.B] = connected[bond.B,bond.A] = false;
-                healAt[bond.A] = healAt[bond.B] = SimulationTime + Profile.CutHealingDelay;
+                // Origin uses contact/obstruction alone, without a hidden merge
+                // cooldown. Preserve the archived control experiments' policy.
+                healAt[bond.A] = healAt[bond.B] = SimulationTime + (level!=null&&level.Campaign!=null?0:Profile.CutHealingDelay);
                 bonds.RemoveAt(k); removed++;
             }
             // A planar cut may disconnect tiny islands on the same side of the

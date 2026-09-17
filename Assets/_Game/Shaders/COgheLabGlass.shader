@@ -4,6 +4,7 @@ Shader "COghe/Lab Glass"
     {
         _BaseColor("Tint", Color) = (.62,.78,.82,.05)
         _Frost("Slip coating", Range(0,1)) = 0
+        _CoatingColor("Slip material tint", Color) = (.43,.37,.76,1)
         _GripCentre("Grip centre and radius", Vector) = (0,.05,.15,0)
         _HasGrip("Clear grip disk", Float) = 0
         _SlipRect("Slippery rectangle bounds", Vector) = (0,0,0,0)
@@ -25,7 +26,7 @@ Shader "COghe/Lab Glass"
             #pragma fragment Frag
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             CBUFFER_START(UnityPerMaterial)
-                half4 _BaseColor;
+                half4 _BaseColor, _CoatingColor;
                 float4 _GripCentre;
                 float _Frost, _HasGrip, _RegionOnly, _NearFade, _Spherical;
                 float4 _SlipRect;
@@ -56,13 +57,14 @@ Shader "COghe/Lab Glass"
                 // depth texture or runtime reflection capture is required.
                 float stripe=.5+.5*sin((i.local.x+i.local.y*.25)*470);
                 float sheen=pow(saturate(1-abs(i.local.x+i.local.y*.35-.06)*4),8);
-                half3 tint=lerp(_BaseColor.rgb,half3(.48,.66,.77),frost*.6);
+                half3 tint=lerp(_BaseColor.rgb,_CoatingColor.rgb,saturate(frost*1.6));
                 tint+=sheen*.13+stripe*frost*.018;
                 float baseAlpha=lerp(_BaseColor.a,.025,_RegionOnly*(1-inRect.x*inRect.y));
+                baseAlpha=lerp(baseAlpha,.025,grip*_HasGrip);
                 // Preserve the visible satin coating on a foreground wall: it
                 // communicates a gameplay property even when clear glass fades.
-                float nearVisibility=lerp(.20,.58,saturate(frost));
-                float alpha=(baseAlpha+edge*.08+frost*.22)*lerp(1,nearVisibility,_NearFade*saturate(-facing*4));
+                float nearVisibility=lerp(.20,.68,saturate(frost));
+                float alpha=(baseAlpha+edge*.08+frost*.30)*lerp(1,nearVisibility,_NearFade*saturate(-facing*4));
                 return half4(tint,saturate(alpha));
             }
             ENDHLSL

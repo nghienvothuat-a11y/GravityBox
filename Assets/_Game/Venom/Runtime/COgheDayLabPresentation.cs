@@ -90,16 +90,21 @@ namespace GravityBox.Venom
             float s=Mathf.Min(Screen.width/540f,Screen.height/960f),h=Screen.height/s;
             GUI.matrix=Matrix4x4.TRS(new Vector3((Screen.width-540*s)*.5f,0,0),Quaternion.identity,Vector3.one*s);
             GUI.color=GUI.backgroundColor=GUI.contentColor=Color.white;
-            if(game.Zoom)GUI.Box(new Rect(17,8,506,167),GUIContent.none,chip);
+            if(game.Zoom)GUI.Box(new Rect(17,8,506,191),GUIContent.none,chip);
             GUI.Label(new Rect(26,13,240,48),"COghe",brand);
             GUI.Label(new Rect(300,20,214,30),game.Home?"A  P L A C E  T O  B E L O N G":(game.Definition.Boss?"B O S S   /   ":"D A Y   L A B   /   ")+game.Definition.Order.ToString("00"),caption);
-            for(int i=1;i<=10;i++)
-                if(GUI.Button(new Rect(26+(i-1)*49,68,43,28),i==10?"BOSS":i.ToString("00"),i==game.Definition.Order?selected:chip))game.Load(i);
+            if(GUI.Button(new Rect(26,61,98,25),"01–10",game.LevelPage==0?selected:chip))game.LevelPage=0;
+            if(GUI.Button(new Rect(130,61,98,25),"11–20",game.LevelPage==1?selected:chip))game.LevelPage=1;
+            for(int slot=0;slot<10;slot++)
+            {
+                int i=game.LevelPage*10+slot+1;
+                if(GUI.Button(new Rect(26+slot*49,91,43,27),i%10==0?"B"+i:i.ToString("00"),i==game.Definition.Order?selected:chip))game.Load(i);
+            }
             if(!game.Owner.Completed)
             {
-                GUI.Label(new Rect(24,108,492,33),game.Home?"Nhà của COghe":game.Definition.Order==7?"Cùng nhau dịch chuyển":game.Definition.Title,title);
+                GUI.Label(new Rect(24,125,492,33),game.Home?"Nhà của COghe":game.Definition.Order==7?"Cùng nhau dịch chuyển":game.Definition.Title,title);
                 if(!game.Definition.Boss&&!game.Home)
-                    GUI.Label(new Rect(34,141,472,40),game.Definition.Order==7?"Chạm thùng, rồi chạm nơi muốn đẩy hoặc kéo tới.":game.Definition.Lesson,body);
+                    GUI.Label(new Rect(34,158,472,35),game.Definition.Order==7?"Chạm thùng, rồi chạm nơi muốn đẩy hoặc kéo tới.":game.Definition.Lesson,body);
             }
             if(game.Owner.Lost)
             {
@@ -110,20 +115,26 @@ namespace GravityBox.Venom
             else if(game.Owner.Completed)
             {
                 GUI.Label(new Rect(25,h-195,490,45),"Chúng mình làm được rồi!",title);
-                if(game.Definition.Boss&&game.Owner.Celebration.ReadyForNext&&GUI.Button(new Rect(126,h-137,288,40),"Đã mở Nhà của COghe",action))game.EnterHome();
+                if(game.Definition.Boss&&game.Owner.Celebration.ReadyForNext)
+                {
+                    if(GUI.Button(new Rect(26,h-137,235,40),"Nhà của COghe",action))game.EnterHome();
+                    if(game.Definition.Order<VenomCampaign.LevelCount&&GUI.Button(new Rect(276,h-137,235,40),"Tiếp tục",action))game.Load(game.Definition.Order+1);
+                }
             }
             else
             {
                 string activity=game.Owner.Paused?"Đang nghỉ một chút":game.Attached?(game.IsPulling?"COghe đang kéo thùng":"COghe đang giữ thùng"):(game.Activity=="Idle"?"COghe đang chờ được chỉ đường":game.Activity);
-                GUI.Label(new Rect(26,h-154,488,30),activity,status);
-                if(game.Attached&&GUI.Button(new Rect(183,h-119,174,29),"Buông thùng",chip))game.ReleaseProp();
+                GUI.Label(new Rect(26,h-154,game.Attached?316:488,30),activity,status);
+                if(game.Attached&&GUI.Button(new Rect(350,h-154,164,29),"Buông vật",chip))game.ReleaseProp();
                 if(game.Matter.TotalFragmentCount>1)
                 {
                     System.Array.Clear(seenGroups,0,seenGroups.Length);int slot=0;
+                    int groupCount=Mathf.Max(1,game.Matter.TotalFragmentCount);int columns=Mathf.Min(6,groupCount);
+                    float cell=488f/columns;
                     for(int i=0;i<32;i++)
                     {
-                        int group=game.Matter.Groups[i];if(seenGroups[group])continue;seenGroups[group]=true;
-                        if(GUI.Button(new Rect(105+slot*170,h-119,160,29),"Phần "+(slot+1),game.Matter.Groups[game.Motion.Selected]==group?selected:chip))game.Motion.Selected=i;
+                        int group=game.Matter.Groups[i];if(seenGroups[group]||game.Matter.Escaped[i])continue;seenGroups[group]=true;
+                        if(GUI.Button(new Rect(26+(slot%columns)*cell,h-119-(slot/columns)*32,cell-6,29),"Phần "+(slot+1),game.Matter.Groups[game.Motion.Selected]==group?selected:chip))game.SelectFragment(i);
                         slot++;
                     }
                 }

@@ -1,12 +1,16 @@
 # COghe — Day Lab Puzzle Prototype
 
-Bản mặc định là **Venom Origin — 10 màn theo bản vẽ**, trên nhánh `Venom`. Chạm để hướng dẫn sinh vật; kéo để xoay hộp. Màn 07–08 khóa xoay. Sinh vật dùng mô mềm có khối lượng, lực bám, va chạm và trọng lực thế giới.
+Bản mặc định là **Venom Origin — 20 màn theo bản vẽ**, trên nhánh `Venom`. Chạm để hướng dẫn sinh vật; kéo để xoay ở những màn cho phép. Biểu tượng dưới hộp cho biết quyền xoay của từng màn. Sinh vật dùng mô mềm có khối lượng, lực bám, va chạm và trọng lực thế giới.
 
-**Phong cách đã chốt: Day Lab**, lấy bản Unity màn 07 ngày 16/09 làm chuẩn: kính sạch, vỏ sứ ấm, viền nhôm, resin hổ phách, vùng trơn xanh băng và COghe đen bóng. Bộ này áp dụng cho cả **10 màn Origin**, gồm khối cầu, ống nối, nắp rơi và cơ quan Boss. Toàn bộ dựng bằng Unity; giữ nguyên dữ liệu vật lý và đường giải.
+**Phong cách đã chốt: Day Lab**, lấy bản Unity màn 07 ngày 16/09 làm chuẩn: kính sạch, vỏ sứ ấm, viền nhôm, resin hổ phách, vùng trơn tím satin và COghe đen bóng. Bộ này áp dụng cho cả **20 màn Origin**, gồm khối cầu, ống nối, nắp rơi và cơ quan Boss. Toàn bộ dựng bằng Unity; giữ nguyên chương 01–10 và bổ sung các cơ quan dùng lại được cho chương 11–20.
 
 Đọc [STYLE_RULES — quy chuẩn đồ hoạ bắt buộc](Docs/ArtDirection/COghe/STYLE_RULES.md) trước khi sửa art, shader, ánh sáng hoặc HUD. [AGENTS.md](AGENTS.md) dẫn tới quy chuẩn này cho các lần phát triển sau. [Bản mẫu màn 07](Docs/ArtDirection/COghe/Runtime/README.md) · [Gallery và kiểm chứng 10 màn](Docs/ArtDirection/COghe/Campaign/README.md).
 
 Áp lại art vào các scene hiện có: **Gravity Box → COghe → Apply Day Lab · All 10 Origin levels**. Lệnh giữ collider, cơ quan và cấu hình màn; mesh trang trí nằm trong thư mục riêng theo màn. Bộ Generate Origin cũng tự áp style. Sàn trong hơn khi lật về camera; chi tiết khung được ẩn khi zoom. Boss không có hướng dẫn lời giải. Tên app/bundle/save vẫn giữ `Venom` để duy trì tiến trình hiện có.
+
+Chỉnh riêng ngoại hình Boss: **Gravity Box → COghe → Rebuild Day Lab · Boss 10**. Đế nút A/B là xám bạc nhạt; dao có mặt thép bạc xước, pháp tuyến phẳng và cạnh vát đánh bóng. Lệnh này giữ nguyên cơ chế chém, lực bám, hợp thể và độ lún nút.
+
+[Phản hồi điều khiển](Docs/COGHE_CONTROL_FEEDBACK.md): vòng sóng và viền sáng xác nhận mặt vừa chạm, dấu đích theo mặt kính, mũi tên chọn phần sinh vật. Các màn 01/07/08 có dấu hướng dẫn riêng; biểu tượng xoay hoặc cấm xoay nằm dưới hộp từ màn 03. Nắp màn 09 có thành dày 14 mm, khối lượng 180 g và xử lý tiếp xúc khi xoay để tránh rung/xuyên vỏ hộp; vẫn rơi tự do khi lật hộp.
 
 | Màn | Trọng tâm |
 | --- | --- |
@@ -21,15 +25,32 @@ Bản mặc định là **Venom Origin — 10 màn theo bản vẽ**, trên nhá
 | 09 — Lật đi | Lật hộp để nắp rời rơi khỏi lỗ theo trọng lực |
 | 10 — BOSS · Chờ nhau | Phối hợp các phần cơ thể; không hướng dẫn trong màn |
 
-Mở `Builds/Venom/macOS/Venom.app`. **1–9, 0** chọn màn 01–10; **R** thử lại; **P/Esc** tạm dừng; **Z** zoom. Khi có nhiều phần, chạm một phần hoặc nút chọn phần ở cuối màn hình. Bộ chọn mở cả mười màn để test.
+[Chương mới 11–20: cơ quan, điều khiển, kiến trúc và kiểm chứng](Docs/COGHE_EXPANSION_11_20.md). Dựng riêng chương này bằng **Gravity Box → COghe → Generate Expansion 11–20**.
 
-**Phải hợp thể trong hộp trước khi thoát.** Một phần ra trước sẽ thua và hiện: `bạn phải hợp thể trước khi chui ra`. Chỉ thắng khi toàn bộ 32 phần tử vật chất đã ra ngoài qua lỗ cuối. Ống nối giữa hai khoang không phải lỗ thoát cuối. Camera sau thắng tiến sát, ẩn cảnh, chạy một trong ba điệu vui trong 4,8 giây; màn 01–09 tự chuyển tiếp.
+**Kiểm chứng 17/09/2026:** 67/67 PlayMode test đạt, gồm đường giải hoàn chỉnh 11–20,
+mọi nhánh cụt của mê cung 15, hồi quy 01–10 và kiểm tra tải/reset toàn bộ campaign.
+Kết quả: `Artifacts/COgheExpansion/verification.xml`; chạy lại bằng
+`bash Tools/verify-coghe-expansion.sh`.
 
-Thắng Boss lần đầu mở **Collection “Nhà của sinh vật”** với phòng thử nghiệm, chào/chơi và cho ăn. Đây là tương tác mẫu; chưa có cửa hàng, giao dịch hoặc hệ trang trí đầy đủ. Đồ ở nhà không tăng chỉ số hay thay khả năng giải đố. Tiến trình mới dùng ID `venom.origin.01`…`10` và save riêng; giữ nguyên dữ liệu Journey cũ.
+Mở `Builds/Venom/macOS/Venom.app`. Chọn tab **11–20** để test chương mới. **1–9, 0** chọn màn 01–10; **Shift + 1–9, 0** chọn màn 11–20; **R** thử lại; **P/Esc** tạm dừng; **Z** zoom. Khi có nhiều phần, chạm một phần hoặc nút chọn phần ở cuối màn hình. Bộ chọn mở cả hai mươi màn để test.
+
+**iPhone:** `bash Tools/build-venom-ios.sh` xuất project Xcode từ catalog 20 màn; cung cấp team/device qua biến môi trường để tự động ký, cài và mở trực tiếp. Profile thủ công là tuỳ chọn. Xem [hướng dẫn build iOS](Docs/COGHE_IOS_PLAYTEST.md). App trên điện thoại có tên **COghe**.
+
+[Ảnh cập nhật cơ quan](Docs/ArtDirection/COghe/Readability/README.md). **Cập nhật cơ quan 16/09:** vật cản 02 là nhựa hổ phách trong; vùng trơn màu tím satin; ống nối 08 có thành cyan và vòng nối rõ. Boss 10 khóa xoay, dao thép báo 1 giây rồi rơi và cắt theo vị trí cơ thể; nút A/B có mặt nhấn lún theo tải.
+
+**Phải hợp thể trong hộp trước khi thoát.** Một phần ra trước sẽ thua và hiện: `bạn phải hợp thể trước khi chui ra`. Chỉ thắng khi toàn bộ 32 phần tử vật chất đã ra ngoài qua lỗ cuối. Ống nối giữa hai khoang không phải lỗ thoát cuối. Camera sau thắng tiến sát, ẩn cảnh, chạy một trong ba điệu vui trong 4,8 giây; các màn thường tự chuyển tiếp, Boss chờ người chơi chọn tiếp tục.
+
+Các phần sau khi cắt vẫn leo và bám kính thường theo khối lượng của mình. Đường chuyển giữa sàn, tường và trần đi sát góc để phần nhỏ không hụt điểm bám. Hỗ trợ ở miệng lỗ áp dụng cả cho phần tách rời; luật hợp thể được kiểm tra khi vật chất thực sự đi qua lỗ, thay vì khiến phần nhỏ rơi lặp lại.
+
+**Hợp thể: cứ đủ gần là tự nhập**, kể cả đang di chuyển, đứng yên, giữ nút hoặc đi khác đích. Cú chém hất hai phần sang hai phía bằng xung lực vật lý để chúng nằm xa hơn khoảng tự nối; không còn bộ đếm chờ sau chém. Kính, vật cản và lưỡi dao đang nằm giữa mô vẫn ngăn nối xuyên qua. Sau khi nhập, cơ thể giữ lệnh còn hiệu lực mới nhất, không bị kéo về lệnh giữ nút cũ.
+
+Thắng Boss lần đầu mở **Collection “Nhà của sinh vật”** với phòng thử nghiệm, chào/chơi và cho ăn. Đây là tương tác mẫu; chưa có cửa hàng, giao dịch hoặc hệ trang trí đầy đủ. Đồ ở nhà không tăng chỉ số hay thay khả năng giải đố. Tiến trình mới dùng ID `venom.origin.01`…`20` và save riêng; giữ nguyên dữ liệu Journey cũ.
 
 [Hướng dẫn test và giới hạn](Docs/VENOM_ORIGIN_PLAYTEST.md) · [Thiết kế 10 màn](Docs/VENOM_CAMPAIGN_01_10.md) · [Kiến trúc và lộ trình](Docs/VENOM_LEVEL_ARCHITECTURE.md) · [Animation theo hành động](Docs/VENOM_ORIGIN_ANIMATION.md).
 
-Kiểm tra Venom: `bash Tools/verify-venom.sh` (tạm đăng ký scene Journey cho hồi quy rồi phục hồi danh sách Origin). Build mặc định: `bash Tools/build-venom.sh`. Sinh lại dữ liệu tác giả trong Unity: **Gravity Box → Venom → Generate Origin Campaign 01–10**. Lệnh Generate tạo lại scene và hình học, vì vậy cần lưu các chỉnh sửa tay trước khi chạy.
+Kiểm tra Origin 01–20: `bash Tools/verify-coghe-expansion.sh`. Kiểm tra bộ Journey cũ: `bash Tools/verify-venom.sh` (tạm đăng ký scene Journey cho hồi quy rồi phục hồi danh sách Origin). Build mặc định: `bash Tools/build-venom.sh`. Sinh lại dữ liệu tác giả trong Unity: **Gravity Box → Venom → Generate Origin Campaign 01–10**; lệnh này giữ các scene mở rộng đã có trong catalog. Lệnh Generate tạo lại scene và hình học của chương tương ứng, vì vậy cần lưu các chỉnh sửa tay trước khi chạy.
+
+Build Android từ catalog 20 màn: `bash Tools/build-venom-android.sh` → `Builds/Venom/Android/COghe.apk`, ứng dụng **COghe**, package riêng `com.gravityboxlab.venom`. APK đã cài trước đợt mở rộng vẫn là bản 10 màn; cần build/cài lại mới có chương mới. [Cài và test trên điện thoại](Docs/COGHE_ANDROID_PLAYTEST.md).
 
 Bộ Journey 5 màn cũ vẫn giữ để đối chiếu: `bash Tools/build-venom.sh --journey`; [tài liệu Journey](Docs/VENOM_JOURNEY_01_05.md). [Kỹ năng nền](Docs/VENOM_CREATURE_SKILLS.md) và [định hướng giải đố thuần / ngôi nhà](Docs/VENOM_PURE_PUZZLE_AND_HOME.md) tiếp tục áp dụng; Copy vật thể và hệ nội thất đầy đủ thuộc giai đoạn sau.
 
@@ -54,7 +75,7 @@ Nhánh vẫn giữ bảy scene thử nghiệm **01–05, 07–08**. Dùng `bash 
 - Màn 05 giữ điều khiển bò/xoay/Zoom của màn 04. Đưa cơ thể tới dao trên trần, dẫn mảnh lớn vào khe hộp nhỏ; mảnh còn lại bám chờ đến khi chủ thể vào hẳn mới tự chui theo.
 - Màn 07/08: **chạm/click đặt đích**, **kéo để xoay hộp**. **Nhớ lại** lặp điều đã học; **R** giữ trí nhớ khi thử lại, **Quên** xóa trí nhớ của màn hiện tại. Trí nhớ được giữ giữa các lần mở app. [Thiết kế điều khiển và trí nhớ](Docs/VENOM_CONTROLS_07_08.md).
 - Chạy Unity **6000.3.19f1**: mở `Assets/_Game/Venom/Venom01.unity`, `Venom02.unity`, `Venom03.unity`, `Venom04.unity`, `Venom05.unity`, `Venom07.unity` hoặc `Venom08.unity`, Game View **9:16**, Play.
-- Build bộ cũ: `bash Tools/build-venom.sh --lab` (đóng Unity đang mở project trước). Chưa xuất APK cho biến thể Venom.
+- Build bộ cũ: `bash Tools/build-venom.sh --lab` (đóng Unity đang mở project trước). APK đã cài từ lượt trước chứa 10 màn Origin; chưa được build lại trong lượt cập nhật 11–20 này.
 - [Thiết kế màn 01](Docs/VENOM_PROTOTYPE_01.md) · [Điều khiển, navigation và kiến trúc màn 02–03](Docs/VENOM_CONTROLS_02_03.md) · [Bò tường và xoay hộp màn 04](Docs/VENOM_CONTROLS_04.md) · [Dao, khe hẹp và phối hợp màn 05](Docs/VENOM_CONTROLS_05.md).
 
 Camera màn 02 nhìn gần thẳng từ trên xuống (**88°**) để dễ chọn hai phần/căn công tắc; màn 03 nhìn **3/4 từ góc trái đầu xuất phát**, cao **45°** và chéo **45°** để thấy rõ chuyển động thân và phần đi theo. Cả hộp nằm trong khung hình; giữ–kéo được căn theo hướng nhìn mới.

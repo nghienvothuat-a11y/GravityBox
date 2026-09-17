@@ -1,0 +1,43 @@
+{
+  "scope": "Finite abstract resource/location/lock model only. No Unity, geometry, force, animation, touch or difficulty validation.",
+  "full_model": {
+    "reachable_states": 1772,
+    "states_with_main_mechanism_open": 886,
+    "goal_states": 1,
+    "states_with_a_path_to_goal": 1772,
+    "states_without_a_path_to_goal": 0,
+    "shortest_abstract_solution": [
+      "Cut 6/6 -> 2/6 + 4/6 in 1",
+      "Hold A with 2/6",
+      "Move 4/6: 1 -> 2",
+      "Raise G with 4/6 while A held",
+      "Cut 4/6 -> 1/6 + 3/6 in 2",
+      "Move 1/6: 2 -> 3",
+      "Hold B with 3/6",
+      "Pull C with 1/6 while A+B held: latch reunion doors and unlock H",
+      "Release pad A",
+      "Move 2/6: 1 -> 2",
+      "Release pad B",
+      "Merge 2/6 + 3/6 in 2",
+      "Move 5/6: 2 -> 3",
+      "Merge 1/6 + 5/6 in 3",
+      "Pull H with full body"
+    ]
+  },
+  "at_most_two_fragments": {
+    "reachable_states": 120,
+    "states_with_main_mechanism_open": 0,
+    "goal_states": 0,
+    "states_with_a_path_to_goal": 0,
+    "states_without_a_path_to_goal": 120,
+    "shortest_abstract_solution": []
+  },
+  "limits": [
+    "Six-token mass quantization is illustrative, not a prescribed cut ratio.",
+    "Routes and merges assume physical clearance and reachability.",
+    "Door latches, safe partial-stroke recovery, pin actuation and pipe navigation are assumed, not proven.",
+    "No gravity, rotation, timing, continuous contact or intentional premature-escape loss states.",
+    "H uses six tokens for the intended solution; actual force thresholds must remain continuous and the merged-body win rule is separate.",
+    "Shortest abstract action count is not player completion time or measured difficulty."
+  ]
+}

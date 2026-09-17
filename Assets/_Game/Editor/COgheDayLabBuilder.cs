@@ -42,7 +42,7 @@ namespace GravityBox.Editor
 
             Material clear=Glass("Clear optical glass",.025f,0,false);
             Material coat=Glass("Ice satin coating",.24f,1,true);
-            Material top=Glass("Ceiling satin coating",.085f,.65f,false);
+            Material top=Glass("Ceiling satin coating",.16f,.8f,false);
             foreach(var p in game.Surfaces)
             {
                 var renderer=p.GetComponent<MeshRenderer>();
@@ -262,6 +262,15 @@ namespace GravityBox.Editor
         {
             presentation.WorldTextMaterial=worldLabels;
             presentation.WorldTextFont=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            ConfigureControlFeedback(presentation.GetComponent<VenomCampaign>());
+        }
+        public static void ConfigureControlFeedback(VenomCampaign game)
+        {
+            var feedback=game.GetComponent<COgheControlFeedback>();
+            if(feedback==null)feedback=game.gameObject.AddComponent<COgheControlFeedback>();
+            var material=SaveAsset("Control guidance.mat",()=>new Material(Shader.Find("COghe/Guidance")));
+            material.shader=Shader.Find("COghe/Guidance");material.SetColor("_BaseColor",Color.white);
+            feedback.MarkerMaterial=material;EditorUtility.SetDirty(material);EditorUtility.SetDirty(feedback);
         }
         private static void CombineByMaterial(Transform root,Transform exclude=null)
         {

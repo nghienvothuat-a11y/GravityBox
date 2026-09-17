@@ -24,10 +24,10 @@ def pose(body):
         "  m_LocalRotation:", "  m_LocalPosition:", "  m_LocalScale:", "  m_Father:")))
 
 
-def verify(ref):
+def verify(ref, levels=range(1, 11)):
     guid = re.search(r"guid: (\w+)", (ROOT / "Assets/_Game/Venom/Runtime/VenomSurfacePatch.cs.meta").read_text())[1]
     report = {"baseline": ref, "levels": []}
-    for n in range(1, 11):
+    for n in levels:
         path = f"{CAMPAIGN}/VenomOrigin{n:02}.unity"
         before, after = previous(ref, path), (ROOT / path).read_text()
         physics_types = {"54", "59", "64", "65", "135", "136", "153"}
@@ -67,9 +67,11 @@ def verify(ref):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", default="8718849")
+    parser.add_argument("--levels", nargs="+", type=int, choices=range(1, 11), default=list(range(1, 11)),
+                        help="Compare specified levels when other levels have intentional gameplay changes")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    result = json.dumps(verify(args.baseline), ensure_ascii=False, indent=2) + "\n"
+    result = json.dumps(verify(args.baseline, args.levels), ensure_ascii=False, indent=2) + "\n"
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(result)
