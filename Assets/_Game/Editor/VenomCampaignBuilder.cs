@@ -100,7 +100,10 @@ namespace GravityBox.Editor
                      Panel(root.transform,"Low wall right",new Vector3(.008f,-.24f,0),Vector3.right,new Vector2(.60f,.12f),glass,false,Vector2.zero,0,surfaces);
                      Panel(root.transform,"Low wall top",new Vector3(0,-.18f,0),Vector3.up,new Vector2(.016f,.60f),stone,false,Vector2.zero,0,surfaces);}
                     if(number==4)
-                    {faces[3].HasSlipRegion=true;faces[3].SlipRegion=new Rect(-.13f,-.08f,.26f,.11f);Overlay(faces[3],faces[3].SlipRegion,slip);}
+                    // The shortest first-tap route approaches the outlet at y≈.06.
+                    // Extend the coating just above that route so it visibly peels
+                    // and falls; the authored safe detour at y=.10 remains dry.
+                    {faces[3].HasSlipRegion=true;faces[3].SlipRegion=new Rect(-.13f,-.08f,.26f,.15f);Overlay(faces[3],faces[3].SlipRegion,slip);}
                     if(number==5){faces[5].Slippery=true;faces[5].GetComponent<Renderer>().sharedMaterial=slip;faces[5].Shape.sharedMaterial=slick;}
                     if(number==7)
                     {
@@ -137,7 +140,7 @@ namespace GravityBox.Editor
             }
             // Regenerating the tutorial must not remove already-authored later
             // chapters from level selection or the next player build.
-            for(int number=11;number<=VenomCampaign.LevelCount;number++)
+            for(int number=11;number<=LegacyLevelCount;number++)
             {
                 string expansion=Folder+"/VenomOrigin"+number.ToString("00")+".unity";
                 if(System.IO.File.Exists(expansion))scenePaths.Add(new EditorBuildSettingsScene(expansion,true));

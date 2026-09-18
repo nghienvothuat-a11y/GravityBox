@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace GravityBox.Venom
 {
@@ -6,6 +7,9 @@ namespace GravityBox.Venom
     /// existing campaign; this component never writes simulation state directly.</summary>
     public sealed class COgheDayLabPresentation : MonoBehaviour
     {
+        public const int LevelPageSize=10;
+        public const float ExitOutlineWidth=.0032f;
+        public static int LevelPageCount=>(VenomCampaign.LevelCount+LevelPageSize-1)/LevelPageSize;
         public Renderer[] FocusOccluders;
         public Transform Step,StepShadow;
         public Renderer[] FadingFloors;
@@ -22,6 +26,7 @@ namespace GravityBox.Venom
         private void Awake()
         {
             game=GetComponent<VenomCampaign>();cooperation=GetComponent<COgheCooperationPresentation>();block=new MaterialPropertyBlock();
+            ConfigureExitOutline(GetComponent<VenomLevelController>());
             Font.textureRebuilt+=RefreshFontAtlas;RefreshFontAtlas(WorldTextFont);
             if(GlassSurfaces==null)return;
             foreach(var p in GlassSurfaces)
@@ -32,6 +37,19 @@ namespace GravityBox.Venom
                 block.SetVector("_SlipRect",new Vector4(p.SlipRegion.xMin,p.SlipRegion.yMin,p.SlipRegion.xMax,p.SlipRegion.yMax));
                 bool internalProp=p.GetComponentInParent<VenomMovableProp>()!=null||p.name.StartsWith("Low wall");
                 block.SetFloat("_NearFade",internalProp?0:1);block.SetFloat("_Spherical",p.SphereRadius>0?1:0);r.SetPropertyBlock(block);
+            }
+        }
+        public static void ConfigureExitOutline(VenomLevelController owner)
+        {
+            if(owner==null||owner.Outlet==null)return;
+            foreach(var line in owner.Outlet.GetComponentsInChildren<LineRenderer>(true))
+            {
+                line.enabled=true;
+                if(owner.IndicatorMaterial!=null)line.sharedMaterial=owner.IndicatorMaterial;
+                line.startWidth=line.endWidth=ExitOutlineWidth;
+                line.startColor=line.endColor=Color.white;
+                line.numCapVertices=4;line.numCornerVertices=4;
+                line.shadowCastingMode=ShadowCastingMode.Off;line.receiveShadows=false;
             }
         }
         private void RefreshFontAtlas(Font font)
@@ -95,11 +113,16 @@ namespace GravityBox.Venom
             if(game.CameraRig.Inspecting)GUI.Box(new Rect(17,8,506,game.CameraRig.ShowZones?237:191),GUIContent.none,chip);
             GUI.Label(new Rect(26,13,240,48),"COghe",brand);
             GUI.Label(new Rect(300,20,214,30),game.Home?"A  P L A C E  T O  B E L O N G":(game.Definition.Boss?"B O S S   /   ":"D A Y   L A B   /   ")+game.Definition.Order.ToString("00"),caption);
-            if(GUI.Button(new Rect(26,61,98,25),"01–10",game.LevelPage==0?selected:chip))game.LevelPage=0;
-            if(GUI.Button(new Rect(130,61,98,25),"11–20",game.LevelPage==1?selected:chip))game.LevelPage=1;
-            for(int slot=0;slot<10;slot++)
+            game.LevelPage=Mathf.Clamp(game.LevelPage,0,LevelPageCount-1);
+            for(int page=0;page<LevelPageCount;page++)
             {
-                int i=game.LevelPage*10+slot+1;
+                int first=page*LevelPageSize+1,last=Mathf.Min(VenomCampaign.LevelCount,first+LevelPageSize-1);
+                if(GUI.Button(new Rect(26+page*104,61,98,25),$"{first:00}–{last:00}",game.LevelPage==page?selected:chip))game.LevelPage=page;
+            }
+            for(int slot=0;slot<LevelPageSize;slot++)
+            {
+                int i=game.LevelPage*LevelPageSize+slot+1;
+                if(i>VenomCampaign.LevelCount)break;
                 if(GUI.Button(new Rect(26+slot*49,91,43,27),i%10==0?"B"+i:i.ToString("00"),i==game.Definition.Order?selected:chip))game.Load(i);
             }
             if(!game.Owner.Completed)

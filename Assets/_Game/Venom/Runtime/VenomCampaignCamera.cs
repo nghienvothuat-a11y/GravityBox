@@ -7,6 +7,7 @@ namespace GravityBox.Venom
     public sealed class VenomCampaignCamera
     {
         private readonly VenomCampaign game;
+        private readonly COgheStudioBackdrop studioBackdrop;
         private readonly bool spherical;
         private Vector3 focus;
         private bool initialized;
@@ -19,6 +20,7 @@ namespace GravityBox.Venom
         public VenomCampaignCamera(VenomCampaign game)
         {
             this.game=game;
+            studioBackdrop=new COgheStudioBackdrop(game.transform);
             bool found=false;Bounds bounds=default;
             foreach(var surface in game.Surfaces)
             {
@@ -41,8 +43,13 @@ namespace GravityBox.Venom
             bounds.Expand(.036f); // Glass thickness, frame rails and corner sockets.
             OverviewBounds=bounds;
             spherical=game.Surfaces.Length==1&&game.Surfaces[0].SphereRadius>0;
+            Reset();
         }
-        public void Reset(){Zone=-1;initialized=false;}
+        public void Reset()
+        {
+            int initial=game.Definition.InitialCameraZone;
+            Zone=initial>=0&&initial<ZoneCount?initial:-1;initialized=false;
+        }
         public void SelectZone(int zone)
         {
             if(zone< -1||zone>=ZoneCount||game.Home)return;
@@ -113,7 +120,7 @@ namespace GravityBox.Venom
             }
             Vector2 offset=usable.center/new Vector2(width,height)-Vector2.one*.5f;
             Vector3 framingOffset=right*(offset.x*2*camera.orthographicSize*camera.aspect)+up*(offset.y*2*camera.orthographicSize);
-            camera.transform.position=focus-framingOffset-camera.transform.forward*2;
+            studioBackdrop.Fit(camera,focus-framingOffset);
         }
     }
 }

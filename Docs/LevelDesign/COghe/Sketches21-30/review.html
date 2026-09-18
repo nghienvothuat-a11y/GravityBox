@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COghe · 10 bản phác thảo để duyệt</title>
+<style>
+:root{color-scheme:light;font-family:system-ui,-apple-system,sans-serif;color:#18303e;background:#f2f0e9}
+*{box-sizing:border-box}body{margin:0}header,main,footer{max-width:1160px;margin:auto;padding:28px}
+header{padding-top:40px;padding-bottom:20px}h1{font-size:clamp(27px,4vw,42px);margin:8px 0 16px;letter-spacing:-1px}.eyebrow{font-size:13px;letter-spacing:2px;color:#526c7a}
+header p{max-width:830px;line-height:1.65;margin:9px 0}nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}button,a{touch-action:manipulation}nav button,nav a{border:1px solid #a3b1b4;background:#fff;padding:10px 14px;border-radius:8px;color:inherit;font:inherit;text-decoration:none;cursor:pointer}
+nav button[aria-pressed="true"]{background:#1f5365;color:#fff;border-color:#1f5365}
+main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;padding-top:12px}
+article{background:#fff;border:1px solid #d6dcd9;border-radius:12px;padding:18px;overflow:hidden}
+.cardhead{display:flex;justify-content:space-between;color:#536d77;font-size:12px;letter-spacing:.6px}h2{font-size:24px;margin:10px 0 18px}.drawing{border:1px solid #e0e4e6;background:#fff;padding:0;width:100%;display:block;cursor:zoom-in}
+img{display:block;width:100%;height:auto}article p{font-size:16px;line-height:1.65}.control{color:#466b73;font-size:13px}.detail{color:#1f5365;font-size:14px}
+footer{font-size:13px;line-height:1.7;color:#536671;padding-top:0}footer a{color:inherit}
+dialog{border:0;padding:0;width:min(94vw,1100px);height:94vh;max-width:1100px;max-height:94vh;border-radius:10px;background:#fff}dialog::backdrop{background:rgba(11,23,30,.8)}
+.dialogbar{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 18px;background:#f5f6f3;border-bottom:1px solid #d1d9d9;z-index:1}
+.dialogbar button{font:inherit;padding:8px 16px;background:#fff;border:1px solid #a3b1b4;border-radius:6px;cursor:pointer}.dialogbar a{color:#1f5365;font-size:13px}
+@media(max-width:700px){header,main,footer{padding:18px}main{grid-template-columns:1fr;gap:18px}h2{font-size:23px}.dialogbar{flex-wrap:wrap}article{padding:12px}}
+@media print{nav,.detail,dialog{display:none}main{display:block}article{break-after:page;border:0}header{break-after:page}footer{display:none}}
+</style></head><body>
+<header><div class="eyebrow">COGHE / SỔ THIẾT KẾ / BẢN NHÁP 01</div><h1>10 màn mới để xem và sửa</h1>
+<p>Phác theo nét bút bi xanh trên giấy kẻ dòng: sinh vật, cơ quan, hướng thao tác và trạng thái sau khi giải. Bấm hình để xem lớn.</p>
+<p><strong>Mã 21–30 là mã thiết kế.</strong> “Vị trí” là thứ tự chơi đề xuất khi xen vào 20 màn hiện tại. Đây là bản duyệt ý tưởng; chưa thay đổi level trong Unity.</p>
+<nav aria-label="Sắp xếp bản vẽ"><button id="by-id" aria-pressed="true">Theo mã 21–30</button><button id="by-slot" aria-pressed="false">Theo thứ tự chơi</button><a href="README.md">Danh mục &amp; ghi chú</a></nav></header>
+<main id="cards"><article id="level-21" data-id="21" data-slot="5">
+<div class="cardhead"><span>MÃ 21</span><span>Vị trí 05</span></div>
+<h2>Nghiêng là tới</h2>
+<button class="drawing" data-src="../Level21/mockup-v1.png" data-title="21 · Nghiêng là tới" aria-label="Phóng lớn bản vẽ 21"><img src="../Level21/mockup-v1.png" alt="Phác thảo 21: Nghiêng là tới" width="1024" height="1536" loading="lazy"></button>
+<p>Chạm vào máng rồi nghiêng hộp cho COghe trượt tới khay bám rộng. Khay giữ hướng và đón cơ thể, giảm việc phải phanh hoặc chỉnh góc liên tục.</p><p class="control">Cho phép xoay hộp</p>
+<a class="detail" href="../Level21/README.md">Hồ sơ thiết kế 21 ↗</a></article>
+<article id="level-22" data-id="22" data-slot="11">
+<div class="cardhead"><span>MÃ 22</span><span>Vị trí 11</span></div>
+<h2>Đáp rồi chui</h2>
+<button class="drawing" data-src="../Level22/mockup-v1.png" data-title="22 · Đáp rồi chui" aria-label="Phóng lớn bản vẽ 22"><img src="../Level22/mockup-v1.png" alt="Phác thảo 22: Đáp rồi chui" width="1024" height="1536" loading="lazy"></button>
+<p>Cho COghe rời mép trơn để rơi một đoạn ngắn vào vành bám rộng. Khi bám thật vào miệng ống, nó tự chảy sang hộp bên kia; rơi hụt vẫn leo lên thử lại.</p><p class="control">Khóa xoay hộp · Chạm để hướng dẫn</p>
+<a class="detail" href="../Level22/README.md">Hồ sơ thiết kế 22 ↗</a></article>
+<article id="level-23" data-id="23" data-slot="9">
+<div class="cardhead"><span>MÃ 23</span><span>Vị trí 09</span></div>
+<h2>Khớp rồi!</h2>
+<button class="drawing" data-src="../Level23/mockup-v1.png" data-title="23 · Khớp rồi!" aria-label="Phóng lớn bản vẽ 23"><img src="../Level23/mockup-v1.png" alt="Phác thảo 23: Khớp rồi!" width="1024" height="1536" loading="lazy"></button>
+<p>Bám tay nắm và đẩy giá bánh G vào chỗ thiếu giữa nguồn quay và bánh ra. Bộ truyền hoạt động, cửa nâng lên và được chốt giữ.</p><p class="control">Khóa xoay hộp · Chạm để hướng dẫn</p>
+<a class="detail" href="../Level23/README.md">Hồ sơ thiết kế 23 ↗</a></article>
+<article id="level-24" data-id="24" data-slot="14">
+<div class="cardhead"><span>MÃ 24</span><span>Vị trí 14</span></div>
+<h2>Kéo ra mới qua</h2>
+<button class="drawing" data-src="../Level24/mockup-v1.png" data-title="24 · Kéo ra mới qua" aria-label="Phóng lớn bản vẽ 24"><img src="../Level24/mockup-v1.png" alt="Phác thảo 24: Kéo ra mới qua" width="1024" height="1536" loading="lazy"></button>
+<p>Nắp đang che lỗ. Kéo nó sang hốc trống bên trái để mở đường; đẩy nhầm vẫn có thể kéo ngược lại bằng cùng tay nắm.</p><p class="control">Khóa xoay hộp · Chạm để hướng dẫn</p>
+<a class="detail" href="../Level24/README.md">Hồ sơ thiết kế 24 ↗</a></article>
+<article id="level-25" data-id="25" data-slot="16">
+<div class="cardhead"><span>MÃ 25</span><span>Vị trí 16</span></div>
+<h2>Hai nhịp một cửa</h2>
+<button class="drawing" data-src="../Level25/mockup-v1.png" data-title="25 · Hai nhịp một cửa" aria-label="Phóng lớn bản vẽ 25"><img src="../Level25/mockup-v1.png" alt="Phác thảo 25: Hai nhịp một cửa" width="1024" height="1536" loading="lazy"></button>
+<p>Kéo nắp A để tiếp cận tay nắm B, rồi kéo B nâng cửa cuối. Hai thao tác có kết quả nhìn thấy và chốt giữ tiến độ.</p><p class="control">Khóa xoay hộp · Chạm để hướng dẫn</p>
+<a class="detail" href="../Level25/README.md">Hồ sơ thiết kế 25 ↗</a></article>
+<article id="level-26" data-id="26" data-slot="18">
+<div class="cardhead"><span>MÃ 26</span><span>Vị trí 18</span></div>
+<h2>Bắc một nhịp</h2>
+<button class="drawing" data-src="../Level26/mockup-v1.png" data-title="26 · Bắc một nhịp" aria-label="Phóng lớn bản vẽ 26"><img src="../Level26/mockup-v1.png" alt="Phác thảo 26: Bắc một nhịp" width="1024" height="1536" loading="lazy"></button>
+<p>Đẩy một mô-đun cầu tới chặn: mặt cầu nối hai bệ, đồng thời lỗ trên tấm chắn khớp cửa vách. Buông tay rồi leo qua cầu tới lỗ thoát.</p><p class="control">Khóa xoay hộp · Chạm để hướng dẫn</p>
+<a class="detail" href="../Level26/README.md">Hồ sơ thiết kế 26 ↗</a></article>
+<article id="level-27" data-id="27" data-slot="21">
+<div class="cardhead"><span>MÃ 27</span><span>Vị trí 21</span></div>
+<h2>Một bánh, hai việc</h2>
+<button class="drawing" data-src="../Level27/mockup-v1.png" data-title="27 · Một bánh, hai việc" aria-label="Phóng lớn bản vẽ 27"><img src="../Level27/mockup-v1.png" alt="Phác thảo 27: Một bánh, hai việc" width="1024" height="1536" loading="lazy"></button>
+<p>Dùng cùng bánh G tại A để nâng nắp chắn ray. Khi nắp đã được chốt, chuyển G tới B để mở cửa cuối; không phải giữ lại một bánh ở A.</p><p class="control">Khóa xoay hộp · Chạm để hướng dẫn</p>
+<a class="detail" href="../Level27/README.md">Hồ sơ thiết kế 27 ↗</a></article>
+<article id="level-28" data-id="28" data-slot="23">
+<div class="cardhead"><span>MÃ 28</span><span>Vị trí 23</span></div>
+<h2>Nhường đường</h2>
+<button class="drawing" data-src="../Level28/mockup-v1.png" data-title="28 · Nhường đường" aria-label="Phóng lớn bản vẽ 28"><img src="../Level28/mockup-v1.png" alt="Phác thảo 28: Nhường đường" width="1024" height="1536" loading="lazy"></button>
+<p>Thùng nằm giữa bánh G và bộ truyền. Dời thùng sang chỗ đỗ bên cạnh để thông ray, rồi đẩy G vào bộ truyền mở cửa.</p><p class="control">Khóa xoay hộp · Chạm để hướng dẫn</p>
+<a class="detail" href="../Level28/README.md">Hồ sơ thiết kế 28 ↗</a></article>
+<article id="level-29" data-id="29" data-slot="26">
+<div class="cardhead"><span>MÃ 29</span><span>Vị trí 26</span></div>
+<h2>Bạn giữ, tớ kéo</h2>
+<button class="drawing" data-src="../Level29/mockup-v1.png" data-title="29 · Bạn giữ, tớ kéo" aria-label="Phóng lớn bản vẽ 29"><img src="../Level29/mockup-v1.png" alt="Phác thảo 29: Bạn giữ, tớ kéo" width="1024" height="1536" loading="lazy"></button>
+<p>Đi qua máy chém để tách đôi. Một phần giữ nút A, phần kia kéo B; cửa mở hết thì có chốt giữ. Gọi hai phần về gần nhau để hợp thể trước khi thoát.</p><p class="control">Khóa xoay hộp · Chạm để hướng dẫn</p>
+<a class="detail" href="../Level29/README.md">Hồ sơ thiết kế 29 ↗</a></article>
+<article id="level-30" data-id="30" data-slot="10">
+<div class="cardhead"><span>MÃ 30</span><span>Vị trí 10 · BOSS</span></div>
+<h2>Nhà máy tí hon</h2>
+<button class="drawing" data-src="../Level30/mockup-v1.png" data-title="30 · Nhà máy tí hon" aria-label="Phóng lớn bản vẽ 30"><img src="../Level30/mockup-v1.png" alt="Phác thảo 30: Nhà máy tí hon" width="1024" height="1536" loading="lazy"></button>
+<p>Boss kết hợp hai thao tác quen: nối G để mở nắp che tay B, rồi kéo B mở cửa cuối. Một cơ thể, không hướng dẫn lời giải trong màn; thắng Boss đầu mở Nhà của sinh vật.</p><p class="control">Khóa xoay hộp · Chạm để hướng dẫn</p>
+<a class="detail" href="../Level30/README.md">Hồ sơ thiết kế 30 ↗</a></article></main>
+<footer>Hình giản lược tỷ lệ, vách bao khoang và chi tiết truyền động để đọc ý tưởng. Nét đứt có thể chỉ vật bị che hoặc vị trí đích; khung nhỏ là trạng thái ở thời điểm khác. Chiều cao, tiếp xúc răng, ray, chốt và đường bám sẽ phải kiểm tra khi dựng. Mũi tên giải thích trên bản vẽ Boss dành cho duyệt thiết kế, không phải hướng dẫn trong game.<br>Tạo bằng imagegen tích hợp · 17/09/2026 · <a href="generation-manifest.json">Prompt và nguồn ảnh</a> · <a href="../../../COGHE_CAMPAIGN_30_DESIGN.md">Tiến trình 30 màn</a></footer>
+<dialog id="viewer" aria-label="Bản vẽ phóng lớn"><div class="dialogbar"><strong id="viewer-title"></strong><a id="original" target="_blank" rel="noopener">Mở ảnh gốc</a><button id="close" aria-label="Đóng ảnh">Đóng ×</button></div><img id="large" alt=""></dialog>
+<script>
+const cards=document.getElementById('cards'), viewer=document.getElementById('viewer');
+document.querySelectorAll('.drawing').forEach(b=>b.addEventListener('click',()=>{
+ document.getElementById('large').src=b.dataset.src;document.getElementById('large').alt=b.dataset.title;
+ document.getElementById('viewer-title').textContent=b.dataset.title;document.getElementById('original').href=b.dataset.src;
+ viewer.showModal();viewer.scrollTop=0;
+}));
+document.getElementById('close').onclick=()=>viewer.close();
+for(const field of ['id','slot'])document.getElementById('by-'+field).onclick=()=>{
+ [...cards.children].sort((a,b)=>Number(a.dataset[field])-Number(b.dataset[field])).forEach(el=>cards.appendChild(el));
+ for(const key of ['id','slot'])document.getElementById('by-'+key).setAttribute('aria-pressed',String(key===field));
+};
+</script></body></html>

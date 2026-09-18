@@ -22,5 +22,7 @@ namespace GravityBox.Venom
         public Vector3 CameraEuler=new Vector3(24,-25,0);
         public float ViewRadius=.48f; // Legacy capture/archived framing fallback.
         public VenomCameraZone[] CameraZones=Array.Empty<VenomCameraZone>();
+        [Tooltip("-1 opens the overview; otherwise start at this authored inspection zone.")]
+        public int InitialCameraZone=-1;
     }
 }

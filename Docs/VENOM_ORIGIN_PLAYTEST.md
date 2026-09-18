@@ -20,8 +20,8 @@ Bản thử nghiệm macOS cập nhật ngày 16/09/2026. Chạy `Builds/Venom/m
 | 01 | Nhận điểm chạm, bò, chân bám lệch nhịp, cả đuôi đi qua lỗ |
 | 02 | Thân chuyển từ sàn lên vách; vách bịt kín hai đầu. Đi qua rồi chỉ quay lại, hoặc đổi hướng khi đang ôm mép: cả đuôi phải qua được, không mắc vào kính. Có thể dùng bề mặt kính lân cận để leo |
 | 03 | Mặt trước chặn chọn điểm ở mặt sau; xoay rồi chạm lại. Giữ điểm theo tọa độ hộp khi hộp quay |
-| 04 | Trượt/rơi khi gặp vùng mất bám. Chỉ các điểm vòng tránh vùng đó hoặc dùng hướng trọng lực khác |
-| 05 | Lật nóc trơn xuống; nghiêng nhẹ và điều chỉnh để sinh vật trượt tới lỗ. Chạm không tạo lực bò trên vật liệu trơn |
+| 04 | Ngay khi vào màn, chạm thẳng lỗ: COghe chọn đường ngắn qua lớp trơn, cố bò rồi trượt/rơi xuống mà không thắng. Sau đó chỉ các điểm kính khô để đi vòng; khi đã ở đúng mặt khô cạnh lỗ, lệnh cuối mới cho thoát |
+| 05 | (Vị trí chơi hiện tại 06.) Lật nóc trơn xuống; chạm mặt này phải nhận đúng điểm và dẫn sinh vật từ vách tới mặt trơn. Khi mất bám, động tác cố bò hướng về điểm chỉ mới nhất; quán tính có thể đưa thân lệch nhưng không làm hướng chỉ quay về waypoint cũ. Nghiêng nhẹ để trượt tới lỗ; chạm không tạo lực bò trên vật liệu trơn |
 | 06 | Chạm vị trí trên mặt cầu: sinh vật quẫy thân và cố bò tại chỗ, xúc tu trượt rồi nhả vì không bám được. Điểm chỉ quay cùng vỏ cầu; thân vẫn trượt/dao động theo trọng lực và quán tính. Xoay đưa lỗ tới sinh vật để thoát |
 | 07 | Chạm hộp nhựa để bám, chạm đích để đẩy/kéo. Đẩy kịch kính vẫn kéo ra được. 3 giây không lệnh mới thì buông; pause không ăn thời hạn. Khi đặt đúng bậc dưới vùng bám, sinh vật tiếp nối leo lên và đi tới lỗ |
 | 08 | Chỉ lên phần nóc còn bám được, hướng tới mép có vật liệu trơn, căn cú rơi vào vành. Sinh vật bắt vành, hãm lại rồi tự chui vào ống; không cần chạm miệng ống lần nữa. Quan sát dòng mô xuyên ống, đuôi đi hết, rồi tụ hình trong khoang bên kia |

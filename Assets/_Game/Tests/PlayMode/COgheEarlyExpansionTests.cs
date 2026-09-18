@@ -27,7 +27,7 @@ namespace GravityBox.Tests
             yield return null;
         }
 
-        private IEnumerator Load(int number)
+        private IEnumerator Load(int number,bool campaign=false)
         {
             void Loaded(Scene scene,LoadSceneMode mode)
             {
@@ -36,7 +36,7 @@ namespace GravityBox.Tests
                 game.AutoAdvance=false;game.Owner.enabled=false;game.Owner.Rotation.enabled=false;
             }
             SceneManager.sceneLoaded+=Loaded;
-            try{yield return SceneManager.LoadSceneAsync($"VenomOrigin{number:00}");}
+            try{yield return SceneManager.LoadSceneAsync($"{(campaign?"COgheOrigin":"VenomOrigin")}{number:00}");}
             finally{SceneManager.sceneLoaded-=Loaded;}
             Assert.NotNull(game);yield return null;Steps(60);
         }
@@ -140,11 +140,44 @@ namespace GravityBox.Tests
         [UnityTest] public IEnumerator Level12_GravityCreatesSlideFlightThenActualWallContactPrecedesExit()
         {foreach(float lateral in new[]{0f,-.025f,.025f})yield return SlideRoute(lateral);}
 
-        private IEnumerator SlideRoute(float lateral)
+        [UnityTest] public IEnumerator Campaign22_GravityCreatesSlideFlightThenActualWallContactPrecedesExit()
+        {yield return SlideRoute(0,true);}
+
+        [UnityTest] public IEnumerator Campaign22_BroadDeckTapsClimbFromFloorAndAllowRetry()
         {
-            yield return Load(12);
+            yield return Load(22,true);
+            var deck=System.Array.Find(game.Surfaces,p=>p.name=="Launch platform");
+            Assert.NotNull(deck);
+            foreach(var local in new[]{new Vector3(-.23f,.145f,-.065f),new Vector3(-.23f,.145f,.065f),
+                new Vector3(-.115f,.145f,-.065f),new Vector3(-.115f,.145f,.065f),new Vector3(-.1715f,.145f,0)})
+            {
+                game.ResetLevel();Steps(60);
+                Vector3 target=game.Root.TransformPoint(local);
+                game.TouchPoint(game.Owner.View.WorldToScreenPoint(target));
+                Assert.AreEqual(deck,game.Feedback.CommandSurface,$"Visible deck tap {local} must select its real top.");
+                yield return Until(10,()=>game.Root.InverseTransformPoint(game.Motion.Centre(0)).y>.155f&&Vector3.Distance(game.Motion.Centre(0),target)<.040f);
+                Evidence("22-deck-tap");
+                Assert.Greater(game.Root.InverseTransformPoint(game.Motion.Centre(0)).y,.155f,$"Climb to {local} must clear the physical top in one command. "+State);
+                Assert.Less(Vector3.Distance(game.Motion.Centre(0),target),.040f,State);
+            }
+            // A missed slide can leave the creature behind the climbing board.
+            // Use ordinary movement to reach that floor and then retry the top.
+            var floor=System.Array.Find(game.Surfaces,p=>p.name=="Glass face 0");
+            game.MoveTo(game.Root.TransformPoint(new Vector3(-.16f,-.30f,.23f)),floor);
+            yield return Until(12,()=>game.Root.InverseTransformPoint(game.Motion.Centre(0)).y<-.24f);
+            Assert.Less(game.Root.InverseTransformPoint(game.Motion.Centre(0)).y,-.24f,State);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(deck.transform.position));
+            yield return Until(12,()=>game.Root.InverseTransformPoint(game.Motion.Centre(0)).y>.155f);
+            Assert.Greater(game.Root.InverseTransformPoint(game.Motion.Centre(0)).y,.155f,"Return from the rear floor must not need Retry. "+State);
+        }
+
+        private IEnumerator SlideRoute(float lateral,bool campaign=false)
+        {
+            yield return Load(campaign?22:12,campaign);
             var monitor=Object.FindFirstObjectByType<COgheSlideLaunchMonitor>();Assert.NotNull(monitor);
-            var first=System.Array.Find(monitor.SlideSurfaces,p=>p.name=="Slippery trough 1");Assert.NotNull(first);
+            // Aim visibly down the entry slope. A point only millimetres past
+            // the dry lip means stop with the tail still planted on the deck.
+            var first=System.Array.Find(monitor.SlideSurfaces,p=>p.name=="Slippery trough 4");Assert.NotNull(first);
             Vector3 staging=game.Root.TransformPoint(new Vector3(-.115f,.168f,lateral));
             Evidence("12-before-climb");
             foreach(float x in new[]{-.31f,.31f})foreach(float y in new[]{-.31f,.31f})foreach(float z in new[]{-.31f,.31f})
@@ -158,9 +191,9 @@ namespace GravityBox.Tests
             yield return Until(28,()=>Vector3.Distance(game.Motion.Centre(0),staging)<.045f);
             Evidence("12-staging");
             Assert.Less(Vector3.Distance(game.Motion.Centre(0),staging),.055f,"The separate gripping climb must reach the launch platform. "+State);
-            game.TouchPoint(game.Owner.View.WorldToScreenPoint(first.Closest(game.Root.TransformPoint(new Vector3(-.066f,.137f,lateral)))));
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(first.Closest(first.transform.position+game.Root.forward*lateral)));
             CollectionAssert.Contains(monitor.SlideSurfaces,game.Feedback.CommandSurface,"The visible curved trough must accept a tap, including its real sidewall.");
-            Assert.LessOrEqual(System.Array.IndexOf(monitor.SlideSurfaces,game.Feedback.CommandSurface),2,"The entry tap must select an upper segment, including its sidewall.");
+            Assert.LessOrEqual(System.Array.IndexOf(monitor.SlideSurfaces,game.Feedback.CommandSurface),5,"The entry tap must select an upper segment, including its sidewall.");
             yield return Until(8,()=>monitor.EnteredSlide);if(!monitor.EnteredSlide)Evidence("12-missed-entry");Assert.IsTrue(monitor.EnteredSlide,State);
             yield return Until(8,()=>monitor.Launched);Evidence("12-launched");if(!monitor.Launched)Debug.Log("L12 LAUNCH BLOCKERS\n"+RouteDiagnostics(game.Root.TransformPoint(new Vector3(.24f,-.09f,0))));
             Assert.IsTrue(monitor.Launched,$"Every particle must physically clear the lip collider during flight. airborne={monitor.AirborneParticleCount}, actualContacts={monitor.ActualContactCount}, slideContacts={monitor.SlideContactCount}, supports={monitor.SupportContactCount}, speed={monitor.CurrentSpeed:F3}, peakSlide={monitor.PeakSlideSpeed:F3}, airFrames={monitor.AirborneFrames}; {State}");
@@ -217,8 +250,14 @@ namespace GravityBox.Tests
         }
 
         [UnityTest] public IEnumerator Level13_LeverThenMeasuredButtonOpenTheWindingTubeAndResetRelatchesBoth()
+        {yield return WindingTubeSolution(false);}
+
+        [UnityTest] public IEnumerator Campaign17_WindingTubeRemainsContinuousThroughTheExit()
+        {yield return WindingTubeSolution(true);}
+
+        private IEnumerator WindingTubeSolution(bool campaign)
         {
-            yield return Load(13);
+            yield return Load(campaign?17:13,campaign);
             var sequence=Object.FindFirstObjectByType<COgheLatchedAccessSequence>();
             var tube=Object.FindFirstObjectByType<COgheTubeNetwork>();
             Assert.NotNull(sequence);Assert.NotNull(tube);Assert.IsFalse(game.FinalExitAvailable);Assert.IsFalse(tube.IsEntryOpen(0));
@@ -252,12 +291,91 @@ namespace GravityBox.Tests
             game.TouchPoint(game.Owner.View.WorldToScreenPoint(inlet));
             yield return Until(24,()=>tube.IsParticleInside(0));
             Assert.IsTrue(tube.IsParticleInside(0),"A screen tap must guide the creature to and into the clear inlet. "+State);
-            yield return Until(30,()=>game.Owner.Completed);Evidence("13-solved");
+            float worstGap=0;int lastEscaped=-1,maxSkinPieces=0,maxFragments=0;
+            bool disabledTransportCollider=false;float mass=game.Matter.TotalMass;
+            for(int tick=0;tick<30*120&&!game.Owner.Completed&&!game.Owner.Lost;tick++)
+            {
+                Steps(1);
+                float gap=LargestTissueGap();
+                worstGap=Mathf.Max(worstGap,gap);
+                maxFragments=Mathf.Max(maxFragments,game.Matter.TotalFragmentCount);
+                for(int i=0;i<32;i++)
+                    disabledTransportCollider|=tube.IsParticleInside(i)&&!game.Matter.Bodies[i].GetComponent<Collider>().enabled;
+                if(game.Matter.EscapedCount>0&&lastEscaped<0)
+                {
+                    Evidence(campaign?"17-first-emergence":"13-first-emergence");lastEscaped=game.Matter.EscapedCount;
+                    // A stray touch on the room must not tear the body away
+                    // from its ongoing transfer or hand off only its head.
+                    if(campaign)game.TouchPoint(game.Owner.View.WorldToScreenPoint(doorway));
+                }
+                if(tick%12==0)
+                {
+                    game.Matter.GetComponent<VenomSurface>().Rebuild(false);
+                    int pieces=VisibleSkinPieces();
+                    maxSkinPieces=Mathf.Max(maxSkinPieces,pieces);
+                    if(pieces>1)Evidence($"17-skin-failure-{pieces}");
+                }
+                if(lastEscaped>=0&&lastEscaped<24&&game.Matter.EscapedCount>=24)
+                {Evidence(campaign?"17-tail-emergence":"13-tail-emergence");lastEscaped=game.Matter.EscapedCount;}
+                if(tick%24==0)yield return null;
+            }
+            Debug.Log($"WINDING MAX GAP {worstGap:F4} SKIN {maxSkinPieces}");Evidence(campaign?"17-solved":"13-solved");
             if(!game.Owner.Completed)Debug.Log($"L13 TUBE FAILURE {tube.DebugState(0)}\n{tube.DebugEntryState(0,0)}\n{tube.DebugExitRoster()}\n{RouteDiagnostics(inlet)}");
             Assert.IsTrue(game.Owner.Completed,"The continuous winding path must deliver all tissue through the final opening. "+State);
+            Assert.AreEqual(32,game.Matter.EscapedCount);Assert.AreEqual(mass,game.Matter.TotalMass);
+            Assert.AreEqual(0,game.Matter.CutCount);Assert.AreEqual(1,maxFragments);
+            Assert.IsFalse(disabledTransportCollider,"Tissue must retain physical collision while the pipe still owns its movement.");
+            Assert.Less(worstGap,.024f,"The head must not stretch away from the tail at the exit handoff.");
+            Assert.AreEqual(1,maxSkinPieces,"The rendered flow must remain one substantial connected skin, not separate droplets.");
 
             game.ResetLevel();Steps(30);
             Assert.IsFalse(sequence.DoorLatched);Assert.IsFalse(sequence.TubeLatched);Assert.IsFalse(tube.ExitReached);Assert.IsFalse(game.FinalExitAvailable);
+        }
+
+        // Longest edge of a minimum spanning tree of the physical tissue. The
+        // bond graph alone can remain connected by a very long, invisible spring.
+        private float LargestTissueGap()
+        {
+            var reached=new bool[32];var distance=new float[32];
+            for(int i=1;i<32;i++)distance[i]=float.PositiveInfinity;
+            float largest=0;
+            for(int count=0;count<32;count++)
+            {
+                int next=-1;
+                for(int i=0;i<32;i++)if(!reached[i]&&(next<0||distance[i]<distance[next]))next=i;
+                reached[next]=true;largest=Mathf.Max(largest,distance[next]);
+                for(int i=0;i<32;i++)if(!reached[i])distance[i]=Mathf.Min(distance[i],Vector3.Distance(game.Matter.Bodies[next].position,game.Matter.Bodies[i].position));
+            }
+            return largest;
+        }
+
+        private int VisibleSkinPieces()
+        {
+            var mesh=game.Matter.transform.Find("Continuous wet skin").GetComponent<MeshFilter>().sharedMesh;
+            var vertices=mesh.vertices;var triangles=mesh.triangles;
+            var welded=new System.Collections.Generic.Dictionary<Vector3Int,int>();
+            var ids=new int[vertices.Length];var parent=new int[vertices.Length];
+            int Find(int id){while(parent[id]!=id){parent[id]=parent[parent[id]];id=parent[id];}return id;}
+            for(int i=0;i<vertices.Length;i++)
+            {
+                Vector3 v=vertices[i]*100000;
+                var key=new Vector3Int(Mathf.RoundToInt(v.x),Mathf.RoundToInt(v.y),Mathf.RoundToInt(v.z));
+                if(!welded.TryGetValue(key,out int id)){id=i;welded.Add(key,id);parent[i]=i;}
+                ids[i]=id;
+            }
+            for(int i=0;i<triangles.Length;i+=3)
+            {
+                int a=Find(ids[triangles[i]]);
+                parent[Find(ids[triangles[i+1]])]=a;parent[Find(ids[triangles[i+2]])]=a;
+            }
+            var area=new float[vertices.Length];float total=0;
+            for(int i=0;i<triangles.Length;i+=3)
+            {
+                float a=Vector3.Cross(vertices[triangles[i+1]]-vertices[triangles[i]],vertices[triangles[i+2]]-vertices[triangles[i]]).magnitude*.5f;
+                area[Find(ids[triangles[i]])]+=a;total+=a;
+            }
+            int count=0;foreach(float a in area)if(a>total*.02f)count++;
+            return count;
         }
 
         [UnityTest] public IEnumerator Level14_OppositeGravityDirectionsSeatTheBridgeThenOpenTheRailGate()

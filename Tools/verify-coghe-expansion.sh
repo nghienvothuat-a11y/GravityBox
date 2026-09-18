@@ -15,7 +15,7 @@ fi
 # Keep graphics enabled: solution tests save actual portrait URP frames.
 "$COGHE_UNITY" -batchmode -projectPath "$COGHE_VERIFY_ROOT" \
   -runTests -testPlatform PlayMode \
-  -testFilter 'GravityBox.Tests.VenomOriginTests;GravityBox.Tests.COgheExpansionIntegrationTests;GravityBox.Tests.COgheEarlyExpansionTests;GravityBox.Tests.COghePipeExpansionTests;GravityBox.Tests.COgheMechanismExpansionTests;GravityBox.Tests.COgheAssemblyBridgeTests;GravityBox.Tests.COgheMobilePerformanceTests;GravityBox.Tests.COgheCampaignCameraTests' \
+  -testFilter 'GravityBox.Tests.VenomOriginTests;GravityBox.Tests.COgheCampaign30IntegrationTests;GravityBox.Tests.COgheCampaign30SolvabilityTests;GravityBox.Tests.COgheExpansionIntegrationTests;GravityBox.Tests.COgheEarlyExpansionTests;GravityBox.Tests.COghePipeExpansionTests;GravityBox.Tests.COgheMechanismExpansionTests;GravityBox.Tests.COgheAssemblyBridgeTests;GravityBox.Tests.COgheMobilePerformanceTests;GravityBox.Tests.COgheCampaignCameraTests' \
   -testResults "$COGHE_RESULTS/verification.xml" \
   -logFile "$COGHE_RESULTS/verification.log"
 python3 - "$COGHE_RESULTS/verification.xml" <<'PY'

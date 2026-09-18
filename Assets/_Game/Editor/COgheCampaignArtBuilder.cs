@@ -74,7 +74,7 @@ namespace GravityBox.Editor
                 foreach(var line in p.GetComponentsInChildren<LineRenderer>())line.enabled=false;
                 var overlay=p.transform.Find("Visible slippery coating");if(overlay!=null)overlay.GetComponent<Renderer>().enabled=false;
             }
-            foreach(var line in owner.Outlet.GetComponentsInChildren<LineRenderer>()){line.enabled=true;line.sharedMaterial=mint;}
+            COgheDayLabPresentation.ConfigureExitOutline(owner);
             var art=Child(root,ArtRoot);
             if(number==6)SphereFrame(art,owner);
             else if(number==8)

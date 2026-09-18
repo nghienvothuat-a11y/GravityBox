@@ -1,6 +1,18 @@
 # COghe — Level 13: Mở đường!
 
-**Trạng thái: mockup theo ý tưởng người dùng; chưa triển khai Unity.** Ngày 16/09/2026. Bản vẽ không theo tỷ lệ.
+**Trạng thái: đã triển khai Unity; content 13 nằm ở màn 17 trong campaign 30 màn.**
+Bản phác ngày 16/09/2026 không theo tỷ lệ; mô tả đề xuất ban đầu được giữ bên dưới.
+
+### Cập nhật đoạn thoát ống — 18/09/2026
+
+Giữ chuỗi cần A → cửa A → nút B → nắp B → ống cong → lỗ cuối. Cơ quan không
+cắt cơ thể ở màn này. Đầu và đuôi sinh vật được cùng bộ điều khiển ống dẫn qua
+miệng ra; phần đầu đã ra ngoài không nhận thêm lực hút nhanh hơn khi đuôi còn
+trong ống. Giữ collider và đủ 32 hạt vật chất. Luật thắng vẫn kiểm tra toàn bộ
+bản thể đã qua lỗ cuối, không thắng tại miệng vào.
+
+Kiểm tra cả liên kết vật lý và lớp da được dựng thật để bắt trường hợp dữ liệu
+còn nối nhưng hình ảnh thành các giọt rời. [Báo cáo kiểm thử](../../../Verification/COgheCampaign30/tube-exit-17.md).
 
 ![Mockup vẽ tay](mockup-mo-duong-v1.png)
 

@@ -41,8 +41,8 @@ namespace GravityBox.Editor
         {
             c.Definition.Title="12 · Trượt rồi bay!";
             c.Definition.Lesson="Chạm bệ hổ phách để leo, rồi chạm đầu máng tím.";
-            c.Definition.CanRotate=false;c.Definition.CameraEuler=new Vector3(16,-24,0);c.Definition.ViewRadius=.43f;
-            c.Spawn=new Vector3(-.235f,-.265f,.13f);c.Exit=new Vector3(.3f,.015f,0);c.Outward=Vector3.right;
+            c.Definition.CanRotate=false;c.Definition.CameraEuler=new Vector3(20,-24,0);c.Definition.ViewRadius=.43f;
+            c.Spawn=new Vector3(-.19f,-.265f,-.20f);c.Exit=new Vector3(.3f,.015f,0);c.Outward=Vector3.right;
             var faces=Cube(c.Root,Vector3.zero,.3f,c.Exit,c.Outward,c.Owner.ApertureRadius,c.Surfaces);
             for(int i=1;i<6;i++)
             {
@@ -51,12 +51,13 @@ namespace GravityBox.Editor
             var catcher=faces[3];catcher.RingGrip=true;catcher.GripRadius=.135f;
             Ring(catcher.transform,catcher.HoleCentre,catcher.GripRadius,.0017f,mint);
 
-            // A dedicated vertical gripping strip makes the climb a normal
-            // surface-crawl transition.  It does not touch the slippery shell.
-            Panel(c.Root,"Gripping climb",new Vector3(-.268f,-.070f,0),Vector3.right,new Vector2(.16f,.43f),stone,false,Vector2.zero,0,c.Surfaces);
+            // Put the climb on the exposed FRONT edge of the deck. The old
+            // right-facing strip sat under its overhang, so reaching the top
+            // depended on finding the narrow side of that ledge.
+            Panel(c.Root,"Gripping climb",new Vector3(-.1715f,-.0775f,-.10f),Vector3.back,new Vector2(.193f,.445f),stone,false,Vector2.zero,0,c.Surfaces);
             // End the grippy deck exactly where the slippery trough begins. An
             // overlap would let the deck keep supplying traction above slide 1.
-            Panel(c.Root,"Launch platform",new Vector3(-.1715f,.145f,0),Vector3.up,new Vector2(.193f,.10f),stone,false,Vector2.zero,0,c.Surfaces);
+            Panel(c.Root,"Launch platform",new Vector3(-.1715f,.145f,0),Vector3.up,new Vector2(.193f,.20f),stone,false,Vector2.zero,0,c.Surfaces);
             Vector3[] anchors={new Vector3(-.075f,.145f,0),new Vector3(-.035f,.095f,0),new Vector3(.005f,.015f,0),new Vector3(.055f,-.085f,0),new Vector3(.105f,-.130f,0),new Vector3(.175f,-.130f,0),new Vector3(.220f,-.115f,0)};
             Vector3[] points=EarlySmoothPath(anchors,4);
             var slide=EarlyCurvedTrough(c.Root,points,.17f,.052f,slip,c.Surfaces);
@@ -200,6 +201,10 @@ namespace GravityBox.Editor
         {
             Vector3 tangent=(b-a).normalized,normal=new Vector3(-tangent.y,tangent.x,0).normalized;
             var patch=Panel(root,name,(a+b)*.5f,normal,new Vector2(width,Vector3.Distance(a,b)+.0006f),material,false,Vector2.zero,0,surfaces);
+            // Width must stay across the trough even as its tangent becomes
+            // nearly horizontal. Panel's generic up-vector heuristic swaps
+            // these axes on shallow slopes, creating false support/pick areas.
+            patch.transform.localRotation=Quaternion.LookRotation(normal,tangent);
             patch.Slippery=slippery;if(slippery)patch.Shape.sharedMaterial=slick;return patch;
         }
 

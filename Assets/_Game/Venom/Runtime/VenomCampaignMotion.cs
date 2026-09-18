@@ -13,7 +13,7 @@ namespace GravityBox.Venom
             public readonly List<Vector3> Path=new List<Vector3>();
             public int Cursor;
             public int CommandId;
-            public bool Holding, Exit, AwaitingContact;
+            public bool Holding, Exit, AwaitingContact, AvoidSlippery;
         }
         private readonly VenomCampaign game;
         private readonly List<Vector3> nodes=new List<Vector3>();
@@ -82,7 +82,7 @@ namespace GravityBox.Venom
                     {count++;if(orders[i].CommandId>winner.CommandId)winner=orders[i];}
                 if(count<2)continue;
                 Cancel(a);orders[winner.Anchor]=winner;winner.Cursor=0;
-                FindPath(Centre(winner.Anchor),game.Root.TransformPoint(winner.Target),winner.Path);
+                FindPath(Centre(winner.Anchor),game.Root.TransformPoint(winner.Target),winner.Path,winner.AvoidSlippery);
                 SetCatch(winner.Anchor,null);
             }
         }
@@ -195,19 +195,43 @@ namespace GravityBox.Venom
             if(game.Props.Length>0)BuildGraph();
             SetCatch(anchor,null);
             Cancel(anchor);
-            var o=new Order{Anchor=anchor,Target=game.Root.InverseTransformPoint(world),Holding=hold,Exit=exit,CommandId=++nextCommandId};
-            int grips=0;for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[anchor]&&HasGrip(i))grips++;
-            o.AwaitingContact=grips<2;
+            bool tubeDrop=game.Tube!=null&&game.Tube.Entrance!=null&&
+                Vector3.Distance(game.Tube.Entrance.Closest(world),world)<.05f;
+            var o=new Order{Anchor=anchor,Target=game.Root.InverseTransformPoint(world),Holding=hold,Exit=exit,
+                AvoidSlippery=!exit&&!tubeDrop,CommandId=++nextCommandId};
+            int grips=0;bool recovering=false;
+            for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[anchor])
+            {
+                if(HasGrip(i))grips++;
+                recovering|=detachedUntil[i]>game.Matter.SimulationTime;
+            }
+            // A fresh instruction given while the body is still falling from a peel must
+            // survive the transient contacts made on the way down. It will be replanned
+            // from the first stable footprint instead of being discarded by a second peel.
+            o.AwaitingContact=grips<2||recovering;
             if(game.Definition.Passive&&!game.Home)o.Path.Add(o.Target);
-            else FindPath(Centre(anchor),world,o.Path);
+            else FindPath(Centre(anchor),world,o.Path,o.AvoidSlippery);
             orders[anchor]=o;
         }
-        public bool FindPath(Vector3 start,Vector3 goal,List<Vector3> path)
+        public bool FindPath(Vector3 start,Vector3 goal,List<Vector3> path,bool avoidSlippery=false)
         {
             COgheMobileMetrics.Begin(3);
             path.Clear();int n=nodes.Count;
             if(n==0){path.Add(game.Root.InverseTransformPoint(goal));COgheMobileMetrics.End(3);return false;}
-            int a=Nearest(start),b=Nearest(goal);
+            // The graph is cached in box coordinates and survives rotation.
+            // Picking a destination and evaluating traction must use its CURRENT
+            // world pose, not the positions captured when the graph was built.
+            Matrix4x4 pose=game.Root.localToWorldMatrix;
+            for(int i=0;i<n;i++)worldNodes[i]=pose.MultiplyPoint3x4(nodes[i]);
+            // A normal waypoint may snap to an adjacent dry sample so a slightly
+            // imprecise tap does not strand the body on a coating. A direct exit
+            // command from another face keeps the physically nearest sample, which
+            // lets a coating teach itself. Once the player has deliberately reached
+            // a dry point on the outlet face, preserve that safe final approach.
+            int a=Nearest(start),nearestGoal=Nearest(goal);
+            bool dryOutletApproach=nodeSurfaces[a]==nodeSurfaces[nearestGoal]&&nodeSurfaces[a].Grip(worldNodes[a]);
+            int b=avoidSlippery||dryOutletApproach?NearestDestination(goal):nearestGoal;
+            bool grippyGoal=avoidSlippery&&nodeSurfaces[b].Grip(worldNodes[b]);
             if(costs.Length<n)
             {
                 int capacity=Mathf.NextPowerOfTwo(n);costs=new float[capacity];parents=new int[capacity];
@@ -221,7 +245,8 @@ namespace GravityBox.Venom
                 foreach(int next in links[current])
                 {
                     if(done[next])continue;
-                    float d=costs[current]+Vector3.Distance(nodes[current],nodes[next]);
+                    float tractionCost=grippyGoal&&!nodeSurfaces[next].Grip(worldNodes[next])?20f:1f;
+                    float d=costs[current]+Vector3.Distance(nodes[current],nodes[next])*tractionCost;
                     if(d<costs[next]){costs[next]=d;parents[next]=current;Queue(next);}
                 }
             }
@@ -278,6 +303,23 @@ namespace GravityBox.Venom
             for(int i=0;i<nodes.Count;i++)
             {float d=(game.Root.TransformPoint(nodes[i])-p).sqrMagnitude;if(d<distance){distance=d;best=i;}}
             return best;
+        }
+        private int NearestDestination(Vector3 p)
+        {
+            int nearest=Nearest(p);
+            if(nodeSurfaces[nearest].Grip(worldNodes[nearest]))return nearest;
+            int grippy=-1;float grippyDistance=float.PositiveInfinity;
+            for(int i=0;i<nodes.Count;i++)
+            {
+                if(!nodeSurfaces[i].Grip(worldNodes[i]))continue;
+                float d=(worldNodes[i]-p).sqrMagnitude;
+                if(d<grippyDistance){grippyDistance=d;grippy=i;}
+            }
+            // A sampled node can land just inside a coating even when the tap or
+            // aperture centre is immediately beside it. Prefer the stable rim only
+            // inside one footprint; taps clearly inside a slick area remain slick.
+            float nearestDistance=Vector3.Distance(worldNodes[nearest],p);
+            return grippy>=0&&Mathf.Sqrt(grippyDistance)<=nearestDistance+.025f?grippy:nearest;
         }
         private Vector3 EdgeTarget(Order order,int anchor,Vector3 centre,Vector3 target)
         {
@@ -397,11 +439,16 @@ namespace GravityBox.Venom
                     gripStrain[i]=peeled?0:strain;
                     if(peeled){detachedUntil[i]=game.Matter.SimulationTime+.45f;detachedSurfaces[i]=released;}
                 }
-                if(peeled){Cancel(a);o=null;grips=0;capacity=0;}
+                if(peeled)
+                {
+                    if(o==null||!o.AwaitingContact){Cancel(a);o=null;}
+                    else {o.Cursor=0;o.AwaitingContact=true;}
+                    grips=0;capacity=0;
+                }
                 if(o!=null)
                 {
                     if(grips<2)o.AwaitingContact=true;
-                    else if(o.AwaitingContact){FindPath(centre,game.Root.TransformPoint(o.Target),o.Path);o.Cursor=0;o.AwaitingContact=false;}
+                    else if(o.AwaitingContact){FindPath(centre,game.Root.TransformPoint(o.Target),o.Path,o.AvoidSlippery);o.Cursor=0;o.AwaitingContact=false;}
                 }
                 if(o!=null)
                 {
@@ -426,9 +473,11 @@ namespace GravityBox.Venom
                         normal+=support[i].NormalAt(contact[i]);
                     normal=normal.sqrMagnitude>.000001f?normal.normalized:Vector3.up;
                     foreach(var s in game.Surfaces)if(s.SphereRadius>0){normal=s.NormalAt(centre);break;}
-                    passiveIntent=Vector3.ProjectOnPlane(delta,normal);
-                    if(passiveIntent.sqrMagnitude<.000001f)passiveIntent=Vector3.ProjectOnPlane(game.Root.forward,normal);
-                    if(passiveIntent.sqrMagnitude<.000001f)passiveIntent=Vector3.ProjectOnPlane(game.Root.right,normal);
+                    // A skidding body cannot follow navigation waypoints. Its
+                    // visual effort faces the player's chosen point even when
+                    // inertia has carried it past an unreached route node.
+                    Vector3 commanded=game.Root.TransformPoint(o.Target)-centre;
+                    passiveIntent=Vector3.ProjectOnPlane(commanded,normal);
                     passiveIntent.Normalize();
                 }
                 for(int i=0;i<32;i++)

@@ -27,8 +27,16 @@ namespace GravityBox.Editor
 
         public static string[] CampaignScenePaths()
         {
+            var integrated=Campaign30ScenePaths();
+            bool complete=true;foreach(string path in integrated)complete&=File.Exists(path);
+            if(complete)return integrated;
+            return LegacyCampaignScenePaths();
+        }
+
+        public static string[] LegacyCampaignScenePaths()
+        {
             var paths = new List<string>();
-            for (int n=1;n<=VenomCampaign.LevelCount;n++)
+            for (int n=1;n<=LegacyLevelCount;n++)
             {
                 string path=Folder+$"/VenomOrigin{n:00}.unity";
                 if (!File.Exists(path)) throw new FileNotFoundException("Generate the complete campaign before building",path);
@@ -38,7 +46,7 @@ namespace GravityBox.Editor
         }
 
         [MenuItem("Gravity Box/COghe/Generate Expansion 11–20")]
-        public static void GenerateExpansion()=>GenerateExpansionRange(11,VenomCampaign.LevelCount);
+        public static void GenerateExpansion()=>GenerateExpansionRange(11,LegacyLevelCount);
 
         [MenuItem("Gravity Box/COghe/Rebuild Slide Level 12")]
         public static void GenerateSlideLevel12()=>GenerateExpansionRange(12,12);

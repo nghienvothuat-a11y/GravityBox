@@ -53,7 +53,7 @@ namespace GravityBox.Editor
                 renderer.receiveShadows=!p.Slippery;
                 foreach(var line in p.GetComponentsInChildren<LineRenderer>()) line.enabled=false;
             }
-            foreach(var line in owner.Outlet.GetComponentsInChildren<LineRenderer>()) line.sharedMaterial=mint;
+            COgheDayLabPresentation.ConfigureExitOutline(owner);
 
             BuildApprovedLevel07(game,owner,root);
         }

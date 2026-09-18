@@ -1,0 +1,40 @@
+{
+  "date": "2026-09-17",
+  "tests": {
+    "total": "82",
+    "passed": "81",
+    "failed": "1",
+    "duration": "103.6315053"
+  },
+  "failures": [
+    {
+      "test": "GravityBox.Tests.VenomOriginTests.FourthLessonPeelsAndFallsWhenClimbingIntoSlipperyBand",
+      "message": "  After a slip, a new safe route must still complete the level: centre=(0.27, -0.28, 0.03), groups=1, escaped=0, Idle, ; cursor=, path=\n  Expected: True\n  But was:  False\n"
+    }
+  ],
+  "cameraTestsPassed": 3,
+  "coverage": {
+    "levels": 20,
+    "aspectPixels": [
+      [
+        720,
+        1280
+      ],
+      [
+        720,
+        1612
+      ]
+    ],
+    "posesPerRotatableLevel": 4,
+    "modes": [
+      "overview",
+      "follow"
+    ]
+  },
+  "beforeFailure": "3/1: visible bench edge Z; expected (-5.99,5.99), actual 6.27394009",
+  "images": "Real Unity URP renders; before/after use the existing rotated-overview capture with the same 720x1280 framing sequence. OPPO-aspect image is a 720x1612 Unity render, not an on-device capture.",
+  "macOSBuild": "success",
+  "macOSUI": "Level 03 overview, follow and reset checked in the rebuilt player",
+  "androidBuild": "success",
+  "androidInstallation": "Not installed: OPPO disconnected after build"
+}

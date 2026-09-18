@@ -5,7 +5,7 @@ namespace GravityBox.Venom
 {
     public sealed partial class VenomCampaign
     {
-        public const int LevelCount=20;
+        public const int LevelCount=30;
         public COgheMechanism[] Mechanisms { get; private set; }=Array.Empty<COgheMechanism>();
         private COgheMechanism[] transportMechanisms=Array.Empty<COgheMechanism>(),fusionBarriers=Array.Empty<COgheMechanism>(),exitControllers=Array.Empty<COgheMechanism>();
         public int LevelPage {get;set;}
@@ -94,7 +94,8 @@ namespace GravityBox.Venom
             if(heldProp==null||Matter.Groups[anchor]!=Matter.Groups[Motion.Selected])return false;
             var rail=heldProp.GetComponent<COgheRailSlider>();if(rail==null)return false;
             velocity=Vector3.ClampMagnitude(Vector3.Project(propTarget-heldProp.Body.position,rail.WorldAxis)*2,.085f);
-            target=heldProp.Body.position+heldProp.Body.rotation*(gripLocal+gripNormalLocal*.045f)+velocity*.5f;
+            target=PropBodyTarget(heldProp,heldProp.Body.position+heldProp.Body.rotation*gripLocal,
+                heldProp.Body.rotation*gripNormalLocal)+velocity*.5f;
             return true;
         }
 

@@ -176,6 +176,31 @@ namespace GravityBox.Tests
             Assert.IsTrue(game.Motion.Get(0)?.Exit??false,"The visible floor hole must accept a screen tap; "+evidence);
             yield return Until(35,()=>game.Owner.Completed);Assert.IsTrue(game.Owner.Completed,State);
         }
+        [UnityTest] public IEnumerator FirstTwoLessonsShowANonBlockingBobbingArrowAtTheExit()
+        {
+            foreach(int level in new[]{1,2})
+            {
+                yield return Load(level);yield return null;game.Feedback.Refresh();
+                var hint=System.Array.Find(game.GetComponentsInChildren<LineRenderer>(true),line=>line.name=="Lesson arrow");
+                Assert.NotNull(hint,$"Level {level} must create the shared exit lesson arrow.");
+                Assert.IsTrue(hint.enabled,$"Level {level} must show the exit lesson arrow.");
+                Assert.IsEmpty(hint.GetComponents<Collider>(),"The presentation arrow must never block a touch ray.");
+                float min=float.PositiveInfinity,max=float.NegativeInfinity;
+                for(int sample=0;sample<3;sample++)
+                {
+                    game.Feedback.Refresh();Vector3 tip=hint.GetPosition(1);
+                    Vector3 fromExit=tip-game.Owner.Outlet.position;
+                    float height=Vector3.Dot(fromExit,game.Owner.View.transform.up);
+                    min=Mathf.Min(min,height);max=Mathf.Max(max,height);
+                    Assert.That(height,Is.InRange(.019f,.031f),$"Level {level}: arrow tip must stay just above the exit.");
+                    Assert.Less((fromExit-game.Owner.View.transform.up*height).magnitude,.0005f,$"Level {level}: arrow must point at the exit centre.");
+                    if(sample<2)yield return new WaitForSecondsRealtime(.15f);
+                }
+                Assert.Greater(max-min,.00015f,$"Level {level}: the arrow must visibly bob up and down.");
+                game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Owner.Outlet.position));
+                Assert.IsTrue(game.Motion.Get(0)?.Exit??false,$"Level {level}: the arrow must not prevent tapping the exit.");
+            }
+        }
         [UnityTest] public IEnumerator SecondLessonCrossesLowWallAndClimbs(){yield return Exit(2);}
         [UnityTest] public IEnumerator SecondLessonCrossesDividerAndReturns()
         {
@@ -247,6 +272,33 @@ namespace GravityBox.Tests
             yield return Load(4);
             game.Motion.Move(0,new Vector3(.278f,.10f,.21f));yield return Until(20,()=>Vector3.Distance(game.Motion.Centre(0),new Vector3(.278f,.10f,.21f))<.04f);
             AimExit();yield return Until(20,()=>game.Owner.Completed);Assert.IsTrue(game.Owner.Completed,State);
+        }
+        [UnityTest] public IEnumerator FourthLessonFirstHoleTapTakesTheShortSlipperyRouteAndFalls()
+        {
+            yield return Load(4);yield return null;
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Owner.Outlet.position));
+            var order=game.Motion.Get(0);
+            Assert.NotNull(order,"The first visible-hole tap must issue a movement order.");
+            Assert.IsTrue(order.Exit,"The first command must target the actual exit.");
+            Assert.IsFalse(order.AvoidSlippery,"The initial exit route must expose the slippery material instead of solving the lesson for the player.");
+            bool touched=false,fell=false;float highest=float.NegativeInfinity;string samples="";
+            for(int t=0;t<2400&&!game.Owner.Completed&&!game.Owner.Lost;t++)
+            {
+                Steps(1);int slick=0;
+                for(int i=0;i<32;i++)
+                    if(game.Motion.Support(i,out var collider,out var point,out _)&&
+                       collider.GetComponent<VenomSurfacePatch>() is VenomSurfacePatch patch&&!patch.Grip(point))slick++;
+                if(slick>2)touched=true;
+                float y=game.Motion.Centre(0).y;
+                if(touched){highest=Mathf.Max(highest,y);fell|=highest-y>.09f;}
+                if(t%120==0){samples+=$" [{t/120f:F1}s y={y:F3} slick={slick}]";yield return null;}
+                if(fell)break;
+            }
+            Assert.IsTrue(touched,"A first tap on the hole must take the direct route into the slippery coating: "+State+samples);
+            Assert.IsTrue(fell,"The direct route must visibly peel and fall so the material teaches itself: "+State+samples);
+            Assert.IsFalse(game.Owner.Completed,"The first tap must not solve the slippery lesson.");
+            Assert.AreEqual(1,game.Matter.TotalFragmentCount,"The teaching fall must keep the creature intact.");
+            Capture("04-first-tap-slipped");
         }
         [UnityTest] public IEnumerator FourthLessonPeelsAndFallsWhenClimbingIntoSlipperyBand()
         {
@@ -388,6 +440,43 @@ namespace GravityBox.Tests
                 }
             }
             Assert.Greater(crawl,.5f,"Show effort even when planar slick contact supplies no traction.");
+        }
+
+        [UnityTest] public IEnumerator SlickPlanarEffortFacesTheCommandAcrossBothDirectionsWithoutDrivingTissue()
+        {
+            yield return Load(1);
+            var floor=System.Array.Find(game.Surfaces,p=>p.name=="Glass face 0");
+            floor.Slippery=true;Steps(120);
+            Vector3 start=game.Motion.Centre(0);
+            foreach(Vector3 direction in new[]{Vector3.right,Vector3.forward,Vector3.back})
+            {
+                Vector3 target=floor.Closest(start+direction*.18f);
+                game.MoveTo(target,floor);
+                Steps(4);
+                Vector3 expected=Vector3.ProjectOnPlane(target-game.Motion.Centre(0),floor.Normal).normalized;
+                Assert.Greater(Vector3.Dot(game.Motion.Intent(0),expected),.95f,
+                    "A powerless crawl must face the chosen point, not an unreached node behind the body.");
+                Vector3 before=game.Motion.Centre(0);Steps(180);
+                Assert.Less(Vector3.Distance(before,game.Motion.Centre(0)),.015f,"The visual effort must not create traction on a flat slick surface.");
+                Assert.Greater(Vector3.Dot(game.Motion.Intent(0),expected),.95f,"The effort must keep facing the current command while stuck.");
+            }
+        }
+
+        [UnityTest] public IEnumerator SlickPlanarEffortKeepsFacingTheGoalAfterLateralDrift()
+        {
+            yield return Load(1);
+            var floor=System.Array.Find(game.Surfaces,p=>p.name=="Glass face 0");
+            floor.Slippery=true;Steps(120);
+            Vector3 target=floor.Closest(game.Motion.Centre(0)+Vector3.forward*.22f);
+            game.MoveTo(target,floor);
+            // A physics fixture gives the passive body transverse momentum,
+            // as a rotation does. It does not reposition tissue or solve a level.
+            foreach(var body in game.Matter.Bodies)body.linearVelocity=Vector3.right*.28f;
+            Steps(50);
+            Vector3 expected=Vector3.ProjectOnPlane(target-game.Motion.Centre(0),floor.Normal).normalized;
+            Assert.NotNull(game.Motion.Get(0));
+            Assert.Greater(Vector3.Dot(game.Motion.Intent(0),expected),.95f,
+                "Sliding past a graph node must not make the powerless crawl point back at that missed waypoint.");
         }
         [UnityTest] public IEnumerator SeventhLessonPushesPullsAndReleasesAfterThreeSeconds()
         {

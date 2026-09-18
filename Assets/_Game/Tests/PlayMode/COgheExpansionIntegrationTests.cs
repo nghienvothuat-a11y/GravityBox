@@ -18,9 +18,9 @@ namespace GravityBox.Tests
         [UnityTearDown] public IEnumerator After()
         {Time.timeScale=1;Physics.simulationMode=previous;VenomCampaignSave.PersistenceEnabled=true;yield return null;}
 
-        [UnityTest] public IEnumerator AllTwentyScenesKeepTheirIdentityAndExpansionCanIdleResetAndRender()
+        [UnityTest] public IEnumerator LegacyTwentyScenesKeepTheirIdentityAndExpansionCanIdleResetAndRender()
         {
-            Assert.AreEqual(20,VenomCampaign.LevelCount);
+            Assert.AreEqual(30,VenomCampaign.LevelCount);
             var idleFailures=new System.Collections.Generic.List<string>();
             for(int n=1;n<=20;n++)
             {
@@ -71,20 +71,20 @@ namespace GravityBox.Tests
             Assert.IsEmpty(idleFailures,string.Join("\n",idleFailures));
         }
 
-        public static void Capture(VenomCampaign game,string name)
+        public static void Capture(VenomCampaign game,string name,int width=720,int height=1280)
         {
             if(SystemInfo.graphicsDeviceType==GraphicsDeviceType.Null)return;
             string dir="Artifacts/COgheExpansion/Frames";Directory.CreateDirectory(dir);
-            var camera=game.Owner.View;camera.aspect=720f/1280;
-            game.CameraRig.Frame(720,1280,0,true);
+            var camera=game.Owner.View;camera.aspect=width/(float)height;
+            game.CameraRig.Frame(width,height,0,true);
             game.Matter.GetComponent<VenomSurface>().Rebuild(false);game.Feedback?.Refresh();
-            var target=new RenderTexture(720,1280,24){antiAliasing=4};target.Create();
-            var old=RenderTexture.active;var picture=new Texture2D(720,1280,TextureFormat.RGBA32,false);
+            var target=new RenderTexture(width,height,24){antiAliasing=4};target.Create();
+            var old=RenderTexture.active;var picture=new Texture2D(width,height,TextureFormat.RGBA32,false);
             try
             {
                 var request=new RenderPipeline.StandardRequest{destination=target};
                 RenderPipeline.SubmitRenderRequest(camera,request);RenderPipeline.SubmitRenderRequest(camera,request);
-                RenderTexture.active=target;picture.ReadPixels(new Rect(0,0,720,1280),0,0);picture.Apply();
+                RenderTexture.active=target;picture.ReadPixels(new Rect(0,0,width,height),0,0);picture.Apply();
                 File.WriteAllBytes(Path.Combine(dir,name+".png"),picture.EncodeToPNG());
             }
             finally{RenderTexture.active=old;target.Release();Object.DestroyImmediate(target);Object.DestroyImmediate(picture);}

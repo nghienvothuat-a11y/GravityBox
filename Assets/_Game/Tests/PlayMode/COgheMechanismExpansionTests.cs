@@ -87,11 +87,11 @@ namespace GravityBox.Tests
             train.Wheels[1].localPosition+=Vector3.down*.04f;train.StepMechanism(null,Dt);Assert.AreEqual(0,train.AngularSpeeds[3],"Breaking any contact stops the downstream train");
         }
 
-        private IEnumerator Load(int number)
+        private IEnumerator Load(int number,bool campaign=false)
         {
             void Loaded(Scene scene,LoadSceneMode mode){game=Object.FindFirstObjectByType<VenomCampaign>();game.AutoAdvance=false;game.Owner.enabled=false;game.Owner.Rotation.enabled=false;}
             SceneManager.sceneLoaded+=Loaded;
-            try{yield return SceneManager.LoadSceneAsync($"VenomOrigin{number:00}");}finally{SceneManager.sceneLoaded-=Loaded;}
+            try{yield return SceneManager.LoadSceneAsync($"{(campaign?"COgheOrigin":"VenomOrigin")}{number:00}");}finally{SceneManager.sceneLoaded-=Loaded;}
             Assert.NotNull(game);yield return null;
         }
         private void TissueOn(COgheTissueSensor pad,int start,int count)
@@ -184,18 +184,37 @@ namespace GravityBox.Tests
         }
 
         [UnityTest] public IEnumerator Level17FullSolutionThroughBearingCommandsAndActualExit()
+        {yield return GearLessonSolution(false);}
+
+        [UnityTest] public IEnumerator Campaign24RoofPassesBearingTapsAndPhysicalSolutionStillWorks()
         {
-            yield return Load(17);var rails=game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>();
+            yield return Load(24,true);
+            var roof=System.Array.Find(game.Surfaces,p=>p.name=="Laboratory ceiling");
+            Assert.IsFalse(roof.Selectable);Assert.IsTrue(roof.Shape.enabled);
+            Assert.IsTrue(roof.Grip(roof.transform.position),"Only picking changes; the ceiling stays a physical gripping surface.");
+            foreach(int height in new[]{1280,1612})
+            {
+                game.CameraRig.Frame(720,height,0,true,new Rect(0,24,720,height-52));
+                foreach(var prop in game.Props)
+                {
+                    if(!prop.Manipulable)continue;
+                    game.ReleaseProp();
+                    game.TouchPoint(game.Owner.View.WorldToScreenPoint(prop.ManipulationGrip.position));
+                    Assert.NotNull(game.Feedback.CommandSurface,$"Handle {prop.name} must receive the tap.");
+                    Assert.AreEqual(prop.Body,game.Feedback.CommandSurface.Shape.attachedRigidbody,$"The roof must not intercept {prop.name} at portrait height {height}.");
+                }
+            }
+            yield return GearLessonSolution(true);
+        }
+
+        private IEnumerator GearLessonSolution(bool campaign)
+        {
+            yield return Load(campaign?24:17,campaign);var rails=game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>();
             COgheRailSlider a=null,b=null;foreach(var rail in rails){if(rail.name.StartsWith("A "))a=rail;if(rail.name.StartsWith("B "))b=rail;}
             var train=game.Owner.Apparatus.GetComponentInChildren<COgheGearTrain>();
-            yield return Walk(0,game.Root.TransformPoint(new Vector3(-.129f,a.Start.y,.068f)));
             yield return Pull(0,a,1,()=>a.AtEnd);
             Assert.IsFalse(train.ExitUnlocked,"One adjusted bearing does not open the outlet");
-            yield return Walk(0,game.Root.TransformPoint(new Vector3(-.129f,-.277f,.068f)));
-            yield return Walk(0,game.Root.TransformPoint(new Vector3(-.129f,-.277f,-.11f)));
-            yield return Walk(0,game.Root.TransformPoint(new Vector3(.129f,-.277f,-.11f)));
-            yield return Walk(0,game.Root.TransformPoint(new Vector3(.129f,b.Start.y+b.InitialTravel,.068f)));
-            yield return Pull(0,b,-1,()=>b.Position<.002f);
+            yield return Pull(0,b,-1,()=>b.Latched&&b.Position<=b.CatchTolerance);
             yield return WaitFor(15,()=>train.ExitUnlocked,"A continuous physical transmission lifts its rack");
             yield return Leave(0);
         }
@@ -280,11 +299,28 @@ namespace GravityBox.Tests
         }
 
         [UnityTest] public IEnumerator Level20FullSolutionUsesMassOrderThreeRolesAndMergedEscape()
+        {yield return BossFullSolution(false);}
+
+        [UnityTest] public IEnumerator Campaign30BossSolvesWithAnUnbiasedFirstCut()
+        {yield return BossFullSolution(true);}
+
+        private IEnumerator BossFullSolution(bool campaign)
         {
-            yield return Load(20);var winch=game.Owner.Apparatus.GetComponentInChildren<COgheCooperativeWinch>();
+            yield return Load(campaign?30:20,campaign);var winch=game.Owner.Apparatus.GetComponentInChildren<COgheCooperativeWinch>();
             var knives=game.Owner.Apparatus.GetComponentsInChildren<COgheGuillotine>();System.Array.Sort(knives,(a,b)=>a.Sensor.position.x.CompareTo(b.Sensor.position.x));
             var pipes=game.Owner.Apparatus.GetComponentsInChildren<COgheTubeNetwork>();System.Array.Sort(pipes,(a,b)=>a.Nodes[0].LocalPosition.x.CompareTo(b.Nodes[0].LocalPosition.x));
-            yield return PrepareBossFirstCut(knives[0]);var parts=Anchors();parts.Sort((a,b)=>Count(a).CompareTo(Count(b)));int holdA=parts[0],worker=parts[1];
+            if(campaign)
+            {
+                for(int i=0;i<120;i++)Tick();
+                game.CameraRig.SelectZone(0);game.CameraRig.Frame(720,1280,0,true);
+                game.TouchPoint(game.Owner.View.WorldToScreenPoint(knives[0].Rail.Body.position));
+                yield return WaitFor(20,()=>game.Matter.CutCount>0,"A single blade tap makes the first cut without carefully choosing a mass ratio");
+                for(int i=0;i<60;i++)Tick();
+                Assert.AreEqual(2,game.Matter.TotalFragmentCount,"A real first cut creates two parts");
+            }
+            else yield return PrepareBossFirstCut(knives[0]);
+            var parts=Anchors();parts.Sort((a,b)=>Count(a).CompareTo(Count(b)));int holdA=parts[0],worker=parts[1];
+            Debug.Log($"BOSS_FIRST_CUT campaign={campaign} {Count(holdA)}+{Count(worker)}");
             yield return HoldPad(holdA,winch.Input);yield return ThroughPipe(worker,pipes[0]);
             yield return Walk(worker,game.Root.TransformPoint(new Vector3(0,winch.GearCarriage.Start.y,.015f)),30);
             yield return Pull(worker,winch.GearCarriage,1,()=>winch.GearCarriage.AtEnd,28);
@@ -309,6 +345,74 @@ namespace GravityBox.Tests
             Assert.IsFalse(winch.ExitUnlocked,"The coordinated mechanism only retracts the heavy cover pin");
             yield return Reunion(game.Root.TransformPoint(new Vector3(.42f,-.274f,.12f)));
             int merged=Anchors()[0];yield return Pull(merged,winch.FinalCap,1,()=>winch.FinalCap.AtEnd,30);yield return Leave(merged);
+        }
+
+        [UnityTest] public IEnumerator Campaign30CanApproachGFromTransferUsingScreenCommands()
+        {
+            yield return Load(30,true);
+            var winch=game.Owner.Apparatus.GetComponentInChildren<COgheCooperativeWinch>();
+            var knives=game.Owner.Apparatus.GetComponentsInChildren<COgheGuillotine>();
+            System.Array.Sort(knives,(a,b)=>a.Sensor.position.x.CompareTo(b.Sensor.position.x));
+            var pipes=game.Owner.Apparatus.GetComponentsInChildren<COgheTubeNetwork>();
+            System.Array.Sort(pipes,(a,b)=>a.Nodes[0].LocalPosition.x.CompareTo(b.Nodes[0].LocalPosition.x));
+            for(int i=0;i<120;i++)Tick();
+            void View(int zone){game.CameraRig.SelectZone(zone);game.CameraRig.Frame(480,800,0,true);}
+            void Tap(Vector3 point){game.TouchPoint(game.Owner.View.WorldToScreenPoint(point));}
+            View(0);Tap(knives[0].Rail.Body.position);
+            yield return WaitFor(20,()=>game.Matter.CutCount>0,"Screen blade command cuts tissue");
+            for(int i=0;i<600;i++)Tick();
+            var parts=Anchors();Assert.AreEqual(2,parts.Count);
+            parts.Sort((a,b)=>game.Motion.Centre(a).x.CompareTo(game.Motion.Centre(b).x));
+            int holdA=parts[0],worker=parts[1];
+            game.SelectFragment(holdA);Tap(winch.Input.transform.position);
+            yield return WaitFor(20,()=>winch.Input.Active,"Screen pad command holds A");
+            game.SelectFragment(worker);Tap(game.Root.TransformPoint(pipes[0].Nodes[0].LocalPosition));
+            yield return WaitFor(35,()=>pipes[0].LastReachedNode==1&&!pipes[0].IsParticleInside(worker),"Screen mouth command transfers the worker");
+            View(1);var prop=winch.GearCarriage.GetComponent<VenomMovableProp>();
+            Tap(prop.ManipulationGrip.position);
+            Assert.AreSame(prop,game.Feedback.CommandSurface?.GetComponentInParent<VenomMovableProp>());
+            yield return WaitFor(25,()=>game.Attached,"A direct screen command finds a supported G working stance");
+            for(int i=0;i<600;i++)Tick();
+            Assert.IsFalse(game.Attached,"Idle for three seconds releases the mechanism");
+            Tap(prop.ManipulationGrip.position);
+            yield return WaitFor(8,()=>game.Attached,"The selected body must not swallow a tap to re-grasp its nearby handle");
+            Vector3 target=winch.GearCarriage.Frame.TransformPoint(winch.GearCarriage.Start+Vector3.up*(winch.GearCarriage.Travel+.10f));
+            Tap(target);
+            yield return WaitFor(20,()=>winch.GearCarriage.AtEnd,"A screen command raises G",()=>Tap(target));
+            game.ReleaseProp();View(0);Tap(game.Motion.Centre(holdA));
+            Assert.AreEqual(game.Matter.Groups[holdA],game.Matter.Groups[game.Motion.Selected],"A tap on another part still switches selection");
+        }
+
+        [UnityTest] public IEnumerator Campaign30ControlsArePickableInOverviewAndRoomViews()
+        {
+            yield return Load(30,true);
+            Assert.IsEmpty(game.Definition.Lesson);
+            Assert.AreEqual(0,game.CameraRig.Zone,"The wide Boss starts close enough to read the first station");
+            var winch=game.Owner.Apparatus.GetComponentInChildren<COgheCooperativeWinch>();
+            foreach(int height in new[]{1280,1612})
+            {
+                foreach(int zone in new[]{-1,0,1,2})
+                {
+                    game.CameraRig.SelectZone(zone);game.CameraRig.Frame(720,height,0,true);
+                    foreach(var prop in game.Props)
+                    {
+                        if(!prop.Manipulable)continue;
+                        int room=prop==winch.GearCarriage.GetComponent<VenomMovableProp>()?1:2;
+                        if(zone>=0&&zone!=room)continue;
+                        game.ReleaseProp();game.Feedback.ResetFeedback();
+                        game.TouchPoint(game.Owner.View.WorldToScreenPoint(prop.ManipulationGrip.position));
+                        Assert.AreSame(prop,game.Feedback.CommandSurface?.GetComponentInParent<VenomMovableProp>(),$"{prop.name} view={zone} height={height}");
+                    }
+                    game.ReleaseProp();
+                    foreach(var pad in new[]{winch.Input,winch.Output})
+                    {
+                        if(zone>=0&&zone!=(pad==winch.Input?0:1))continue;
+                        game.Feedback.ResetFeedback();game.TouchPoint(game.Owner.View.WorldToScreenPoint(pad.transform.position));
+                        StringAssert.Contains("sensing surface",game.Feedback.CommandSurface?.name,$"{pad.name} view={zone} height={height}");
+                    }
+                    COgheExpansionIntegrationTests.Capture(game,$"30-readable-{height}-view-{zone}",720,height);
+                }
+            }
         }
 
         [UnityTest] public IEnumerator TwoRoomWinchBrakesOnLoadLossAndRequiresBothActualDoors()
@@ -357,6 +461,7 @@ namespace GravityBox.Tests
         {
             yield return Load(20);
             Assert.IsEmpty(game.Definition.Lesson,"Boss must not disclose its solution as a tutorial");
+            game.CameraRig.SelectZone(-1);game.CameraRig.Frame(720,1280,0,true);
             COgheExpansionIntegrationTests.Capture(game,"20-fixed-view-controls");
             foreach(var rail in game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())
             {

@@ -1,6 +1,39 @@
 # COghe — Boss 20: TAM HỢP
 
-**Trạng thái: mockup và thiết kế đề xuất; chưa dựng Unity, chưa đo độ khó qua playtest.** Mô hình logic trừu tượng đã được rà soát bằng script đi kèm. Hình là bản phác không theo tỷ lệ, không phải bản vẽ cơ khí chế tạo.
+**Trạng thái: Prototype, đã kiểm chứng đường giải và input bản chỉnh 18/09/2026.** Content
+`venom.origin.20` hiện là màn **30 · TAM HỢP** trong campaign 30. Phần phác
+thảo bên dưới lưu ý đồ ban đầu, không thay cho bằng chứng chơi trong Unity.
+
+## Bản chỉnh màn 30 — rõ ràng và dễ chơi hơn
+
+Theo yêu cầu 18/09/2026, giữ ba khoang, hai dao, A/B giữ tải, bánh G, tời C,
+nắp H và luật hợp thể trước khi thoát. Giảm khó thao tác và yêu cầu chia đúng
+khối lượng; không biến Boss thành tutorial có lời giải trên HUD.
+
+| Hạng mục | Bản điều chỉnh |
+| --- | --- |
+| Chuyển khoang | Tâm ống hạ từ y=+0,075 xuống −0,150 m; bán kính 25 → 32 mm; bệ bám thấp, liên tục tới sàn, vành cyan/porcelain phân biệt với cửa đoàn tụ |
+| Nút A/B | Vùng cảm biến 84 → 112 mm; mặt amber lớn, chữ A/B nổi rõ; cả hai nhận tải thật từ 12 g, không tự chốt khi rời nút |
+| Giá G | 20 g, lực cản 0,030 N, vẫn chịu trọng lực và khóa A; không buộc một cú cắt đầu lệch tỷ lệ chính xác |
+| Tời C | Tốc độ cửa mục tiêu 0,10 m/s thay 0,025; giữ giới hạn lực và phanh giữ tiến độ khi mất tải/buông tay |
+| Nắp H | Giữ khối lượng 200 g và chốt liên động; cản 0,36 N thay 0,57 N. Điều kiện thắng vẫn yêu cầu toàn bộ cơ thể hợp nhất |
+| Hình ảnh | Kính ngăn yên hơn; cửa porcelain có ray; dao thép trong khung riêng; đường liên kết A/G và B/C cùng đèn trạng thái đọc cơ quan thật |
+| Camera | 42° pitch / 24° yaw; mở gần khoang A; chọn cận cảnh bằng A · Dao / G · B / C · Lỗ hoặc Toàn cảnh. Giữ chọn nóc và khóa xoay vật lý |
+
+Hai phần gần nhau vẫn tự tụ. Người chơi có thể cắt lại nếu tụ sớm; nhả A/B
+giữa lúc nâng cửa làm phanh giữ vị trí, đặt lại tải rồi tiếp tục. Cơ quan đã
+hoàn tất giữ bằng chốt thật. Không thêm hạn giờ hoặc yêu cầu bấm nhiều ngón.
+
+Builder: `RebuildReadableBoss`, dựng source 20 và slot 30, giữ ID/save.
+Trình bày nằm trong `COgheBossReadabilityArtBuilder` và component đọc trạng thái
+`COgheCooperativeBossPresentation`; không cấp lực hoặc phát lệnh giải đố.
+
+Các ngưỡng và mô hình logic 6 đơn vị ở phần phác thảo cũ bên dưới là **lịch sử**;
+không dùng chúng làm chứng nhận vật lý/khả giải cho bản chỉnh mới.
+
+[Kiểm chứng và ảnh Unity bản mới](../../../Verification/COgheCampaign30/boss-30.md):
+20/20 kiểm tra hồi quy cuối, gồm thao tác nắm lại G sau khi tự buông;
+chưa đo lại thiết bị hoặc playtest người mới.
 
 ![Boss 20](mockup-tam-hop-v1.png)
 

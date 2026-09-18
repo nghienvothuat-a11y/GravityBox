@@ -6,7 +6,7 @@ Ngày 16/09/2026. Áp dụng cho 10 màn Origin.
   một giây. Viền nằm vào phía trong để không bị khung kim loại che; lớp sáng mờ
   không phủ qua mặt có lỗ. Vòng đích nhỏ đi theo mặt kính hoặc đồ vật khi chúng chuyển động.
   Lệnh tới lỗ đánh dấu tâm lỗ thật; lệnh đẩy/kéo đánh dấu vị trí trên sàn.
-- Màn 01: mũi tên hổ phách nhấp nhô nhẹ trên lỗ thoát.
+- Màn 01–02: mũi tên hổ phách nhấp nhô nhẹ trên lỗ thoát để chỉ rõ vị trí cần chạm.
 - Từ màn 03: biểu tượng xoay đứng yên, cố định phía dưới hộp. Các màn
   07, 08, 10 hiện biểu tượng gạch chéo và chữ “Không thể xoay”.
 - Màn 07: mũi tên trên thùng biến mất sau khi sinh vật bám vào thùng lần đầu.
@@ -62,3 +62,17 @@ Kiểm tra gồm chạm nóc bằng tọa độ màn hình ở 20 màn, đườn
 và đối chiếu quỹ đạo có/không ra lệnh trên mặt trơn phẳng và cầu.
 
 Đã xác nhận trực tiếp trên bản Mac: chạm nóc màn 01 và nóc trơn màn 07 (khóa xoay) hiện dấu đích/viền đúng trên nóc, sinh vật nhận lệnh tiếp cận.
+
+## Mũi tên lỗ thoát màn 02 — 18/09/2026
+
+Màn 02 dùng cùng mũi tên hổ phách của màn 01: đầu mũi tên luôn đặt tại tâm lỗ và
+nhấp nhô theo trục đứng của camera. Mũi tên chỉ có `LineRenderer`, không có collider,
+không tham gia ray chọn mặt, tìm đường hoặc vật lý. Từ màn 03 trở đi dấu gợi ý này
+không hiện.
+
+Hai bài PlayMode mục tiêu đều đạt: một bài kiểm tra cả màn 01–02 về vị trí, biên độ
+nhấp nhô, collider và thao tác chạm lỗ; một bài nạp scene campaign tích hợp 01–03 để
+xác nhận mũi tên chỉ hiện đúng ở hai màn đầu.
+
+Bản macOS Development được build lại ngày 18/09/2026 và mở trực tiếp scene campaign
+màn 02. Mũi tên hổ phách hiển thị trên lỗ ở mặt phải tại góc camera thật của player.

@@ -1,6 +1,6 @@
 # COghe — Day Lab design rules
 
-Status: **approved by the user, 16/09/2026**. Version 1.3 (control feedback and reinforced lid, 16/09/2026).
+Status: **approved by the user, 16/09/2026**. Version 1.4 (flush mint exit outline, 18/09/2026).
 
 The visual reference is the Unity level 07 shipped at commit `8718849`, with
 [runtime images](Runtime/README.md). The Day Lab concept is supporting inspiration;
@@ -44,6 +44,10 @@ pixel colors. Keep shared materials in `Assets/_Game/Venom/Art/DayLab`.
 
 - Slippery areas need a visible boundary and satin grain, not only a color change.
   The clear grip island must match the real `HoleCentre` and `GripRadius`.
+- Every final round exit uses the shared quiet-mint material on a **3.2 mm flush
+  outline**. It follows the authored aperture exactly, casts no shadow and adds no
+  collider, light, raised lip or input surface. Keep the physical aluminium lip
+  secondary so the exit remains readable without looking like a neon portal.
 - Movable lids must read as separate objects. Transparent lids use a thin amber
   edge; do not make a solid plug where the simulation uses an open-bottom cap.
 - Pressure pads use amber circular caps, a pale blue-grey socket, porcelain bezel and A/B
@@ -178,3 +182,9 @@ zones are viewpoint selectors only, never solution hints. Keep a visible overvie
 return and prevent selector taps from issuing movement/rotation commands. Use the
 production camera path for portrait verification captures. See
 [framing and verification](../../COGHE_CAMERA.md).
+
+The studio table must cover the entire viewport throughout rotation and follow,
+including tall mobile aspect ratios. Keep its authored height and shadow space
+fixed; expand only the collider-free backdrop mesh. Orthographic camera depth and
+far clipping may adapt without changing the chamber's screen projection. Verify
+all four corner rays reach the tabletop within its edges and clipping range.

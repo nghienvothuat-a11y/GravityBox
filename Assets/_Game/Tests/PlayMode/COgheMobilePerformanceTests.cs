@@ -150,7 +150,15 @@ namespace GravityBox.Tests
                 for(int trial=0;trial<12;trial++)
                 {
                     Vector3 start=game.Root.TransformPoint(nodes[random.Next(nodes.Count)]),goal=game.Root.TransformPoint(nodes[random.Next(nodes.Count)]);
-                    int a=(int)nearest.Invoke(game.Motion,new object[]{start}),b=(int)nearest.Invoke(game.Motion,new object[]{goal});
+                    var actual=new List<Vector3>();bool actualReachable=game.Motion.FindPath(start,goal,actual);
+                    int a=(int)nearest.Invoke(game.Motion,new object[]{start}),goalNode=(int)nearest.Invoke(game.Motion,new object[]{goal});
+                    // Destination policy now preserves direct slick commands and
+                    // dry final approaches; separate tests verify that behavior.
+                    // Compare the heap with an independent scan Dijkstra to the
+                    // chosen approach sample, while bounding any snap to one foot.
+                    int b=actual.Count>1?(int)nearest.Invoke(game.Motion,new object[]{game.Root.TransformPoint(actual[actual.Count-2])}):goalNode;
+                    Assert.LessOrEqual(Vector3.Distance(game.Root.TransformPoint(nodes[b]),goal),
+                        Vector3.Distance(game.Root.TransformPoint(nodes[goalNode]),goal)+.0251f,"Approach snapping stays within the contact footprint.");
                     var costs=new float[nodes.Count];var parents=new int[nodes.Count];var done=new bool[nodes.Count];
                     for(int i=0;i<nodes.Count;i++){costs[i]=float.PositiveInfinity;parents[i]=-1;}costs[a]=0;
                     for(int k=0;k<nodes.Count;k++)
@@ -170,8 +178,8 @@ namespace GravityBox.Tests
                         }
                         expected.Reverse();
                     }
-                    expected.Add(game.Root.InverseTransformPoint(goal));var actual=new List<Vector3>();
-                    Assert.AreEqual(reachable,game.Motion.FindPath(start,goal,actual),$"Reachability {level}/{trial}");
+                    expected.Add(game.Root.InverseTransformPoint(goal));
+                    Assert.AreEqual(reachable,actualReachable,$"Reachability {level}/{trial}");
                     CollectionAssert.AreEqual(expected,actual,$"Route and equal-cost tie break {level}/{trial}");
                 }
             }

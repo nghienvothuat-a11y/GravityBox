@@ -1,8 +1,24 @@
 # COghe — Level 12: Trượt rồi bay!
 
-**Trạng thái: bản phác theo ý tưởng người dùng; chưa triển khai Unity hoặc kiểm chứng quỹ đạo trong game.** Ngày 16/09/2026. Hình minh họa không theo tỷ lệ.
+**Trạng thái: Prototype; đường leo và đường giải đã qua kiểm thử tự động trên Mac ngày 18/09/2026.** Content `venom.origin.12` hiện nằm ở màn hiển thị **22** trong campaign 30. Phác thảo gốc ngày 16/09/2026 được giữ bên dưới; hình không theo tỷ lệ.
 
 ![Mockup vẽ tay](mockup-truot-roi-bay-v1.png)
+
+## Chỉnh đường leo — 18/09/2026
+
+Người dùng phản hồi rất khó leo lên mặt trên. Đường leo cũ hướng vào mặt dưới
+của phần bệ nhô ra; tiếp cận từ một số hướng phải vòng sang cạnh hẹp. Bản sửa
+đặt mặt bám ở mép trước bệ (z = −0,10 m), từ sàn đến y = 0,145 m. Mặt trên
+rộng 193 × 200 mm thay cho 193 × 100 mm. Sinh vật xuất phát trước mặt leo.
+Camera pitch 20°, yaw −24° để thấy mặt bệ nhưng không lấy nóc hộp che đích chạm.
+
+Giữ nguyên lòng máng, vùng đón, khoảng bay, vật liệu trơn, khối lượng và lực.
+Hai lệnh dự kiến: chạm bệ hổ phách để leo, rồi chạm đầu máng tím để trượt.
+Màn khóa xoay trong prototype. Có thể rơi về sàn và leo thử lại. Không thêm
+lực phóng, hút qua khoảng bay hoặc dịch chuyển sinh vật lên bệ.
+
+Builder `RebuildAccessibleSlide` dựng đúng source 12 rồi cập nhật slot 22.
+Kết quả và giới hạn kiểm chứng: [báo cáo màn 22](../../../Verification/COgheCampaign30/slide-22.md).
 
 ## Ý tưởng người dùng
 

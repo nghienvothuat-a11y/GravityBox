@@ -1,8 +1,28 @@
 # COghe — Level 17: Nối bánh răng!
 
-**Trạng thái: mockup đề xuất, chưa triển khai Unity.** Ngày 16/09/2026. Hình thể hiện ý tưởng và trạng thái cơ quan, không phải bản vẽ gia công theo tỷ lệ. Khoảng cách trục, đường kính vòng chia, pha răng và chiều truyền động phải được xác lập bằng mô hình cơ cấu khi dựng.
+**Trạng thái: Prototype.** Content `venom.origin.17` là màn hiển thị **24** trong campaign 30. Phác thảo gốc ngày 16/09/2026. Hình thể hiện ý tưởng và trạng thái cơ quan, không phải bản vẽ gia công theo tỷ lệ. Khoảng cách trục, đường kính vòng chia, pha răng và chiều truyền động phải được xác lập bằng mô hình cơ cấu khi dựng.
 
 ![Mockup vẽ tay](mockup-noi-banh-rang-v1.png)
+
+## Điều khiển — cập nhật 18/09/2026
+
+Theo yêu cầu người dùng, nắp trên ở màn 24 không nhận chọn đích. Chạm xuyên
+qua mặt này để chọn tay nắm của giá bánh răng A/B, đặc biệt B đang ở cao.
+Chỉ đổi `VenomSurfacePatch.Selectable=false` trên `Laboratory ceiling`;
+giữ collider, mặt bám, vật liệu, lực, cơ quan và lỗ thoát. Các màn khác giữ
+quyền chọn nóc hiện hành.
+
+Builder `RebuildGearSelection` cập nhật source 17 và slot 24.
+[Bằng chứng kiểm tra](../../../Verification/COgheCampaign30/gear-selection-24.md).
+
+### Sửa kẹt khi chuyển tay nắm — 18/09/2026
+
+Chạm thẳng B sau khi nâng A từng làm thân mắc ở hai tấm kính phụ vuông góc
+với mặt bám phía sau bánh răng. Bỏ hai tấm phụ `A/B fixed grip cheek`, giữ
+mặt kính bảo vệ liên tục xuống sàn. Sinh vật vẫn bám thật để tác động lực
+lên giá trượt; vị trí bánh, hành trình, lực, chốt và điều kiện mở cửa không đổi.
+Test giải màn phải chọn trực tiếp A → B và B → A, gồm cả tự buông sau 3 giây;
+không thêm các điểm đi vòng xuống sàn chỉ để né chỗ kẹt.
 
 ## Yêu cầu người dùng
 

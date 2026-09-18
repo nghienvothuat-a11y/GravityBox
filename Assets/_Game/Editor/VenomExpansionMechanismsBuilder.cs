@@ -16,15 +16,16 @@ namespace GravityBox.Editor
                 number==19?"Chọn từng phần để phối hợp. Khi gặp nhau, các phần tự hợp thể.":"";
             c.Definition.CanRotate = number == 18;
             c.Definition.Boss = number == 20;
-            c.Definition.CameraEuler = number==20 ? new Vector3(40,12,0) : number==19 ? new Vector3(40,18,0) : new Vector3(32,18,0);
+            c.Definition.CameraEuler = number==20 ? new Vector3(42,24,0) : number==19 ? new Vector3(40,18,0) : new Vector3(32,18,0);
             c.Definition.ViewRadius = number == 20 ? .68f : number == 19 ? .57f : .50f;
+            c.Definition.InitialCameraZone=number==20?0:-1;
             c.Definition.CameraZones=number==19?new[]{
                 new VenomCameraZone("Khoang 1",new Vector3(-.24f,-.06f,0),new Vector3(.516f,.516f,.636f)),
                 new VenomCameraZone("Khoang 2",new Vector3(.24f,-.06f,0),new Vector3(.516f,.516f,.636f))}:
                 number==20?new[]{
-                new VenomCameraZone("Khoang 1",new Vector3(-.4f,-.06f,0),new Vector3(.436f,.516f,.636f)),
-                new VenomCameraZone("Khoang 2",new Vector3(0,-.06f,0),new Vector3(.436f,.516f,.636f)),
-                new VenomCameraZone("Khoang 3",new Vector3(.4f,-.06f,0),new Vector3(.436f,.516f,.636f))}:System.Array.Empty<VenomCameraZone>();
+                new VenomCameraZone("A · Dao",new Vector3(-.4f,-.13f,0),new Vector3(.436f,.376f,.636f)),
+                new VenomCameraZone("G · B",new Vector3(0,-.13f,0),new Vector3(.436f,.376f,.636f)),
+                new VenomCameraZone("C · Lỗ",new Vector3(.4f,-.13f,0),new Vector3(.436f,.376f,.636f))}:System.Array.Empty<VenomCameraZone>();
             c.Outward = Vector3.right;
             c.Exit = new Vector3(number == 20 ? .60f : number == 19 ? .48f : .30f, -.19f, .16f);
             c.Spawn = new Vector3(number == 20 ? -.48f : number == 19 ? -.35f : -.22f, -.267f, -.17f);
@@ -59,6 +60,10 @@ namespace GravityBox.Editor
             var prop=Prop(c.Root,name,start+axis*initial,size,handle,plastic,c.Surfaces);c.Props.Add(prop);
             prop.Body.mass=mass;prop.Body.maxDepenetrationVelocity=.20f;
             var rail=prop.gameObject.AddComponent<COgheRailSlider>();rail.Body=prop.Body;rail.Frame=c.Root;rail.Start=start;rail.Axis=axis;rail.Travel=travel;rail.InitialTravel=initial;rail.Resistance=resistance;rail.Gravity=gravity;
+            // A player-operated handle needs a slightly broader mechanical catch
+            // than an automated shutter so a completed pull does not stop a pixel
+            // short because of joint/contact tolerance.
+            rail.CatchTolerance=handle?.003f:.0018f;
             var joint=prop.gameObject.AddComponent<ConfigurableJoint>();rail.Joint=joint;joint.connectedBody=c.Root.GetComponent<Rigidbody>();joint.autoConfigureConnectedAnchor=false;
             joint.anchor=Vector3.zero;joint.connectedAnchor=start+axis*travel*.5f;joint.axis=axis;joint.secondaryAxis=Mathf.Abs(axis.y)>.9f?Vector3.forward:Vector3.up;
             joint.xMotion=ConfigurableJointMotion.Limited;joint.yMotion=joint.zMotion=ConfigurableJointMotion.Locked;
@@ -71,7 +76,12 @@ namespace GravityBox.Editor
                 guide.localPosition=start+axis*travel*.5f+cross*s*(size.magnitude*.25f+.012f);guide.localRotation=Quaternion.FromToRotation(Vector3.up,axis);
             }
             foreach(float end in new[]{0f,travel})MechanismVisual(c.Root,name+" rail stop",start+axis*end,new Vector3(.022f,.008f,.015f),metal);
-            if(handle)MechanismVisual(prop.transform,name+" stationary handle",new Vector3(0,0,-size.z*.5f-.008f),new Vector3(.046f,.012f,.012f),metal);
+            if(handle)
+            {
+                var grip=MechanismVisual(prop.transform,name+" stationary handle",new Vector3(0,0,-size.z*.5f-.008f),new Vector3(.046f,.012f,.012f),metal);
+                grip.localRotation=Quaternion.Euler(0,180,0);
+                prop.ManipulationGrip=grip;
+            }
             return rail;
         }
 
@@ -90,6 +100,9 @@ namespace GravityBox.Editor
 
         private static void BuildGearLesson(ExpansionContext c)
         {
+            // This fixed-view lesson prioritizes the high bearing behind the
+            // roof. Ignore roof taps only; retain its collider and crawl face.
+            c.Surfaces.Find(p=>p.name=="Laboratory ceiling").Selectable=false;
             var a=ExpansionRail(c,"A sliding bearing",new Vector3(-.06f,-.18f,.11f),Vector3.up,.16f,0,new Vector3(.064f,.035f,.038f),.06f,.035f,false,true);
             var b=ExpansionRail(c,"B sliding bearing",new Vector3(.06f,-.02f,.11f),Vector3.up,.15f,.15f,new Vector3(.064f,.035f,.038f),.06f,.035f,false,true);
             a.LatchAtEnd=true;b.LatchAtStart=true;
@@ -106,8 +119,8 @@ namespace GravityBox.Editor
             for(int i=0;i<16;i++)MechanismVisual(rack.transform,"Rack tooth",new Vector3(-.056f,-.02f+i*.014f,.005f),new Vector3(.015f,.007f,.014f),metal);
             // A climbable clear guard reaches the floor. Bearings/handles sit in front; the tooth train sits behind.
             Panel(c.Root,"Gear safety glass and climb backing",new Vector3(0,-.02f,.145f),Vector3.back,new Vector2(.52f,.56f),glass,false,Vector2.zero,0,c.Surfaces);
-            Panel(c.Root,"A fixed grip cheek",new Vector3(-.151f,-.02f,.068f),Vector3.right,new Vector2(.22f,.56f),glass,false,Vector2.zero,0,c.Surfaces);
-            Panel(c.Root,"B fixed grip cheek",new Vector3(.151f,-.02f,.068f),Vector3.left,new Vector2(.22f,.56f),glass,false,Vector2.zero,0,c.Surfaces);
+            // Keep a continuous working face between the bearings. Perpendicular
+            // cheeks trapped a whole body in the corner when changing from A to B.
         }
 
         private static void BuildGravityBridge(ExpansionContext c)
@@ -125,12 +138,12 @@ namespace GravityBox.Editor
             // At the lower stops all interfaces share real edges; no component ever latches the bridges.
         }
 
-        private static COgheTissueSensor ExpansionPad(ExpansionContext c,string name,Vector3 point,float threshold)
+        private static COgheTissueSensor ExpansionPad(ExpansionContext c,string name,Vector3 point,float threshold,float width=.084f)
         {
-            var panel=Panel(c.Root,name+" sensing surface",point,Vector3.up,new Vector2(.084f,.084f),stone,false,Vector2.zero,0,c.Surfaces);
-            var root=new GameObject(name+" measured tissue load",typeof(COgheTissueSensor)).GetComponent<COgheTissueSensor>();root.transform.SetParent(c.Root,false);root.transform.localPosition=point;root.Threshold=threshold;root.Size=new Vector2(.084f,.084f);
-            root.Cap=MechanismVisual(root.transform,"Amber cap",Vector3.zero,new Vector3(.075f,.004f,.075f),plastic,PrimitiveType.Cylinder);
-            root.Indicator=MechanismVisual(root.transform,"Load indicator",new Vector3(.042f,.005f,0),new Vector3(.008f,.006f,.014f),metal).GetComponent<Renderer>();
+            var panel=Panel(c.Root,name+" sensing surface",point,Vector3.up,new Vector2(width,width),stone,false,Vector2.zero,0,c.Surfaces);
+            var root=new GameObject(name+" measured tissue load",typeof(COgheTissueSensor)).GetComponent<COgheTissueSensor>();root.transform.SetParent(c.Root,false);root.transform.localPosition=point;root.Threshold=threshold;root.Size=new Vector2(width,width);
+            root.Cap=MechanismVisual(root.transform,"Amber cap",Vector3.zero,new Vector3(width-.009f,.004f,width-.009f),plastic,PrimitiveType.Cylinder);
+            root.Indicator=MechanismVisual(root.transform,"Load indicator",new Vector3(width*.5f,.005f,0),new Vector3(.008f,.006f,.014f),metal).GetComponent<Renderer>();
             return root;
         }
 
@@ -150,7 +163,7 @@ namespace GravityBox.Editor
             return knife;
         }
 
-        private static COgheRailSlider ExpansionDivider(ExpansionContext c,float x,bool knifePassage)
+        private static COgheRailSlider ExpansionDivider(ExpansionContext c,float x,bool knifePassage,float mouthHeight=.075f,float mouthRadius=.025f)
         {
             // Two real faces seal both directions; only the authored ports and door bores are absent.
             foreach(float side in new[]{-1f,1f})
@@ -158,8 +171,8 @@ namespace GravityBox.Editor
                 Vector3 normal=Vector3.right*side;float px=x+side*.006f;
                 void Wall(string name,float z,float width,float y,float height,bool hole=false)
                 {
-                    var rotation=Quaternion.LookRotation(normal,Vector3.up);Vector3 hc=Quaternion.Inverse(rotation)*(new Vector3(px,.075f,-.19f)-new Vector3(px,y,z));
-                    Panel(c.Root,name,new Vector3(px,y,z),normal,new Vector2(width,height),glass,hole,new Vector2(hc.x,hc.y),.025f,c.Surfaces);
+                    var rotation=Quaternion.LookRotation(normal,Vector3.up);Vector3 hc=Quaternion.Inverse(rotation)*(new Vector3(px,mouthHeight,-.19f)-new Vector3(px,y,z));
+                    Panel(c.Root,name,new Vector3(px,y,z),normal,new Vector2(width,height),glass,hole,new Vector2(hc.x,hc.y),mouthRadius,c.Surfaces);
                 }
                 if(knifePassage)
                 {Wall("Knife passage header",-.19f,.22f,.08f,.44f);Wall("Front divider edge",-.286f,.028f,-.23f,.14f);Wall("Knife passage jamb",-.094f,.028f,-.23f,.14f);}
@@ -200,44 +213,55 @@ namespace GravityBox.Editor
 
         private static void BuildThreeRoles(ExpansionContext c)
         {
-            var left=ExpansionDivider(c,-.20f,false);var right=ExpansionDivider(c,.20f,false);
-            ExpansionKnife(c,"I gravity knife",-.41f,-.16f);ExpansionKnife(c,"II gravity knife",0,-.17f);
-            var a=ExpansionPad(c,"A input clutch",new Vector3(-.46f,-.297f,.16f),.018f);
-            var b=ExpansionPad(c,"B output clutch",new Vector3(.08f,-.297f,.17f),.015f);
-            var g=ExpansionRail(c,"G heavy gear carriage",new Vector3(0,-.17f,.08f),Vector3.up,.12f,0,new Vector3(.050f,.038f,.04f),.032f,.055f,true,true);g.LatchAtEnd=true;
+            const float mouthHeight=-.15f,mouthRadius=.032f;
+            var left=ExpansionDivider(c,-.20f,false,mouthHeight,mouthRadius);var right=ExpansionDivider(c,.20f,false,mouthHeight,mouthRadius);
+            ExpansionKnife(c,"I gravity knife",-.41f,-.16f).TouchHalfSize=new Vector3(.030f,.10f,.08f);
+            // The second blade is seen broadside from the Boss camera. Its real
+            // collider is the pick target; a broad invisible envelope hides B.
+            ExpansionKnife(c,"II gravity knife",0,-.17f);
+            var a=ExpansionPad(c,"A input clutch",new Vector3(-.46f,-.297f,.16f),.012f,.112f);
+            var b=ExpansionPad(c,"B output clutch",new Vector3(.12f,-.297f,.17f),.012f,.112f);
+            // Keep mass-dependent work without demanding a carefully biased first cut.
+            var g=ExpansionRail(c,"G heavy gear carriage",new Vector3(0,-.17f,.08f),Vector3.up,.12f,0,new Vector3(.050f,.038f,.04f),.020f,.030f,true,true);g.LatchAtEnd=true;
             var gears=new GameObject("Boss three wheel transmission",typeof(COgheGearTrain)).GetComponent<COgheGearTrain>();gears.transform.SetParent(c.Root,false);gears.InputClutch=a;
             gears.Wheels=new[]{ExpansionWheel(c.Root,"Input source",new Vector3(-.09f,-.05f,.145f),.045f,18,0),ExpansionWheel(g.transform,"G intermediate",new Vector3(0,0,.065f),.045f,18,10),ExpansionWheel(c.Root,"Output clutch",new Vector3(.09f,-.05f,.145f),.045f,18,0)};gears.PitchRadii=new[]{.045f,.045f,.045f};gears.ToothCounts=new[]{18,18,18};
             Panel(c.Root,"G climb backing and gear guard",new Vector3(0,-.13f,.125f),Vector3.back,new Vector2(.12f,.34f),glass,false,Vector2.zero,0,c.Surfaces);
             Panel(c.Root,"Fixed wheel safety guard",new Vector3(0,-.05f,.125f),Vector3.back,new Vector2(.30f,.13f),glass,false,Vector2.zero,0,c.Surfaces);
             Panel(c.Root,"G fixed foot brace",new Vector3(0,-.13f,-.009f),Vector3.forward,new Vector2(.12f,.34f),glass,false,Vector2.zero,0,c.Surfaces);
             var handle=ExpansionRail(c,"C winch handle",new Vector3(.36f,-.254f,-.16f),Vector3.right,.055f,0,new Vector3(.04f,.055f,.045f),.10f,.025f,false,true);
+            // Pull along the rail from its clear right side. A front-facing grip
+            // leaves the small operator wedged behind the locked carriage when
+            // the player next asks it to walk toward the reunion area.
+            var cGrip=handle.GetComponent<VenomMovableProp>().ManipulationGrip;
+            cGrip.localPosition=new Vector3(.024f,0,0);cGrip.localRotation=Quaternion.Euler(0,90,0);
             // H has a real static-friction threshold. A sufficiently large uneven fragment can move it; merged-body escape is separate.
-            var cap=ExpansionRail(c,"H heavy final cover",new Vector3(.589f,-.19f,.16f),Vector3.back,.145f,0,new Vector3(.012f,.13f,.13f),.20f,.57f,false,true);cap.LatchAtEnd=true;
+            var cap=ExpansionRail(c,"H heavy final cover",new Vector3(.589f,-.19f,.16f),Vector3.back,.145f,0,new Vector3(.012f,.13f,.13f),.20f,.36f,false,true);cap.LatchAtEnd=true;
             var winch=new GameObject("Three room cooperative winch",typeof(COgheCooperativeWinch)).GetComponent<COgheCooperativeWinch>();winch.transform.SetParent(c.Root,false);
-            winch.Input=a;winch.Output=b;winch.Transmission=gears;winch.GearCarriage=g;winch.Handle=handle;winch.FinalCap=cap;winch.Doors=new[]{left,right};ExpansionLinkage(c,winch);
-            ExpansionBossPipes(c);
+            winch.Input=a;winch.Output=b;winch.Transmission=gears;winch.GearCarriage=g;winch.Handle=handle;winch.FinalCap=cap;winch.Doors=new[]{left,right};winch.DoorSpeed=.10f;ExpansionLinkage(c,winch);
+            ExpansionBossPipes(c,mouthHeight,mouthRadius);
         }
 
-        private static void ExpansionBossPipes(ExpansionContext c)
+        private static void ExpansionBossPipes(ExpansionContext c,float mouthHeight,float mouthRadius)
         {
             foreach(float x in new[]{-.20f,.20f})
             {
-                Vector3 inlet=new Vector3(x-.065f,.075f,-.19f),outlet=new Vector3(x+.065f,.075f,-.19f);
+                Vector3 inlet=new Vector3(x-.065f,mouthHeight,-.19f),outlet=new Vector3(x+.065f,mouthHeight,-.19f);
                 TubeNetwork(c.Root,"Bidirectional high transfer "+x,new[]{
                     new COgheTubeNetwork.Node("Left mouth",inlet,COgheTubeNetwork.TerminalKind.Entry,Vector3.left),
                     new COgheTubeNetwork.Node("Right mouth",outlet,COgheTubeNetwork.TerminalKind.Entry,Vector3.right)},
-                    new[]{new COgheTubeNetwork.Edge("Open transfer bore",0,1,inlet,outlet)},.025f,glass);
+                    new[]{new COgheTubeNetwork.Edge("Open transfer bore",0,1,inlet,outlet)},mouthRadius,glass);
                 foreach(float side in new[]{-1f,1f})
                 {
                     float centre=x+side*.057f;
-                    Panel(c.Root,"High mouth approach shelf",new Vector3(x+side*.057f,.040f,-.19f),Vector3.up,new Vector2(.10f,.12f),stone,false,Vector2.zero,0,c.Surfaces);
+                    float top=mouthHeight-mouthRadius-.010f,height=top+.30f,mid=(top-.30f)*.5f;
+                    Panel(c.Root,"High mouth approach shelf",new Vector3(x+side*.057f,top,-.19f),Vector3.up,new Vector2(.10f,.12f),stone,false,Vector2.zero,0,c.Surfaces);
                     // A closed grippable pedestal gives the tail a continuous
                     // outer climb face. A floating shelf over the divider made
                     // an inaccessible underside pocket when an entering body stretched.
                     foreach(float edge in new[]{-1f,1f})
                     {
-                        Panel(c.Root,"Mouth pedestal side",new Vector3(centre+edge*.05f,-.13f,-.19f),Vector3.right*edge,new Vector2(.12f,.34f),glass,false,Vector2.zero,0,c.Surfaces);
-                        Panel(c.Root,"Mouth pedestal face",new Vector3(centre,-.13f,-.19f+edge*.06f),Vector3.forward*edge,new Vector2(.10f,.34f),glass,false,Vector2.zero,0,c.Surfaces);
+                        Panel(c.Root,"Mouth pedestal side",new Vector3(centre+edge*.05f,mid,-.19f),Vector3.right*edge,new Vector2(.12f,height),glass,false,Vector2.zero,0,c.Surfaces);
+                        Panel(c.Root,"Mouth pedestal face",new Vector3(centre,mid,-.19f+edge*.06f),Vector3.forward*edge,new Vector2(.10f,height),glass,false,Vector2.zero,0,c.Surfaces);
                     }
                 }
             }

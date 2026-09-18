@@ -19,18 +19,19 @@ MonoBehaviour:
   CanRotate: 0
   Boss: 1
   Passive: 0
-  CameraEuler: {x: 40, y: 12, z: 0}
+  CameraEuler: {x: 42, y: 24, z: 0}
   ViewRadius: 0.68
   CameraZones:
-  - Label: Khoang 1
+  - Label: "A \xB7 Dao"
     LocalBounds:
-      m_Center: {x: -0.4, y: -0.06, z: 0}
-      m_Extent: {x: 0.218, y: 0.258, z: 0.318}
-  - Label: Khoang 2
+      m_Center: {x: -0.4, y: -0.13, z: 0}
+      m_Extent: {x: 0.218, y: 0.188, z: 0.318}
+  - Label: "G \xB7 B"
     LocalBounds:
-      m_Center: {x: 0, y: -0.06, z: 0}
-      m_Extent: {x: 0.218, y: 0.258, z: 0.318}
-  - Label: Khoang 3
+      m_Center: {x: 0, y: -0.13, z: 0}
+      m_Extent: {x: 0.218, y: 0.188, z: 0.318}
+  - Label: "C \xB7 L\u1ED7"
     LocalBounds:
-      m_Center: {x: 0.4, y: -0.06, z: 0}
-      m_Extent: {x: 0.218, y: 0.258, z: 0.318}
+      m_Center: {x: 0.4, y: -0.13, z: 0}
+      m_Extent: {x: 0.218, y: 0.188, z: 0.318}
+  InitialCameraZone: 0

@@ -140,8 +140,14 @@ namespace GravityBox.Venom
                 selection.enabled=true;
                 Arrow(selection,centre+up*(height+.026f+.003f*Mathf.Sin(now*3)),.027f);
             }
+            if(game.Tube!=null&&game.Tube.DepartureHint!=null&&!game.InTube&&
+                Vector3.Dot(game.Motion.Centre(game.Motion.Selected)-game.Tube.transform.position,game.Tube.transform.forward)<0)
+            {
+                hint.enabled=true;
+                Arrow(hint,game.Tube.DepartureHint.position+game.Owner.View.transform.up*(.008f+.003f*Mathf.Sin(now*2.5f)),.034f);
+            }
             int lesson=game.Definition.Order;
-            if(lesson==1)
+            if(lesson==1||lesson==2)
             {
                 hint.enabled=true;Vector3 p=game.Owner.Outlet.position;
                 Arrow(hint,p+game.Owner.View.transform.up*(.025f+.005f*Mathf.Sin(now*2.5f)),.034f);

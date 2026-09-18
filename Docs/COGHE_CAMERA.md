@@ -1,5 +1,13 @@
 # COghe — camera gần và xem từng khoang
 
+## Sửa mép nền lộ khi xoay màn 03 — 17/09/2026
+
+Camera tự vừa hộp khi xoay nhưng bàn nền cũ chỉ rộng 12 m, far clip 10 m và camera luôn cách tâm nhìn 2 m. Ở góc nhìn thấp, khung hình dọc có thể nhìn ra ngoài mép bàn hoặc cắt xuống dưới mặt bàn, làm lộ màu clear xám thành dải/đường chéo thay đổi khi xoay. Test tái hiện trước sửa thất bại: tia góc chạm bàn tại z = 6,274 m, ngoài mép z = 6 m.
+
+`COgheStudioBackdrop` giữ nguyên cao độ bàn và vùng bóng đổ, chỉ mở rộng mesh nền không có collider để phủ bốn góc viewport. Camera lùi dọc hướng nhìn khi cần để mọi tia bắt đầu phía trên bàn, và far clip đủ tới nền. Camera trực giao nên thao tác này giữ kích thước/vị trí hộp trên màn hình. Phạm vi ray chọn vật theo khoảng nhìn thay vì cố định 5 m. Không thêm renderer, shader, texture, collider hoặc tính toán tìm đường; chỉ đọc mesh/bounds một lần và tính bốn góc mỗi frame.
+
+Kiểm tra nền bao phủ cả 20 màn, ở 720×1280 và 720×1612, bốn tư thế xoay và chế độ toàn cảnh/theo sinh vật. Bộ camera **3/3 đạt**; toàn bộ hồi quy **81/82 đạt**, chỉ còn lỗi cũ ở đường thử hồi phục sau trượt màn 04. Không sửa trọng lực, vị trí vật thể vật lý, mặt bám hay luật puzzle. [Ảnh trước](Verification/COgheBackground/03-before.png), [ảnh sau](Verification/COgheBackground/03-after.png), [render tỷ lệ OPPO](Verification/COgheBackground/03-oppo-aspect.png), [kết quả](Verification/COgheBackground/validation.json). Log đầy đủ nằm trong `Artifacts/COgheBackground/`; ảnh từng tư thế ở `Artifacts/COgheCamera/03-background-*.png`.
+
 Cập nhật sau đợt camera: đường giải Boss 20 đã đạt trong PlayMode và bản Mac chạy thật; lỗi hai phần B/C tụ sớm được xử lý bằng thứ tự di chuyển đúng, giữ nguyên luật hợp thể. [Lời giải và đo hiệu năng bản camera mới](COGHE_BOSS20_PLAYTEST.md). Kết quả 76/78 bên dưới là mốc kiểm chứng trước đợt này.
 
 Ngày 17/09/2026. Áp dụng cho Origin 01–20; giữ góc nhìn đã chọn riêng cho từng màn.
@@ -17,6 +25,12 @@ Ngày 17/09/2026. Áp dụng cho Origin 01–20; giữ góc nhìn đã chọn ri
 `VenomCampaignCamera` chỉ điều khiển camera, không ghi trạng thái mô phỏng. Khi vào scene, lấy bounds từ mặt kính tĩnh trong tọa độ hộp và cộng khoảng hở cho viền kính. Mỗi frame chỉ chiếu tám góc, hoặc dùng bán kính cho khối cầu; không quét renderer, collider hoặc tìm đường. Vật di động không làm bounds thay đổi.
 
 Góc quay camera vẫn lấy `CameraEuler` trong definition. `CameraZones` chứa nhãn và bounds từng vùng, không phụ thuộc số màn trong runtime; có thể thêm khu vực cho level tương lai qua Inspector. Builder màn 08/19/20 giữ cấu hình này khi tạo lại scene. `ViewRadius` chỉ còn là fallback khi scene không có mặt kính và dùng để đối chiếu camera cũ.
+
+Bản chỉnh màn hiển thị 30 ngày 18/09 thêm `InitialCameraZone` (mặc định −1:
+toàn cảnh). Boss 30 đặt 0 để bắt đầu gần khoang có sinh vật và dao; Retry về
+góc khởi đầu này. Ba nút **A · Dao / G · B / C · Lỗ** và **Toàn cảnh** vẫn do
+người chơi chọn. Camera không tự đổi khoang theo bước giải hoặc thay vật lý;
+các màn khác giữ mặc định toàn cảnh. Xem [bản chỉnh Boss 30](Verification/COgheCampaign30/boss-30.md).
 
 Vị trí và độ phóng đại chuyển mượt. Khi hộp xoay làm silhouette rộng hơn, toàn cảnh nới ngay đủ chứa hộp rồi thu lại từ từ. Vùng chơi có xét `Screen.safeArea`. Nhấn nút đổi vùng không phát lệnh di chuyển/xoay. Chi tiết viền cản tầm nhìn được ẩn khi theo sinh vật; xem từng khoang vẫn giữ khung kính để định hướng. Không ẩn collider hay cơ quan.
 

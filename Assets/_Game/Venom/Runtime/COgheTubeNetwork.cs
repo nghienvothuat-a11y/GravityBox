@@ -203,17 +203,13 @@ namespace GravityBox.Venom
             if(travel==null||travel.Edge<0)return true;
             Edge edge=Edges[travel.Edge];int target=travel.Direction>0?edge.B:edge.A;
             if(Nodes[target].Terminal!=TerminalKind.Exit)return true;
-            if(SolidExterior)
-            {
-                Closest(edge,root.InverseTransformPoint(game.Matter.Bodies[particle].position),out _,out _,out float along);
-                float remaining=travel.Direction>0?edge.Length-along:along;
-                if(remaining>Radius*.5f)return false;
-            }
-            // Campaign recovery assistance pulls in a straight line. Keep the
-            // tube's centreline servo in control until that line lies wholly
-            // inside the real final collar; otherwise it cuts across a curved
-            // wall and strands the tail against its collider.
-            return !SolidSeparates(game.Matter.Bodies[particle].position,capturePoint);
+            // Hand off the complete body, never individual leading particles.
+            // The generic exit assist advances faster than tube flow and can
+            // stretch the liquid into disconnected visible droplets while its
+            // tail is still constrained by the last bend. StepEdge carries the
+            // already-emerged head too; the real exit detector still counts
+            // each particle crossing the aperture independently.
+            return false;
         }
 
         /// <summary>True only when the segment crosses real tube or cap geometry.</summary>
@@ -362,7 +358,8 @@ namespace GravityBox.Venom
             Rigidbody frame=root.GetComponent<Rigidbody>();
             for(int i=0;i<32;i++)
             {
-                if(game.Matter.Groups[i]!=game.Matter.Groups[travel.Anchor]||game.Matter.Escaped[i])continue;
+                if(game.Matter.Groups[i]!=game.Matter.Groups[travel.Anchor]||
+                    game.Matter.Escaped[i]&&terminal!=TerminalKind.Exit)continue;
                 var body=game.Matter.Bodies[i];Vector3 localBody=root.InverseTransformPoint(body.position);
                 particleCount++;
                 Closest(edge,localBody,out Vector3 local,out Vector3 tangent,out float along);
@@ -408,10 +405,7 @@ namespace GravityBox.Venom
                         desired=Vector3.ClampMagnitude((mouth-axis*(skin+.012f)-body.position)*6,.14f);
                 }
                 Vector3 acceleration=Vector3.up*9.81f+Vector3.ClampMagnitude((desired-relative)*24,7);
-                // Once the real exit detector captures a particle, the shared
-                // campaign exit controller owns its force. Applying both
-                // gravity compensation servos makes them fight after rotation.
-                if(!(terminal==TerminalKind.Exit&&game.ExitAssisting(i)))body.AddForce(acceleration,ForceMode.Acceleration);
+                body.AddForce(acceleration,ForceMode.Acceleration);
                 game.Matter.SetFlow(i,1);
                 float endpointDistance=Vector3.Distance(body.position,endpoint);
                 // The real chamber is the union of its sphere and connected

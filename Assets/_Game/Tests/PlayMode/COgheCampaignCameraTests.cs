@@ -18,7 +18,7 @@ namespace GravityBox.Tests
         {previous=Physics.simulationMode;Physics.simulationMode=SimulationMode.Script;VenomCampaignSave.PersistenceEnabled=false;yield return null;}
         [UnityTearDown] public IEnumerator After()
         {Physics.simulationMode=previous;Time.timeScale=1;VenomCampaignSave.PersistenceEnabled=true;yield return null;}
-        private IEnumerator Load(int number)
+        private IEnumerator Load(int number,bool campaign=false)
         {
             void Loaded(Scene scene,LoadSceneMode mode)
             {
@@ -26,7 +26,7 @@ namespace GravityBox.Tests
                 game.AutoAdvance=false;game.Owner.enabled=false;game.Owner.Rotation.enabled=false;
             }
             SceneManager.sceneLoaded+=Loaded;
-            try{yield return SceneManager.LoadSceneAsync($"VenomOrigin{number:00}");}
+            try{yield return SceneManager.LoadSceneAsync($"{(campaign?"COgheOrigin":"VenomOrigin")}{number:00}");}
             finally{SceneManager.sceneLoaded-=Loaded;}
             yield return null;
             for(int i=0;i<30;i++){game.Owner.Step(1f/120);Physics.Simulate(1f/120);}
@@ -66,13 +66,35 @@ namespace GravityBox.Tests
             }
             finally{RenderTexture.active=old;target.Release();Object.DestroyImmediate(target);Object.DestroyImmediate(image);}
         }
+        [UnityTest] public IEnumerator Campaign22DeckIsVisibleAndPickableAtBothPortraitRatios()
+        {
+            yield return Load(22,true);
+            var deck=System.Array.Find(game.Surfaces,p=>p.name=="Launch platform");
+            foreach(int height in new[]{1280,1612})
+            {
+                var safeArea=new Rect(0,24,720,height-52);
+                game.CameraRig.Frame(720,height,0,true,safeArea);
+                AssertVisible(game.CameraRig.OverviewBounds,720,height,safeArea);
+                var front=game.Owner.View.WorldToViewportPoint(deck.transform.position-game.Root.forward*.10f);
+                var back=game.Owner.View.WorldToViewportPoint(deck.transform.position+game.Root.forward*.10f);
+                Assert.Greater(Mathf.Abs(front.y-back.y)*height,30,"The deck must have a readable top, not a thin edge.");
+                foreach(float z in new[]{-.065f,0,.065f})
+                {
+                    var point=deck.transform.position+game.Root.forward*z;
+                    game.TouchPoint(game.Owner.View.WorldToScreenPoint(point));
+                    Assert.AreEqual(deck,game.Feedback.CommandSurface,"The actual deck must receive the tap instead of the roof.");
+                }
+                Capture($"22-climb-{height}",720,height);
+            }
+        }
+
         [UnityTest] public IEnumerator EveryOverviewFitsPortraitAndRotatingCornersWithoutChangingPhysics()
         {
             Directory.CreateDirectory(DirectoryName);
             var report=new System.Text.StringBuilder("level,old_size,new_size,linear_enlargement\n");
             for(int n=1;n<=20;n++)
             {
-                yield return Load(n);var camera=game.Owner.View;
+                yield return Load(n);game.CameraRig.SelectZone(-1);var camera=game.Owner.View;
                 camera.aspect=720f/1280;camera.transform.rotation=Quaternion.Euler(game.Definition.CameraEuler);
                 float oldSize=game.Definition.ViewRadius*1280/(720*.87f)*(n>=3?1.1f:1);
                 camera.orthographicSize=oldSize;camera.transform.position=-camera.transform.forward*2-(n>=3?camera.transform.up*oldSize*.08f:Vector3.zero);
@@ -105,11 +127,14 @@ namespace GravityBox.Tests
             }
             File.WriteAllText(Path.Combine(DirectoryName,"framing.csv"),report.ToString());
         }
-        [UnityTest] public IEnumerator ZonesFollowSelectionSmoothlyAndReturnToOverviewOnReset()
+        [UnityTest] public IEnumerator ZonesFollowSelectionSmoothlyAndReturnToAuthoredViewOnReset()
         {
             foreach(int n in new[]{8,19,20})
             {
                 yield return Load(n);Assert.AreEqual(n==20?3:2,game.CameraRig.ZoneCount);
+                int initial=game.CameraRig.Zone;
+                game.CameraRig.Frame(720,1280,0,true);float initialSize=game.Owner.View.orthographicSize;
+                game.CameraRig.SelectZone(-1);
                 game.CameraRig.Frame(720,1280,0,true);float overview=game.Owner.View.orthographicSize;
                 for(int zone=0;zone<game.CameraRig.ZoneCount;zone++)
                 {
@@ -130,8 +155,45 @@ namespace GravityBox.Tests
                 Assert.AreEqual(point,game.Matter.Bodies[0].position);
                 float scale=Mathf.Min(720f/540,1280f/960);
                 Assert.IsFalse(game.CameraRig.AllowsPointer(new Vector2(300,1280-218*scale),720,1280),"View selector cannot issue a move or rotate command");
-                game.ResetLevel();Assert.AreEqual(-1,game.CameraRig.Zone);Assert.IsFalse(game.Zoom);
-                game.CameraRig.Frame(720,1280,0,true);Assert.AreEqual(overview,game.Owner.View.orthographicSize,.0001f);
+                game.ResetLevel();Assert.AreEqual(initial,game.CameraRig.Zone);Assert.IsFalse(game.Zoom);
+                game.CameraRig.Frame(720,1280,0,true);Assert.AreEqual(initialSize,game.Owner.View.orthographicSize,.0001f);
+            }
+        }
+        [UnityTest] public IEnumerator StudioBenchCoversPortraitDuringRotationAndFollow()
+        {
+            foreach(int n in new[]{3,1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20})
+            {
+                yield return Load(n);
+                var studio=game.transform.Find("Day Lab studio");Assert.NotNull(studio);
+                Renderer bench=null;
+                foreach(var r in studio.GetComponentsInChildren<Renderer>())
+                    if(r.bounds.size.x>8&&r.bounds.size.z>8){bench=r;break;}
+                Assert.NotNull(bench);Assert.IsNull(bench.GetComponent<Collider>());
+                float tabletop=bench.bounds.max.y;
+                var bodyPosition=game.Matter.Bodies[0].position;
+                foreach(int height in new[]{1280,1612})
+                for(int pose=0;pose<4;pose++)
+                {
+                    game.Root.rotation=game.Definition.CanRotate?Quaternion.Euler(new[]{Vector3.zero,new Vector3(70,31,22),new Vector3(180,90,0),new Vector3(38,143,95)}[pose]):Quaternion.identity;
+                    Physics.SyncTransforms();
+                    foreach(bool follow in new[]{false,true})
+                    {
+                        game.Zoom=follow;game.CameraRig.Frame(720,height,0,true);
+                        var camera=game.Owner.View;var plane=new Plane(Vector3.up,new Vector3(0,tabletop,0));
+                        if(n==3&&!follow)Capture($"03-background-{height}-{pose}",720,height);
+                        for(int corner=0;corner<4;corner++)
+                        {
+                            var ray=camera.ViewportPointToRay(new Vector3(corner&1,corner>>1,0));
+                            Assert.IsTrue(plane.Raycast(ray,out float distance),$"{n}/{height}/{pose}/{follow}: camera clips below the bench at corner {corner}");
+                            var point=ray.GetPoint(distance);var view=camera.WorldToViewportPoint(point);
+                            Assert.Less(view.z,camera.farClipPlane,$"{n}/{height}/{pose}/{follow}: bench exceeds far clip");
+                            Assert.That(point.x,Is.InRange(bench.bounds.min.x+.01f,bench.bounds.max.x-.01f),$"{n}/{pose}: visible bench edge X");
+                            Assert.That(point.z,Is.InRange(bench.bounds.min.z+.01f,bench.bounds.max.z-.01f),$"{n}/{pose}: visible bench edge Z");
+                        }
+                        Assert.AreEqual(tabletop,bench.bounds.max.y,.00001f,"The physical studio tabletop stays at its authored height");
+                        Assert.AreEqual(bodyPosition,game.Matter.Bodies[0].position,"Backdrop framing cannot move tissue");
+                    }
+                }
             }
         }
     }

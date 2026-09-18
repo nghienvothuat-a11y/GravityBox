@@ -1,0 +1,502 @@
+{
+  "status": "DESIGN_ONLY_NOT_LOADED_BY_RUNTIME",
+  "date": "2026-09-17",
+  "schema": "coghe.campaign.order.proposal.v1",
+  "scope": "20 existing content IDs retained plus 10 proposed new IDs; display order changed only in this proposal",
+  "feedback": "Players understand solutions of old05/08 but struggle executing tilt/slide/fall",
+  "bossDisplayPositions": [
+    10,
+    20,
+    30
+  ],
+  "homePolicy": "Keep existing Boss-flag grant and existing entitlement; first normal-route Boss becomes source30 at display10; no completion remap by ordinal",
+  "knownRisks": [
+    "Old05/08 need separate proposed geometry tolerance changes; inserted levels alone do not fix input difficulty",
+    "Old10 intentionally retains first discovery of cutting/selection/cooperation without solution hints; observe difficulty separately",
+    "Current04 recovery regression unresolved; no new runtime tests run for this design",
+    "Existing06/12/14/18 motor difficulty must be retested, not assumed solved by moving later",
+    "All new levels unbuilt; no physics, player completion or performance validation yet"
+  ],
+  "levels": [
+    {
+      "displayOrder": 1,
+      "stableId": "venom.origin.01",
+      "sourceNumber": 1,
+      "title": "Bò đi",
+      "content": "existing",
+      "boss": false,
+      "canRotate": true,
+      "requires": [],
+      "introducedOrPractisedFirst": [
+        "crawl"
+      ],
+      "designDoc": "../../VENOM_CAMPAIGN_01_10.md"
+    },
+    {
+      "displayOrder": 2,
+      "stableId": "venom.origin.02",
+      "sourceNumber": 2,
+      "title": "Leo đi",
+      "content": "existing",
+      "boss": false,
+      "canRotate": true,
+      "requires": [
+        "crawl"
+      ],
+      "introducedOrPractisedFirst": [
+        "climb"
+      ],
+      "designDoc": "../../VENOM_CAMPAIGN_01_10.md"
+    },
+    {
+      "displayOrder": 3,
+      "stableId": "venom.origin.03",
+      "sourceNumber": 3,
+      "title": "Xoay đi",
+      "content": "existing",
+      "boss": false,
+      "canRotate": true,
+      "requires": [
+        "crawl",
+        "climb"
+      ],
+      "introducedOrPractisedFirst": [
+        "rotate"
+      ],
+      "designDoc": "../../VENOM_CAMPAIGN_01_10.md"
+    },
+    {
+      "displayOrder": 4,
+      "stableId": "venom.origin.04",
+      "sourceNumber": 4,
+      "title": "Trơn đấy",
+      "content": "existing",
+      "boss": false,
+      "canRotate": true,
+      "requires": [
+        "crawl",
+        "climb",
+        "rotate"
+      ],
+      "introducedOrPractisedFirst": [
+        "slippery"
+      ],
+      "designDoc": "../../VENOM_CAMPAIGN_01_10.md"
+    },
+    {
+      "displayOrder": 5,
+      "stableId": "venom.origin.21",
+      "sourceNumber": 21,
+      "title": "Nghiêng là tới",
+      "content": "new-design",
+      "boss": false,
+      "canRotate": true,
+      "requires": [
+        "rotate",
+        "slippery"
+      ],
+      "introducedOrPractisedFirst": [
+        "tilt_slide"
+      ],
+      "designDoc": "Level21/README.md"
+    },
+    {
+      "displayOrder": 6,
+      "stableId": "venom.origin.05",
+      "sourceNumber": 5,
+      "title": "Trượt đi",
+      "content": "existing",
+      "boss": false,
+      "canRotate": true,
+      "requires": [
+        "rotate",
+        "slippery",
+        "tilt_slide"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "../../VENOM_CAMPAIGN_01_10.md"
+    },
+    {
+      "displayOrder": 7,
+      "stableId": "venom.origin.06",
+      "sourceNumber": 6,
+      "title": "Xoay tròn",
+      "content": "existing",
+      "boss": false,
+      "canRotate": true,
+      "requires": [
+        "rotate",
+        "slippery"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "../../VENOM_CAMPAIGN_01_10.md"
+    },
+    {
+      "displayOrder": 8,
+      "stableId": "venom.origin.07",
+      "sourceNumber": 7,
+      "title": "Đẩy",
+      "content": "existing",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "crawl",
+        "climb"
+      ],
+      "introducedOrPractisedFirst": [
+        "push_pull"
+      ],
+      "designDoc": "../../VENOM_CAMPAIGN_01_10.md"
+    },
+    {
+      "displayOrder": 9,
+      "stableId": "venom.origin.23",
+      "sourceNumber": 23,
+      "title": "Khớp rồi!",
+      "content": "new-design",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "push_pull"
+      ],
+      "introducedOrPractisedFirst": [
+        "gear_align"
+      ],
+      "designDoc": "Level23/README.md"
+    },
+    {
+      "displayOrder": 10,
+      "stableId": "venom.origin.30",
+      "sourceNumber": 30,
+      "title": "Nhà máy tí hon",
+      "content": "new-design",
+      "boss": true,
+      "canRotate": false,
+      "requires": [
+        "push_pull",
+        "gear_align"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level30/README.md"
+    },
+    {
+      "displayOrder": 11,
+      "stableId": "venom.origin.22",
+      "sourceNumber": 22,
+      "title": "Đáp rồi chui",
+      "content": "new-design",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "climb",
+        "slippery"
+      ],
+      "introducedOrPractisedFirst": [
+        "pipe_flow"
+      ],
+      "designDoc": "Level22/README.md"
+    },
+    {
+      "displayOrder": 12,
+      "stableId": "venom.origin.08",
+      "sourceNumber": 8,
+      "title": "Chui qua lỗ",
+      "content": "existing",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "climb",
+        "slippery",
+        "pipe_flow"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "../../VENOM_CAMPAIGN_01_10.md"
+    },
+    {
+      "displayOrder": 13,
+      "stableId": "venom.origin.09",
+      "sourceNumber": 9,
+      "title": "Lật đi",
+      "content": "existing",
+      "boss": false,
+      "canRotate": true,
+      "requires": [
+        "rotate"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "../../VENOM_CAMPAIGN_01_10.md"
+    },
+    {
+      "displayOrder": 14,
+      "stableId": "venom.origin.24",
+      "sourceNumber": 24,
+      "title": "Kéo ra mới qua",
+      "content": "new-design",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "push_pull"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level24/README.md"
+    },
+    {
+      "displayOrder": 15,
+      "stableId": "venom.origin.11",
+      "sourceNumber": 11,
+      "title": "Kê cao lên",
+      "content": "existing",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "push_pull",
+        "climb"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level11/README.md"
+    },
+    {
+      "displayOrder": 16,
+      "stableId": "venom.origin.25",
+      "sourceNumber": 25,
+      "title": "Hai nhịp một cửa",
+      "content": "new-design",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "push_pull"
+      ],
+      "introducedOrPractisedFirst": [
+        "sequence"
+      ],
+      "designDoc": "Level25/README.md"
+    },
+    {
+      "displayOrder": 17,
+      "stableId": "venom.origin.13",
+      "sourceNumber": 13,
+      "title": "Mở đường",
+      "content": "existing",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "push_pull",
+        "sequence",
+        "pipe_flow"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level13/README.md"
+    },
+    {
+      "displayOrder": 18,
+      "stableId": "venom.origin.26",
+      "sourceNumber": 26,
+      "title": "Bắc một nhịp",
+      "content": "new-design",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "push_pull",
+        "climb"
+      ],
+      "introducedOrPractisedFirst": [
+        "bridge_assembly"
+      ],
+      "designDoc": "Level26/README.md"
+    },
+    {
+      "displayOrder": 19,
+      "stableId": "venom.origin.16",
+      "sourceNumber": 16,
+      "title": "Ghép cầu",
+      "content": "existing",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "push_pull",
+        "bridge_assembly"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level16/README.md"
+    },
+    {
+      "displayOrder": 20,
+      "stableId": "venom.origin.10",
+      "sourceNumber": 10,
+      "title": "Chờ nhau",
+      "content": "existing",
+      "boss": true,
+      "canRotate": false,
+      "requires": [
+        "crawl",
+        "climb",
+        "push_pull"
+      ],
+      "introducedOrPractisedFirst": [
+        "split_merge",
+        "cooperate"
+      ],
+      "designDoc": "../../VENOM_CAMPAIGN_01_10.md"
+    },
+    {
+      "displayOrder": 21,
+      "stableId": "venom.origin.27",
+      "sourceNumber": 27,
+      "title": "Một bánh, hai việc",
+      "content": "new-design",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "gear_align",
+        "push_pull",
+        "sequence"
+      ],
+      "introducedOrPractisedFirst": [
+        "gear_reuse"
+      ],
+      "designDoc": "Level27/README.md"
+    },
+    {
+      "displayOrder": 22,
+      "stableId": "venom.origin.12",
+      "sourceNumber": 12,
+      "title": "Trượt rồi bay",
+      "content": "existing",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "climb",
+        "slippery",
+        "tilt_slide"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level12/README.md"
+    },
+    {
+      "displayOrder": 23,
+      "stableId": "venom.origin.28",
+      "sourceNumber": 28,
+      "title": "Nhường đường",
+      "content": "new-design",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "gear_align",
+        "push_pull"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level28/README.md"
+    },
+    {
+      "displayOrder": 24,
+      "stableId": "venom.origin.17",
+      "sourceNumber": 17,
+      "title": "Nối bánh răng",
+      "content": "existing",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "gear_align",
+        "push_pull"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level17/README.md"
+    },
+    {
+      "displayOrder": 25,
+      "stableId": "venom.origin.14",
+      "sourceNumber": 14,
+      "title": "Đổi chiều",
+      "content": "existing",
+      "boss": false,
+      "canRotate": true,
+      "requires": [
+        "rotate",
+        "climb",
+        "slippery"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level14/README.md"
+    },
+    {
+      "displayOrder": 26,
+      "stableId": "venom.origin.29",
+      "sourceNumber": 29,
+      "title": "Bạn giữ, tớ kéo",
+      "content": "new-design",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "split_merge",
+        "cooperate",
+        "push_pull"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level29/README.md"
+    },
+    {
+      "displayOrder": 27,
+      "stableId": "venom.origin.18",
+      "sourceNumber": 18,
+      "title": "Ghép đường",
+      "content": "existing",
+      "boss": false,
+      "canRotate": true,
+      "requires": [
+        "rotate",
+        "bridge_assembly"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level18/README.md"
+    },
+    {
+      "displayOrder": 28,
+      "stableId": "venom.origin.15",
+      "sourceNumber": 15,
+      "title": "Tìm lối ra",
+      "content": "existing",
+      "boss": false,
+      "canRotate": true,
+      "requires": [
+        "pipe_flow"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level15/README.md"
+    },
+    {
+      "displayOrder": 29,
+      "stableId": "venom.origin.19",
+      "sourceNumber": 19,
+      "title": "Cùng nhau",
+      "content": "existing",
+      "boss": false,
+      "canRotate": false,
+      "requires": [
+        "split_merge",
+        "cooperate",
+        "pipe_flow",
+        "push_pull"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level19/README.md"
+    },
+    {
+      "displayOrder": 30,
+      "stableId": "venom.origin.20",
+      "sourceNumber": 20,
+      "title": "Tam hợp",
+      "content": "existing",
+      "boss": true,
+      "canRotate": false,
+      "requires": [
+        "split_merge",
+        "cooperate",
+        "pipe_flow",
+        "gear_align",
+        "push_pull"
+      ],
+      "introducedOrPractisedFirst": [],
+      "designDoc": "Level20/README.md"
+    }
+  ]
+}

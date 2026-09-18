@@ -10,13 +10,14 @@ namespace GravityBox.Venom
         public ConfigurableJoint Joint;
         public Vector3 Start, Axis = Vector3.up;
         public float Travel = .12f, InitialTravel, Resistance = .015f, Damping = .08f;
+        public float CatchTolerance = .0018f;
         public bool Gravity = true, Locked, LatchAtEnd, LatchAtStart;
         public bool Latched { get; private set; }
         public float Effort { get; private set; }
         public float Position => Mathf.Clamp(Vector3.Dot(Frame.InverseTransformPoint(Body.position) - Start, Axis.normalized), 0, Travel);
         public float Fraction => Travel > 0 ? Position / Travel : 0;
         public Vector3 WorldAxis => Frame.TransformDirection(Axis.normalized);
-        public bool AtEnd => Position >= Travel - .0018f;
+        public bool AtEnd => Position >= Travel - CatchTolerance;
         private Vector3 pendingEffort;
         private bool brakeSet;
         private float brakePosition;
@@ -42,7 +43,7 @@ namespace GravityBox.Venom
         public override void StepMechanism(VenomCampaign game, float dt)
         {
             if (LatchAtEnd && AtEnd) { Latched = true; lowerCatch = false; }
-            if (LatchAtStart && Position <= .0018f) { Latched = true; lowerCatch = true; }
+            if (LatchAtStart && Position <= CatchTolerance) { Latched = true; lowerCatch = true; }
             // A deliberate reverse pull releases a terminal catch. Gates keep their separate brake.
             Effort = Vector3.Dot(pendingEffort, WorldAxis);
             if (Latched && (lowerCatch ? Effort > Resistance + .004f : Effort < -Resistance - .004f)) Latched = false;
