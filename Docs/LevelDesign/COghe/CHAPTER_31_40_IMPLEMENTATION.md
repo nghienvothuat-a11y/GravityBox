@@ -54,3 +54,10 @@ The app ran on Mac16,10 / Apple M4, Unity6000.3.19f1. Actual window framebuffer 
 The command replay uses ordinary control APIs with real120Hz physics. It verifies the intended solutions and checked failure/recovery cases; it is not a human touch-only mobile playtest or a mobile performance measurement. Earlier failing runs are retained in `Artifacts/chapter40-playmode-01` through `-06`; the geometry corrections are described above. Runner summary heuristics flagged licensing diagnostics, but actual Unity processes returned0 and the XML/build results above succeeded.
 
 A shareable copy with20 PNGs, per-level state, XML results, source/build SHA256 manifests, logs and an HTML gallery is in `/Users/tommynguyen/.buzz/OUTBOX/COGHE_LEVELS_31_40_PLAYTEST_2026_09_21/20260921T135858138Z/`.
+
+## Đợt rà đường đi 32–40 — 21/09/2026
+
+Các solution test 32–40 hiện đi qua production screen picker, gồm 20 kịch bản
+giải/phục hồi ở portrait. Đã bổ sung camera khoang32–35, mặt nhận hướng kéo cho L33
+và chốt đầu ray cho G34. Xem [báo cáo mới](../../Verification/COgheCampaign30/LEVELS_32_40_ROUTE_AUDIT_2026_09_21.md)
+để lấy kết quả kiểm chứng của bản sửa; các số liệu ở phần trước là lịch sử bản cũ.

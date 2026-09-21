@@ -9,8 +9,13 @@ namespace GravityBox.Venom
     {
         public string Label;
         public Bounds LocalBounds;
-        public VenomCameraZone(string label,Vector3 centre,Vector3 size)
-        {Label=label;LocalBounds=new Bounds(centre,size);}
+        public bool OverrideCameraEuler;
+        public Vector3 CameraEuler;
+        public VenomCameraZone(string label,Vector3 centre,Vector3 size,Vector3? cameraEuler=null)
+        {
+            Label=label;LocalBounds=new Bounds(centre,size);
+            OverrideCameraEuler=cameraEuler.HasValue;CameraEuler=cameraEuler.GetValueOrDefault();
+        }
     }
 
     [CreateAssetMenu(menuName="Gravity Box/Venom/Campaign level")]

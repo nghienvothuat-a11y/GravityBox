@@ -3,12 +3,105 @@ using System.Collections.Generic;
 using System.IO;
 using GravityBox.Venom;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace GravityBox.Editor
 {
     public static partial class VenomCampaignBuilder
     {
+        private static readonly Vector3 Campaign32Camera=new Vector3(24,-24,0);
+
+        [MenuItem("Gravity Box/COghe/Refresh Level 32 Camera")]
+        public static void RefreshCampaign32Camera()
+        {
+            string path=$"{Campaign30Folder}/Definitions/Slot32.asset";
+            var definition=AssetDatabase.LoadAssetAtPath<VenomCampaignDefinition>(path);
+            if(definition==null)throw new FileNotFoundException("Missing level 32 definition",path);
+            Undo.RecordObject(definition,"Expose level 32 exit to screen input");
+            var serialized=new SerializedObject(definition);
+            serialized.FindProperty("CameraEuler").vector3Value=Campaign32Camera;
+            serialized.ApplyModifiedProperties();
+            AssetDatabase.SaveAssetIfDirty(definition);
+            Debug.Log("COGHE LEVEL 32 CAMERA UPDATED "+definition.CameraEuler);
+        }
+
+        // Only camera definitions are serialized here; existing scene physics stays intact.
+        [MenuItem("Gravity Box/COghe/Refresh Chapter Interaction Views")]
+        public static void RefreshChapterInteractionViews()
+        {
+            foreach(int level in new[]{32,33,34,35})
+            {
+                string path=$"{Campaign30Folder}/Definitions/Slot{level}.asset";
+                var definition=AssetDatabase.LoadAssetAtPath<VenomCampaignDefinition>(path);
+                if(definition==null)throw new FileNotFoundException("Missing chapter definition",path);
+                Undo.RecordObject(definition,"Expose chapter interaction targets");
+                if(level==32)definition.CameraZones=Chapter32Views();
+                if(level==33)definition.CameraZones=Chapter33Views();
+                if(level==34)definition.CameraZones=Chapter34Views();
+                if(level==35)
+                {
+                    var zones=definition.CameraZones;
+                    zones[1].OverrideCameraEuler=true;zones[1].CameraEuler=new Vector3(40,-24,0);
+                    definition.CameraZones=zones;
+                }
+                EditorUtility.SetDirty(definition);AssetDatabase.SaveAssetIfDirty(definition);
+                Debug.Log("COGHE INTERACTION VIEWS UPDATED "+level);
+            }
+        }
+        private static VenomCameraZone[] Chapter32Views()=>new[]{
+            new VenomCameraZone("Cầu B",new Vector3(-.30f,-.10f,0),new Vector3(.32f,.40f,.98f)),
+            new VenomCameraZone("A · Tay L",new Vector3(.31f,-.10f,-.16f),new Vector3(.32f,.40f,.25f)),
+            new VenomCameraZone("B · Lối ra",new Vector3(.31f,-.10f,.16f),new Vector3(.32f,.40f,.25f),new Vector3(35,-65,0))};
+        private static VenomCameraZone[] Chapter33Views()=>new[]{
+            new VenomCameraZone("S · Chọn ống",new Vector3(0,-.14f,0),new Vector3(1,.32f,.80f),new Vector3(10,0,0)),
+            new VenomCameraZone("A · Tay L",new Vector3(-.25f,.16f,0),new Vector3(.50f,.30f,.80f),new Vector3(32,55,0)),
+            new VenomCameraZone("B · Lối ra",new Vector3(.25f,.16f,0),new Vector3(.50f,.30f,.80f),new Vector3(32,-55,0))};
+        private static VenomCameraZone[] Chapter34Views()=>new[]{
+            new VenomCameraZone("B · X · G",new Vector3(-.16f,0,0),new Vector3(.62f,.64f,1.12f)),
+            new VenomCameraZone("Lối ra",new Vector3(.38f,-.08f,.14f),new Vector3(.20f,.40f,.42f),new Vector3(24,-24,0))};
+
+        private static void ChapterRailCommandPlane(Transform root,COgheRailSlider rail)
+        {
+            string name=rail.name+" command plane";
+            var plane=root.Find(name);
+            if(plane==null)
+            {
+                var go=new GameObject(name);Undo.RegisterCreatedObjectUndo(go,"Create stable rail input plane");
+                plane=go.transform;plane.SetParent(root,false);
+            }
+            Undo.RecordObject(plane,"Place rail input plane");plane.localPosition=rail.Start;plane.localRotation=Quaternion.identity;
+            var prop=rail.GetComponent<VenomMovableProp>();Undo.RecordObject(prop,"Use rail input plane");
+            var serialized=new SerializedObject(prop);
+            serialized.FindProperty("ManipulationPlane").objectReferenceValue=plane;
+            serialized.ApplyModifiedProperties();
+        }
+
+        [MenuItem("Gravity Box/COghe/Repair Chapter Rail Recovery")]
+        public static void RepairChapterRailRecovery()
+        {
+            foreach(int level in new[]{33,34})
+            {
+                string path=$"{Campaign30Folder}/{Campaign30ScenePrefix}{level:00}.unity";
+                var scene=EditorSceneManager.OpenScene(path,OpenSceneMode.Single);
+                var game=UnityEngine.Object.FindFirstObjectByType<VenomCampaign>();
+                if(game==null||game.Definition.Order!=level)throw new InvalidOperationException("Unexpected chapter scene "+path);
+                string railName=level==33?"L remote winch":"G crossing carriage";
+                var prop=Array.Find(game.Props,p=>p.name==railName);
+                if(prop==null)throw new InvalidOperationException("Missing rail "+railName);
+                var rail=prop.GetComponent<COgheRailSlider>();
+                if(level==33)ChapterRailCommandPlane(rail.Frame,rail);
+                else
+                {
+                    Undo.RecordObject(rail,"Keep G parked after reversing");
+                    var serialized=new SerializedObject(rail);
+                    serialized.FindProperty("LatchAtStart").boolValue=true;serialized.ApplyModifiedProperties();
+                }
+                EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);
+                Debug.Log("COGHE RAIL RECOVERY REPAIRED "+level);
+            }
+        }
+
         public static string[] Campaign40ScenePaths()
         {
             var paths=new string[40];
@@ -117,7 +210,10 @@ namespace GravityBox.Editor
 
         private static void BuildCampaign32(ExpansionContext c)
         {
-            ConfigureNew(c,"Một cầu, hai bến","Một cây cầu có thể đưa bạn tới hai bến.",false,new Vector3(24,12,0),.66f);
+            // See the right-side exit from outside its wall; looking from the
+            // left puts the solid A/B divider in front of the aperture's tap.
+            ConfigureNew(c,"Một cầu, hai bến","Một cây cầu có thể đưa bạn tới hai bến.",false,Campaign32Camera,.66f);
+            c.Definition.CameraZones=Chapter32Views();
             c.Owner.ApertureRadius=.05f;c.Spawn=new Vector3(-.30f,-.11f,.16f);c.Exit=new Vector3(.46f,-.06f,.16f);c.Outward=Vector3.right;
             ChapterWideShell(c,.46f,.62f);
             RaisedBank(c,"S central bank",new Vector3(-.31f,-.23f,0),new Vector3(.30f,.14f,.98f));
@@ -148,9 +244,7 @@ namespace GravityBox.Editor
             ConfigureNew(c,"Đổi đường ống","Quan sát tuyến đang thông và cửa ở hai khoang.",false,new Vector3(26,22,0),.61f);
             c.Owner.ApertureRadius=.05f;c.Spawn=new Vector3(-.30f,-.265f,-.20f);c.Exit=new Vector3(.50f,.115f,.14f);c.Outward=Vector3.right;
             ChapterWideShell(c,.50f,.40f);
-            c.Definition.CameraZones=new[]{new VenomCameraZone("S",new Vector3(0,-.14f,0),new Vector3(1,.32f,.60f)),
-                new VenomCameraZone("A",new Vector3(-.25f,.16f,0),new Vector3(.50f,.30f,.60f)),
-                new VenomCameraZone("B",new Vector3(.25f,.16f,0),new Vector3(.50f,.30f,.60f))};
+            c.Definition.CameraZones=Chapter33Views();
             foreach(float side in new[]{-1f,1f})
             {
                 Vector3 centre=new Vector3(side*.25f,.025f,0);
@@ -210,6 +304,7 @@ namespace GravityBox.Editor
                 RaisedBank(c,"Upper pipe landing bank",new Vector3(side*.40f,.0625f,-.12f),new Vector3(.18f,.075f,.19f));
             }
             var lever=ExpansionRail(c,"L remote winch",new Vector3(-.33f,.066f,.13f),Vector3.right,.065f,0,new Vector3(.045f,.05f,.045f),.06f,.03f,false,true);
+            ChapterRailCommandPlane(c.Root,lever);
             var motor=new GameObject("A cable to E",typeof(COgheSequentialWinch)).GetComponent<COgheSequentialWinch>();motor.transform.SetParent(c.Root,false);
             // This upper room needs a side pocket: an upward shutter would
             // start inside the floor and exhaust its clearance at the ceiling.
@@ -224,6 +319,7 @@ namespace GravityBox.Editor
         private static void BuildCampaign34(ExpansionContext c)
         {
             ConfigureNew(c,"Nhường đúng chỗ","Quan sát hốc đỗ và giao điểm giữa các ray.",false,new Vector3(24,12,0),.60f);
+            c.Definition.CameraZones=Chapter34Views();
             c.Owner.ApertureRadius=.05f;c.Spawn=new Vector3(-.33f,-.11f,-.16f);c.Exit=new Vector3(.46f,-.06f,.14f);c.Outward=Vector3.right;
             ChapterWideShell(c,.46f,.56f);
             // A 7 mm lateral gap keeps the bank's corner clear of the moving
@@ -245,7 +341,7 @@ namespace GravityBox.Editor
             xGrip.localScale=new Vector3(.052f,.018f,.022f);xGrip.gameObject.AddComponent<BoxCollider>();xProp.ManipulationHandleOnly=true;
             MechanismVisual(x.transform,"X bank-side handle arm",new Vector3(-.10f,-.043f,-.09f),new Vector3(.20f,.008f,.010f),metal);
             var g=ExpansionRail(c,"G crossing carriage",new Vector3(-.10f,-.115f,-.18f),Vector3.forward,.40f,0,new Vector3(.065f,.07f,.07f),.07f,.035f,false,true);
-            g.LatchAtEnd=true;
+            g.LatchAtEnd=g.LatchAtStart=true;
             var train=ChapterGear(c,g,ChapterExit(c),new Vector3(0,.10f,.0f));
             // The actual deck spans the island gap; the aperture plate never disappears.
             var deck=bridge.gameObject.AddComponent<COgheDockedBridgeDeck>();deck.Rail=bridge;

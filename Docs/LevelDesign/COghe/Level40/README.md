@@ -89,3 +89,9 @@ Phần trên lưu thiết kế minh họa v1. Màn 40 hiện đã được dựn
 Luồng đã chạy trong app macOS: **Nguyên khối xử lý Q/P, chia ba vận hành A/B/C qua I rồi II, hợp thể kéo H và thoát.** Hợp thể trước khi ra cửa; ảnh trước thoát ghi1 phần/0 hạt thoát, ảnh thắng ghi1 phần/32 hạt thoát; không thua. Kiểm tra reset sau thắng và chọn các điều khiển nhìn thấy trong trạng thái đầu màn đều đạt.
 
 Toàn bộ suite: **341/341 PlayMode,8/8 EditMode**. Cả10 lời giải đạt trong bản macOS Development thực tế; chưa đo hiệu năng hay chơi chạm tay trên thiết bị mobile. [Hồ sơ triển khai chung](../CHAPTER_31_40_IMPLEMENTATION.md) ghi trạng thái nguồn, các điều chỉnh và giới hạn kiểm chứng. Bằng chứng màn này: `Artifacts/chapter40-player-proof/20260921T135858138Z/level-40.json`, `level-40-open.png` và `level-40-won.png`.
+
+## Rà đường đi và phục hồi — 21/09/2026
+
+Kiểm tra Q/P, chém thật thành ba vai trò, kéo II sai thứ tự, bỏ A rồi giữ lại, hoàn tất hai đầu ra, hợp thể và kéo H trước khi thoát.
+
+Các kiểm tra mới dùng `TouchPoint`, camera/HUD và mô phỏng thật; không gán vị trí sinh vật hoặc ép trạng thái thắng. [Kết quả, phạm vi và bằng chứng đợt rà 32–40](../../../Verification/COgheCampaign30/LEVELS_32_40_ROUTE_AUDIT_2026_09_21.md).

@@ -22,5 +22,17 @@ MonoBehaviour:
   Passive: 0
   CameraEuler: {x: 24, y: 12, z: 0}
   ViewRadius: 0.6
-  CameraZones: []
+  CameraZones:
+  - Label: "B \xB7 X \xB7 G"
+    LocalBounds:
+      m_Center: {x: -0.16, y: 0, z: 0}
+      m_Extent: {x: 0.31, y: 0.32, z: 0.56}
+    OverrideCameraEuler: 0
+    CameraEuler: {x: 0, y: 0, z: 0}
+  - Label: "L\u1ED1i ra"
+    LocalBounds:
+      m_Center: {x: 0.38, y: -0.08, z: 0.14}
+      m_Extent: {x: 0.1, y: 0.2, z: 0.21}
+    OverrideCameraEuler: 1
+    CameraEuler: {x: 24, y: -24, z: 0}
   InitialCameraZone: -1

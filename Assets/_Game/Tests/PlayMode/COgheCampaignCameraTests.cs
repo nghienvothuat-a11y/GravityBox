@@ -159,6 +159,35 @@ namespace GravityBox.Tests
                 game.CameraRig.Frame(720,1280,0,true);Assert.AreEqual(initialSize,game.Owner.View.orthographicSize,.0001f);
             }
         }
+        [UnityTest] public IEnumerator ChapterInspectionAnglesFrameBothPortraitsWithoutMovingPuzzle()
+        {
+            foreach(int level in new[]{32,33,34,35})
+            {
+                yield return Load(level,true);
+                var positions=new Vector3[32];
+                for(int i=0;i<32;i++)positions[i]=game.Matter.Bodies[i].position;
+                Quaternion root=game.Root.rotation;
+                var rails=game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>();
+                var railPositions=new float[rails.Length];
+                for(int i=0;i<rails.Length;i++)railPositions[i]=rails[i].Position;
+                foreach(var size in new[]{new Vector2Int(480,800),new Vector2Int(720,1612)})
+                for(int zone=-1;zone<game.CameraRig.ZoneCount;zone++)
+                {
+                    var safe=new Rect(0,24,size.x,size.y-52);
+                    game.CameraRig.SelectZone(zone);game.CameraRig.Frame(size.x,size.y,0,true,safe);
+                    AssertVisible(zone<0?game.CameraRig.OverviewBounds:game.Definition.CameraZones[zone].LocalBounds,size.x,size.y,safe);
+                    if(size.x==480)Capture($"audit-{level}-view-{zone+1}",size.x,size.y);
+                }
+                game.CameraRig.ToggleFollow();game.CameraRig.Frame(480,800,0,true);
+                game.CameraRig.SelectZone(-1);game.CameraRig.Frame(480,800,0,true);
+                Assert.Less(Quaternion.Angle(game.Owner.View.transform.rotation,Quaternion.Euler(game.Definition.CameraEuler)),.001f,
+                    "Overview returns to the authored heading after inspecting another side");
+                Assert.AreEqual(root,game.Root.rotation);
+                for(int i=0;i<32;i++)Assert.AreEqual(positions[i],game.Matter.Bodies[i].position,"Inspection never moves tissue");
+                for(int i=0;i<rails.Length;i++)Assert.AreEqual(railPositions[i],rails[i].Position,"Inspection never moves machinery");
+            }
+        }
+
         [UnityTest] public IEnumerator StudioBenchCoversPortraitDuringRotationAndFollow()
         {
             foreach(int n in new[]{3,1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20})

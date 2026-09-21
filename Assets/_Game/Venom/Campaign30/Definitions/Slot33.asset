@@ -22,16 +22,22 @@ MonoBehaviour:
   CameraEuler: {x: 26, y: 22, z: 0}
   ViewRadius: 0.61
   CameraZones:
-  - Label: S
+  - Label: "S \xB7 Ch\u1ECDn \u1ED1ng"
     LocalBounds:
       m_Center: {x: 0, y: -0.14, z: 0}
-      m_Extent: {x: 0.5, y: 0.16, z: 0.3}
-  - Label: A
+      m_Extent: {x: 0.5, y: 0.16, z: 0.4}
+    OverrideCameraEuler: 1
+    CameraEuler: {x: 10, y: 0, z: 0}
+  - Label: "A \xB7 Tay L"
     LocalBounds:
       m_Center: {x: -0.25, y: 0.16, z: 0}
-      m_Extent: {x: 0.25, y: 0.15, z: 0.3}
-  - Label: B
+      m_Extent: {x: 0.25, y: 0.15, z: 0.4}
+    OverrideCameraEuler: 1
+    CameraEuler: {x: 32, y: 55, z: 0}
+  - Label: "B \xB7 L\u1ED1i ra"
     LocalBounds:
       m_Center: {x: 0.25, y: 0.16, z: 0}
-      m_Extent: {x: 0.25, y: 0.15, z: 0.3}
+      m_Extent: {x: 0.25, y: 0.15, z: 0.4}
+    OverrideCameraEuler: 1
+    CameraEuler: {x: 32, y: -55, z: 0}
   InitialCameraZone: -1

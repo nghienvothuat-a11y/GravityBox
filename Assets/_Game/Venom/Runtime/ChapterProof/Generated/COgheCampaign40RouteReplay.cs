@@ -1,6 +1,6 @@
 #if DEVELOPMENT_BUILD && !UNITY_EDITOR
 // Generated from Assets/_Game/Tests/PlayMode/COgheCampaign40RouteTests.cs
-// SHA256 4683e84c9d9e3caa787980e1aeaacc2744222dc6a521fbaefd085f7c357842a4
+// SHA256 2357d5e418b61d80942c8df4387e26f9b39f67b4b369847b78ed082be8f346ca
 // Do not edit; regenerate after test changes.
 using System;
 using System.Collections;
@@ -20,8 +20,10 @@ namespace GravityBox.Venom.ChapterProof
         private VenomCampaign game;
         private SimulationMode previous;
         private bool persistence;
+        private int screenWidth=720,screenHeight=1280;
+        private readonly COgheChapterScreenInput input=new COgheChapterScreenInput();
         public IEnumerator Before()
-        {previous=Physics.simulationMode;Physics.simulationMode=SimulationMode.Script;persistence=VenomCampaignSave.PersistenceEnabled;VenomCampaignSave.PersistenceEnabled = false;yield return null;}
+        {input.Width=480;input.Height=800;previous=Physics.simulationMode;Physics.simulationMode=SimulationMode.Script;persistence=VenomCampaignSave.PersistenceEnabled;VenomCampaignSave.PersistenceEnabled = false;yield return null;}
         public IEnumerator After()
         {Time.timeScale=1;Physics.simulationMode=previous;VenomCampaignSave.PersistenceEnabled = false;yield return null;}
         private IEnumerator Load(int level)
@@ -67,28 +69,43 @@ namespace GravityBox.Venom.ChapterProof
             Assert.IsTrue(done(),reason+"; "+State());
         }
         private COgheRailSlider Rail(string name)=>Array.Find(game.Props,p=>p.name==name).GetComponent<COgheRailSlider>();
-        private IEnumerator Pull(COgheRailSlider rail,float direction,Func<bool> done,bool screen=false)
+        private IEnumerator Pull(COgheRailSlider rail,float direction,Func<bool> done,bool screen=true)
         {
             var prop=rail.GetComponent<VenomMovableProp>();
             game.SelectFragment(0);
-            if(screen){game.CameraRig.Frame(720,1280,0,true);game.TouchPoint(game.Owner.View.WorldToScreenPoint(prop.ManipulationGrip.position));}
+            if(screen)Tap(prop.ManipulationGrip.position);
             else game.SelectProp(prop);
             yield return Wait(30,()=>game.Attached,"Reach "+rail.name);
             Vector3 end=rail.Frame.TransformPoint(rail.Start+rail.Axis*(direction>0?rail.Travel+.12f:-.12f));
-            game.SetPropTarget(end);
-            yield return Wait(18,done,"One grasp operates "+rail.name,()=>game.SetPropTarget(end));
+            void Command(){if(screen)Tap(end);else game.SetPropTarget(end);}
+            Command();
+            yield return Wait(18,done,"One grasp operates "+rail.name,Command);
             Assert.IsTrue(game.Attached,"No repeated regrasp to compensate for a bad route: "+State());
             game.ReleaseProp();
         }
-        private IEnumerator Walk(Vector3 point,float tolerance=.04f)
-        {game.Motion.Move(0,game.Root.TransformPoint(point),true);yield return Wait(35,()=>Vector3.Distance(game.Motion.Centre(0),game.Root.TransformPoint(point))<tolerance,"Walk "+point);}
-        private IEnumerator Leave()
+        private IEnumerator Walk(Vector3 point,float tolerance=.04f,bool screen=true)
+        {
+            if(screen)Tap(game.Root.TransformPoint(point-Vector3.up*.02f));
+            else game.Motion.Move(0,game.Root.TransformPoint(point),true);
+            yield return Wait(35,()=>Vector3.Distance(game.Motion.Centre(0),game.Root.TransformPoint(point))<tolerance,"Walk "+point);
+        }
+        private void Tap(Vector3 world) => input.Tap(game,world,!game.Attached);
+        private IEnumerator Leave(bool screenExit=true)
         {
             Assert.IsTrue(game.FinalExitAvailable,"Mechanisms must open before the exit command");
             Assert.AreEqual(1,game.Matter.TotalFragmentCount);
             yield return COgheChapterProofCapture.Request(game,$"chapter40-{game.Definition.Order}-open");
-            yield return COgheChapterProofCapture.Request(game, "before-exit");
+            if(screenExit)
+            {
+                yield return COgheChapterProofCapture.Request(game,"before-exit");
+                Tap(game.Owner.Outlet.position);
+                Assert.IsTrue(game.Motion.Get(0)?.Exit??false,"The opened exit accepts a screen tap after the physical solution");
+            }
+            else
+            {
+                yield return COgheChapterProofCapture.Request(game, "before-exit");
             game.Motion.Move(0,game.Owner.Outlet.position-game.Owner.Outlet.forward*.024f,false,true);
+            }
             yield return Wait(45,()=>game.Owner.Completed,"All matter passes the real exit");
             Assert.AreEqual(32,game.Matter.EscapedCount);
             yield return COgheChapterProofCapture.Request(game,$"chapter40-{game.Definition.Order}-won");
@@ -104,46 +121,75 @@ namespace GravityBox.Venom.ChapterProof
             yield return Load(31);
             var g=Rail("G access carriage");var p=Rail("P retracting pin");
             Assert.IsFalse(game.FinalExitAvailable);
-            yield return Pull(g,-1,()=>g.Position<.004f);
-            yield return Pull(p,1,()=>p.AtEnd);
-            yield return Pull(g,1,()=>g.AtEnd);
+            yield return Pull(g,-1,()=>g.Position<.004f,false);
+            yield return Pull(p,1,()=>p.AtEnd,false);
+            yield return Pull(g,1,()=>g.AtEnd,false);
             yield return Wait(10,()=>game.FinalExitAvailable,"Meshed train raises E");
-            yield return Leave();
+            yield return Leave(false);
             game.ResetLevel();for(int i=0;i<120;i++)Tick();
             Assert.IsFalse(game.FinalExitAvailable);Assert.Less(p.Position,.004f);Assert.That(g.Position,Is.EqualTo(g.InitialTravel).Within(.005f));
         }
 
         public IEnumerator Level32UsesAThenReturnsToMoveTheSameBridgeToBAndWins()
+        {yield return Bridge32ScreenSolution(720,1280);}
+        public IEnumerator Bridge32CompactPortraitScreenSolution()
+        {yield return Bridge32ScreenSolution(480,800);}
+        public IEnumerator Bridge32TallPortraitScreenSolution()
+        {yield return Bridge32ScreenSolution(720,1612);}
+
+        public IEnumerator Audit32WrongBankAndReverseBridgeRecoverToWin()
+        {yield return Bridge32ScreenSolution(720,1612,true);}
+        private IEnumerator Bridge32ScreenSolution(int width,int height,bool recovery=false)
         {
+            screenWidth=width;screenHeight=height;input.Width=width;input.Height=height;
             yield return Load(32);var bridge=Rail("B reusable bridge");
-            yield return Pull(bridge,1,()=>bridge.AtEnd);
-            yield return Walk(new Vector3(.24f,-.14f,-.16f));
+            if(recovery)
+            {
+                yield return Walk(new Vector3(.24f,-.14f,.16f));
+                Assert.IsFalse(game.FinalExitAvailable,"B cannot finish before L, but permits retreat");
+                yield return Walk(new Vector3(-.26f,-.14f,.16f));
+                yield return Pull(bridge,1,()=>bridge.Position>.13f);
+                yield return Pull(bridge,-1,()=>bridge.Position<.003f);
+            }
+            yield return Pull(bridge,1,()=>bridge.AtEnd,true);
+            yield return Walk(new Vector3(.24f,-.14f,-.16f),screen:true);
             var sequence=Object.FindFirstObjectByType<COgheSequentialWinch>();
-            yield return Pull(sequence.Handle,1,()=>sequence.Complete);
-            yield return Walk(new Vector3(-.26f,-.14f,-.16f));
-            yield return Pull(bridge,-1,()=>bridge.Position<.003f);
-            yield return Walk(new Vector3(.25f,-.14f,.16f));
-            yield return Leave();
+            yield return Pull(sequence.Handle,1,()=>sequence.Complete,true);
+            yield return Walk(new Vector3(-.26f,-.14f,-.16f),screen:true);
+            yield return Pull(bridge,-1,()=>bridge.Position<.003f,true);
+            // The player can tap the exposed aperture directly from the bridge
+            // controls. Navigation must cross B and deliver all tissue itself.
+            yield return Leave(true);
         }
 
         private IEnumerator Transfer(COgheTubeNetwork net,Vector3 destination)
         {
             Vector3 local=game.Root.InverseTransformPoint(game.Motion.Centre(0));
             int entry=Vector3.Distance(local,net.Nodes[0].LocalPosition)<Vector3.Distance(local,net.Nodes[1].LocalPosition)?0:1;
-            yield return Walk(net.Nodes[entry].LocalPosition+net.Nodes[entry].LocalOutward*.025f,.035f);
-            Assert.IsTrue(net.TryChoose(0,0),"Choose a physically adjacent transfer pipe");
+            Tap(game.Root.TransformPoint(net.Nodes[entry].LocalPosition));
             yield return Wait(30,()=>net.AnyTravelling,"Enter pipe; "+net.DebugEntryState(0,0));
             yield return Wait(30,()=>!net.AnyTravelling&&!net.AnyApproaching,"Exit pipe; "+net.DebugState(0));
             Assert.AreEqual(1-entry,net.LastReachedNode,"Transfer must reach its opposite mouth; "+State()+"; "+net.DebugState(0));
             Debug.Log($"CHAPTER_PIPE_ARRIVAL {net.name} node={net.LastReachedNode} body={game.Root.InverseTransformPoint(game.Motion.Centre(0)):F3}");
             yield return Walk(destination);
         }
-        public IEnumerator Level33ChoosesAOpensEReturnsToSAndChoosesBToWin()
+        public IEnumerator Level33ChoosesAOpensEReturnsToSAndChoosesBToWin() {yield return Pipe33Solution(false);}
+        public IEnumerator Audit33VisitsBFirstReturnsAndChangesSelectorMidStroke() {yield return Pipe33Solution(true);}
+        private IEnumerator Pipe33Solution(bool recovery)
         {
+            if(recovery){input.Width=720;input.Height=1612;}
             yield return Load(33);var selector=Rail("T route selector");
             var nets=game.Root.GetComponentsInChildren<COgheTubeNetwork>();
             var a=Array.Find(nets,n=>n.name.StartsWith("A "));var b=Array.Find(nets,n=>n.name.StartsWith("B "));
             Assert.IsFalse(a.IsEntryOpen(0));Assert.IsTrue(b.IsEntryOpen(0));
+            if(recovery)
+            {
+                yield return Transfer(b,new Vector3(.30f,.045f,.12f));
+                Assert.IsFalse(game.FinalExitAvailable,"Wrong room must have a return route");
+                yield return Transfer(b,new Vector3(-.25f,-.277f,.15f));
+                yield return Pull(selector,-1,()=>selector.Position<.10f);
+                yield return Pull(selector,1,()=>selector.AtEnd);
+            }
             yield return Pull(selector,-1,()=>selector.Position<.003f);
             Assert.IsTrue(a.IsEntryOpen(0));Assert.IsFalse(b.IsEntryOpen(0));
             yield return Transfer(a,new Vector3(-.30f,.045f,.08f));
@@ -155,10 +201,27 @@ namespace GravityBox.Venom.ChapterProof
             yield return Leave();
         }
 
-        public IEnumerator Level34RetractsBParksXPassesGReturnsXRestoresBAndWins()
+        public IEnumerator Level34RetractsBParksXPassesGReturnsXRestoresBAndWins() {yield return Crossing34Solution(false);}
+        public IEnumerator Audit34WrongOrderAndMidStrokeReversalRecoverToWin() {yield return Crossing34Solution(true);}
+        private IEnumerator Crossing34Solution(bool recovery)
         {
+            if(recovery){input.Width=720;input.Height=1612;}
             yield return Load(34);var b=Rail("B bay bridge");var x=Rail("X crossing block");var g=Rail("G crossing carriage");
+            if(recovery)
+            {
+                Tap(g.GetComponent<VenomMovableProp>().ManipulationGrip.position);
+                yield return Wait(30,()=>game.Attached,"Try G before parking X");
+                Tap(g.Frame.TransformPoint(g.Start+g.Axis*(g.Travel+.12f)));
+                for(int i=0;i<360;i++)Tick();
+                Assert.IsFalse(g.AtEnd,"X physically stops the wrong-order carriage");game.ReleaseProp();
+                yield return Pull(g,-1,()=>g.Position<=g.CatchTolerance&&g.Latched);
+            }
             yield return Pull(b,-1,()=>b.Position<.004f);
+            if(recovery)
+            {
+                yield return Pull(x,1,()=>x.Position>.12f);
+                yield return Pull(x,-1,()=>x.Position<.004f);
+            }
             yield return Pull(x,1,()=>x.AtEnd);
             yield return Pull(g,1,()=>g.AtEnd);
             yield return Wait(10,()=>game.FinalExitAvailable,"Gear train raises E");

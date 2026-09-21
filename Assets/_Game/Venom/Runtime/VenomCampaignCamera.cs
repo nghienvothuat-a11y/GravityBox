@@ -84,7 +84,9 @@ namespace GravityBox.Venom
             width=Mathf.Max(1,width);height=Mathf.Max(1,height);
             var camera=game.Owner.View;
             camera.orthographic=true;camera.aspect=(float)width/height;
-            camera.transform.rotation=Quaternion.Euler(game.Definition.CameraEuler);
+            Vector3 heading=Zone>=0&&game.Definition.CameraZones[Zone].OverrideCameraEuler
+                ?game.Definition.CameraZones[Zone].CameraEuler:game.Definition.CameraEuler;
+            camera.transform.rotation=Quaternion.Euler(heading);
             Rect usable=UsableRect(width,height,safeArea??new Rect(0,0,width,height));
             Vector3 right=camera.transform.right,up=camera.transform.up;
             Vector3 target;float halfWidth,halfHeight;

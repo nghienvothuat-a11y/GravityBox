@@ -353,6 +353,37 @@ MonoBehaviour:
     height: 0
   Shape: {fileID: 8047963}
   SphereRadius: 0
+--- !u!1 &11941063
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 11941064}
+  m_Layer: 0
+  m_Name: L remote winch command plane
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &11941064
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11941063}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.33, y: 0.066, z: 0.13}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1092776638}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &45100034
 GameObject:
   m_ObjectHideFlags: 0
@@ -5827,7 +5858,7 @@ Light:
     m_Strength: 0.2
     m_Bias: 0.015
     m_NormalBias: 0.1
-    m_NearPlane: 0.05
+    m_NearPlane: 0.099999994
     m_CullingMatrixOverride:
       e00: 1
       e01: 0
@@ -6325,6 +6356,7 @@ Transform:
   - {fileID: 1539987165}
   - {fileID: 199676791}
   - {fileID: 1730457108}
+  - {fileID: 11941064}
   m_Father: {fileID: 523767774}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &1092776639
@@ -8330,7 +8362,7 @@ MonoBehaviour:
   ProvidesStep: 0
   ManipulationGrip: {fileID: 63990312}
   ManipulationHandleOnly: 0
-  ManipulationPlane: {fileID: 0}
+  ManipulationPlane: {fileID: 11941064}
   InitialPosition: {x: 0, y: 0, z: 0}
   InitialRotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!54 &1357673408

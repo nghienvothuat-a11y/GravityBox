@@ -1,6 +1,6 @@
 #if DEVELOPMENT_BUILD && !UNITY_EDITOR
 // Generated from Assets/_Game/Tests/PlayMode/COgheCampaign40CooperationTests.cs
-// SHA256 f52515732c7bb40d829441ff566b3dd2e041cbfe8be02d470487b1ece5ac94e4
+// SHA256 676dce24c46c253a1b5bd84786fc603738606fd95171680265f9540943c8fc54
 // Do not edit; regenerate after test changes.
 using System;
 using System.Collections;
@@ -21,10 +21,11 @@ namespace GravityBox.Venom.ChapterProof
         private SimulationMode previousMode;
         private bool previousPersistence;
         private VenomCampaign game;
+        private readonly COgheChapterScreenInput input = new COgheChapterScreenInput();
 
         public IEnumerator Before()
         {
-            previousMode = Physics.simulationMode; Physics.simulationMode = SimulationMode.Script;
+            input.Width=480;input.Height=800;previousMode = Physics.simulationMode; Physics.simulationMode = SimulationMode.Script;
             previousPersistence = VenomCampaignSave.PersistenceEnabled;
             VenomCampaignSave.PersistenceEnabled = false; yield return null;
         }
@@ -86,18 +87,18 @@ namespace GravityBox.Venom.ChapterProof
         }
         private IEnumerator Walk(int anchor, Vector3 point, float tolerance = .038f)
         {
-            game.SelectFragment(anchor); game.Motion.Move(anchor, point, true);
+            game.SelectFragment(anchor); input.Tap(game, point - game.Root.up * .022f);
             yield return WaitFor(36, () => Vector3.Distance(game.Motion.Centre(anchor), point) < tolerance, "Walk to " + point);
         }
         private IEnumerator Hold(int anchor, COgheTissueSensor pad)
         {
-            yield return Walk(anchor, pad.transform.position + Vector3.up * .018f);
+            game.SelectFragment(anchor); input.Tap(game, pad.transform.position);
             yield return WaitFor(10, () => pad.Active, "Actual tissue must hold " + pad.name);
         }
         private IEnumerator Split(COgheGuillotine knife)
         {
             Assert.AreEqual(1, game.Matter.TotalFragmentCount, "Begin the cut with reunited tissue");
-            int anchor = Parts()[0]; game.SelectFragment(anchor); game.Motion.Move(anchor, knife.Sensor.position, true);
+            int anchor = Parts()[0]; game.SelectFragment(anchor); input.Tap(game, knife.Rail.Body.position);
             yield return WaitFor(30, () => game.Matter.TotalFragmentCount > 1, "Actual knife cuts bonds");
         }
         private void Roles(out int holder, out int worker)
@@ -108,7 +109,7 @@ namespace GravityBox.Venom.ChapterProof
         private IEnumerator Pull(int anchor, COgheRailSlider rail, float direction, Func<bool> finished, float seconds = 35)
         {
             Vector3 target = rail.Frame.TransformPoint(rail.Start + rail.Axis * (direction > 0 ? rail.Travel + .12f : -.12f));
-            game.SelectFragment(anchor); game.SelectProp(rail.GetComponent<VenomMovableProp>());
+            game.SelectFragment(anchor); input.Tap(game, rail.GetComponent<VenomMovableProp>().ManipulationGrip.position);
             yield return WaitFor(30, () => game.Attached || finished(), "Grasp " + rail.name);
             // A single grasp with continued input must execute the whole
             // stroke. Repeated reattachment would hide an unstable stance.
@@ -119,7 +120,7 @@ namespace GravityBox.Venom.ChapterProof
                     yield return COgheChapterProofCapture.Request(game, $"campaign40-{game.Definition.Order:00}-grasp-failed");
                     Assert.Fail($"Lost the single grasp on {rail.name} after {i * Dt:F2}s; {State()}");
                 }
-                if (i % 90 == 0) game.SetPropTarget(target);
+                if (i % 90 == 0) input.Tap(game, target, false);
                 Tick(); if (i % 240 == 0) yield return null;
             }
             if (!finished()) yield return COgheChapterProofCapture.Request(game, $"campaign40-{game.Definition.Order:00}-pull-failed");
@@ -129,7 +130,7 @@ namespace GravityBox.Venom.ChapterProof
         private IEnumerator Reunion(Vector3 local)
         {
             Vector3 point = game.Root.TransformPoint(local);
-            foreach (int anchor in Parts()) game.Motion.Move(anchor, point, true);
+            foreach (int anchor in Parts()) { game.SelectFragment(anchor); input.Tap(game, point - game.Root.up * .022f); }
             yield return WaitFor(50, () => game.Matter.TotalFragmentCount == 1, "All parts physically reunite");
         }
         private IEnumerator Leave()
@@ -138,7 +139,8 @@ namespace GravityBox.Venom.ChapterProof
             yield return COgheChapterProofCapture.Request(game, $"campaign40-{game.Definition.Order:00}-solution-before-exit");
             int anchor = Parts()[0]; game.SelectFragment(anchor);
             yield return COgheChapterProofCapture.Request(game, "before-exit");
-            game.Motion.Move(anchor, game.Owner.Outlet.position - game.Owner.Outlet.forward * .024f, false, true);
+            input.Tap(game, game.Owner.Outlet.position);
+            Assert.IsTrue(game.Motion.Get(anchor)?.Exit ?? false, "Opened outlet accepts screen tap");
             yield return WaitFor(45, () => game.Owner.Completed, "All tissue exits through the authored aperture");
             Assert.AreEqual(32, game.Matter.EscapedCount);
             yield return COgheChapterProofCapture.Request(game, $"campaign40-{game.Definition.Order:00}-solution-complete");
@@ -149,8 +151,11 @@ namespace GravityBox.Venom.ChapterProof
                     Assert.That(rail.Position, Is.EqualTo(rail.InitialTravel).Within(.005f), "Retry restores " + rail.name);
         }
 
-        public IEnumerator Level35ReturnsWhenAIsReleasedThenCatchesDReunitesPullsEAndExits()
+        public IEnumerator Level35ReturnsWhenAIsReleasedThenCatchesDReunitesPullsEAndExits() {yield return Solution35(false);}
+        public IEnumerator Audit35AlternateRecoveryTallPortrait() {yield return Solution35(true);}
+        private IEnumerator Solution35(bool recovery)
         {
+            if(recovery){input.Width=720;input.Height=1612;}
             yield return Load(35);
             var spring = Mechanism<COgheSpringAccessDoor>();
             // A single whole body cannot leave A and inherit a permanently
@@ -164,6 +169,14 @@ namespace GravityBox.Venom.ChapterProof
             yield return Hold(holder, spring.Input);
             yield return WaitFor(10, () => spring.Door.AtEnd, "A reopens D after recoverable release");
             yield return Walk(worker, game.Root.TransformPoint(new Vector3(.13f, -.278f, .14f)));
+            if(recovery)
+            {
+                yield return Walk(holder,game.Root.TransformPoint(new Vector3(-.36f,-.278f,-.02f)));
+                yield return WaitFor(8,()=>spring.Door.Position<.003f,"Release A with worker beyond D");
+                Assert.IsTrue(spring.LatchHandle.Locked,"Uncaught closed door cannot be remotely latched");
+                yield return Hold(holder,spring.Input);
+                yield return WaitFor(10,()=>spring.Door.AtEnd,"Re-hold A rescues worker without retry");
+            }
             yield return Pull(worker, spring.LatchHandle, 1, () => spring.Caught);
             yield return Reunion(new Vector3(.29f, -.278f, .04f));
             Assert.IsFalse(spring.Input.Active); Assert.IsTrue(spring.Door.AtEnd, "The physical catch releases the A operator");
@@ -171,8 +184,11 @@ namespace GravityBox.Venom.ChapterProof
             yield return Leave();
         }
 
-        public IEnumerator Level36RevealsBChangesRolesAndCompletesWithRealWinchEffort()
+        public IEnumerator Level36RevealsBChangesRolesAndCompletesWithRealWinchEffort() {yield return Solution36(false);}
+        public IEnumerator Audit36AlternateRecoveryTallPortrait() {yield return Solution36(true);}
+        private IEnumerator Solution36(bool recovery)
         {
+            if(recovery){input.Width=720;input.Height=1612;}
             yield return Load(36);
             var spring = Mechanism<COgheSpringAccessDoor>(); var winch = Mechanism<COgheCooperativeWinch>();
             Assert.IsFalse(winch.Input.Active); Assert.IsFalse(game.FinalExitAvailable);
@@ -180,6 +196,14 @@ namespace GravityBox.Venom.ChapterProof
             yield return Hold(holder, spring.Input);
             yield return WaitFor(10, () => spring.Door.AtEnd, "Held A lifts temporary D");
             yield return Walk(worker, game.Root.TransformPoint(new Vector3(.13f, -.278f, .14f)));
+            if(recovery)
+            {
+                yield return Walk(holder,game.Root.TransformPoint(new Vector3(-.36f,-.278f,-.02f)));
+                yield return WaitFor(8,()=>spring.Door.Position<.003f,"Release A with worker beyond D");
+                Assert.IsTrue(spring.LatchHandle.Locked,"Uncaught closed door cannot be remotely latched");
+                yield return Hold(holder,spring.Input);
+                yield return WaitFor(10,()=>spring.Door.AtEnd,"Re-hold A rescues worker without retry");
+            }
             yield return Pull(worker, spring.LatchHandle, 1, () => spring.Caught);
             Assert.IsTrue(spring.LatchHandle.AtEnd, "Solid B cover is fully removed");
             yield return Hold(worker, winch.Input);
@@ -189,8 +213,11 @@ namespace GravityBox.Venom.ChapterProof
             yield return Leave();
         }
 
-        public IEnumerator Level37UsesOneGearAtBothStationsWhileAIsHeldThenReunitesAndExits()
+        public IEnumerator Level37UsesOneGearAtBothStationsWhileAIsHeldThenReunitesAndExits() {yield return Solution37(false);}
+        public IEnumerator Audit37AlternateRecoveryTallPortrait() {yield return Solution37(true);}
+        private IEnumerator Solution37(bool recovery)
         {
+            if(recovery){input.Width=720;input.Height=1612;}
             yield return Load(37);
             var dock = Mechanism<COgheCooperativeDockTransmission>();
             // Docking alone never energizes the motor.
@@ -200,13 +227,22 @@ namespace GravityBox.Venom.ChapterProof
             yield return Hold(holder, dock.Input);
             yield return WaitFor(12, () => dock.AccessCaught, "Actual pitch contact at I plus A opens D");
             yield return Pull(worker, dock.Carriage, 1, () => dock.AtII && dock.Carriage.Latched, 40);
+            if(recovery)
+            {
+                yield return Pull(worker,dock.Carriage,-1,()=>dock.AtI&&dock.Carriage.Latched,40);
+                Assert.IsTrue(dock.AccessCaught,"Returning G does not relock the caught door");
+                yield return Pull(worker,dock.Carriage,1,()=>dock.AtII&&dock.Carriage.Latched,40);
+            }
             yield return Pull(worker, dock.Handle, 1, () => dock.Complete);
             yield return Reunion(new Vector3(.33f, -.278f, .04f));
             yield return Leave();
         }
 
-        public IEnumerator Level38SplitsOpensDReunitesMovesHeavyQSplitsAgainAndExits()
+        public IEnumerator Level38SplitsOpensDReunitesMovesHeavyQSplitsAgainAndExits() {yield return Solution38(false);}
+        public IEnumerator Audit38AlternateRecoveryTallPortrait() {yield return Solution38(true);}
+        private IEnumerator Solution38(bool recovery)
         {
+            if(recovery){input.Width=720;input.Height=1612;}
             yield return Load(38);
             var first = Mechanism<COgheCooperativeWinch>("A K first-stage winch");
             var second = Mechanism<COgheCooperativeWinch>("Q B C second-stage winch");
@@ -216,6 +252,14 @@ namespace GravityBox.Venom.ChapterProof
             yield return Split(Mechanism<COgheGuillotine>("I first gravity knife controller")); Roles(out int holder, out int worker);
             yield return Hold(holder, first.Input);
             yield return Pull(worker, first.Handle, 1, () => first.Complete);
+            if(recovery)
+            {
+                game.SelectFragment(worker);input.Tap(game,q.GetComponent<VenomMovableProp>().ManipulationGrip.position);
+                yield return WaitFor(30,()=>game.Attached,"Half-body reaches heavy Q");
+                Vector3 target=q.Frame.TransformPoint(q.Start+q.Axis*(q.Travel+.12f));
+                input.Tap(game,target,false);yield return For(3);
+                Assert.IsFalse(q.AtEnd,"An insufficient real tissue load cannot dock Q");game.ReleaseProp();
+            }
             yield return Reunion(new Vector3(.01f, -.278f, -.12f));
             yield return Pull(Parts()[0], q, 1, () => q.AtEnd && q.Latched, 45);
             Assert.IsTrue(q.Latched, "Q's physical end catch retains the transmission");

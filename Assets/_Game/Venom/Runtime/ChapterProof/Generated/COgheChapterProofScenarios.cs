@@ -6,7 +6,7 @@ namespace GravityBox.Venom.ChapterProof
 {
     internal static class COgheChapterProofScenarios
     {
-        internal const string SourceManifest = "COgheBoss30ScreenTests:ad4a528a146ea5ed8ea3c6acd65ff9a3f25a9001132d74f13479b8d505a39f9e;COgheCampaign40RouteTests:4683e84c9d9e3caa787980e1aeaacc2744222dc6a521fbaefd085f7c357842a4;COgheCampaign40CooperationTests:f52515732c7bb40d829441ff566b3dd2e041cbfe8be02d470487b1ece5ac94e4;COgheCampaign40BossTests:9c0a529386b31dc5838b1cd2ca6609c68f0ffca41c6364c7cfd2b8e9fd05973c";
+        internal const string SourceManifest = "COgheChapterScreenInput:474dfbf04bc16e980d8fb3a9bc16805ae28928a4cc44856e50ba9f5286460732;COgheBoss30ScreenTests:ad4a528a146ea5ed8ea3c6acd65ff9a3f25a9001132d74f13479b8d505a39f9e;COgheCampaign40RouteTests:2357d5e418b61d80942c8df4387e26f9b39f67b4b369847b78ed082be8f346ca;COgheCampaign40CooperationTests:676dce24c46c253a1b5bd84786fc603738606fd95171680265f9540943c8fc54;COgheCampaign40BossTests:55eb9a39bbbf57c3355eb74bc07f792df8fbb619acfd3f3f53a7c0c5e88d4c08";
         internal static IEnumerator Run(int level)
         {
             switch (level)

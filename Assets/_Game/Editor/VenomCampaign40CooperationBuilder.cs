@@ -74,6 +74,8 @@ namespace GravityBox.Editor
         private static void BuildCampaign35(ExpansionContext c)
         {
             CooperationRoom(c, "Giữ rồi trả tự do", "Một phần giữ A; phần bên kia kéo L để chốt cửa. Hợp thể rồi kéo nắp E.", .50f, 0);
+            c.Definition.CameraZones[1].OverrideCameraEuler = true;
+            c.Definition.CameraZones[1].CameraEuler = new Vector3(40, -24, 0);
             var door = CooperationDoor(c, "D spring access door", 0);
             ExpansionKnife(c, "I gravity knife", -.34f, -.13f).TouchHalfSize = new Vector3(.036f, .10f, .08f);
             var a = ExpansionPad(c, "A temporary door clutch", new Vector3(-.38f, -.297f, .17f), .012f, .112f);

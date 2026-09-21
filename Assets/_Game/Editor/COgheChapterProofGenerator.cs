@@ -22,7 +22,7 @@ namespace GravityBox.Editor
         private const string Guard = "#if DEVELOPMENT_BUILD && !UNITY_EDITOR\n";
         private static readonly string[] Sources =
         {
-            "COgheBoss30ScreenTests", "COgheCampaign40RouteTests", "COgheCampaign40CooperationTests", "COgheCampaign40BossTests"
+            "COgheChapterScreenInput", "COgheBoss30ScreenTests", "COgheCampaign40RouteTests", "COgheCampaign40CooperationTests", "COgheCampaign40BossTests"
         };
         public int callbackOrder => -1000;
 
@@ -92,6 +92,16 @@ namespace GravityBox.Editor
                     source = source.Replace("\"30-screen-before-exit\"", "\"before-exit\"");
                     if (exits != 0 || !source.Contains("Tap(game.Owner.Outlet.position)"))
                         throw new InvalidOperationException("Boss 30 proof must use its screen exit command.");
+                }
+                else if (type == "COgheChapterScreenInput")
+                {
+                    if (exits != 0) throw new InvalidOperationException("Input helper must not issue solution commands.");
+                }
+                else if (type == "COgheCampaign40CooperationTests" || type == "COgheCampaign40BossTests")
+                {
+                    if (exits != 0 || !source.Contains("input.Tap(game, game.Owner.Outlet.position)") ||
+                        !source.Contains("\"before-exit\""))
+                        throw new InvalidOperationException(type + " must capture then tap the real screen exit.");
                 }
                 else if (exits != 1) throw new InvalidOperationException(type + " must contain one shared real outlet command; found " + exits);
                 if (source.Contains("NUnit.") || source.Contains("UnityEngine.TestTools") || source.Contains("COgheExpansionIntegrationTests"))

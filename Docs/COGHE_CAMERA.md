@@ -54,3 +54,11 @@ Không thêm camera phụ, RenderTexture, shader, hiệu ứng hậu kỳ hoặc
 Đã build và mở bản macOS mới: kiểm tra trực tiếp HUD dọc, chuyển Hộp 1 ở màn 08, Khoang 2 ở Boss 20, Theo COghe và Nhà. Bản cuối giữ khung kính khi xem khoang; kiểm tra lại Boss 20 sau build xác nhận nút và khung đều hoạt động. Không thay collider, joint, trọng lượng, hình học scene hoặc luật puzzle trong đợt camera này.
 
 Bản macOS: `Builds/Venom/macOS/Venom.app`. APK trên OPPO vẫn là bản tối ưu trước đợt camera này; chưa build lại Android trong lượt này.
+
+## Góc nhìn riêng theo khoang — rà 32–40, 21/09/2026
+
+`VenomCameraZone` có `OverrideCameraEuler` và `CameraEuler` tùy chọn. Dữ liệu
+cũ mặc định không override; Toàn cảnh và Follow dùng heading của level. Camera
+32–35 khai báo góc nhìn khoang khi vách/ống/nắp che đường chạm. Việc chọn khoang
+không xoay Root hoặc thay trạng thái cơ quan. Kiểm thử portrait/safe area và
+chuyển về toàn cảnh nằm trong `ChapterInspectionAnglesFrameBothPortraitsWithoutMovingPuzzle`.

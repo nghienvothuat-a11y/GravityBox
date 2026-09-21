@@ -84,3 +84,21 @@ Phần trên lưu thiết kế minh họa v1. Màn 32 hiện đã được dựn
 Luồng đã chạy trong app macOS: **Dùng cầu tới A để kéo L, trở về bệ giữa, chuyển cầu tới B và thoát.** Hợp thể trước khi ra cửa; ảnh trước thoát ghi1 phần/0 hạt thoát, ảnh thắng ghi1 phần/32 hạt thoát; không thua. Kiểm tra reset sau thắng và chọn các điều khiển nhìn thấy trong trạng thái đầu màn đều đạt.
 
 Toàn bộ suite: **341/341 PlayMode,8/8 EditMode**. Cả10 lời giải đạt trong bản macOS Development thực tế; chưa đo hiệu năng hay chơi chạm tay trên thiết bị mobile. [Hồ sơ triển khai chung](../CHAPTER_31_40_IMPLEMENTATION.md) ghi trạng thái nguồn, các điều chỉnh và giới hạn kiểm chứng. Bằng chứng màn này: `Artifacts/chapter40-player-proof/20260921T135858138Z/level-32.json`, `level-32-open.png` và `level-32-won.png`.
+
+## 12. Sửa lỗi chạm lỗ cuối — 21/09/2026
+
+Mrk phát hiện sau khi trả cầu về B không chạm được lỗ thoát. Đã tái hiện:
+camera `(24,12,0)` làm tia chạm chọn vách A–B. Đổi riêng góc camera thành
+`(24,-24,0)` trong definition và builder, giữ nguyên cơ quan và vật lý.
+Sau khi kéo cầu, **Buông vật → chạm lỗ** để đi ra.
+
+Đã kiểm chứng toàn bộ chuỗi bằng điểm chạm ở 480×800, 720×1280, 720×1612,
+thắng đủ 32/32 hạt và reset. **345/345 PlayMode, 8/8 EditMode** đạt; bản Mac
+mới thắng trong replay thực tế và có ảnh framebuffer. Kiểm chứng tự động,
+chưa thay thế chơi tay trên mobile. [Nguyên nhân, sửa lỗi và bằng chứng](../../../Verification/COgheCampaign30/LEVEL_32_EXIT_TAP_2026_09_21.md).
+
+## Rà đường đi và phục hồi — 21/09/2026
+
+Thêm ba góc quan sát Cầu B / A · Tay L / B · Lối ra. Góc B nhìn từ bên phải để chạm được cả bệ B khi đi nhầm nhánh sớm; toàn cảnh giữ góc sửa cửa thoát trước đó.
+
+Các kiểm tra mới dùng `TouchPoint`, camera/HUD và mô phỏng thật; không gán vị trí sinh vật hoặc ép trạng thái thắng. [Kết quả, phạm vi và bằng chứng đợt rà 32–40](../../../Verification/COgheCampaign30/LEVELS_32_40_ROUTE_AUDIT_2026_09_21.md).
