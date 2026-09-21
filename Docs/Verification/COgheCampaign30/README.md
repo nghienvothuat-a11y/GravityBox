@@ -281,3 +281,8 @@ bộ hồi quy vẫn ghi nhận lỗi riêng của màn 5, không tuyên bố to
 ## Màn 17 — dòng cơ thể khi thoát ống, 18/09/2026
 
 [Nguyên nhân, fix dùng chung và kiểm thử lớp da thật](tube-exit-17.md).
+
+## Màn 05 — thân mắc ở bệ, xuyên máng khi xoay, 21/09/2026
+
+[Báo cáo spawn, collider kín và hồi quy 91/91](slide05-solid-trough.md).
+Máng dày thật và khớp phần nhìn thấy; không thay lực mô hoặc luật tách/hợp thể.

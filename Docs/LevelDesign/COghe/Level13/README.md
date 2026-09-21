@@ -63,3 +63,13 @@ Camera 3/4 phải thấy cần, cửa, nút sau kính, nắp và toàn tuyến �
 ## Nguồn hình
 
 Tạo bằng công cụ image_gen tích hợp, theo skill imagegen. Tham chiếu phong cách: mockup Level 12. Prompt ban đầu và lượt chỉnh: [generation-prompts.md](generation-prompts.md).
+
+## Sửa luồn ống — 21/09/2026 (vị trí chơi 17)
+
+Giữ bố cục và chuỗi cần A → nút B → ống. Dòng di chuyển trong ống điều chỉnh
+tốc độ phần trước theo khoảng cách với phần sau, đo dọc đường cong. Nếu đuôi
+chậm ở vành, phần đầu chờ, tránh rải mô thành nhiều giọt dọc ống. Cơ thể chỉ
+giãn ngang sau khi cả bán kính hạt đã ra khỏi vành. Điều khiển vẫn bằng lực,
+collider luôn bật; không dịch chuyển tức thời, ép tụ hoặc thắng khi mới ra đầu.
+
+[Kiểm chứng và giới hạn](../../../Verification/COgheCampaign30/tube-exit-17.md).

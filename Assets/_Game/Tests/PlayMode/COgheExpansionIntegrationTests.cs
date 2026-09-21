@@ -45,6 +45,16 @@ namespace GravityBox.Tests
                     if(surface.Slippery||surface.HasSlipRegion)
                         Assert.IsTrue(surface.Selectable,$"Level {n}: slick surface {surface.name} must accept commands.");
                     if(surface.name!="Glass face 5"&&surface.name!="Laboratory ceiling")continue;
+                    // Approved 18/09 exception: source 17 is displayed as 24.
+                    // Its roof passes taps to the high bearing; it still has
+                    // physical collision and grip. See gear-selection-24.md.
+                    if(n==17&&surface.name=="Laboratory ceiling")
+                    {
+                        Assert.IsFalse(surface.Selectable,"The gear lesson roof must pass taps through to its bearing.");
+                        Assert.IsTrue(surface.Shape.enabled);
+                        Assert.IsTrue(surface.Grip(surface.transform.position));
+                        continue;
+                    }
                     Assert.IsTrue(surface.Selectable&&surface.InterceptExterior,$"Level {n}: roof must remain pickable even without rotation.");
                     bool selected=false;
                     foreach(float x in new[]{-.3f,0f,.3f})foreach(float y in new[]{-.3f,0f,.3f})

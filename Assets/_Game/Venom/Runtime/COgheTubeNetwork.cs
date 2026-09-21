@@ -89,6 +89,11 @@ namespace GravityBox.Venom
         private readonly int[] queuedEntry=new int[CohesiveOrganism.ParticleCount];
         private readonly int[] queuedEdge=new int[CohesiveOrganism.ParticleCount];
         private readonly Vector3[] queuedApproach=new Vector3[CohesiveOrganism.ParticleCount];
+        // Reused once per travelling body; keep the same curve projection for
+        // pacing and force calculation without doubling the path searches.
+        private readonly Vector3[] flowLocal=new Vector3[CohesiveOrganism.ParticleCount],flowTangent=new Vector3[CohesiveOrganism.ParticleCount];
+        private readonly float[] flowAlong=new float[CohesiveOrganism.ParticleCount],flowProgress=new float[CohesiveOrganism.ParticleCount];
+        private readonly float[] orderedProgress=new float[CohesiveOrganism.ParticleCount],flowPace=new float[CohesiveOrganism.ParticleCount];
         private readonly List<int>[] adjacency=new List<int>[64];
         private VenomCampaign game;
         private Transform root;
@@ -355,6 +360,35 @@ namespace GravityBox.Venom
             Vector3 terminalTangent=travel.Direction>0?
                 (edge.Path[edge.Path.Length-1]-edge.Path[edge.Path.Length-2]).normalized:
                 (edge.Path[0]-edge.Path[1]).normalized;
+            int source=travel.Direction>0?edge.A:edge.B;
+            Vector3 sourcePoint=Nodes[source].LocalPosition;
+            Vector3 sourceTangent=travel.Direction>0?(edge.Path[1]-edge.Path[0]).normalized:
+                (edge.Path[edge.Path.Length-2]-edge.Path[edge.Path.Length-1]).normalized;
+            float trailingProgress=float.PositiveInfinity;int flowCount=0;
+            for(int i=0;i<32;i++)
+            {
+                if(game.Matter.Groups[i]!=game.Matter.Groups[travel.Anchor]||game.Matter.Escaped[i]&&terminal!=TerminalKind.Exit)continue;
+                Vector3 p=root.InverseTransformPoint(game.Matter.Bodies[i].position);
+                Closest(edge,p,out flowLocal[i],out flowTangent[i],out flowAlong[i]);
+                float progress=travel.Direction>0?flowAlong[i]:edge.Length-flowAlong[i];
+                if(progress<.001f)progress=Mathf.Min(progress,Vector3.Dot(p-sourcePoint,sourceTangent));
+                if(progress>edge.Length-.001f)progress+=Mathf.Max(0,Vector3.Dot(p-localEndpoint,terminalTangent));
+                flowProgress[i]=progress;flowPace[i]=1;orderedProgress[flowCount++]=progress;
+                trailingProgress=Mathf.Min(trailingProgress,progress);
+            }
+            if(openTerminal)
+            {
+                Array.Sort(orderedProgress,0,flowCount);
+                for(int gap=1;gap<flowCount;gap++)
+                {
+                    float spacing=orderedProgress[gap]-orderedProgress[gap-1];
+                    float pace=Mathf.Clamp01((game.Matter.Profile.Spacing-spacing)/(game.Matter.Profile.Spacing*.35f));
+                    if(pace>=1)continue;
+                    // Slow the whole leading section together, so a stalled
+                    // tail cannot be left behind by an otherwise compact head.
+                    for(int i=0;i<32;i++)if(flowProgress[i]>=orderedProgress[gap])flowPace[i]=Mathf.Min(flowPace[i],pace);
+                }
+            }
             Rigidbody frame=root.GetComponent<Rigidbody>();
             for(int i=0;i<32;i++)
             {
@@ -362,7 +396,7 @@ namespace GravityBox.Venom
                     game.Matter.Escaped[i]&&terminal!=TerminalKind.Exit)continue;
                 var body=game.Matter.Bodies[i];Vector3 localBody=root.InverseTransformPoint(body.position);
                 particleCount++;
-                Closest(edge,localBody,out Vector3 local,out Vector3 tangent,out float along);
+                Vector3 local=flowLocal[i],tangent=flowTangent[i];float along=flowAlong[i];
                 if(travel.Direction<0)tangent=-tangent;
                 float beyond=Vector3.Dot(localBody-localEndpoint,terminalTangent);
                 beyondSum+=beyond;
@@ -383,13 +417,19 @@ namespace GravityBox.Venom
                 // still approaching, so the whole body can never be resident
                 // in the chamber at once and branch selection never unlocks.
                 float speed=openTerminal?.11f*Mathf.Clamp01((openLead-beyond)/.035f):Mathf.Min(.13f,Mathf.Max(0,remaining)*3f);
+                // A briefly snagged tail must slow the leading core, not leave
+                // droplets along the entire pipe. Arc length follows the bend;
+                // world-space distance could drag tissue across its solid wall.
+                // This only changes bounded drive forces, never body positions,
+                // collision or connectivity (including knife-cut fragments).
+                if(openTerminal)speed*=flowPace[i]*Mathf.Clamp01((.095f-(flowProgress[i]-trailingProgress))/.035f);
                 // Tissue that has crossed an open mouth can spread into the
                 // receiving room. Keeping full radial centering there packs a
                 // large fragment into a one-particle-wide plug and strands its
                 // tail inside an otherwise clear bore.
-                float radialDrive=openTerminal&&beyond>0?Mathf.Clamp01(1-beyond/openLead):1;
+                float clearance=game.Matter.Profile.ParticleRadius+.012f;
+                float radialDrive=openTerminal&&beyond>clearance?Mathf.Clamp01((openLead-beyond)/(openLead-clearance)):1;
                 Vector3 desired=worldTangent*speed+Vector3.ClampMagnitude(radial*8*radialDrive,.12f);
-                int source=travel.Direction>0?edge.A:edge.B;
                 if(SolidExterior&&Nodes[source].Terminal==TerminalKind.Entry)
                 {
                     Vector3 mouth=NodeWorld(source),axis=EntryInwardWorld(source);

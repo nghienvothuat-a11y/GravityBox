@@ -50,3 +50,55 @@ hay đo lại trên điện thoại cho thay đổi này.
 
 ![Phần đầu và đuôi cùng dòng chuyển động](level17-continuous-head.png)
 ![Phần đuôi ra khỏi miệng ống](level17-continuous-tail.png)
+
+## Bổ sung theo phản hồi 21/09/2026
+
+Người chơi vẫn gặp phần đầu ở ngoài, mô rời rạc trong ống và không hoàn tất.
+Đường giải cũ và một lượt chơi chuột trên bản Mac trước sửa bổ sung vẫn qua được;
+chưa tái hiện nguyên trạng kẹt vĩnh viễn từ ảnh. Đã mở rộng kiểm thử với bấm
+thẳng nút B, chờ 3/10 giây trước khi vào ống và chạy `FixedUpdate` thật. Lượt
+chờ 10 giây trước sửa vượt giới hạn khoảng nối 24 mm (đo 24,1 mm).
+
+Thay đổi dùng chung trong `COgheTubeNetwork`:
+
+- Tính vị trí từng phần dọc đường cong, giảm tốc đồng bộ phần trước khi có
+  khoảng trống tăng giữa đầu và đuôi. Giới hạn độ dài cụm đang được dẫn để một
+  đuôi vướng tạm không để đầu chạy hết ống trước. Không kéo tắt xuyên thành cong.
+- Giữ lực căn giữa đầy đủ tới khi tâm hạt ra khỏi miệng một khoảng bằng bán
+  kính cộng 12 mm; sau đó mới giảm lực căn giữa cho phần đầu nở ra. Trước đây
+  lực này giảm ngay từ lúc tâm vừa qua mặt miệng, khi collider vẫn vướng vành.
+- Giữ collider và toàn bộ vật chất; chỉ thắng khi đủ 32 hạt thực sự thoát.
+  Tái dùng các mảng 32 phần tử và kết quả chiếu lên đường cong, không thêm lần
+  tìm điểm đường cong cho mỗi hạt hoặc cấp phát mảng trong bước mô phỏng.
+
+Các ca giải source 13 / integrated 17, chờ trước khi vào, bấm thẳng B và chạy
+nhịp vật lý thật đạt trước vòng hồi quy cuối. Thân hiển thị một mảnh đáng kể;
+không có lần cắt; khối lượng giữ nguyên; đủ 32 hạt ra ngoài.
+
+Fixture riêng cố định hạt ở cuối đuôi tại vị trí hiện tại trong **8 giây**, rồi
+tháo ràng buộc. Đây là thử kẹt cực đoan, không phải lời giải của người chơi.
+Trong lúc giữ: chưa hạt nào thoát, không hạt nào cách miệng vào quá 18 cm.
+Sau thả và 2 giây phục hồi: lớp da một mảnh, khoảng nối tối đa 19,6 mm và
+tự hoàn tất bằng lực dẫn bình thường. Không gán vị trí mô hoặc ép trạng thái thắng.
+
+Log/XML các ca mới: `Artifacts/COgheCampaign30/tube17-coherent.*`,
+`tube17-snag-recovery.*`. Bộ đầy đủ: `Artifacts/COgheExpansion/verification.*`.
+Lượt này chưa đo FPS hoặc cài lại OPPO.
+
+Hồi quy cuối: `Artifacts/COgheExpansion/verification.xml` có 127/128 đạt.
+Ca còn lại là assertion cũ bắt buộc chọn nóc source 17 / display 24, trái với
+thiết kế đã duyệt tắt chọn nắp để chọn bánh răng. Đã sửa riêng kỳ vọng này,
+vẫn kiểm tra collider và độ bám của nóc còn hoạt động. Chạy lại toàn ca duyệt
+các scene bằng `Artifacts/COgheCampaign30/roof-policy-verification.xml`: 1/1 đạt.
+Như vậy 128 ca được xác minh qua hai lượt; không phải một XML 128/128 duy nhất.
+
+Build Mac ngày 21/09 sau cả bản sửa này và cầu trượt màn 5 đã thành công:
+`Artifacts/Venom01/build-macOS.log` có `Build Finished, Result: Success` và
+`ORIGIN BUILD SUCCESS`. Đã chơi trực tiếp bằng chuột trên player mới ở cửa sổ
+480×828: tiếp cận và kéo A, chạm B trong phòng, chạm miệng ống; sinh vật thoát
+và hiện cảnh chiến thắng **“Chúng mình làm được rồi!”**. Không dùng lệnh ép
+cửa, dịch chuyển sinh vật hoặc ép thắng. Sau đó mở lại đầu màn 17 để người dùng
+test. Đây là xác nhận chức năng trên Mac, chưa phải xác nhận bản APK trên OPPO.
+
+![Thân được dẫn đồng bộ ở miệng ra](level17-paced-head.png)
+![Phần đuôi ra khỏi ống sau điều chỉnh](level17-paced-tail.png)

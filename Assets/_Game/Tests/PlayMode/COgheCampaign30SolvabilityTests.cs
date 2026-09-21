@@ -186,9 +186,155 @@ namespace GravityBox.Tests
         }
 
         [UnityTest]
+        public IEnumerator Inserted05DoesNotLeaveADetachedLobeWhenWaitingAtSlideEntry()
+        {
+            foreach(int segment in new[]{0,4,12})
+            {
+                yield return Load(5);
+                for(int i=0;i<32;i++)
+                    Assert.Greater(game.Root.InverseTransformPoint(game.Matter.Bodies[i].position).y-game.Matter.Profile.ParticleRadius,.116f,
+                        "Spawn the entire particle volume above the deck; an embedded tail can resolve underneath it.");
+                for(int i=0;i<120;i++)Tick();
+                var trough=game.Root.Find("Continuous curved trough collider").GetComponent<COgheSurfacePickProxy>();
+                game.CameraRig.Frame(720,1280,0,true);
+                game.TouchPoint(game.Owner.View.WorldToScreenPoint(trough.Surfaces[segment].transform.position));
+                CollectionAssert.Contains(trough.Surfaces,game.Feedback.CommandSurface);
+                float gap=0;
+                for(int i=0;i<1800;i++)
+                {
+                    Tick();
+                    if(i%12==0&&game.Root.InverseTransformPoint(game.Motion.Centre(0)).x<.26f)
+                    {
+                        gap=Mathf.Max(gap,SpatialTissueGap());
+                        if(gap>.043f)
+                        {
+                            for(int p=0;p<32;p++)
+                            {
+                                game.Motion.Support(p,out var support,out _,out _);
+                                Debug.Log($"SLIDE_NODE {p} pos={game.Root.InverseTransformPoint(game.Matter.Bodies[p].position):F4} vel={game.Matter.Bodies[p].linearVelocity:F4} support={support?.name}");
+                            }
+                            COgheExpansionIntegrationTests.Capture(game,"campaign30-05-lobe-regression");
+                            Assert.Fail($"Entry split at {i*Dt:F2}s, gap={gap:F5}; {State}");
+                        }
+                    }
+                    if(i%240==0)yield return null;
+                }
+                Debug.Log($"SLIDE_ENTRY_WAIT segment={segment} gap={gap:F5}; {State}");
+                COgheExpansionIntegrationTests.Capture(game,$"campaign30-05-entry-wait-{segment}");
+                Assert.Less(gap,.043f,"A connected particle graph must also remain one spatial body, not two lobes joined by stretched invisible springs; "+State);
+                Assert.AreEqual(0,game.Matter.CutCount);
+            }
+        }
+
+        private float SpatialTissueGap()
+        {
+            var reached=new bool[32];reached[0]=true;float largest=0;
+            for(int count=1;count<32;count++)
+            {
+                float nearest=float.PositiveInfinity;int next=-1;
+                for(int i=0;i<32;i++)if(reached[i])for(int j=0;j<32;j++)if(!reached[j])
+                {
+                    float distance=Vector3.Distance(game.Matter.Bodies[i].position,game.Matter.Bodies[j].position);
+                    if(distance<nearest){nearest=distance;next=j;}
+                }
+                reached[next]=true;largest=Mathf.Max(largest,nearest);
+            }
+            return largest;
+        }
+
+        [UnityTest]
+        public IEnumerator Inserted05SlideHasSolidUndersideAndInwardFacingGuards()
+        {
+            yield return Load(5);
+            var trough=game.Root.Find("Continuous curved trough collider").GetComponent<COgheSurfacePickProxy>();
+            var collider=trough.GetComponent<MeshCollider>();
+            var patch=trough.Surfaces[9];Vector3 middle=patch.transform.position;
+            Assert.IsTrue(collider.Raycast(new Ray(middle-patch.Normal*.10f,patch.Normal),out _, .12f),
+                "A falling/rotating body must meet a physical underside, not enter a one-sided sheet.");
+            foreach(float side in new[]{-1f,1f})
+                Assert.IsTrue(collider.Raycast(new Ray(middle+patch.Normal*.014f,game.Root.forward*side),out _, .13f),
+                    "Both guards must collide from INSIDE the trough.");
+        }
+
+        [UnityTest]
+        public IEnumerator Inserted05SolidBedResistsTurningAndInversion()
+        {
+            yield return Load(5);for(int i=0;i<120;i++)Tick();
+            var trough=game.Root.Find("Continuous curved trough collider").GetComponent<COgheSurfacePickProxy>();
+            var vertices=trough.GetComponent<MeshCollider>().sharedMesh.vertices;
+            game.CameraRig.Frame(720,1280,0,true);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(trough.Surfaces[4].transform.position));
+            yield return WaitFor(6,()=>game.Root.InverseTransformPoint(game.Motion.Centre(0)).x>-.245f,"Enter the slide before rotation stress");
+            int bedSamples=0;
+            foreach(var angles in new[]{new Vector3(40,0,-35),new Vector3(-45,0,30),new Vector3(0,0,180),new Vector3(0,0,0)})
+            {
+                game.Owner.Rotation.SetTargetOrientation(Quaternion.Euler(angles));
+                for(int tick=0;tick<480;tick++)
+                {
+                    Tick();
+                    for(int node=0;node<32;node++)
+                    {
+                        if(game.Matter.Escaped[node])continue;
+                        Vector3 p=game.Root.InverseTransformPoint(game.Matter.Bodies[node].position);
+                        if(Mathf.Abs(p.z)>.10f)continue;
+                        for(int s=0;s<trough.Surfaces.Length;s++)
+                        {
+                            Vector3 a=vertices[s*4],b=vertices[(s+1)*4];
+                            if(p.x<=a.x||p.x>=b.x)continue;
+                            Vector3 tangent=(b-a).normalized,normal=new Vector3(-tangent.y,tangent.x,0);
+                            float height=Vector3.Dot(p-a,normal);
+                            if(height>.005f&&height<.055f)bedSamples++;
+                            Assert.IsFalse(height<-.003f&&height>-.021f,
+                                $"Particle {node} embedded in the solid 24 mm slide at tilt {angles}, tick {tick}, height {height:F5}.");
+                            break;
+                        }
+                    }
+                    if(tick%120==0)yield return null;
+                }
+            }
+            Assert.Greater(bedSamples,30,"Stress must include real tissue above the slide, not only an empty chamber.");
+            Assert.IsFalse(game.Owner.Lost,State);
+            Assert.AreEqual(1,game.Matter.TotalFragmentCount);
+            Assert.AreEqual(0,game.Matter.CutCount);
+            COgheExpansionIntegrationTests.Capture(game,"campaign30-05-after-rotation-stress");
+        }
+
+        [UnityTest]
+        public IEnumerator Inserted05StartsUphillAndRetryRestoresTheOpeningPose()
+        {
+            yield return Load(5);
+            Quaternion opening=Quaternion.AngleAxis(45,Quaternion.Euler(game.Definition.CameraEuler)*Vector3.forward);
+            Assert.Less(Quaternion.Angle(game.Root.rotation,opening),.1f);
+            var deck=Array.Find(game.Surfaces,p=>p.name=="Grippy start cradle");
+            var tray=Array.Find(game.Surfaces,p=>p.name=="Grippy receiving cradle");
+            Assert.Greater(tray.transform.position.y,deck.transform.position.y+.2f,
+                "The exit tray must visibly start uphill, not only appear tilted through a camera change.");
+            for(int i=0;i<1200;i++)Tick();
+            Assert.Less(game.Root.InverseTransformPoint(game.Motion.Centre(0)).x,-.29f,
+                "Waiting for instructions must keep the creature on its grippy starting deck.");
+            var trough=game.Root.Find("Continuous curved trough collider").GetComponent<COgheSurfacePickProxy>();
+            game.CameraRig.Frame(720,1280,0,true);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(trough.Surfaces[4].transform.position));
+            CollectionAssert.Contains(trough.Surfaces,game.Feedback.CommandSurface);
+            for(int i=0;i<1440;i++)Tick();
+            Assert.Less(game.Root.InverseTransformPoint(game.Motion.Centre(0)).x,.25f,
+                "A tap without rotating cannot slide uphill into the receiving tray.");
+            Assert.AreEqual(0,game.Matter.EscapedCount);
+            COgheExpansionIntegrationTests.Capture(game,"campaign30-05-uphill-opening");
+            game.Owner.Rotation.SetTargetOrientation(Quaternion.identity);
+            yield return WaitFor(5,()=>Quaternion.Angle(game.Root.rotation,Quaternion.identity)<1,"Rotate back to the original downhill pose");
+            game.ResetLevel();Physics.SyncTransforms();
+            Assert.Less(Quaternion.Angle(game.Owner.Rotation.Orientation,opening),.1f,"Retry restores the tilted physics pose, not the solved orientation.");
+            for(int i=0;i<360;i++)Tick();
+            Assert.Less(Quaternion.Angle(game.Root.rotation,opening),.1f,"The displayed pivot follows the reset physics pose.");
+            Assert.Less(game.Root.InverseTransformPoint(game.Motion.Centre(0)).x,-.29f);
+            Assert.AreEqual(1,game.Matter.TotalFragmentCount);Assert.AreEqual(0,game.Matter.CutCount);
+        }
+
+        [UnityTest]
         public IEnumerator Inserted05SlidesThroughTheCurvedTroughAndExits()
         {
-            foreach(float tilt in new[]{12f,24f,36f})
+            foreach(float tilt in new[]{0f,12f,24f,36f})
                 yield return LearningSlideRoute(tilt,(tilt-24f)/300f);
         }
 
@@ -197,7 +343,7 @@ namespace GravityBox.Tests
             yield return Load(5);
             for(int i=0;i<120;i++)Tick();
             COgheExpansionIntegrationTests.Capture(game,"campaign30-05-slide-start");
-            var trough=Object.FindFirstObjectByType<COgheSurfacePickProxy>();
+            var trough=game.Root.Find("Continuous curved trough collider").GetComponent<COgheSurfacePickProxy>();
             Vector3 entry=trough.Surfaces[4].transform.position+game.Root.forward*lateral;
             game.TouchPoint(game.Owner.View.WorldToScreenPoint(entry));
             CollectionAssert.Contains(trough.Surfaces,game.Feedback.CommandSurface,

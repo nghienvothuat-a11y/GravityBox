@@ -297,7 +297,8 @@ namespace GravityBox.Editor
             }
             var proxy=root.GetComponentInChildren<COgheSurfacePickProxy>();
             var source=proxy.GetComponent<MeshCollider>().sharedMesh.vertices;
-            int count=source.Length/4;
+            int count=proxy.Surfaces.Length+1;
+            bool solid=source.Length==count*8;
             Mesh Ribbon(Vector3[] a,Vector3[] b,Vector3[] c,Vector3[] d)
             {
                 var vertices=new List<Vector3>();var triangles=new List<int>();var uv=new List<Vector2>();
@@ -332,7 +333,8 @@ namespace GravityBox.Editor
             for(int i=0;i<count;i++)
             {
                 left[i]=source[i*4];right[i]=source[i*4+1];Vector3 normal=(source[i*4+2]-left[i]).normalized;
-                underLeft[i]=left[i]-normal*.008f;underRight[i]=right[i]-normal*.008f;
+                float thickness=solid?Vector3.Dot(left[i]-source[count*4+i*4+2],normal):.008f;
+                underLeft[i]=left[i]-normal*thickness;underRight[i]=right[i]-normal*thickness;
             }
             Render("Lavender continuous sliding bed",Ribbon(left,right,underRight,underLeft),lavender);
             foreach(int side in new[]{0,1})
@@ -340,11 +342,12 @@ namespace GravityBox.Editor
                 var innerBottom=new Vector3[count];var innerTop=new Vector3[count];var outerBottom=new Vector3[count];var outerTop=new Vector3[count];
                 for(int i=0;i<count;i++)
                 {
-                    innerBottom[i]=source[i*4+side];innerTop[i]=source[i*4+side+2];
+                    innerBottom[i]=solid?(side==0?underLeft[i]:underRight[i]):source[i*4+side];innerTop[i]=source[i*4+side+2];
                     Vector3 outward=Vector3.forward*(side==0?-.008f:.008f);
-                    outerBottom[i]=innerBottom[i]+outward;outerTop[i]=innerTop[i]+outward;
+                    outerBottom[i]=solid?source[count*4+i*4+side+2]:innerBottom[i]+outward;
+                    outerTop[i]=solid?source[count*4+i*4+side]:innerTop[i]+outward;
                 }
-                Render("Porcelain continuous slide guard",Ribbon(innerBottom,innerTop,outerTop,outerBottom),ivory);
+                Render("Porcelain continuous slide guard",side==0?Ribbon(innerTop,innerBottom,outerBottom,outerTop):Ribbon(innerBottom,innerTop,outerTop,outerBottom),ivory);
             }
             // Small mounts under each platform explain how it attaches to the
             // glass frame without concealing the path, catch tray or aperture.

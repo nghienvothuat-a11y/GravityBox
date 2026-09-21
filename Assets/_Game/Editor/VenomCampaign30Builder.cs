@@ -238,6 +238,12 @@ namespace GravityBox.Editor
             camera.backgroundColor = new Color(.93f, .93f, .89f); camera.transform.rotation = Quaternion.Euler(definition.CameraEuler); camera.transform.position = -camera.transform.forward * 3;
             owner.View = camera;
             Lighting(); COgheDayLabBuilder.ApplyExpansionLevel(game);
+            // Authored opening pose: the receiving tray starts uphill, as in
+            // the approved 21 September sketch. CaptureInitialState also makes
+            // Retry restore this pose, without changing camera or gravity.
+            // Apply after building local geometry/art; this level has no props
+            // detached from the pivot that need a separate initial transform.
+            if (content == 21) c.Root.rotation = Quaternion.AngleAxis(45, camera.transform.forward);
             EditorUtility.SetDirty(definition);
             EditorSceneManager.SaveScene(scene, $"{Campaign30Folder}/{Campaign30ScenePrefix}{slot:00}.unity");
             Debug.Log($"COGHE CAMPAIGN SLOT {slot:00}: content {content:00} · {definition.Title}");
@@ -273,7 +279,10 @@ namespace GravityBox.Editor
         private static void BuildCampaign21(ExpansionContext c)
         {
             ConfigureNew(c, "Nghiêng là tới", "Chạm máng tím, rồi nghiêng nhẹ về phía khay bám.", true, new Vector3(22, -16, 0), .52f);
-            c.Spawn = new Vector3(-.35f, .143f, 0); c.Exit = new Vector3(.45f, -.125f, 0); c.Outward = Vector3.right;
+            // The lowest particle is 1.5 lattice spacings below the spawn.
+            // Include its collider radius: spawning inside the 8 mm deck can
+            // resolve a few nodes underneath it and pin a tail to the platform.
+            c.Spawn = new Vector3(-.35f, .162f, 0); c.Exit = new Vector3(.45f, -.125f, 0); c.Outward = Vector3.right;
             // A wide inspection chamber keeps the complete slide silhouette,
             // both cradles and the outlet visible from the initial camera.
             foreach(var pane in Cube(c.Root,Vector3.zero,.33f,c.Exit,c.Outward,c.Owner.ApertureRadius,c.Surfaces))
@@ -295,7 +304,7 @@ namespace GravityBox.Editor
                 new Vector3(.025f, -.155f, 0),
                 new Vector3(.25f, -.18f, 0)
             }, 5);
-            EarlyCurvedTrough(c.Root, curve, .22f, .032f, slip, c.Surfaces);
+            EarlyCurvedTrough(c.Root, curve, .22f, .032f, slip, c.Surfaces,.024f);
             Panel(c.Root, "Grippy receiving cradle", new Vector3(.35f, -.18f, 0), Vector3.up, new Vector2(.20f, .26f), stone, false, Vector2.zero, 0, c.Surfaces);
             foreach (float side in new[] { -1f, 1f })
             {

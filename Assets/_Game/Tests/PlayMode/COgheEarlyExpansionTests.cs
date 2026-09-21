@@ -255,7 +255,19 @@ namespace GravityBox.Tests
         [UnityTest] public IEnumerator Campaign17_WindingTubeRemainsContinuousThroughTheExit()
         {yield return WindingTubeSolution(true);}
 
-        private IEnumerator WindingTubeSolution(bool campaign)
+        [UnityTest] public IEnumerator Campaign17_WindingTubeAcceptsSettledAndDirectButtonApproaches()
+        {
+            yield return WindingTubeSolution(true,3,true);
+            yield return WindingTubeSolution(true,10,false);
+        }
+
+        [UnityTest] public IEnumerator Campaign17_WindingTubeFinishesWithNativeFixedUpdate()
+        {yield return WindingTubeSolution(true,3,true,true);}
+
+        [UnityTest] public IEnumerator Campaign17_TemporaryTailSnagFixtureHoldsTheHeadAndRecovers()
+        {yield return WindingTubeSolution(true,0,false,false,true);}
+
+        private IEnumerator WindingTubeSolution(bool campaign,float settleSeconds=0,bool directButton=false,bool nativePhysics=false,bool snagFixture=false)
         {
             yield return Load(campaign?17:13,campaign);
             var sequence=Object.FindFirstObjectByType<COgheLatchedAccessSequence>();
@@ -277,15 +289,19 @@ namespace GravityBox.Tests
 
             // Guide through the visible doorway before selecting the interior pad.
             Vector3 doorway=game.Root.TransformPoint(new Vector3(.082f,-.299f,-.21f));
-            game.TouchPoint(game.Owner.View.WorldToScreenPoint(doorway));
-            yield return Until(22,()=>Vector3.Distance(game.Motion.Centre(0),doorway+game.Root.up*.019f)<.04f);
-            Assert.Less(Vector3.Distance(game.Motion.Centre(0),doorway+game.Root.up*.019f),.05f,"Reach the open doorway: "+State);
+            if(!directButton)
+            {
+                game.TouchPoint(game.Owner.View.WorldToScreenPoint(doorway));
+                yield return Until(22,()=>Vector3.Distance(game.Motion.Centre(0),doorway+game.Root.up*.019f)<.04f);
+                Assert.Less(Vector3.Distance(game.Motion.Centre(0),doorway+game.Root.up*.019f),.05f,"Reach the open doorway: "+State);
+            }
             Vector3 button=sequence.Button.transform.position+game.Root.up*.023f;
             game.TouchPoint(game.Owner.View.WorldToScreenPoint(sequence.Button.transform.position+game.Root.up*.006f));
             yield return Until(28,()=>sequence.TubeLatched);
             Assert.IsTrue(sequence.Button.Pressed,"Button B must measure actual tissue mass. "+State);
             Assert.IsTrue(sequence.TubeLatched,State);yield return Until(5,()=>tube.IsEntryOpen(0));Evidence("13-button-and-lid");
             Assert.IsTrue(tube.IsEntryOpen(0),$"lid={sequence.LidOpening:F4}/{sequence.LidTravel:F4}; blocker={tube.EntryBlocker?.bounds}; "+State);
+            for(int tick=0;tick<settleSeconds*120;tick++){Steps(1);if(tick%24==0)yield return null;}
 
             Vector3 inlet=game.Root.TransformPoint(tube.Nodes[0].LocalPosition);
             game.TouchPoint(game.Owner.View.WorldToScreenPoint(inlet));
@@ -293,11 +309,42 @@ namespace GravityBox.Tests
             Assert.IsTrue(tube.IsParticleInside(0),"A screen tap must guide the creature to and into the clear inlet. "+State);
             float worstGap=0;int lastEscaped=-1,maxSkinPieces=0,maxFragments=0;
             bool disabledTransportCollider=false;float mass=game.Matter.TotalMass;
+            // Explicit robustness fixture, not a player solution: temporarily
+            // anchor the rearmost particle at its actual intake contact. No
+            // positions or puzzle state are assigned. The head must wait, and
+            // the complete body must exit after the contact releases.
+            FixedJoint snag=null;
+            if(snagFixture)
+            {
+                int tail=0;float rearmost=float.PositiveInfinity;
+                Vector3 axis=game.Root.TransformDirection((tube.Edges[0].ControlPoints[1]-tube.Edges[0].ControlPoints[0]).normalized);
+                for(int i=0;i<32;i++)
+                {
+                    float depth=Vector3.Dot(game.Matter.Bodies[i].position-inlet,axis);
+                    if(depth<rearmost){rearmost=depth;tail=i;}
+                }
+                snag=game.Matter.Bodies[tail].gameObject.AddComponent<FixedJoint>();
+                snag.connectedBody=game.Root.GetComponent<Rigidbody>();snag.enableCollision=true;
+            }
+            if(nativePhysics)
+            {Physics.simulationMode=SimulationMode.FixedUpdate;game.Owner.enabled=true;game.Owner.Rotation.enabled=true;}
+            const int snagReleaseTick=8*120;
             for(int tick=0;tick<30*120&&!game.Owner.Completed&&!game.Owner.Lost;tick++)
             {
-                Steps(1);
+                if(tick==snagReleaseTick&&snag!=null)Object.DestroyImmediate(snag);
+                if(nativePhysics)yield return new WaitForFixedUpdate();else Steps(1);
                 float gap=LargestTissueGap();
-                worstGap=Mathf.Max(worstGap,gap);
+                // The infinite-strength snag is stronger than gameplay grip.
+                // While pinned, require bounded transport (no head reaching the
+                // exit). Once released, require the normal continuous skin too.
+                bool measureSkin=!snagFixture||tick>=snagReleaseTick+240;
+                if(snagFixture&&tick<snagReleaseTick)
+                {
+                    Assert.AreEqual(0,game.Matter.EscapedCount,"The head must wait for the physically snagged tail.");
+                    for(int i=0;i<32;i++)Assert.Less(Vector3.Distance(game.Matter.Bodies[i].position,inlet),.18f,
+                        "Do not scatter a connected body along the length of the winding pipe while its tail is blocked.");
+                }
+                if(measureSkin)worstGap=Mathf.Max(worstGap,gap);
                 maxFragments=Mathf.Max(maxFragments,game.Matter.TotalFragmentCount);
                 for(int i=0;i<32;i++)
                     disabledTransportCollider|=tube.IsParticleInside(i)&&!game.Matter.Bodies[i].GetComponent<Collider>().enabled;
@@ -308,7 +355,7 @@ namespace GravityBox.Tests
                     // from its ongoing transfer or hand off only its head.
                     if(campaign)game.TouchPoint(game.Owner.View.WorldToScreenPoint(doorway));
                 }
-                if(tick%12==0)
+                if(tick%12==0&&measureSkin)
                 {
                     game.Matter.GetComponent<VenomSurface>().Rebuild(false);
                     int pieces=VisibleSkinPieces();
@@ -319,6 +366,8 @@ namespace GravityBox.Tests
                 {Evidence(campaign?"17-tail-emergence":"13-tail-emergence");lastEscaped=game.Matter.EscapedCount;}
                 if(tick%24==0)yield return null;
             }
+            if(nativePhysics)
+            {game.Owner.enabled=false;game.Owner.Rotation.enabled=false;Physics.simulationMode=SimulationMode.Script;}
             Debug.Log($"WINDING MAX GAP {worstGap:F4} SKIN {maxSkinPieces}");Evidence(campaign?"17-solved":"13-solved");
             if(!game.Owner.Completed)Debug.Log($"L13 TUBE FAILURE {tube.DebugState(0)}\n{tube.DebugEntryState(0,0)}\n{tube.DebugExitRoster()}\n{RouteDiagnostics(inlet)}");
             Assert.IsTrue(game.Owner.Completed,"The continuous winding path must deliver all tissue through the final opening. "+State);

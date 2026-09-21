@@ -224,7 +224,7 @@ namespace GravityBox.Editor
             return points.ToArray();
         }
 
-        private static List<VenomSurfacePatch> EarlyCurvedTrough(Transform root,Vector3[] points,float width,float wallHeight,Material material,List<VenomSurfacePatch> surfaces)
+        private static List<VenomSurfacePatch> EarlyCurvedTrough(Transform root,Vector3[] points,float width,float wallHeight,Material material,List<VenomSurfacePatch> surfaces,float solidThickness=0)
         {
             var patches=new List<VenomSurfacePatch>();
             for(int i=0;i<points.Length-1;i++)
@@ -247,10 +247,32 @@ namespace GravityBox.Editor
                 vertices.Add(points[i]+Vector3.back*half+normal*wallHeight);
                 vertices.Add(points[i]+Vector3.forward*half+normal*wallHeight);
             }
-            var triangles=new List<int>((points.Length-1)*18);
+            // Keep the four inner vertices per station first: art and surface
+            // picking share this exact contact geometry. A closed U section
+            // also catches tissue when the chamber turns over the creature.
+            int outer=vertices.Count;
+            if(solidThickness>0)for(int i=0;i<points.Length;i++)
+            {
+                int p=i*4;Vector3 normal=(vertices[p+2]-vertices[p]).normalized;
+                vertices.Add(vertices[p+2]+Vector3.back*.01f);
+                vertices.Add(vertices[p+3]+Vector3.forward*.01f);
+                vertices.Add(vertices[p]-normal*solidThickness+Vector3.back*.01f);
+                vertices.Add(vertices[p+1]-normal*solidThickness+Vector3.forward*.01f);
+            }
+            var triangles=new List<int>((points.Length-1)*48);
             for(int i=0;i<points.Length-1;i++)
             {
                 int a=i*4,b=(i+1)*4;
+                if(solidThickness>0)
+                {
+                    int[] section={a,a+1,a+3,outer+a+1,outer+a+3,outer+a+2,outer+a,a+2};
+                    for(int s=0;s<section.Length;s++)
+                    {
+                        int left=section[s],right=section[(s+1)%section.Length];
+                        triangles.AddRange(new[]{left,right,right+4,left,right+4,left+4});
+                    }
+                    continue;
+                }
                 triangles.AddRange(new[]{a,a+1,b+1,a,b+1,b});
                 triangles.AddRange(new[]{a,a+2,b+2,a,b+2,b});
                 triangles.AddRange(new[]{a+1,b+3,a+3,a+1,b+1,b+3});
@@ -258,7 +280,24 @@ namespace GravityBox.Editor
             var mesh=new Mesh{name="Continuous curved trough"};mesh.SetVertices(vertices);mesh.SetTriangles(triangles,0);mesh.RecalculateNormals();mesh.RecalculateBounds();
             var colliderObject=new GameObject("Continuous curved trough collider",typeof(MeshCollider));colliderObject.transform.SetParent(root,false);
             var shape=colliderObject.GetComponent<MeshCollider>();shape.sharedMesh=Save(mesh);shape.sharedMaterial=slick;shape.contactOffset=.0003f;
-            var pick=colliderObject.AddComponent<COgheSurfacePickProxy>();pick.Surfaces=patches.ToArray();pick.TrianglesPerSurface=6;
+            var pick=colliderObject.AddComponent<COgheSurfacePickProxy>();pick.Surfaces=patches.ToArray();pick.TrianglesPerSurface=solidThickness>0?16:6;
+            if(solidThickness>0)
+            {
+                var ends=new List<int>();
+                foreach(int station in new[]{0,points.Length-1})
+                {
+                    int a=station*4;
+                    int[] cap={a,a+1,outer+a+3,a,outer+a+3,outer+a+2,
+                        a,outer+a+2,outer+a,a,outer+a,a+2,
+                        a+1,a+3,outer+a+1,a+1,outer+a+1,outer+a+3};
+                    for(int t=0;t<cap.Length;t+=3)
+                        ends.AddRange(station==0?new[]{cap[t],cap[t+2],cap[t+1]}:new[]{cap[t],cap[t+1],cap[t+2]});
+                }
+                var caps=new Mesh{name="Solid trough end caps"};caps.SetVertices(vertices);caps.SetTriangles(ends,0);caps.RecalculateBounds();
+                var endObject=new GameObject("Solid trough end caps",typeof(MeshCollider));endObject.transform.SetParent(root,false);
+                var endShape=endObject.GetComponent<MeshCollider>();endShape.sharedMesh=Save(caps);endShape.sharedMaterial=slick;endShape.contactOffset=.0003f;
+                var endPick=endObject.AddComponent<COgheSurfacePickProxy>();endPick.Surfaces=new[]{patches[0],patches[patches.Count-1]};endPick.TrianglesPerSurface=6;
+            }
             return patches;
         }
 
