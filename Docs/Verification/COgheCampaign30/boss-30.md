@@ -78,3 +78,5 @@ Lời giải trọn được kiểm chứng bằng mô phỏng vật lý tự đ
 
 Ảnh trên là render Unity, chưa gồm IMGUI. Chưa đo lại OPPO và chưa playtest
 với người mới; không suy ra FPS hoặc độ dễ từ test tác giả.
+
+Kiểm tra lại ngày 21/09: [lời giải toàn màn bằng điểm chạm và ảnh thắng trong app](BOSS_30_RETEST_2026_09_21.md).

@@ -5,7 +5,7 @@ namespace GravityBox.Venom
 {
     public sealed partial class VenomCampaign
     {
-        public const int LevelCount=30;
+        public const int LevelCount=40;
         public COgheMechanism[] Mechanisms { get; private set; }=Array.Empty<COgheMechanism>();
         private COgheMechanism[] transportMechanisms=Array.Empty<COgheMechanism>(),fusionBarriers=Array.Empty<COgheMechanism>(),exitControllers=Array.Empty<COgheMechanism>();
         public int LevelPage {get;set;}

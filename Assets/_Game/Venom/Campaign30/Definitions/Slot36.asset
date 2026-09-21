@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec8b825fd80e74746bf8f0991fd6d4f3, type: 3}
+  m_Name: Slot36
+  m_EditorClassIdentifier: GravityBox.Venom::GravityBox.Venom.VenomCampaignDefinition
+  Id: venom.origin.36
+  Title: "36 \xB7 \u0110\u1ED5i ca"
+  Lesson: "Gi\u1EEF A cho b\u1EA1n qua. K\xE9o L, gi\u1EEF B r\u1ED3i \u0111\u1ED5i
+    ph\u1EA7n \u0111\u1EC3 k\xE9o C."
+  Order: 36
+  CanRotate: 0
+  Boss: 0
+  Passive: 0
+  CameraEuler: {x: 40, y: 14, z: 0}
+  ViewRadius: 0.62
+  CameraZones:
+  - Label: Khoang 1
+    LocalBounds:
+      m_Center: {x: -0.25, y: -0.02, z: 0}
+      m_Extent: {x: 0.265, y: 0.32, z: 0.32}
+  - Label: Khoang 2
+    LocalBounds:
+      m_Center: {x: 0.25, y: -0.02, z: 0}
+      m_Extent: {x: 0.265, y: 0.32, z: 0.32}
+  InitialCameraZone: -1

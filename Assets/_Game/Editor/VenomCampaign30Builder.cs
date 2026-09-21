@@ -238,6 +238,7 @@ namespace GravityBox.Editor
             camera.backgroundColor = new Color(.93f, .93f, .89f); camera.transform.rotation = Quaternion.Euler(definition.CameraEuler); camera.transform.position = -camera.transform.forward * 3;
             owner.View = camera;
             Lighting(); COgheDayLabBuilder.ApplyExpansionLevel(game);
+            if(content>=31)ApplyChapterWorkingSurfaces(c);
             // Authored opening pose: the receiving tray starts uphill, as in
             // the approved 21 September sketch. CaptureInitialState also makes
             // Retry restore this pose, without changing camera or gravity.
@@ -263,6 +264,16 @@ namespace GravityBox.Editor
                 case 28: BuildCampaign28(c); break;
                 case 29: BuildCampaign29(c); break;
                 case 30: BuildCampaign30Boss(c); break;
+                case 31: BuildCampaign31(c); break;
+                case 32: BuildCampaign32(c); break;
+                case 33: BuildCampaign33(c); break;
+                case 34: BuildCampaign34(c); break;
+                case 35: BuildCampaign35(c); break;
+                case 36: BuildCampaign36(c); break;
+                case 37: BuildCampaign37(c); break;
+                case 38: BuildCampaign38(c); break;
+                case 39: BuildCampaign39(c); break;
+                case 40: BuildCampaign40(c); break;
                 default: throw new ArgumentOutOfRangeException(nameof(content));
             }
         }
@@ -601,11 +612,11 @@ namespace GravityBox.Editor
             foreach (float side in new[] { -1f, 1f }) Panel(c.Root, "Handle alcove cheek", centre + Vector3.right * side * width * .5f, Vector3.left * side, new Vector2(depth, .12f), glass, false, Vector2.zero, 0, c.Surfaces);
         }
 
-        private static void AddWinchVisuals(ExpansionContext c, COgheSequentialWinch sequence, Vector3 point)
+        private static void AddWinchVisuals(ExpansionContext c, COgheSequentialWinch sequence, Vector3 point, float anchorHeight=.20f)
         {
             sequence.Drum = MechanismVisual(c.Root, "Visible cable drum", point, new Vector3(.052f, .025f, .052f), metal, PrimitiveType.Cylinder);
             sequence.LockPin = MechanismVisual(sequence.Door.transform, "Visible terminal catch", new Vector3(0, .06f, .015f), new Vector3(.030f, .010f, .010f), metal);
-            Vector3 a = point, b = sequence.Door.Start + Vector3.up * .20f; Vector3 delta = b - a;
+            Vector3 a = point, b = sequence.Door.Start + Vector3.up * anchorHeight; Vector3 delta = b - a;
             var cable = MechanismVisual(c.Root, "Winch cable", (a + b) * .5f, new Vector3(.003f, delta.magnitude, .003f), metal); cable.localRotation = Quaternion.FromToRotation(Vector3.up, delta.normalized);
         }
 

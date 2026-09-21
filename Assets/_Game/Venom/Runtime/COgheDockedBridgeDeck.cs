@@ -22,7 +22,7 @@ namespace GravityBox.Venom
 
         public override void StepMechanism(VenomCampaign game, float dt)
         {
-            bool shouldDock = Rail != null && Rail.AtEnd;
+            bool shouldDock = Rail != null && Rail.AtEnd && Rail.Effort >= -Rail.Resistance - .004f;
             if (shouldDock != docked) Apply(game, shouldDock, false);
         }
 

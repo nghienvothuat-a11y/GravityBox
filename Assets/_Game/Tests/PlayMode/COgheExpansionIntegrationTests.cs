@@ -20,7 +20,7 @@ namespace GravityBox.Tests
 
         [UnityTest] public IEnumerator LegacyTwentyScenesKeepTheirIdentityAndExpansionCanIdleResetAndRender()
         {
-            Assert.AreEqual(30,VenomCampaign.LevelCount);
+            Assert.AreEqual(40,VenomCampaign.LevelCount);
             var idleFailures=new System.Collections.Generic.List<string>();
             for(int n=1;n<=20;n++)
             {

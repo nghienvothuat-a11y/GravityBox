@@ -164,8 +164,8 @@ namespace GravityBox.Tests
 
         [UnityTest] public IEnumerator CatalogUsesStableContentIdsAndBossesAtTenTwentyThirty()
         {
-            Assert.AreEqual(30,VenomCampaign.LevelCount);
-            Assert.AreEqual(3,COgheDayLabPresentation.LevelPageCount,"The Day Lab selector must expose 21–30 as a third page");
+            Assert.AreEqual(40,VenomCampaign.LevelCount);
+            Assert.AreEqual(4,COgheDayLabPresentation.LevelPageCount,"The Day Lab selector must expose the appended 31–40 page");
             var seen=new HashSet<string>();
             for(int slot=1;slot<=30;slot++)
             {

@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec8b825fd80e74746bf8f0991fd6d4f3, type: 3}
+  m_Name: Slot40
+  m_EditorClassIdentifier: GravityBox.Venom::GravityBox.Venom.VenomCampaignDefinition
+  Id: venom.origin.40
+  Title: "40 \xB7 C\u1ED6 M\xC1Y \u0110O\xC0N T\u1EE4"
+  Lesson: 
+  Order: 40
+  CanRotate: 0
+  Boss: 1
+  Passive: 0
+  CameraEuler: {x: 42, y: 24, z: 0}
+  ViewRadius: 0.87
+  CameraZones:
+  - Label: "Q \xB7 A \xB7 Dao"
+    LocalBounds:
+      m_Center: {x: -0.5, y: -0.13, z: 0}
+      m_Extent: {x: 0.318, y: 0.188, z: 0.318}
+  - Label: "B \xB7 Dao"
+    LocalBounds:
+      m_Center: {x: 0, y: -0.13, z: 0}
+      m_Extent: {x: 0.218, y: 0.188, z: 0.318}
+  - Label: "C \xB7 H"
+    LocalBounds:
+      m_Center: {x: 0.5, y: -0.13, z: 0}
+      m_Extent: {x: 0.318, y: 0.188, z: 0.318}
+  InitialCameraZone: 0
