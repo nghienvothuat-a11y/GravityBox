@@ -29,5 +29,7 @@ namespace GravityBox.Venom
         public VenomCameraZone[] CameraZones=Array.Empty<VenomCameraZone>();
         [Tooltip("-1 opens the overview; otherwise start at this authored inspection zone.")]
         public int InitialCameraZone=-1;
+        [Tooltip("Optional self-contained campaign. Empty retains the Origin catalog and save IDs.")]
+        public string[] SceneSequence=Array.Empty<string>();
     }
 }

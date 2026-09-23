@@ -157,7 +157,8 @@ namespace GravityBox.Editor
             else{m.SetFloat("_Surface",0);m.SetFloat("_SrcBlend",1);m.SetFloat("_DstBlend",0);m.SetFloat("_ZWrite",1);m.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");m.renderQueue=2000;}
             EditorUtility.SetDirty(m);return m;
         }
-        private static Mesh Save(Mesh mesh){string path=Folder+"/Meshes/Geometry"+(meshSerial++)+".asset";var old=AssetDatabase.LoadAssetAtPath<Mesh>(path);if(old!=null){EditorUtility.CopySerialized(mesh,old);Object.DestroyImmediate(mesh);return old;}AssetDatabase.CreateAsset(mesh,path);return mesh;}
+        private static string authoredMeshFolder;
+        private static Mesh Save(Mesh mesh){string path=(authoredMeshFolder??Folder+"/Meshes")+"/Geometry"+(meshSerial++)+".asset";var old=AssetDatabase.LoadAssetAtPath<Mesh>(path);if(old!=null){EditorUtility.CopySerialized(mesh,old);Object.DestroyImmediate(mesh);return old;}AssetDatabase.CreateAsset(mesh,path);return mesh;}
         private static VenomSurfacePatch Panel(Transform root,string name,Vector3 position,Vector3 normal,Vector2 size,Material mat,bool hole,Vector2 centre,float radius,List<VenomSurfacePatch> list)
         {
             var go=new GameObject(name,typeof(MeshFilter),typeof(MeshRenderer),typeof(MeshCollider),typeof(VenomSurfacePatch));go.transform.SetParent(root,false);go.transform.localPosition=position;go.transform.localRotation=Quaternion.LookRotation(normal,Mathf.Abs(normal.y)>.9f?Vector3.forward:Vector3.up);

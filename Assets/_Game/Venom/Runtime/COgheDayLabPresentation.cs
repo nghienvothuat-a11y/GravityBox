@@ -18,6 +18,7 @@ namespace GravityBox.Venom
         public Font WorldTextFont;
         private VenomCampaign game;
         private COgheCooperationPresentation cooperation;
+        private COgheTapLesson tapLesson;
         private GUIStyle brand, caption, title, body, chip, selected, action, status, footer;
         private Texture2D tile, chosen, pressed;
         private MaterialPropertyBlock block;
@@ -26,6 +27,7 @@ namespace GravityBox.Venom
         private void Awake()
         {
             game=GetComponent<VenomCampaign>();cooperation=GetComponent<COgheCooperationPresentation>();block=new MaterialPropertyBlock();
+            tapLesson=GetComponent<COgheTapLesson>();
             ConfigureExitOutline(GetComponent<VenomLevelController>());
             Font.textureRebuilt+=RefreshFontAtlas;RefreshFontAtlas(WorldTextFont);
             if(GlassSurfaces==null)return;
@@ -113,23 +115,25 @@ namespace GravityBox.Venom
             if(game.CameraRig.Inspecting)GUI.Box(new Rect(17,8,506,game.CameraRig.ShowZones?237:191),GUIContent.none,chip);
             GUI.Label(new Rect(26,13,240,48),"COghe",brand);
             GUI.Label(new Rect(300,20,214,30),game.Home?"A  P L A C E  T O  B E L O N G":(game.Definition.Boss?"B O S S   /   ":"D A Y   L A B   /   ")+game.Definition.Order.ToString("00"),caption);
-            game.LevelPage=Mathf.Clamp(game.LevelPage,0,LevelPageCount-1);
-            for(int page=0;page<LevelPageCount;page++)
+            int levelCount=game.PlayableLevelCount,pageCount=(levelCount+LevelPageSize-1)/LevelPageSize;
+            game.LevelPage=Mathf.Clamp(game.LevelPage,0,pageCount-1);
+            float pageWidth=494f/pageCount;
+            for(int page=0;page<pageCount;page++)
             {
-                int first=page*LevelPageSize+1,last=Mathf.Min(VenomCampaign.LevelCount,first+LevelPageSize-1);
-                if(GUI.Button(new Rect(26+page*104,61,98,25),$"{first:00}–{last:00}",game.LevelPage==page?selected:chip))game.LevelPage=page;
+                int first=page*LevelPageSize+1,last=Mathf.Min(levelCount,first+LevelPageSize-1);
+                if(GUI.Button(new Rect(26+page*pageWidth,61,pageWidth-6,25),$"{first:00}–{last:00}",game.LevelPage==page?selected:chip))game.LevelPage=page;
             }
             for(int slot=0;slot<LevelPageSize;slot++)
             {
                 int i=game.LevelPage*LevelPageSize+slot+1;
-                if(i>VenomCampaign.LevelCount)break;
+                if(i>levelCount)break;
                 if(GUI.Button(new Rect(26+slot*49,91,43,27),i%10==0?"B"+i:i.ToString("00"),i==game.Definition.Order?selected:chip))game.Load(i);
             }
             if(!game.Owner.Completed)
             {
-                GUI.Label(new Rect(24,125,492,33),game.Home?"Nhà của COghe":game.Definition.Order==7?"Cùng nhau dịch chuyển":game.Definition.Title,title);
+                GUI.Label(new Rect(24,125,492,33),game.Home?"Nhà của COghe":tapLesson==null&&game.Definition.Order==7?"Cùng nhau dịch chuyển":game.Definition.Title,title);
                 if(!game.Definition.Boss&&!game.Home)
-                    GUI.Label(new Rect(34,158,472,35),cooperation!=null?cooperation.Hint:game.Definition.Order==7?"Chạm thùng, rồi chạm nơi muốn đẩy hoặc kéo tới.":game.Definition.Lesson,body);
+                    GUI.Label(new Rect(34,158,472,35),tapLesson!=null?tapLesson.Hint:cooperation!=null?cooperation.Hint:game.Definition.Order==7?"Chạm thùng, rồi chạm nơi muốn đẩy hoặc kéo tới.":game.Definition.Lesson,body);
             }
             if(game.CameraRig.ShowZones)
             {
@@ -150,12 +154,13 @@ namespace GravityBox.Venom
                 if(game.Definition.Boss&&game.Owner.Celebration.ReadyForNext)
                 {
                     if(GUI.Button(new Rect(26,h-137,235,40),"Nhà của COghe",action))game.EnterHome();
-                    if(game.Definition.Order<VenomCampaign.LevelCount&&GUI.Button(new Rect(276,h-137,235,40),"Tiếp tục",action))game.Load(game.Definition.Order+1);
+                    if(game.Definition.Order<levelCount&&GUI.Button(new Rect(276,h-137,235,40),"Tiếp tục",action))game.Load(game.Definition.Order+1);
                 }
             }
             else
             {
                 string activity=game.Owner.Paused?"Đang nghỉ một chút":game.Attached?(game.IsPulling?"COghe đang kéo vật":"COghe đang giữ vật"):(game.Activity=="Idle"?"COghe đang chờ được chỉ đường":game.Activity);
+                if(game.Activity=="Idle"&&!game.Owner.Paused&&tapLesson!=null&&!string.IsNullOrEmpty(tapLesson.StopStatus))activity=tapLesson.StopStatus;
                 GUI.Label(new Rect(26,h-154,game.Attached?316:488,30),activity,status);
                 if(game.Attached&&GUI.Button(new Rect(350,h-154,164,29),"Buông vật",chip))game.ReleaseProp();
                 if(game.Matter.TotalFragmentCount>1)

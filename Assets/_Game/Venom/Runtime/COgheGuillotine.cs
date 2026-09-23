@@ -12,6 +12,7 @@ namespace GravityBox.Venom
         public Vector3 CutHalfSize = new Vector3(.005f,.065f,.065f);
         public Renderer[] Lamps;
         public Vector3 TouchHalfSize; // Optional input-only envelope; never a cutting or collision volume.
+        public bool ReturnOnSeparation; // Beginner rooms finish one stroke when real tissue first separates.
         public VenomCampaign.BladePhase Phase { get; private set; }
         private float clock;
         private VenomCampaign owner;
@@ -56,7 +57,13 @@ namespace GravityBox.Venom
                 int before = game.Matter.TotalFragmentCount;
                 System.Array.Copy(game.Matter.Groups, groupsBeforeCut, groupsBeforeCut.Length);
                 game.Matter.Cut(Rail.Body.transform, CutHalfSize);
-                if (game.Matter.TotalFragmentCount > before) game.NotifyMechanismCut(Rail.Body.transform, groupsBeforeCut);
+                if (game.Matter.TotalFragmentCount > before)
+                {
+                    game.NotifyMechanismCut(Rail.Body.transform, groupsBeforeCut);
+                    // Do not recut and cancel newly issued fragment commands in the same tutorial stroke.
+                    // The blade still retracts under finite force and remains a real fusion barrier.
+                    if (ReturnOnSeparation) { Phase = VenomCampaign.BladePhase.Returning; clock = 0; }
+                }
                 if ((clock += dt) >= .5f) { Phase = VenomCampaign.BladePhase.Returning; clock = 0; }
             }
             if (Phase == VenomCampaign.BladePhase.Returning)

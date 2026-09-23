@@ -199,3 +199,7 @@ Android cần module và SDK/NDK/JDK tương ứng. iOS export cần module iOS;
 Màn 12 cập nhật đường nhận chạm trên máng cong và camera bên hông; lối leo hổ phách, máng tím và thành cyan trong giúp quan sát leo–trượt–bay–bám. [Chi tiết thao tác và kiểm chứng](Docs/COGHE_EXPANSION_11_20.md).
 
 Màn 13: xuất phát xa cần gạt; cần A mở cửa hộp nhỏ, nút B mở nắp ống. Đã sửa cần tự đổ mở cửa; thêm khung hộp, ray cửa, nút nhấn và đèn A/B. Hai kiểm thử riêng màn 13 đạt. [Thiết kế và cách thử](Docs/COGHE_EXPANSION_11_20.md).
+
+## Campaign 01–55 (23/09/2026)
+
+The ten Tap levels are now integrated at 41–50; five block-assembly puzzles based on displayed level 19 occupy 51–55. Build the full campaign with the ordinary `Tools/build-venom-android.sh` / `Tools/build-venom.sh` commands, without `--tap`. See [build and playtest guide](Docs/COGHE_CAMPAIGN_41_55.md). The standalone Tap variant remains available for earlier comparisons; original scene and save identities are preserved.

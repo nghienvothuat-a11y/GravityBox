@@ -9,7 +9,7 @@ namespace GravityBox.Editor
 {
     public static partial class COgheDayLabBuilder
     {
-        public static void ApplyExpansionLevel(VenomCampaign game)
+        public static void ApplyExpansionLevel(VenomCampaign game,string isolatedMeshFolder=null)
         {
             int number=game.Definition.Order;
             int content=number;
@@ -17,6 +17,7 @@ namespace GravityBox.Editor
             if(split>=0)int.TryParse(id.Substring(split+1),out content);
             if(content<=0)content=number;
             meshDirectory=content==number?$"Meshes/Level{number:00}":$"Meshes/Campaign30/Content{content:00}Slot{number:00}";serial=0;
+            if(!string.IsNullOrEmpty(isolatedMeshFolder))meshDirectory=isolatedMeshFolder;
             Directory.CreateDirectory(Folder+"/"+meshDirectory);AssetDatabase.Refresh();
             var owner=game.GetComponent<VenomLevelController>();var root=owner.Rotation.transform;
             Remove(root,ArtRoot);Remove(owner.transform,"Day Lab studio");InitializeMaterials(owner);
@@ -143,6 +144,7 @@ namespace GravityBox.Editor
                         Vector3 point=prop.transform.InverseTransformPoint(collider.transform.TransformPoint(collider.center+offset));
                         if(first){propBounds=new Bounds(point,Vector3.zero);first=false;}else propBounds.Encapsulate(point);
                     }
+                if(owner.Apparatus.GetComponentInChildren<COgheAssemblyBridge>()!=null)continue;
                 if(content==24)Label(prop.transform,key,new Vector3(-.021f,.030f,0),Quaternion.Euler(0,90,0),.023f,ink);
                 else if(content==20&&key=="H")Label(prop.transform,key,new Vector3(propBounds.min.x-.002f,0,0),Quaternion.Euler(0,90,0),.026f,ink);
                 else Label(prop.transform,key,new Vector3(propBounds.center.x,propBounds.center.y,propBounds.min.z-.002f),Quaternion.identity,content==20?(key=="G"?.016f:.020f):content==25?.023f:.018f,ink);
@@ -154,7 +156,7 @@ namespace GravityBox.Editor
             COgheDayLabPresentation.ConfigureExitOutline(owner);
             if(content==13)BuildAccessSequenceArt(game,art);
             if(content==15)BuildPipeMazeArt(game,art);
-            if(content==16)BuildAssemblyBridgeArt(game,art);
+            if(owner.Apparatus.GetComponentInChildren<COgheAssemblyBridge>()!=null)BuildAssemblyBridgeArt(game,art);
             if(content==19)BuildCooperationArt(game,art);
             if(content==20)BuildBossReadabilityArt(game,art);
             var studio=Child(owner.transform,"Day Lab studio");

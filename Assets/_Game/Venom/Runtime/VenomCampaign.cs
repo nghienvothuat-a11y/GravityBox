@@ -482,6 +482,7 @@ namespace GravityBox.Venom
         }
         public void Fail(string reason)
         {
+            foreach(var task in tapRails)task.CancelTask();
             Failure=reason;Motion.StopAll();heldProp=approachProp=null;InTube=false;
             if(Tube!=null&&Tube.Entrance!=null&&Tube.Entrance.Shape!=null)Tube.Entrance.Shape.enabled=true;
             Owner.SetCampaignOutcome(false);
@@ -517,8 +518,10 @@ namespace GravityBox.Venom
         }
         public void Load(int number)
         {
-            if(number<1||number>LevelCount)return;
+            if(number<1||number>PlayableLevelCount)return;
             Time.timeScale=1;
+            if(Definition.SceneSequence!=null&&Definition.SceneSequence.Length>0)
+            {SceneManager.LoadScene(Definition.SceneSequence[number-1]);return;}
             string prefix=number>20||SceneManager.GetActiveScene().name.StartsWith("COgheOrigin",StringComparison.Ordinal)?"COgheOrigin":"VenomOrigin";
             SceneManager.LoadScene(prefix+number.ToString("00"));
         }
@@ -545,7 +548,7 @@ namespace GravityBox.Venom
                 if(k.rKey.wasPressedThisFrame)ResetLevel();if(k.pKey.wasPressedThisFrame||k.escapeKey.wasPressedThisFrame)Owner.TogglePause();
                 if(k.zKey.wasPressedThisFrame)CameraRig.ToggleFollow();
             }
-            if(AutoAdvance&&Owner.Completed&&Matter.SimulationTime>=advanceAt&&!Definition.Boss&&Definition.Order<LevelCount){Load(Definition.Order+1);return;}
+            if(AutoAdvance&&Owner.Completed&&Matter.SimulationTime>=advanceAt&&!Definition.Boss&&Definition.Order<PlayableLevelCount){Load(Definition.Order+1);return;}
             if(!Owner.CanControl){ResetPointerInput();return;}
             if(Touch.activeTouches.Count>0||touchFinger>=0)
             {
@@ -580,6 +583,8 @@ namespace GravityBox.Venom
             // swallow a push/pull command while it is holding that handle.
             if(selectedTissueHit&&Matter.Groups[chosen]!=Matter.Groups[Motion.Selected])
             {SelectFragment(chosen);return;}
+            foreach(var task in tapRails)
+                if(task.Owns(Motion.Selected)&&task.Phase==COgheTapRail.TaskPhase.Operating)return;
             // The passive sphere still acknowledges the nearest shell point.
             // Its inward-facing collision mesh alone would select the far wall.
             // Orthographic framing may back away to keep the studio floor in
@@ -616,6 +621,7 @@ namespace GravityBox.Venom
                 return;
             }
             if(TouchMechanism(ray,obstruction))return;
+            if(!PrepareTapCommand(Motion.Selected))return;
             if(!Home&&Definition.Passive)
                 foreach(var surface in Surfaces)
                     if(surface.Selectable&&surface.PickSphere(ray,out var point)){MoveTo(point,surface);return;}
@@ -687,7 +693,7 @@ namespace GravityBox.Venom
                 body=new GUIStyle(title){fontSize=16,fontStyle=FontStyle.Normal,wordWrap=true};small=new GUIStyle(body){fontSize=13};button=new GUIStyle(GUI.skin.button){fontSize=15};
             }
             GUI.Label(new Rect(15,20,510,38),Home?"NHÀ CỦA SINH VẬT":Definition.Title,title);
-            for(int i=1;i<=LevelCount;i++)if(GUI.Button(new Rect(20+(i-1)%10*51,67+(i-1)/10*34,47,29),(i%10==0?"B"+i:i.ToString("00")),button))Load(i);
+            for(int i=1;i<=PlayableLevelCount;i++)if(GUI.Button(new Rect(20+(i-1)%10*51,67+(i-1)/10*34,47,29),(i%10==0?"B"+i:i.ToString("00")),button))Load(i);
             if(!Definition.Boss&&!Owner.Completed&&!Home)GUI.Label(new Rect(24,143,492,54),Definition.Lesson,small);
             if(CameraRig.ShowZones)
                 for(int i=-1;i<CameraRig.ZoneCount;i++)

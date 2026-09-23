@@ -5,7 +5,7 @@ namespace GravityBox.Venom
 {
     public sealed partial class VenomCampaign
     {
-        public const int LevelCount=40;
+        public const int LevelCount=55;
         public COgheMechanism[] Mechanisms { get; private set; }=Array.Empty<COgheMechanism>();
         private COgheMechanism[] transportMechanisms=Array.Empty<COgheMechanism>(),fusionBarriers=Array.Empty<COgheMechanism>(),exitControllers=Array.Empty<COgheMechanism>();
         public int LevelPage {get;set;}
@@ -16,6 +16,7 @@ namespace GravityBox.Venom
         private void InitializeMechanisms()
         {
             Mechanisms=Owner.Apparatus.GetComponentsInChildren<COgheMechanism>(true);
+            tapRails=Owner.Apparatus.GetComponentsInChildren<COgheTapRail>(true);
             foreach(var mechanism in Mechanisms)mechanism.InitializeMechanism(this);
             transportMechanisms=Array.FindAll(Mechanisms,m=>m.TransportsTissue);
             fusionBarriers=Array.FindAll(Mechanisms,m=>m.SeparatesTissue);
@@ -90,6 +91,7 @@ namespace GravityBox.Venom
 
         public bool TryRailManipulationIntent(int anchor,out Vector3 target,out Vector3 velocity)
         {
+            foreach(var tap in tapRails)if(tap.TryIntent(anchor,out target,out velocity))return true;
             target=velocity=Vector3.zero;
             if(heldProp==null||Matter.Groups[anchor]!=Matter.Groups[Motion.Selected])return false;
             var rail=heldProp.GetComponent<COgheRailSlider>();if(rail==null)return false;

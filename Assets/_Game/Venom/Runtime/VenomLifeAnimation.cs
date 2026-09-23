@@ -270,10 +270,10 @@ namespace GravityBox.Venom
         {
             var game=level.Campaign;
             if(game==null||game.Motion==null)return;
-            bool attached=game.Attached&&game.Matter.Groups[anchor]==game.Matter.Groups[game.Motion.Selected];
+            bool attached=game.TryManipulationContact(anchor,out var handPoint,out bool pulling);
             Vector3 direction=velocity.sqrMagnitude>.001f?velocity.normalized:Vector3.down;
-            if(attached)direction=(game.PropContact-centre).normalized;
-            float stretch=game.IsFlowing(anchor)?1:attached?(game.IsPulling?1.16f:.88f):!grounded||game.Definition.Passive?1+Mathf.Clamp(velocity.magnitude*.14f,0,.18f):1-game.Impact*.24f;
+            if(attached)direction=(handPoint-centre).normalized;
+            float stretch=game.IsFlowing(anchor)?1:attached?(pulling?1.16f:.88f):!grounded||game.Definition.Passive?1+Mathf.Clamp(velocity.magnitude*.14f,0,.18f):1-game.Impact*.24f;
             for(int i=0;i<count;i++)
             {
                 Vector3 p=transform.TransformPoint(points[i]),d=p-centre;
@@ -298,8 +298,8 @@ namespace GravityBox.Venom
                 Vector3 side=Vector3.Cross(up,direction).normalized;
                 for(int arm=0;arm<2;arm++)
                 {
-                    Vector3 a=centre+side*((arm*2-1)*.014f),end=game.PropContact+side*((arm*2-1)*.008f);
-                    Vector3 bend=up*(game.IsPulling?.003f:.014f);
+                    Vector3 a=centre+side*((arm*2-1)*.014f),end=handPoint+side*((arm*2-1)*.008f);
+                    Vector3 bend=up*(pulling?.003f:.014f);
                     Tube(a,Vector3.Lerp(a,end,.3f)+bend,Vector3.Lerp(a,end,.7f)+bend,end,up,centre-up*.04f,1);
                     TendrilCount++;
                 }

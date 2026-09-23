@@ -274,6 +274,7 @@ namespace GravityBox.Editor
                 case 38: BuildCampaign38(c); break;
                 case 39: BuildCampaign39(c); break;
                 case 40: BuildCampaign40(c); break;
+                case 51: case 52: case 53: case 54: case 55: BuildAssemblyChapter(c); break;
                 default: throw new ArgumentOutOfRangeException(nameof(content));
             }
         }

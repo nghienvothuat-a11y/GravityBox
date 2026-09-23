@@ -14,11 +14,16 @@ namespace GravityBox.Editor
         public const string BundleId="com.gravityboxlab.venom";
 
         [MenuItem("Gravity Box/COghe/Build Android test APK")]
-        public static void Build()
+        public static void Build() => BuildScenes(VenomCampaignBuilder.CampaignScenePaths(), Output);
+
+        [MenuItem("Gravity Box/COghe/Build Tap Campaign · Android test APK")]
+        public static void BuildTap() => BuildScenes(VenomCampaignBuilder.TapCampaignScenePaths(), "Builds/COgheTapChapter/Android/COghe.apk");
+
+        private static void BuildScenes(string[] scenes, string output)
         {
             if(!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android,BuildTarget.Android))
                 throw new InvalidOperationException("Install Android Build Support for this Unity version first.");
-            var scenes=VenomCampaignBuilder.CampaignScenePaths();
+            foreach(var scene in scenes)if(!File.Exists(scene))throw new FileNotFoundException("Generate campaign before building",scene);
 
             var platform=NamedBuildTarget.Android;
             string product=PlayerSettings.productName,identifier=PlayerSettings.GetApplicationIdentifier(platform);
@@ -39,14 +44,14 @@ namespace GravityBox.Editor
                 PlayerSettings.Android.useCustomKeystore=false;
                 EditorUserBuildSettings.buildAppBundle=false;
                 EditorUserBuildSettings.exportAsGoogleAndroidProject=false;
-                Directory.CreateDirectory(Path.GetDirectoryName(Output));
+                Directory.CreateDirectory(Path.GetDirectoryName(output));
                 var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{
-                    scenes=scenes,target=BuildTarget.Android,locationPathName=Output,options=BuildOptions.None,
+                    scenes=scenes,target=BuildTarget.Android,locationPathName=output,options=BuildOptions.None,
                     extraScriptingDefines=Environment.GetEnvironmentVariable("COGHE_BENCHMARK")=="1"?
                         new[]{"COGHE_MOBILE_BENCHMARK"}:Array.Empty<string>()});
                 if(report.summary.result!=BuildResult.Succeeded)
                     throw new Exception("COghe Android build failed: "+report.summary.result);
-                Debug.Log("COGHE ANDROID BUILD SUCCESS: "+Path.GetFullPath(Output));
+                Debug.Log("COGHE ANDROID BUILD SUCCESS: "+Path.GetFullPath(output));
             }
             finally
             {

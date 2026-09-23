@@ -10,15 +10,20 @@ namespace GravityBox.Venom
         public int[] ToothCounts;
         public COgheRailSlider Rack;
         public COgheTissueSensor InputClutch;
+        public COgheRailSlider PowerRail;
+        public bool ReturnWhenDisconnected;
+        public bool LatchOutput;
+        public float ReturnForce=.18f;
         public float MeshTolerance = .002f, MotorSpeed = 1.25f, MotorTorque = .04f;
         public bool HasOutputLoad;
         public float OutputSpeed;
         public bool Meshed { get; private set; }
-        public bool Powered => Meshed && (InputClutch == null || InputClutch.Active);
+        public bool Powered => Meshed && (InputClutch == null || InputClutch.Active) && (PowerRail == null || PowerRail.AtEnd);
         public float[] AngularSpeeds { get; private set; }
         public override bool ControlsExit => Rack != null;
         public override bool ExitUnlocked => Rack == null || Rack.AtEnd;
         private Quaternion[] initialRotations;
+        private bool outputLatched;
         public override void InitializeMechanism(VenomCampaign game)
         {
             initialRotations = new Quaternion[Wheels.Length];
@@ -28,6 +33,7 @@ namespace GravityBox.Venom
         {
             if (initialRotations == null) InitializeMechanism(game);
             AngularSpeeds = new float[Wheels.Length]; Meshed = false; HasOutputLoad = false; OutputSpeed = 0;
+            outputLatched=false;
             for (int i = 0; i < Wheels.Length; i++) Wheels[i].localRotation = initialRotations[i];
         }
         public static bool PitchContact(Vector3 a, Vector3 b, Vector3 axle, float ra, float rb, float tolerance)
@@ -39,7 +45,7 @@ namespace GravityBox.Venom
         public override void StepMechanism(VenomCampaign game, float dt)
         {
             if (AngularSpeeds == null) ResetMechanism(game);
-            bool powered = InputClutch == null || InputClutch.Active;
+            bool powered = (InputClutch == null || InputClutch.Active) && (PowerRail == null || PowerRail.AtEnd);
             bool stopped = Rack != null && Rack.AtEnd;
             AngularSpeeds[0] = powered && !stopped ? -MotorSpeed : 0;
             Meshed = true;
@@ -52,7 +58,21 @@ namespace GravityBox.Venom
             }
             if (Rack != null)
             {
+                if(LatchOutput&&Rack.AtEnd)outputLatched=true;
                 Rack.Locked = !Powered || stopped;
+                if(ReturnWhenDisconnected&&!Powered&&!outputLatched)
+                {
+                    Rack.Locked=false;Rack.ApplyEffort(-Rack.WorldAxis*ReturnForce);
+                    // The return spring back-drives the output bearing and only the wheels still touching it.
+                    int last=Wheels.Length-1;
+                    AngularSpeeds[last]=Vector3.Dot(Rack.Body.linearVelocity,Rack.WorldAxis)/PitchRadii[last];
+                    for(int i=last-1;i>=0;i--)
+                    {
+                        if(!PitchContact(Wheels[i].position,Wheels[i+1].position,Wheels[0].forward,PitchRadii[i],PitchRadii[i+1],MeshTolerance))break;
+                        AngularSpeeds[i]=-AngularSpeeds[i+1]*PitchRadii[i+1]/PitchRadii[i];
+                    }
+                }
+                if(outputLatched)Rack.Locked=true;
                 if (Powered && !stopped)
                 {
                     float radius = PitchRadii[PitchRadii.Length - 1];
@@ -74,9 +94,10 @@ namespace GravityBox.Venom
             {
                 Wheels[i].Rotate(Vector3.forward, AngularSpeeds[i] * Mathf.Rad2Deg * dt, Space.Self);
                 if (i == 0 || AngularSpeeds[i] == 0) continue;
+                if(!PitchContact(Wheels[i-1].position,Wheels[i].position,Wheels[0].forward,PitchRadii[i-1],PitchRadii[i],MeshTolerance))continue;
                 // Project the free bearing onto the ideal tooth-phase constraint when contact engages.
                 // The correction is at most half one tooth pitch, never a carriage displacement.
-                Quaternion basis = Wheels[0].parent.rotation;
+                Quaternion basis = (Wheels[0].parent!=null?Wheels[0].parent.rotation:Quaternion.identity) * initialRotations[0];
                 Vector3 line = Quaternion.Inverse(basis) * (Wheels[i].position - Wheels[i - 1].position);
                 float phi = Mathf.Atan2(line.y, line.x) * Mathf.Rad2Deg;
                 float previous = (Quaternion.Inverse(basis) * Wheels[i - 1].rotation).eulerAngles.z;

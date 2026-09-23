@@ -146,7 +146,7 @@ namespace GravityBox.Venom
                 hint.enabled=true;
                 Arrow(hint,game.Tube.DepartureHint.position+game.Owner.View.transform.up*(.008f+.003f*Mathf.Sin(now*2.5f)),.034f);
             }
-            int lesson=game.Definition.Order;
+            int lesson=game.Definition.SceneSequence!=null&&game.Definition.SceneSequence.Length>0?0:game.Definition.Order;
             if(lesson==1||lesson==2)
             {
                 hint.enabled=true;Vector3 p=game.Owner.Outlet.position;
@@ -193,6 +193,7 @@ namespace GravityBox.Venom
         private void OnGUI()
         {
             if(game==null||game.Owner==null||game.Home||game.Owner.Completed||game.Owner.Lost)return;
+            if(game.Definition.SceneSequence!=null&&game.Definition.SceneSequence.Length>0&&!game.Definition.CanRotate)return;
             if(game.Definition.Order<3&&game.Definition.CanRotate)return;
             if(rotateIcon==null){rotateIcon=RotationIcon(false);lockedIcon=RotationIcon(true);}
             if(iconLabel==null)iconLabel=new GUIStyle(GUI.skin.label){fontSize=12,alignment=TextAnchor.MiddleCenter,normal={textColor=new Color(.19f,.29f,.34f)}};

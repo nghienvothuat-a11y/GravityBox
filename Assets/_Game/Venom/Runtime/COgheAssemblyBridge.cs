@@ -7,7 +7,7 @@ namespace GravityBox.Venom
     {
         public COgheRailSlider[] Rails;
         public int SeatedCount {get;private set;}
-        public bool Ready=>Rails!=null&&Rails.Length==3&&SeatedCount==Rails.Length;
+        public bool Ready=>Rails!=null&&Rails.Length>0&&SeatedCount==Rails.Length;
         public override void ResetMechanism(VenomCampaign game){SeatedCount=0;}
         public override void StepMechanism(VenomCampaign game,float dt)
         {

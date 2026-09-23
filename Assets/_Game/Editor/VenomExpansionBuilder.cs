@@ -27,6 +27,9 @@ namespace GravityBox.Editor
 
         public static string[] CampaignScenePaths()
         {
+            var full=Campaign55ScenePaths();
+            bool fullComplete=true;foreach(string path in full)fullComplete&=File.Exists(path);
+            if(fullComplete)return full;
             var expanded=Campaign40ScenePaths();
             bool expandedComplete=true;foreach(string path in expanded)expandedComplete&=File.Exists(path);
             if(expandedComplete)return expanded;
