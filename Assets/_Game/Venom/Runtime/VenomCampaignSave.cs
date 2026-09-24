@@ -12,11 +12,16 @@ namespace GravityBox.Venom
         public bool HomeUnlocked, RevealHome;
         public static bool PersistenceEnabled=true;
         public const string Key="venom.origin.v2";
-        public static VenomCampaignSave Read()
+        [NonSerialized] private string storageKey=Key;
+        public static VenomCampaignSave Read(string progressKey=null)
         {
-            if(!PersistenceEnabled)return new VenomCampaignSave();
-            try{return JsonUtility.FromJson<VenomCampaignSave>(PlayerPrefs.GetString(Key,""))??new VenomCampaignSave();}
-            catch(ArgumentException){return new VenomCampaignSave();}
+            string key=string.IsNullOrEmpty(progressKey)?Key:progressKey;
+            VenomCampaignSave result;
+            try{result=PersistenceEnabled?JsonUtility.FromJson<VenomCampaignSave>(PlayerPrefs.GetString(key,"")):null;}
+            catch(ArgumentException){result=null;}
+            result??=new VenomCampaignSave();
+            result.storageKey=key;
+            return result;
         }
         public void Win(VenomCampaignDefinition definition)
         {
@@ -24,6 +29,6 @@ namespace GravityBox.Venom
             if(definition.Boss&&!HomeUnlocked){HomeUnlocked=true;RevealHome=true;}
             Write();
         }
-        public void Write(){if(!PersistenceEnabled)return;PlayerPrefs.SetString(Key,JsonUtility.ToJson(this));PlayerPrefs.Save();}
+        public void Write(){if(!PersistenceEnabled)return;PlayerPrefs.SetString(storageKey,JsonUtility.ToJson(this));PlayerPrefs.Save();}
     }
 }

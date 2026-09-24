@@ -20,6 +20,7 @@ namespace GravityBox.Venom
             Patch=patch;Active=patch.isActiveAndEnabled;ToWorld=patch.transform.localToWorldMatrix;
             Vector3 centre=patch.SphereRadius>0?Vector3.zero:new Vector3(0,0,.017f);
             Vector3 e=patch.SphereRadius>0?Vector3.one*(patch.SphereRadius+.0021f):new Vector3(patch.Size.x*.5f+.0011f,patch.Size.y*.5f+.0011f,.0191f);
+            if(patch.Curved!=null){centre=patch.Curved.LocalBounds.center;e=patch.Curved.LocalBounds.extents+Vector3.one*.036f;}
             SetBounds(centre,e);
         }
         public void Capture(VenomSurfacePatch patch)
@@ -34,9 +35,10 @@ namespace GravityBox.Venom
             ColliderBounds.Expand(.02f);
             Vector3 localCentre=patch.SphereRadius>0?Vector3.zero:new Vector3(0,0,-.013f);
             Vector3 e=patch.SphereRadius>0?Vector3.one*(patch.SphereRadius+.0261f):new Vector3(patch.Size.x*.5f,patch.Size.y*.5f,.0131f);
+            if(patch.Curved!=null){localCentre=patch.Curved.LocalBounds.center;e=patch.Curved.LocalBounds.extents+Vector3.one*.0261f;}
             SetBounds(localCentre,e);
             Vector3 shift=ToWorld.MultiplyVector(Vector3.forward*.0266f);
-            if(patch.SphereRadius>0)
+            if(patch.IsCurved)
             {
                 float scale=Mathf.Max(ToWorld.MultiplyVector(Vector3.right).magnitude,Mathf.Max(ToWorld.MultiplyVector(Vector3.up).magnitude,ToWorld.MultiplyVector(Vector3.forward).magnitude));
                 ClipMax=Vector3.one*(.0266f*scale);ClipMin=-ClipMax;
@@ -50,6 +52,7 @@ namespace GravityBox.Venom
             Vector3 navExtent=patch.SphereRadius>0?(right+up+forward)*(patch.SphereRadius+.0081f):right*(patch.Size.x*.5f)+up*(patch.Size.y*.5f)+forward*.0081f;
             navExtent+=Vector3.one*.00002f;
             Vector3 navCentre=ToWorld.MultiplyPoint3x4(Vector3.zero);NavigationMin=navCentre-navExtent;NavigationMax=navCentre+navExtent;
+            if(patch.Curved!=null){NavigationMin=SkinMin;NavigationMax=SkinMax;MarginExpansion=right+up+forward;}
         }
         private void SetBounds(Vector3 localCentre,Vector3 e)
         {

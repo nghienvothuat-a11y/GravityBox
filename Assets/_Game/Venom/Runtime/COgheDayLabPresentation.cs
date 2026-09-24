@@ -131,9 +131,13 @@ namespace GravityBox.Venom
             }
             if(!game.Owner.Completed)
             {
-                GUI.Label(new Rect(24,125,492,33),game.Home?"Nhà của COghe":tapLesson==null&&game.Definition.Order==7?"Cùng nhau dịch chuyển":game.Definition.Title,title);
+                GUI.Label(new Rect(24,125,492,33),game.Home?"Nhà của COghe":game.Definition.Title,title);
                 if(!game.Definition.Boss&&!game.Home)
-                    GUI.Label(new Rect(34,158,472,35),tapLesson!=null?tapLesson.Hint:cooperation!=null?cooperation.Hint:game.Definition.Order==7?"Chạm thùng, rồi chạm nơi muốn đẩy hoặc kéo tới.":game.Definition.Lesson,body);
+                {
+                    var lesson=game.Onboarding;
+                    GUI.Label(new Rect(34,158,lesson!=null?366:472,40),lesson!=null?lesson.Hint:tapLesson!=null?tapLesson.Hint:cooperation!=null?cooperation.Hint:game.Definition.Lesson,body);
+                    if(lesson!=null&&GUI.Button(new Rect(409,160,105,32),lesson.Showing?"Ẩn gợi ý":"Xem gợi ý",chip))lesson.Toggle();
+                }
             }
             if(game.CameraRig.ShowZones)
             {
@@ -186,7 +190,7 @@ namespace GravityBox.Venom
                 if(GUI.Button(new Rect(100,h-119,160,29),"Cho ăn",chip))game.FeedHome();
                 if(GUI.Button(new Rect(280,h-119,160,29),"Chơi cùng",chip))game.GreetHome();
             }
-            GUI.Label(new Rect(26,h-29,488,20),"COghe  /  PHÒNG NGHIÊN CỨU",footer);
+            GUI.Label(new Rect(26,h-29,488,20),game.Onboarding!=null?"COghe  /  BẢN THỬ HỌC CÁCH CHƠI":"COghe  /  PHÒNG NGHIÊN CỨU",footer);
             GUI.matrix=old;GUI.color=oldColor;GUI.backgroundColor=oldBackground;GUI.contentColor=oldContent;
         }
         private void OnDestroy()

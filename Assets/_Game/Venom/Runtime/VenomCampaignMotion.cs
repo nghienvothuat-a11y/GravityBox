@@ -155,7 +155,7 @@ namespace GravityBox.Venom
             Matrix4x4 toRoot=game.Root.worldToLocalMatrix;
             foreach(var s in game.Surfaces)
             {
-                if(!s.isActiveAndEnabled||s.SphereRadius>0)continue;
+                if(!s.isActiveAndEnabled||s.IsCurved)continue;
                 Matrix4x4 toWorld=s.transform.localToWorldMatrix;
                 int nx=Mathf.Max(1,Mathf.CeilToInt(s.Size.x/.065f)),ny=Mathf.Max(1,Mathf.CeilToInt(s.Size.y/.065f));
                 for(int x=0;x<=nx;x++)for(int y=0;y<=ny;y++)
@@ -397,7 +397,7 @@ namespace GravityBox.Venom
                     if(!window.Active||p.x<window.SkinMin.x||p.x>window.SkinMax.x||p.y<window.SkinMin.y||p.y>window.SkinMax.y||p.z<window.SkinMin.z||p.z>window.SkinMax.z)continue;
                     var patch=window.Patch;
                     var local=patch.transform.InverseTransformPoint(p);
-                    float inside=patch.SphereRadius>0?patch.SphereRadius-local.magnitude:local.z;
+                    float inside=patch.Curved!=null?patch.Curved.DistanceInside(local):patch.SphereRadius>0?patch.SphereRadius-local.magnitude:local.z;
                     if(inside<-.002f||inside>.036f||!patch.Contains(local,.001f))continue;
                     Vector3 q=patch.Closest(p);float d=Vector3.Distance(q,p);
                     // The deformable skin extends beyond each particle centre.
@@ -472,7 +472,7 @@ namespace GravityBox.Venom
                     for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[a]&&support[i]!=null)
                         normal+=support[i].NormalAt(contact[i]);
                     normal=normal.sqrMagnitude>.000001f?normal.normalized:Vector3.up;
-                    foreach(var s in game.Surfaces)if(s.SphereRadius>0){normal=s.NormalAt(centre);break;}
+                    foreach(var s in game.Surfaces)if(s.IsCurved){normal=s.NormalAt(centre);break;}
                     // A skidding body cannot follow navigation waypoints. Its
                     // visual effort faces the player's chosen point even when
                     // inertia has carried it past an unreached route node.

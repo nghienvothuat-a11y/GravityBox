@@ -111,7 +111,7 @@ namespace GravityBox.Venom
                     stem.enabled=true;stem.SetPosition(0,p);stem.SetPosition(1,p+n*.013f);
                     float pulse=Mathf.Clamp01(age/.85f);
                     if(pulse<1){ripple.enabled=true;Circle(ripple,p,n,Mathf.Lerp(.014f,.041f,pulse));ColorAlpha(ripple,Mint,1-pulse);}
-                    if(age<1.15f&&CommandSurface!=null&&CommandSurface.SphereRadius<=0)
+                    if(age<1.15f&&CommandSurface!=null&&!CommandSurface.IsCurved)
                     {
                         face.enabled=true;var patch=CommandSurface;
                         // Keep the flash inside the pane; the opaque frame would
@@ -140,19 +140,20 @@ namespace GravityBox.Venom
                 selection.enabled=true;
                 Arrow(selection,centre+up*(height+.026f+.003f*Mathf.Sin(now*3)),.027f);
             }
-            if(game.Tube!=null&&game.Tube.DepartureHint!=null&&!game.InTube&&
+            if(!game.Definition.Boss&&game.Tube!=null&&game.Tube.DepartureHint!=null&&!game.InTube&&
                 Vector3.Dot(game.Motion.Centre(game.Motion.Selected)-game.Tube.transform.position,game.Tube.transform.forward)<0)
             {
                 hint.enabled=true;
                 Arrow(hint,game.Tube.DepartureHint.position+game.Owner.View.transform.up*(.008f+.003f*Mathf.Sin(now*2.5f)),.034f);
             }
-            int lesson=game.Definition.SceneSequence!=null&&game.Definition.SceneSequence.Length>0?0:game.Definition.Order;
-            if(lesson==1||lesson==2)
+            // Content identity survives both the integrated catalog and pilot reordering.
+            string lesson=game.Onboarding!=null?string.Empty:game.Definition.Id;
+            if(lesson=="venom.origin.01"||lesson=="venom.origin.02")
             {
                 hint.enabled=true;Vector3 p=game.Owner.Outlet.position;
                 Arrow(hint,p+game.Owner.View.transform.up*(.025f+.005f*Mathf.Sin(now*2.5f)),.034f);
             }
-            if(lesson==7)
+            if(lesson=="venom.origin.07")
             {
                 pushedOnce|=game.Attached;
                 if(!pushedOnce&&game.Props.Length>0)
@@ -161,7 +162,7 @@ namespace GravityBox.Venom
                     Arrow(hint,prop.Body.position+game.Owner.View.transform.up*(.13f+.004f*Mathf.Sin(now*2.5f)),.03f);
                 }
             }
-            if(lesson==8&&!game.InTube&&game.Root.InverseTransformPoint(game.Motion.Centre(game.Motion.Selected)).x<-.11f)
+            if(lesson=="venom.origin.08"&&!game.InTube&&game.Root.InverseTransformPoint(game.Motion.Centre(game.Motion.Selected)).x<-.11f)
             {
                 // First invite a climb onto the safe roof. Only then move the
                 // cue to the slippery departure; a direct command from below
@@ -194,7 +195,7 @@ namespace GravityBox.Venom
         {
             if(game==null||game.Owner==null||game.Home||game.Owner.Completed||game.Owner.Lost)return;
             if(game.Definition.SceneSequence!=null&&game.Definition.SceneSequence.Length>0&&!game.Definition.CanRotate)return;
-            if(game.Definition.Order<3&&game.Definition.CanRotate)return;
+            if((game.Definition.Id=="venom.origin.01"||game.Definition.Id=="venom.origin.02")&&game.Definition.CanRotate)return;
             if(rotateIcon==null){rotateIcon=RotationIcon(false);lockedIcon=RotationIcon(true);}
             if(iconLabel==null)iconLabel=new GUIStyle(GUI.skin.label){fontSize=12,alignment=TextAnchor.MiddleCenter,normal={textColor=new Color(.19f,.29f,.34f)}};
             var old=GUI.matrix;var color=GUI.color;
@@ -203,7 +204,7 @@ namespace GravityBox.Venom
             GUI.matrix=canvas;GUI.color=Color.white;
             bool locked=!game.Definition.CanRotate;float y=h-219;
             GUI.DrawTexture(new Rect(249,y,42,42),locked?lockedIcon:rotateIcon);
-            GUI.Label(new Rect(155,y+38,230,22),locked?"Không thể xoay":"Kéo để xoay hộp",iconLabel);
+            GUI.Label(new Rect(155,y+38,230,22),locked?"Không thể xoay":"Kéo để xoay vật thể",iconLabel);
             GUI.matrix=old;GUI.color=color;
         }
         private void OnDestroy()

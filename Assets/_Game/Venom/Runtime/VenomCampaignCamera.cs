@@ -31,7 +31,7 @@ namespace GravityBox.Venom
                     surface.Shape.attachedRigidbody.transform!=game.Root)continue;
                 for(int i=0;i<8;i++)
                 {
-                    Vector3 point=surface.SphereRadius>0?Corner(new Bounds(Vector3.zero,Vector3.one*surface.SphereRadius*2),i):
+                    Vector3 point=surface.Curved!=null?Corner(surface.Curved.LocalBounds,i):surface.SphereRadius>0?Corner(new Bounds(Vector3.zero,Vector3.one*surface.SphereRadius*2),i):
                         new Vector3((i&1)==0?-surface.Size.x*.5f:surface.Size.x*.5f,
                             (i&2)==0?-surface.Size.y*.5f:surface.Size.y*.5f,0);
                     point=game.Root.InverseTransformPoint(surface.transform.TransformPoint(point));

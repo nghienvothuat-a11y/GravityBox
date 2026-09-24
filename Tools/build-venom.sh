@@ -6,12 +6,14 @@ mkdir -p "$VENOM_ROOT/Artifacts/Venom01"
 VENOM_BUILD_METHOD="GravityBox.Editor.VenomCampaignBuilder.BuildMac"
 if [[ "${1:-}" == "--tap" ]]; then
   VENOM_BUILD_METHOD="GravityBox.Editor.VenomCampaignBuilder.BuildTapCampaignMac"
+elif [[ "${1:-}" == "--onboarding" ]]; then
+  VENOM_BUILD_METHOD="GravityBox.Editor.COgheOnboardingBuilder.BuildMac"
 elif [[ "${1:-}" == "--lab" ]]; then
   VENOM_BUILD_METHOD="GravityBox.Editor.VenomPrototypeBuilder.BuildMac"
 elif [[ "${1:-}" == "--journey" ]]; then
   VENOM_BUILD_METHOD="GravityBox.Editor.VenomPrototypeBuilder.BuildJourneyMac"
 elif [[ -n "${1:-}" ]]; then
-  echo "Usage: bash Tools/build-venom.sh [--tap|--lab|--journey]" >&2
+  echo "Usage: bash Tools/build-venom.sh [--tap|--onboarding|--lab|--journey]" >&2
   exit 2
 fi
 "$UNITY_EDITOR" -batchmode -nographics -projectPath "$VENOM_ROOT" \

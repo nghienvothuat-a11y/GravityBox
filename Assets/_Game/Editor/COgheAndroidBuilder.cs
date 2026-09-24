@@ -19,7 +19,11 @@ namespace GravityBox.Editor
         [MenuItem("Gravity Box/COghe/Build Tap Campaign · Android test APK")]
         public static void BuildTap() => BuildScenes(VenomCampaignBuilder.TapCampaignScenePaths(), "Builds/COgheTapChapter/Android/COghe.apk");
 
-        private static void BuildScenes(string[] scenes, string output)
+        [MenuItem("Gravity Box/COghe/Onboarding/Build pilot Android test APK")]
+        public static void BuildOnboarding() => BuildScenes(COgheOnboardingBuilder.ScenePaths(),
+            "Builds/COgheOnboarding/Android/COghe-Learn.apk",BundleId+".onboarding","COghe Learn");
+
+        private static void BuildScenes(string[] scenes, string output,string bundleId=BundleId,string displayName="COghe")
         {
             if(!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android,BuildTarget.Android))
                 throw new InvalidOperationException("Install Android Build Support for this Unity version first.");
@@ -35,8 +39,8 @@ namespace GravityBox.Editor
             bool customKey=PlayerSettings.Android.useCustomKeystore;
             try
             {
-                PlayerSettings.productName="COghe";
-                PlayerSettings.SetApplicationIdentifier(platform,BundleId);
+                PlayerSettings.productName=displayName;
+                PlayerSettings.SetApplicationIdentifier(platform,bundleId);
                 PlayerSettings.SetScriptingBackend(platform,ScriptingImplementation.IL2CPP);
                 PlayerSettings.SetIl2CppCompilerConfiguration(platform,Il2CppCompilerConfiguration.Release);
                 PlayerSettings.Android.targetArchitectures=AndroidArchitecture.ARM64;

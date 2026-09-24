@@ -118,7 +118,7 @@ namespace GravityBox.Tests
             {
                 yield return Load(slot); Assert.AreEqual(slot, game.Definition.Order);
                 Assert.AreEqual(slot <= 50 ? $"coghe.tap.v1.{slot - 40:00}" : $"venom.origin.{slot:00}", game.Definition.Id);
-                Assert.IsTrue(ids.Add(game.Definition.Id)); Assert.AreEqual(55, game.PlayableLevelCount);
+                Assert.IsTrue(ids.Add(game.Definition.Id)); Assert.AreEqual(60, game.PlayableLevelCount);
                 Assert.IsEmpty(game.Definition.SceneSequence); Assert.AreEqual(slot == 50, game.Definition.Boss);
                 Assert.IsFalse(game.Definition.CanRotate); Assert.AreEqual((slot - 1) / 10, game.LevelPage);
                 if (slot == 50) Assert.IsEmpty(game.GetComponent<COgheTapLesson>().Hint);
@@ -129,7 +129,7 @@ namespace GravityBox.Tests
                 game = Object.FindFirstObjectByType<VenomCampaign>(); game.AutoAdvance = false; game.Owner.enabled = false; game.Owner.Rotation.enabled = false;
                 Assert.AreEqual($"COgheOrigin{slot:00}", SceneManager.GetActiveScene().name);
             }
-            game.Load(56); yield return null; Assert.AreEqual("COgheOrigin01", SceneManager.GetActiveScene().name);
+            game.Load(61); yield return null; Assert.AreEqual("COgheOrigin01", SceneManager.GetActiveScene().name);
         }
         [UnityTest] public IEnumerator EveryAssemblyHandleAcceptsBothPortraitSizes()
         {

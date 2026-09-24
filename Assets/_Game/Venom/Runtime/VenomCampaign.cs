@@ -36,6 +36,8 @@ namespace GravityBox.Venom
         public string Failure {get;private set;}
         public string Activity {get;private set;}="Idle";
         public bool Attached=>heldProp!=null;
+        public VenomMovableProp HeldProp=>heldProp;
+        public bool HasPropTarget {get;private set;}
         public bool IsHeldSurface(VenomSurfacePatch p)=>heldProp!=null&&p.Shape.attachedRigidbody==heldProp.Body;
         public bool IsPulling {get;private set;}
         public Vector3 PropContact {get;private set;}
@@ -61,6 +63,7 @@ namespace GravityBox.Venom
         private Vector2 pointerStart,pointerPrevious;
         private int touchFinger=-1;
         public COgheControlFeedback Feedback {get;private set;}
+        public COgheOnboarding Onboarding {get;private set;}
         private GUIStyle title,body,button,small;
         private VenomHabitat habitat;
         private COgheDayLabPresentation dayLab;
@@ -68,7 +71,8 @@ namespace GravityBox.Venom
         public void Initialize(VenomLevelController owner)
         {
             dayLab=GetComponent<COgheDayLabPresentation>();
-            Owner=owner;Progress=VenomCampaignSave.Read();
+            Owner=owner;Progress=VenomCampaignSave.Read(Definition.ProgressKey);
+            Onboarding=GetComponent<COgheOnboarding>();
             owner.InitializeCampaignMatter();
             Motion=new VenomCampaignMotion(this);
             Matter.Fused+=Motion.ReconcileAfterFusion;
@@ -90,7 +94,7 @@ namespace GravityBox.Venom
             {var shape=Matter.Bodies[i].GetComponent<Collider>();if(shape!=null)shape.enabled=true;}
             foreach(var p in Props)p.ResetTo(Root);
             ResetBody(Knife,knifeRest);ResetBody(ExitCover,exitRest);ResetBody(ButtonCover,buttonRest);
-            heldProp=approachProp=climbingStep=null;propStance=null;tubeIntent=false;InTube=false;cutClock=-1;holdTime=0;Failure=null;Activity="Idle";
+            HasPropTarget=false;heldProp=approachProp=climbingStep=null;propStance=null;tubeIntent=false;InTube=false;cutClock=-1;holdTime=0;Failure=null;Activity="Idle";
             if(Tube!=null&&Tube.Entrance!=null&&Tube.Entrance.Shape!=null)Tube.Entrance.Shape.enabled=true;
             hasExited=false;advanceAt=-1;GateOpen=PadA==null;Zoom=false;Home=false;CameraRig?.Reset();
             KnifePhase=BladePhase.Ready;cutDone=false;MassA=MassB=0;
@@ -98,6 +102,7 @@ namespace GravityBox.Venom
             if(GateOpen)Owner.LatchGuidedGate();
             for(int i=0;i<32;i++){previous[i]=Owner.Outlet.InverseTransformPoint(Matter.Bodies[i].position);inBore[i]=false;}
             ResetMechanisms();Physics.SyncTransforms();Motion.Reset();Feedback.ResetFeedback();
+            Onboarding?.ResetObservation();
         }
         private void ResetBody(Rigidbody body,Vector3 position)
         {if(body==null)return;body.position=Root.TransformPoint(position);body.rotation=Root.rotation;if(!body.isKinematic)body.linearVelocity=body.angularVelocity=Vector3.zero;}
@@ -120,7 +125,7 @@ namespace GravityBox.Venom
             {
                 if(!patch.isActiveAndEnabled||graspedBody!=null&&patch.Shape.attachedRigidbody==graspedBody)continue;
                 Vector3 x=patch.transform.InverseTransformPoint(a),y=patch.transform.InverseTransformPoint(b);
-                if(patch.SphereRadius<=0&&Mathf.Abs(x.z-y.z)>.00001f)
+                if(!patch.IsCurved&&Mathf.Abs(x.z-y.z)>.00001f)
                 {
                     float t=x.z/(x.z-y.z);
                     if(t>=0&&t<=1&&patch.ContainsForNavigation(Vector3.Lerp(x,y,t),radius))return false;
@@ -189,7 +194,7 @@ namespace GravityBox.Venom
             {
                 Vector3 c=Motion.Centre(Motion.Selected);Vector3 p=PropSideContact(approachProp,c);
                 if(CanGraspProp(approachProp,c,p))
-                {heldProp=approachProp;approachProp=null;gripLocal=Quaternion.Inverse(heldProp.Body.rotation)*(p-heldProp.Body.position);gripNormalLocal=Quaternion.Inverse(heldProp.Body.rotation)*(heldProp.ManipulationGrip!=null?heldProp.ManipulationGrip.forward:Vector3.ProjectOnPlane(p-heldProp.Body.position,Vector3.up).normalized);PropContact=p;lastPropInput=Matter.SimulationTime;propTarget=heldProp.Body.position;Motion.Cancel(Motion.Selected);}
+                {heldProp=approachProp;approachProp=null;gripLocal=Quaternion.Inverse(heldProp.Body.rotation)*(p-heldProp.Body.position);gripNormalLocal=Quaternion.Inverse(heldProp.Body.rotation)*(heldProp.ManipulationGrip!=null?heldProp.ManipulationGrip.forward:Vector3.ProjectOnPlane(p-heldProp.Body.position,Vector3.up).normalized);PropContact=p;lastPropInput=Matter.SimulationTime;propTarget=heldProp.Body.position;HasPropTarget=false;Motion.Cancel(Motion.Selected);}
             }
             if(heldProp==null)return;
             if(Matter.SimulationTime-lastPropInput>=3){ReleaseProp();return;}
@@ -232,8 +237,8 @@ namespace GravityBox.Venom
             }
             if(Matter.SimulationTime-lastGraph>.6f&&rb.linearVelocity.sqrMagnitude<.0001f){Motion.BuildGraph();lastGraph=Matter.SimulationTime;}
         }
-        public void ReleaseProp(){heldProp=approachProp=null;propStance=null;Motion.Cancel(Motion.Selected);Motion.BuildGraph();Activity="Idle";}
-        public void SetPropTarget(Vector3 world){if(heldProp==null)return;propTarget=world;if(heldProp.GetComponent<COgheRailSlider>()==null)propTarget.y=heldProp.Body.position.y;lastPropInput=Matter.SimulationTime;}
+        public void ReleaseProp(){HasPropTarget=false;heldProp=approachProp=null;propStance=null;Motion.Cancel(Motion.Selected);Motion.BuildGraph();Activity="Idle";}
+        public void SetPropTarget(Vector3 world){if(heldProp==null)return;HasPropTarget=true;propTarget=world;if(heldProp.GetComponent<COgheRailSlider>()==null)propTarget.y=heldProp.Body.position.y;lastPropInput=Matter.SimulationTime;}
         public void SelectProp(VenomMovableProp prop)
         {
             climbingStep=null;ReleaseProp();approachProp=prop;
@@ -483,7 +488,7 @@ namespace GravityBox.Venom
         public void Fail(string reason)
         {
             foreach(var task in tapRails)task.CancelTask();
-            Failure=reason;Motion.StopAll();heldProp=approachProp=null;InTube=false;
+            Failure=reason;Motion.StopAll();HasPropTarget=false;heldProp=approachProp=null;InTube=false;
             if(Tube!=null&&Tube.Entrance!=null&&Tube.Entrance.Shape!=null)Tube.Entrance.Shape.enabled=true;
             Owner.SetCampaignOutcome(false);
         }
@@ -505,6 +510,11 @@ namespace GravityBox.Venom
             foreach(var patch in Surfaces)
             {
                 Vector3 p=patch.transform.InverseTransformPoint(world);
+                if(patch.Curved!=null)
+                {
+                    if(patch.Curved.Constrain(ref p,out var inward)){world=patch.transform.TransformPoint(p);normal=skin.InverseTransformDirection(patch.transform.TransformDirection(inward));}
+                    continue;
+                }
                 if(patch.SphereRadius>0)
                 {
                     if(p.magnitude>patch.SphereRadius&&p.magnitude<patch.SphereRadius+.026f&&patch.Contains(p))
@@ -603,7 +613,7 @@ namespace GravityBox.Venom
                 if(face==null)return true;
                 // Interior glass is transparent to an entering ray. Roofs also
                 // accept exterior taps; lesson 03 exposes its near front pane.
-                return face.Selectable&&(face.SphereRadius>0||face.InterceptExterior||Vector3.Dot(ray.direction,face.Normal)<0);
+                return face.Selectable&&(face.IsCurved||face.InterceptExterior||Vector3.Dot(ray.direction,face.Normal)<0);
             }
             foreach(var hit in hits)
             {

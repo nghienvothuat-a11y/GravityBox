@@ -203,3 +203,13 @@ Màn 13: xuất phát xa cần gạt; cần A mở cửa hộp nhỏ, nút B m�
 ## Campaign 01–55 (23/09/2026)
 
 The ten Tap levels are now integrated at 41–50; five block-assembly puzzles based on displayed level 19 occupy 51–55. Build the full campaign with the ordinary `Tools/build-venom-android.sh` / `Tools/build-venom.sh` commands, without `--tap`. See [build and playtest guide](Docs/COGHE_CAMPAIGN_41_55.md). The standalone Tap variant remains available for earlier comparisons; original scene and save identities are preserved.
+
+## Campaign01–60 (24/09/2026)
+
+Five hollow slippery vessels follow displayed level7 at56–60: vase, mask, teapot, skull and a spiral-shell Boss. Drag rotates the real container; the creature moves under gravity and escapes through the mint opening. Use the ordinary build wrappers for all60; `--tap` retains its standalone chapter. See [vessel chapter guide](Docs/COGHE_CAMPAIGN_56_60.md).
+
+### COghe onboarding pilot — 24 September 2026
+
+The isolated ten-level learning pilot uses source slots `1 → 2 → 41 → 8 → 14 → 18 → 9 → 16 → 42 → 10`, with state-driven visual guidance and its own save. Build it with `bash Tools/build-venom.sh --onboarding` or `bash Tools/build-venom-android.sh --onboarding`. Outputs: `Builds/COgheOnboarding/macOS/COghe Learn.app` and `Builds/COgheOnboarding/Android/COghe-Learn.apk`. Android installs alongside the main game.
+
+The normal build still contains the existing60-level campaign. The full progression mapping remains a design hypothesis pending novice playtests. [Pilot and test sheet](Docs/COGHE_ONBOARDING_PILOT_2026_09_24.md) · [60-level candidate](Docs/LevelDesign/COghe/ONBOARDING_PROGRESSION_DRAFT.md).

@@ -15,6 +15,8 @@ namespace GravityBox.Venom
         public Rect SlipRegion;
         public Collider Shape;
         public float SphereRadius;
+        public COgheCurvedSurface Curved;
+        public bool IsCurved => SphereRadius>0 || Curved!=null;
         // A closed shutter can block an authored aperture for route planning
         // without changing its collider, adhesion or touch selection.
         [NonSerialized] public bool NavigationHoleBlocked;
@@ -25,11 +27,13 @@ namespace GravityBox.Venom
             return Contains(local,margin);
         }
         public Vector3 Normal=>transform.forward;
-        public Vector3 NormalAt(Vector3 world)=>SphereRadius>0?(transform.position-world).normalized:Normal;
+        public Vector3 NormalAt(Vector3 world)
+        {if(Curved!=null){Curved.Nearest(transform.InverseTransformPoint(world),out _,out var n);return transform.TransformDirection(n);}return SphereRadius>0?(transform.position-world).normalized:Normal;}
         public float DistanceInside(Vector3 world)
-        {var p=transform.InverseTransformPoint(world);return SphereRadius>0?SphereRadius-p.magnitude:p.z;}
+        {var p=transform.InverseTransformPoint(world);return Curved!=null?Curved.DistanceInside(p):SphereRadius>0?SphereRadius-p.magnitude:p.z;}
         public bool Contains(Vector3 local,float margin=0)
         {
+            if(Curved!=null)return Curved.Contains(local,margin);
             if(SphereRadius>0)return !Hole||local.y<=0||new Vector2(local.x,local.z).magnitude>=HoleRadius-margin;
             return Mathf.Abs(local.x)<=Size.x*.5f+margin && Mathf.Abs(local.y)<=Size.y*.5f+margin &&
                 (!Hole || Vector2.Distance(new Vector2(local.x,local.y),HoleCentre)>=HoleRadius-margin);
@@ -43,6 +47,7 @@ namespace GravityBox.Venom
         public Vector3 Closest(Vector3 world)
         {
             Vector3 p=transform.InverseTransformPoint(world);
+            if(Curved!=null){Curved.Nearest(p,out var q,out _);return transform.TransformPoint(q);}
             if(SphereRadius>0)
             {
                 p=(p.sqrMagnitude>0?p.normalized:Vector3.down)*SphereRadius;

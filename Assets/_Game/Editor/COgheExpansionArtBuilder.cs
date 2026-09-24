@@ -34,7 +34,7 @@ namespace GravityBox.Editor
             var floorGlass=Glass("Expansion inspection floor",.48f,0,false);
             floorGlass.SetColor("_BaseColor",new Color(.77f,.83f,.84f,.48f));EditorUtility.SetDirty(floorGlass);
             var panes=new List<VenomSurfacePatch>();var floors=new List<Renderer>();
-            var bounds=new Bounds(Vector3.zero,Vector3.zero);bool bounded=false;VenomSurfacePatch sphere=null;
+            var bounds=new Bounds(Vector3.zero,Vector3.zero);bool bounded=false;VenomSurfacePatch sphere=null;bool curved=false;
             foreach(var patch in game.Surfaces)
             {
                 var renderer=patch.GetComponent<MeshRenderer>();if(renderer==null)continue;
@@ -52,9 +52,10 @@ namespace GravityBox.Editor
                 // The dry approach must read as a separate climbable route beside the lavender slide.
                 if(content==12&&(name=="gripping climb"||name=="launch platform"))renderer.sharedMaterial=amber;
                 if(patch.SphereRadius>0){sphere=patch;renderer.sharedMaterial=Glass("Satin sphere",.075f,.7f,false);}
+                if(patch.Curved!=null){curved=true;renderer.sharedMaterial=Glass("Vessel lavender satin",.045f,.45f,true);bounds=patch.Curved.LocalBounds;bounded=true;}
                 if(renderer.sharedMaterial.shader.name=="COghe/Lab Glass")panes.Add(patch);
                 if(isFloor&&!(content==22&&(name=="climb deck"||name=="receiving body deck"))&&!(content==26&&(name.Contains("raised bank")||name=="docked seamless bridge deck")))floors.Add(renderer);
-                if(!moving)
+                if(!moving&&patch.Curved==null)
                 {
                     foreach(float x in new[]{-.5f,.5f})foreach(float y in new[]{-.5f,.5f})
                     {
@@ -101,7 +102,7 @@ namespace GravityBox.Editor
                 Ring(art,"Sphere diagonal seam",sphere.transform.localPosition,new Vector3(1,1,1).normalized,r,.0012f,alloy);
                 bounds=new Bounds(sphere.transform.localPosition,Vector3.one*r*2);
             }
-            else if(bounded&&content!=22)
+            else if(bounded&&!curved&&content!=22)
             {
                 Vector3 min=bounds.min-Vector3.one*.006f,max=bounds.max+Vector3.one*.006f;
                 foreach(float y in new[]{min.y,max.y})foreach(float z in new[]{min.z,max.z})
@@ -151,7 +152,7 @@ namespace GravityBox.Editor
             }
             foreach(var blade in root.GetComponentsInChildren<COgheGuillotine>())
                 foreach(var renderer in blade.Rail.GetComponentsInChildren<MeshRenderer>())renderer.sharedMaterial=steel;
-            if(sphere==null)
+            if(sphere==null&&!curved)
                 Label(art,number.ToString("00"),bounds.min+new Vector3(.055f,bounds.size.y-.047f,-.008f),Quaternion.identity,.019f,ink);
             COgheDayLabPresentation.ConfigureExitOutline(owner);
             if(content==13)BuildAccessSequenceArt(game,art);

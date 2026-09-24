@@ -72,7 +72,7 @@ namespace GravityBox.Venom
                 ref var s=ref surfaces[node.item];if(!s.Active)continue;
                 if(world.x<s.NavigationMin.x||world.x>s.NavigationMax.x||world.y<s.NavigationMin.y||world.y>s.NavigationMax.y||world.z<s.NavigationMin.z||world.z>s.NavigationMax.z)continue;
                 Vector3 p=s.ToLocal.MultiplyPoint3x4(world);
-                float distance=s.Patch.SphereRadius>0?s.Patch.SphereRadius-p.magnitude:p.z;
+                float distance=s.Patch.Curved!=null?s.Patch.Curved.DistanceInside(p):s.Patch.SphereRadius>0?s.Patch.SphereRadius-p.magnitude:p.z;
                 if(distance>-.008f&&distance<.008f&&s.Patch.Contains(p))return true;
             }
             return false;
@@ -106,7 +106,7 @@ namespace GravityBox.Venom
             {int i=item-surfaces.Length;return Intersects(propBounds[i],a,inverse,length)&&props[i].Raycast(ray,out _,length);}
             ref var s=ref surfaces[item];if(!s.Active)return false;
             Vector3 margin=s.MarginExpansion*radius,min=s.NavigationMin-margin,max=s.NavigationMax+margin;
-            if(s.Patch.SphereRadius<=0&&Overlap(min,max,segmentMin,segmentMax))
+            if(!s.Patch.IsCurved&&Overlap(min,max,segmentMin,segmentMax))
             {
                 Vector3 x=s.ToLocal.MultiplyPoint3x4(a),y=s.ToLocal.MultiplyPoint3x4(b);
                 if(Mathf.Abs(x.z)<.000001f)x=s.Patch.transform.InverseTransformPoint(a);

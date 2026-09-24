@@ -66,7 +66,11 @@ namespace GravityBox.Venom
                 // use the original exact transform and clipping calculation.
                 if(world.x<s.SkinMin.x||world.x>s.SkinMax.x||world.y<s.SkinMin.y||world.y>s.SkinMax.y||world.z<s.SkinMin.z||world.z>s.SkinMax.z)continue;
                 var patch=s.Patch;Vector3 p=patch.transform.InverseTransformPoint(world);
-                if(patch.SphereRadius>0)
+                if(patch.Curved!=null)
+                {
+                    if(patch.Curved.Constrain(ref p,out var inward)){world=s.ToWorld.MultiplyPoint3x4(p);normal=worldNormalToSkin*(s.Rotation*inward);}
+                }
+                else if(patch.SphereRadius>0)
                 {
                     float magnitude=p.magnitude;
                     if(magnitude>patch.SphereRadius&&magnitude<patch.SphereRadius+.026f&&patch.Contains(p))

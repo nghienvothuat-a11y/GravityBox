@@ -238,13 +238,15 @@ namespace GravityBox.Editor
             camera.backgroundColor = new Color(.93f, .93f, .89f); camera.transform.rotation = Quaternion.Euler(definition.CameraEuler); camera.transform.position = -camera.transform.forward * 3;
             owner.View = camera;
             Lighting(); COgheDayLabBuilder.ApplyExpansionLevel(game);
-            if(content>=31)ApplyChapterWorkingSurfaces(c);
+            if(content>=31 && content<=55)ApplyChapterWorkingSurfaces(c);
+            if(content>=56 && content<=60)COgheDayLabBuilder.ApplyVesselDetails(game,content-56);
             // Authored opening pose: the receiving tray starts uphill, as in
             // the approved 21 September sketch. CaptureInitialState also makes
             // Retry restore this pose, without changing camera or gravity.
             // Apply after building local geometry/art; this level has no props
             // detached from the pivot that need a separate initial transform.
             if (content == 21) c.Root.rotation = Quaternion.AngleAxis(45, camera.transform.forward);
+            if (content == 59) c.Root.rotation = Quaternion.Euler(0,0,115);
             EditorUtility.SetDirty(definition);
             EditorSceneManager.SaveScene(scene, $"{Campaign30Folder}/{Campaign30ScenePrefix}{slot:00}.unity");
             Debug.Log($"COGHE CAMPAIGN SLOT {slot:00}: content {content:00} · {definition.Title}");
@@ -275,6 +277,7 @@ namespace GravityBox.Editor
                 case 39: BuildCampaign39(c); break;
                 case 40: BuildCampaign40(c); break;
                 case 51: case 52: case 53: case 54: case 55: BuildAssemblyChapter(c); break;
+                case 56: case 57: case 58: case 59: case 60: BuildSlipperyVessel(c); break;
                 default: throw new ArgumentOutOfRangeException(nameof(content));
             }
         }

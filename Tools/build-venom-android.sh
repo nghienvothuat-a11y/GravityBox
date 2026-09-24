@@ -7,8 +7,11 @@ COGHE_ANDROID_OUTPUT="Builds/Venom/Android/COghe.apk"
 if [[ "${1:-}" == "--tap" ]]; then
   COGHE_ANDROID_METHOD="GravityBox.Editor.COgheAndroidBuilder.BuildTap"
   COGHE_ANDROID_OUTPUT="Builds/COgheTapChapter/Android/COghe.apk"
+elif [[ "${1:-}" == "--onboarding" ]]; then
+  COGHE_ANDROID_METHOD="GravityBox.Editor.COgheAndroidBuilder.BuildOnboarding"
+  COGHE_ANDROID_OUTPUT="Builds/COgheOnboarding/Android/COghe-Learn.apk"
 elif [[ -n "${1:-}" ]]; then
-  echo "Usage: bash Tools/build-venom-android.sh [--tap]" >&2
+  echo "Usage: bash Tools/build-venom-android.sh [--tap|--onboarding]" >&2
   exit 2
 fi
 mkdir -p "$COGHE_ROOT/Artifacts/COgheAndroid"
