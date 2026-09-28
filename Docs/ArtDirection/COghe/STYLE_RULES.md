@@ -188,3 +188,9 @@ including tall mobile aspect ratios. Keep its authored height and shadow space
 fixed; expand only the collider-free backdrop mesh. Orthographic camera depth and
 far clipping may adapt without changing the chamber's screen projection. Verify
 all four corner rays reach the tabletop within its edges and clipping range.
+
+## 11. Authorized view-only V2 (28 September 2026)
+
+For the ten new V2 scenes, Mrk's supplied concept direction supersedes the archived rotating cage layout: opaque pale-blue far panes, warm porcelain floor/base, rounded amber handles and mint mechanism state. Incoming exterior panes and their trim form a camera cutaway; their collision and adhesion remain intact. Interior opaque walls/lids still obstruct picking. Drag orbits worldY at fixed pitch, pinch zooms about the two-finger midpoint, and Overview resets the view. V2 has no creature-follow button.
+
+`COgheViewArtBuilder` and `COgheViewPresentation` own this presentation. Decorative geometry is batched by material; no extra colliders, realtime reflections or heavy post-processing. HUD uses the device safe area. Archived scenes retain their existing art/control contract. The concept is a direction, not an asserted visual-similarity score.

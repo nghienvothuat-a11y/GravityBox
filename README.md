@@ -1,8 +1,23 @@
 # COghe — Day Lab Puzzle Prototype
 
+
+## Bản mặc định hiện tại — COghe V2, 28/09/2026
+
+Build thông thường mở **10 màn mới `COgheView01`–`COgheView10`**: chạm để đi/giao việc, kéo ngang chỉ đổi góc nhìn, hai ngón zoom, nút **Toàn cảnh**. Hộp không xoay vật lý. Bốn bài đầu học điều khiển; bài 5–9 học cơ quan; Boss 10 kết hợp nắp, cầu và cửa bằng một cơ thể.
+
+- Android: `bash Tools/build-venom-android.sh` hoặc **Gravity Box → COghe → Build Android test APK** → `Builds/Venom/Android/COghe.apk` (app **COghe**, `com.gravityboxlab.venom`). Không chọn `--onboarding` cho V2.
+- macOS: `bash Tools/build-venom.sh` → `Builds/Venom/macOS/Venom.app`.
+- Scene và mesh đã lưu trong source. Chỉ khi muốn sinh lại nội dung: **Gravity Box → COghe → V2 → Generate ten view-only levels**.
+- Tiến trình và Nhà dùng save cũ; ID của 10 puzzle mới tách riêng. Nội dung 60 màn cũ vẫn lưu để đối chiếu và chạy hồi quy.
+- [Hợp đồng điều khiển, nội dung và build](Docs/COGHE_VIEW_V2.md) · [Hồ sơ từng màn](Docs/LevelDesign/COghe/ViewV2/Level01.md).
+
+Các mục Origin/Journey dưới đây ghi lại nội dung trước V2; các chỉ dẫn xoay vật lý, Theo COghe và số lượng 30/60 màn thuộc catalog cũ.
+
+## Lịch sử Origin trước V2
+
 [Xem 10 bản phác thảo level mới 21–30](Docs/LevelDesign/COghe/Sketches21-30/review.html) · [Danh mục và mô tả](Docs/LevelDesign/COghe/Sketches21-30/README.md). Mười thiết kế đã được dựng và xen vào campaign theo thứ tự đã duyệt.
 
-Bản mặc định là **Venom Origin — 30 màn**, trên nhánh `Venom`. Chạm để hướng dẫn sinh vật; kéo để xoay ở những màn cho phép. Biểu tượng dưới hộp cho biết quyền xoay của từng màn. Sinh vật dùng mô mềm có khối lượng, lực bám, va chạm và trọng lực thế giới.
+Bản Origin trước đây là **Venom Origin — 30 màn**, trên nhánh `Venom`. Chạm để hướng dẫn sinh vật; kéo để xoay ở những màn cho phép. Biểu tượng dưới hộp cho biết quyền xoay của từng màn. Sinh vật dùng mô mềm có khối lượng, lực bám, va chạm và trọng lực thế giới.
 
 **Phong cách đã chốt: Day Lab**, lấy bản Unity màn 07 ngày 16/09 làm chuẩn: kính sạch, vỏ sứ ấm, viền nhôm, resin hổ phách, vùng trơn tím satin và COghe đen bóng. Bộ này áp dụng cho cả **30 vị trí chơi Origin**, gồm khối cầu, ống nối, nắp rơi, bánh răng, ray và cơ quan Boss. Toàn bộ dựng bằng Unity.
 
@@ -212,4 +227,4 @@ Five hollow slippery vessels follow displayed level7 at56–60: vase, mask, teap
 
 The isolated ten-level learning pilot uses source slots `1 → 2 → 41 → 8 → 14 → 18 → 9 → 16 → 42 → 10`, with state-driven visual guidance and its own save. Build it with `bash Tools/build-venom.sh --onboarding` or `bash Tools/build-venom-android.sh --onboarding`. Outputs: `Builds/COgheOnboarding/macOS/COghe Learn.app` and `Builds/COgheOnboarding/Android/COghe-Learn.apk`. Android installs alongside the main game.
 
-The normal build still contains the existing60-level campaign. The full progression mapping remains a design hypothesis pending novice playtests. [Pilot and test sheet](Docs/COGHE_ONBOARDING_PILOT_2026_09_24.md) · [60-level candidate](Docs/LevelDesign/COghe/ONBOARDING_PROGRESSION_DRAFT.md).
+At the time of the pilot release, the normal build contained the existing 60-level campaign; the V2 section above now defines the default build. The full progression mapping remains a design hypothesis pending novice playtests. [Pilot and test sheet](Docs/COGHE_ONBOARDING_PILOT_2026_09_24.md) · [60-level candidate](Docs/LevelDesign/COghe/ONBOARDING_PROGRESSION_DRAFT.md).

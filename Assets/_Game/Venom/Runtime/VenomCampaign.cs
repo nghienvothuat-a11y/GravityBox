@@ -542,7 +542,8 @@ namespace GravityBox.Venom
         {
             if(!pointerDown)return;
             if(!pointerMoved&&(p-pointerStart).magnitude>10*Screen.width/540f){pointerMoved=true;if(Definition.CanRotate&&!Cutting)Owner.Rotation.BeginDrag();}
-            if(pointerMoved&&Definition.CanRotate&&!Cutting)Owner.Rotation.Drag((p-pointerPrevious)/Mathf.Min(Screen.width,Screen.height),Owner.View.transform.up,Owner.View.transform.right);
+            if(pointerMoved&&Definition.ViewOnly)CameraRig.Orbit(p.x-pointerPrevious.x,Screen.width);
+            else if(pointerMoved&&Definition.CanRotate&&!Cutting)Owner.Rotation.Drag((p-pointerPrevious)/Mathf.Min(Screen.width,Screen.height),Owner.View.transform.up,Owner.View.transform.right);
             pointerPrevious=p;
         }
         public void EndPointer(Vector2 p){MovePointer(p);if(pointerDown&&!pointerMoved)TouchPoint(p);pointerDown=false;Owner.Rotation.EndDrag();}
@@ -560,6 +561,13 @@ namespace GravityBox.Venom
             }
             if(AutoAdvance&&Owner.Completed&&Matter.SimulationTime>=advanceAt&&!Definition.Boss&&Definition.Order<PlayableLevelCount){Load(Definition.Order+1);return;}
             if(!Owner.CanControl){ResetPointerInput();return;}
+            if(Definition.ViewOnly)
+            {
+                if(ConsumeViewTouches())return;
+                ConsumeMouseInput();
+                if(Mouse.current!=null&&PlayArea(Mouse.current.position.ReadValue()))CameraRig.Pinch(Mathf.Exp(Mouse.current.scroll.ReadValue().y*.0015f));
+                return;
+            }
             if(Touch.activeTouches.Count>0||touchFinger>=0)
             {
                 DiscardMouseInputForTouch();
@@ -591,7 +599,7 @@ namespace GravityBox.Venom
             // Switching bodies still takes priority. Re-selecting the active
             // body must not hide its nearby handle after the idle release, or
             // swallow a push/pull command while it is holding that handle.
-            if(selectedTissueHit&&Matter.Groups[chosen]!=Matter.Groups[Motion.Selected])
+            if(!Definition.ViewOnly&&selectedTissueHit&&Matter.Groups[chosen]!=Matter.Groups[Motion.Selected])
             {SelectFragment(chosen);return;}
             foreach(var task in tapRails)
                 if(task.Owns(Motion.Selected)&&task.Phase==COgheTapRail.TaskPhase.Operating)return;
@@ -611,6 +619,7 @@ namespace GravityBox.Venom
             bool CanPick(VenomSurfacePatch face)
             {
                 if(face==null)return true;
+                if(Definition.ViewOnly)return !face.ExteriorGlass||Vector3.Dot(ray.direction,face.Normal)<-.001f;
                 // Interior glass is transparent to an entering ray. Roofs also
                 // accept exterior taps; lesson 03 exposes its near front pane.
                 return face.Selectable&&(face.IsCurved||face.InterceptExterior||Vector3.Dot(ray.direction,face.Normal)<0);
@@ -620,6 +629,11 @@ namespace GravityBox.Venom
                 if(hit.collider.GetComponent<VenomContact>()!=null)continue;
                 var face=PickPatch(hit);if(!CanPick(face))continue;
                 obstruction=hit.distance;break;
+            }
+            if(Definition.ViewOnly&&selectedTissueHit)
+            {
+                selectedTissueHit=Vector3.Dot(Matter.Bodies[chosen].position-ray.origin,ray.direction)<obstruction+.042f;
+                if(selectedTissueHit&&Matter.Groups[chosen]!=Matter.Groups[Motion.Selected]){SelectFragment(chosen);return;}
             }
             // Assembly handles aim on their visible deck plane. A tall moving
             // front face must not swallow every command toward its socket.
@@ -646,6 +660,7 @@ namespace GravityBox.Venom
                 // Glass facing away from the inspection side can be seen through;
                 // explicitly selectable front panes still intercept hidden destinations (03).
                 if(!CanPick(patch))continue;
+                if(Definition.ViewOnly&&patch!=null&&!patch.Selectable)return;
                 var prop=hit.collider.GetComponentInParent<VenomMovableProp>();
                 if(heldProp!=null){SetPropTarget(hit.point);ShowMarker(new Vector3(propTarget.x,-.299f,propTarget.z),Vector3.up,Root);return;}
                 if(prop!=null&&prop.Manipulable&&(!prop.ManipulationHandleOnly||prop.ManipulationGrip!=null&&hit.collider.transform.IsChildOf(prop.ManipulationGrip))){SelectProp(prop);ShowMarker(hit.point,hit.normal,prop.transform,patch);return;}
@@ -729,7 +744,7 @@ namespace GravityBox.Venom
             }
             if(GUI.Button(new Rect(20,h-72,120,36),"THỬ LẠI",button))ResetLevel();
             if(GUI.Button(new Rect(150,h-72,110,36),Owner.Paused?"TIẾP":"DỪNG",button))Owner.TogglePause();
-            if(GUI.Button(new Rect(270,h-72,110,36),Zoom?"TOÀN CẢNH":"THEO COghe",button))CameraRig.ToggleFollow();
+            if(GUI.Button(new Rect(270,h-72,110,36),Definition.ViewOnly&&!Home||Zoom?"TOÀN CẢNH":"THEO COghe",button))CameraRig.ToggleFollow();
             if(Progress.HomeUnlocked&&GUI.Button(new Rect(390,h-72,130,36),Home?"CHÀO BẠN":"COLLECTION",button)){if(Home)habitat?.Greet();else EnterHome();}
             if(Home)
             {if(GUI.Button(new Rect(60,h-124,200,36),"CHO ĂN",button))habitat?.Feed();if(GUI.Button(new Rect(280,h-124,200,36),"CHƠI CÙNG",button))habitat?.Greet();}

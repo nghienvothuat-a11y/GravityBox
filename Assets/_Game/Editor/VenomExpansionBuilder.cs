@@ -27,6 +27,9 @@ namespace GravityBox.Editor
 
         public static string[] CampaignScenePaths()
         {
+            var view=ViewCampaignScenePaths();
+            bool viewComplete=true;foreach(string path in view)viewComplete&=File.Exists(path);
+            if(viewComplete)return view;
             var vessels=Campaign60ScenePaths();
             bool vesselsComplete=true;foreach(string path in vessels)vesselsComplete&=File.Exists(path);
             if(vesselsComplete)return vessels;

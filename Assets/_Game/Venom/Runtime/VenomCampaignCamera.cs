@@ -10,7 +10,24 @@ namespace GravityBox.Venom
         private readonly COgheStudioBackdrop studioBackdrop;
         private readonly bool spherical;
         private Vector3 focus;
+        private Vector3 viewOffset;
         private bool initialized;
+        public float OrbitYaw {get;private set;}
+        public float ZoomScale {get;private set;}=1;
+        public void Orbit(float pixels,float viewportWidth)
+        {if(game.Definition.ViewOnly&&!game.Home)OrbitYaw=Mathf.Repeat(OrbitYaw-pixels/Mathf.Max(1,viewportWidth)*240+180,360)-180;}
+        public void Pinch(float ratio)
+        {if(game.Definition.ViewOnly&&!game.Home&&ratio>0)ZoomScale=Mathf.Clamp(ZoomScale/ratio,.55f,1.15f);}
+        public void PinchAt(float ratio,Vector2 screen)
+        {
+            float before=ZoomScale;var camera=game.Owner.View;Vector3 centre=game.Root.TransformPoint(OverviewBounds.center);
+            var plane=new Plane(camera.transform.forward,centre);var ray=camera.ScreenPointToRay(screen);
+            Pinch(ratio);
+            if(plane.Raycast(ray,out float distance))viewOffset+=(ray.GetPoint(distance)-centre-viewOffset)*(1-ZoomScale/before);
+            viewOffset=Vector3.ClampMagnitude(viewOffset,OverviewBounds.extents.magnitude*.75f);
+            Frame(Screen.width,Screen.height,0,true,Screen.safeArea);
+        }
+        public void Overview(){ZoomScale=1;OrbitYaw=0;viewOffset=Vector3.zero;game.Zoom=false;Zone=-1;}
         public Bounds OverviewBounds {get;private set;}
         public int Zone {get;private set;}=-1;
         public int ZoneCount=>game.Definition.CameraZones?.Length??0;
@@ -47,6 +64,7 @@ namespace GravityBox.Venom
         }
         public void Reset()
         {
+            OrbitYaw=0;ZoomScale=1;viewOffset=Vector3.zero;
             int initial=game.Definition.InitialCameraZone;
             Zone=initial>=0&&initial<ZoneCount?initial:-1;initialized=false;
         }
@@ -57,6 +75,7 @@ namespace GravityBox.Venom
         }
         public void ToggleFollow()
         {
+            if(game.Definition.ViewOnly&&!game.Home){Overview();return;}
             if(game.Zoom){game.Zoom=false;Zone=-1;}
             else {game.Zoom=true;Zone=-1;}
         }
@@ -67,7 +86,8 @@ namespace GravityBox.Venom
         // selectors and above the rotation legend/fragment/action controls.
         public Rect UsableRect(int width,int height,Rect safeArea)
         {
-            float scale=Mathf.Min(width/540f,height/960f);
+            float scale=game.Definition.ViewOnly?Mathf.Min(safeArea.width/540f,safeArea.height/960f):Mathf.Min(width/540f,height/960f);
+            if(game.Definition.ViewOnly)return Rect.MinMaxRect(safeArea.xMin+width*.035f,safeArea.yMin+236*scale,safeArea.xMax-width*.035f,safeArea.yMax-207*scale);
             float left=Mathf.Max(width*.035f,safeArea.xMin+8*scale);
             float right=Mathf.Min(width*.965f,safeArea.xMax-8*scale);
             float bottom=Mathf.Max(236*scale,safeArea.yMin+12*scale);
@@ -76,6 +96,12 @@ namespace GravityBox.Venom
         }
         public bool AllowsPointer(Vector2 p,int width,int height)
         {
+            if(game.Definition.ViewOnly)
+            {
+                var area=width==Screen.width&&height==Screen.height?Screen.safeArea:new Rect(0,0,width,height);
+                float unit=Mathf.Min(area.width/540f,area.height/960f);
+                return area.Contains(p)&&p.y>area.yMin+165*unit&&p.y<area.yMax-195*unit;
+            }
             float scale=Mathf.Min(width/540f,height/960f);
             return p.y>165*scale&&p.y<height-(ShowZones?244:195)*scale;
         }
@@ -86,6 +112,7 @@ namespace GravityBox.Venom
             camera.orthographic=true;camera.aspect=(float)width/height;
             Vector3 heading=Zone>=0&&game.Definition.CameraZones[Zone].OverrideCameraEuler
                 ?game.Definition.CameraZones[Zone].CameraEuler:game.Definition.CameraEuler;
+            if(game.Definition.ViewOnly&&!game.Home)heading.y+=OrbitYaw;
             camera.transform.rotation=Quaternion.Euler(heading);
             Rect usable=UsableRect(width,height,safeArea??new Rect(0,0,width,height));
             Vector3 right=camera.transform.right,up=camera.transform.up;
@@ -99,16 +126,18 @@ namespace GravityBox.Venom
             {
                 Bounds bounds=Zone>=0?game.Definition.CameraZones[Zone].LocalBounds:OverviewBounds;
                 target=game.Root.TransformPoint(bounds.center);
+                if(game.Definition.ViewOnly&&!game.Home)target+=viewOffset;
                 halfWidth=halfHeight=0;
                 if(spherical&&Zone<0)halfWidth=halfHeight=bounds.extents.x;
                 else for(int i=0;i<8;i++)
                 {
-                    Vector3 delta=game.Root.TransformPoint(Corner(bounds,i))-target;
+                    Vector3 delta=game.Root.TransformPoint(Corner(bounds,i))-game.Root.TransformPoint(bounds.center);
                     halfWidth=Mathf.Max(halfWidth,Mathf.Abs(Vector3.Dot(delta,right)));
                     halfHeight=Mathf.Max(halfHeight,Mathf.Abs(Vector3.Dot(delta,up)));
                 }
             }
             float targetSize=Mathf.Max(halfWidth/(camera.aspect*usable.width/width),halfHeight/(usable.height/height));
+            if(game.Definition.ViewOnly&&!game.Home)targetSize*=ZoomScale;
             float blend=1-Mathf.Exp(-Mathf.Max(0,dt)*10);
             if(snap||!initialized){focus=target;camera.orthographicSize=targetSize;initialized=true;}
             else

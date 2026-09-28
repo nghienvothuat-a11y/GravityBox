@@ -9,9 +9,13 @@ namespace GravityBox.Venom
         public enum TaskPhase { Idle, Approaching, Operating }
         public COgheRailSlider Rail;
         public Transform Handle;
+        public Transform AlternateHandle;
         public VenomSurfacePatch WorkingSurface;
         public Vector3 StandOffset = new Vector3(0, 0, -.067f);
         public Vector3 TouchSize = new Vector3(.108f, .075f, .18f);
+        public bool PickHandleOnly;
+        public bool TwoSided;
+        public bool TrackStandPoint;
         public COgheTissueSensor RequiredLoad;
         public COgheRailSlider RequiredRail;
         public bool RequiredEnd = true;
@@ -45,8 +49,8 @@ namespace GravityBox.Venom
                 RequiredEnd ? RequiredRail.AtEnd : RequiredRail.Position <= RequiredRail.CatchTolerance));
         public override string Activity => Busy ? Label + (Phase == TaskPhase.Approaching ? " · Đang tới" : " · Đang chuyển") :
             owner != null && owner.Matter.SimulationTime < messageUntil ? LastFailure : null;
-        public Vector3 HandPoint => Handle != null ? Handle.position : Rail.Body.position;
-        public Vector3 StandPoint => WorkingSurface.Closest(HandPoint + Rail.Frame.TransformDirection(StandOffset)) + WorkingSurface.Normal * .022f;
+        public Vector3 HandPoint => backSide&&AlternateHandle!=null?AlternateHandle.position:Handle != null ? Handle.position : Rail.Body.position;
+        public Vector3 StandPoint => WorkingSurface.Closest(HandPoint + Rail.Frame.TransformDirection(stance)) + WorkingSurface.Normal * .022f;
         public bool Pulling => Vector3.Dot(Rail.WorldAxis * (target - Rail.Position), StandPoint - HandPoint) > 0;
         private VenomCampaign owner;
         private VenomCampaignMotion.Order order;
@@ -55,14 +59,18 @@ namespace GravityBox.Venom
         private int actorCount;
         private int targetStop;
         private Vector3 pinRest;
+        private Vector3 stance;
+        private bool backSide;
 
         public override void InitializeMechanism(VenomCampaign game)
-        { owner = game; if (InterlockPin != null) pinRest = InterlockPin.localPosition; }
+        { owner = game; stance=StandOffset; if (InterlockPin != null) pinRest = InterlockPin.localPosition; }
         public override void ResetMechanism(VenomCampaign game)
         {
             owner = game; Phase = TaskPhase.Idle; Actor = -1; order = null;
             CompletedJourneys = 0; LastFailure = null; messageUntil = 0; stableTime = 0;
             targetStop = 0; target = 0;
+            stance=StandOffset;
+            backSide=false;
             Rail.Locked = false;
         }
         public bool Owns(int anchor) => Busy && Actor >= 0 && owner.Matter.Groups[anchor] == owner.Matter.Groups[Actor];
@@ -72,19 +80,23 @@ namespace GravityBox.Venom
             if (Phase != TaskPhase.Operating || !Owns(anchor)) return false;
             point = StandPoint;
             velocity = Rail.WorldAxis * Mathf.Clamp((target - Rail.Position) * 3, -Speed, Speed);
+            if(TrackStandPoint)velocity+=Vector3.ClampMagnitude(Vector3.ProjectOnPlane(point-owner.Motion.Centre(anchor),WorkingSurface.Normal)*4,Speed);
             return true;
         }
         public override bool TryTouch(VenomCampaign game, Ray ray, float nearestSolidDistance)
         {
             // Handle meshes have non-unit scale. Pick an authored metric envelope around the entire visible carriage.
             var frame = Rail.Frame;
-            Vector3 centre = Rail.Body.position + WorkingSurface.Normal * .023f;
             Quaternion inverse = Quaternion.Inverse(frame.rotation);
-            var local = new Ray(inverse * (ray.origin - centre), inverse * ray.direction);
-            if (!new Bounds(Vector3.zero, TouchSize).IntersectRay(local, out float distance)) return false;
-            if (distance > nearestSolidDistance + .002f) return false;
-            if(!new Plane(WorkingSurface.Normal,Rail.Body.position+WorkingSurface.Normal*.037f).Raycast(ray,out float faceDistance) ||
-                faceDistance>nearestSolidDistance+.002f)return false;
+            bool Visible(Vector3 centre,Vector3 face)
+            {
+                var local=new Ray(inverse*(ray.origin-centre),inverse*ray.direction);
+                return new Bounds(Vector3.zero,TouchSize).IntersectRay(local,out float distance)&&distance<=nearestSolidDistance+.002f&&
+                    new Plane(WorkingSurface.Normal,face).Raycast(ray,out float faceDistance)&&faceDistance<=nearestSolidDistance+.002f;
+            }
+            Vector3 primary=Handle!=null?Handle.position:Rail.Body.position;
+            bool hit=Visible(PickHandleOnly?primary:Rail.Body.position+WorkingSurface.Normal*.023f,PickHandleOnly?primary:Rail.Body.position+WorkingSurface.Normal*.037f);
+            if(!hit&&(AlternateHandle==null||!Visible(AlternateHandle.position,AlternateHandle.position)))return false;
             Request(game.Motion.Selected);
             game.Feedback.ShowCommand(HandPoint, WorkingSurface.Normal, Rail.transform);
             return true;
@@ -95,6 +107,9 @@ namespace GravityBox.Venom
             if (Busy) { Message("Cơ quan đang thực hiện"); return false; }
             if (!InterlockOpen) { Message(RequiredLoad != null ? "Cần một phần giữ bàn đạp" : "Chốt đang khóa"); return false; }
             if (!owner.PrepareTapCommand(anchor)) return false;
+            stance=StandOffset;
+            backSide=TwoSided&&Vector3.Dot(owner.Motion.Centre(anchor)-Rail.Body.position,Rail.Frame.TransformDirection(StandOffset))<0;
+            if(backSide)stance=-StandOffset;
             owner.Motion.BuildGraph();
             if (!owner.Motion.FindPath(owner.Motion.Centre(anchor), StandPoint, route, true))
             { Message("Đường tới cơ quan đang bị chặn"); return false; }

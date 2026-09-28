@@ -100,6 +100,7 @@ phải triển khai và kiểm chứng kỹ năng trước, không giả định
 
 ### Bước 5 — Dựng hình khối đơn giản, chơi trọn màn
 
+- Kiểm tra spawn của **từng hạt với bán kính thật**, không chỉ tâm sinh vật. Không để hạt bắt đầu trong sàn mỏng: PhysX có thể đẩy một phần xuống mặt dưới, khiến toàn thân mắc ở mép dù graph có đường. Thêm assertion clearance trước tick đầu.
 - Dựng collider, mặt bám/trơn, cơ quan, đường đi và camera bằng bộ hình đơn giản.
   Dùng đơn vị mét và kích thước phù hợp mô sinh vật; đo clearance tại mép và cửa.
 - Chơi toàn bộ bằng API/lệnh điều khiển mà người chơi có, chờ mô phỏng thật. Kiểm

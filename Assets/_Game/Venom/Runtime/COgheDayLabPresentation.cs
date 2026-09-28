@@ -38,7 +38,7 @@ namespace GravityBox.Venom
                 block.SetFloat("_RegionOnly",p.HasSlipRegion?1:0);
                 block.SetVector("_SlipRect",new Vector4(p.SlipRegion.xMin,p.SlipRegion.yMin,p.SlipRegion.xMax,p.SlipRegion.yMax));
                 bool internalProp=p.GetComponentInParent<VenomMovableProp>()!=null||p.name.StartsWith("Low wall");
-                block.SetFloat("_NearFade",internalProp?0:1);block.SetFloat("_Spherical",p.SphereRadius>0?1:0);r.SetPropertyBlock(block);
+                block.SetFloat("_NearFade",game.Definition.ViewOnly?(p.ExteriorGlass?1:0):internalProp?0:1);block.SetFloat("_Spherical",p.SphereRadius>0?1:0);r.SetPropertyBlock(block);
             }
         }
         public static void ConfigureExitOutline(VenomLevelController owner)
@@ -109,8 +109,9 @@ namespace GravityBox.Venom
             if(game==null||game.Owner==null)return;
             if(brand==null)Styles();
             var old=GUI.matrix;var oldColor=GUI.color;var oldBackground=GUI.backgroundColor;var oldContent=GUI.contentColor;
-            float s=Mathf.Min(Screen.width/540f,Screen.height/960f),h=Screen.height/s;
-            GUI.matrix=Matrix4x4.TRS(new Vector3((Screen.width-540*s)*.5f,0,0),Quaternion.identity,Vector3.one*s);
+            var area=game.Definition.ViewOnly?Screen.safeArea:new Rect(0,0,Screen.width,Screen.height);
+            float s=Mathf.Min(area.width/540f,area.height/960f),h=area.height/s;
+            GUI.matrix=Matrix4x4.TRS(new Vector3(area.x+(area.width-540*s)*.5f,Screen.height-area.yMax,0),Quaternion.identity,Vector3.one*s);
             GUI.color=GUI.backgroundColor=GUI.contentColor=Color.white;
             if(game.CameraRig.Inspecting)GUI.Box(new Rect(17,8,506,game.CameraRig.ShowZones?237:191),GUIContent.none,chip);
             GUI.Label(new Rect(26,13,240,48),"COghe",brand);
@@ -180,10 +181,11 @@ namespace GravityBox.Venom
                     }
                 }
             }
+            if(game.Definition.ViewOnly&&!game.Home&&!game.Owner.Completed&&!game.Owner.Lost)GUI.Label(new Rect(26,h-213,488,24),"Chạm chọn  ·  Kéo để nhìn  ·  Hai ngón để zoom",body);
             bool homeAvailable=game.Progress.HomeUnlocked;float width=homeAvailable?112:152,gap=homeAvailable?125:168;
             if(GUI.Button(new Rect(26,h-77,width,42),"Làm lại",action))game.ResetLevel();
             if(GUI.Button(new Rect(26+gap,h-77,width,42),game.Owner.Paused?"Tiếp tục":"Tạm dừng",action))game.Owner.TogglePause();
-            if(GUI.Button(new Rect(26+gap*2,h-77,width,42),game.Zoom?"Toàn cảnh":"Theo COghe",action))game.CameraRig.ToggleFollow();
+            if(GUI.Button(new Rect(26+gap*2,h-77,width,42),game.Definition.ViewOnly&&!game.Home||game.Zoom?"Toàn cảnh":"Theo COghe",action))game.CameraRig.ToggleFollow();
             if(homeAvailable&&GUI.Button(new Rect(26+gap*3,h-77,width,42),game.Home?"Chào bạn":"Nhà",action)){if(game.Home)game.GreetHome();else game.EnterHome();}
             if(game.Home)
             {

@@ -24,6 +24,7 @@ namespace GravityBox.Venom
         public string Id, Title, Lesson;
         public int Order;
         public bool CanRotate=true, Boss, Passive;
+        public bool ViewOnly;
         public Vector3 CameraEuler=new Vector3(24,-25,0);
         public float ViewRadius=.48f; // Legacy capture/archived framing fallback.
         public VenomCameraZone[] CameraZones=Array.Empty<VenomCameraZone>();

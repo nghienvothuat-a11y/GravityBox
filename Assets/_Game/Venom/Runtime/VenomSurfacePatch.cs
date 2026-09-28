@@ -9,6 +9,7 @@ namespace GravityBox.Venom
         public Vector2 Size=Vector2.one*.6f;
         public bool Hole, Slippery, Selectable=true, RingGrip;
         public bool InterceptExterior;
+        public bool ExteriorGlass;
         public Vector2 HoleCentre;
         public float HoleRadius=.039f, GripRadius=.08f;
         public bool HasSlipRegion;
