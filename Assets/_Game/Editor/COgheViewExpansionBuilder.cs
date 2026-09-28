@@ -16,18 +16,18 @@ namespace GravityBox.Editor
         private static readonly string[] ViewExpansionNames = {
             "Bến bí mật", "Dưới chiếc nắp", "Đi vòng trở lại", "Răng truyền lực", "Chuyền bộ truyền",
             "Hai nhịp cầu", "Ống vòng lưng", "Rẽ nhánh", "Mở rồi đóng", "Cỗ máy vòng",
-            "Lối tắt quen", "Tách rồi gặp", "Hai việc riêng", "Bạn đứng giữ", "Gọi bạn về",
-            "Giữ để vận hành", "Hai khoang", "Đổi ý vẫn được", "Nhường đường", "Cùng trở về" };
+            "Lối tắt quen", "Tách rồi gặp", "Cùng kéo", "Nhả phanh", "Giữ rồi sang",
+            "Nâng đường", "Qua góc tường", "Chọn đường cấp", "Đổi vai", "Cùng trở về" };
         private static readonly string[] ViewExpansionLessons = {
             "Quan sát chỗ cầu vừa rời đi.", "Một đường đi nằm dưới nắp.", "Quan sát đường vòng sau vách.",
             "Chạm A, nhìn bánh răng và cửa cùng chuyển động.", "Một bộ truyền dùng cho hai cửa. Chốt giữ kết quả đã khớp.",
             "Nhường đường cho nhịp cầu còn lại.", "Chạm miệng ống. Ống dẫn tới một bệ khác trong hộp.",
             "Hai nhánh cùng dùng một bộ chọn.", "Có lúc cần đưa cơ quan trở về.", "",
             "Một chuyển động, hai kết quả.", "Chạm dao để tách. Chọn từng phần rồi đưa lại gần để nhập.",
-            "Đổi phần đang chọn không hủy việc phần kia.", "Một phần đứng giữ, phần kia đi qua.",
-            "Tìm cách để người đứng giữ cũng sang được.", "Giữ để nhả khóa. Cầu khớp bến sẽ tự đứng vững.",
-            "Hai khoang, một cơ quan chung.", "Đổi nhánh vẫn giữ kết quả đã chốt.",
-            "Tạo đường trở về cho người đang giữ.", "" };
+            "Hai tay cùng kéo một cửa. Chốt gài thì có thể buông.", "Một phần nhả phanh, phần kia đưa cầu về bến.",
+            "Sang bờ kia rồi làm đường gọi bạn về.", "Hai van cùng nâng đường. Chốt đỡ đường cho cả hai.",
+            "Hai mặt tường, một cửa chung.", "Tạo đường về trước, rồi chuyển tuyến tới bệ cửa.",
+            "Làm cầu rồi đổi vai để cùng kéo cửa.", "" };
 
         [MenuItem("Gravity Box/COghe/V2/Generate levels 11–30")]
         public static void GenerateViewExpansion()
@@ -107,7 +107,7 @@ namespace GravityBox.Editor
         {
             var text = new System.Text.StringBuilder();
             foreach (var component in owner.GetComponentsInChildren<Component>(true))
-                if (component is Collider || component is Rigidbody || component is Joint || component is VenomSurfacePatch || component is COgheTapRail || component is COgheTubeNetwork)
+                if (component is Collider || component is Rigidbody || component is Joint || component is VenomSurfacePatch || component is COgheTapRail || component is COgheTubeNetwork || component is COgheCooperativeDrive)
                 {
                     text.Append(component.GetType().FullName).Append(EditorJsonUtility.ToJson(component));
                     text.Append(component.transform.localToWorldMatrix.ToString("R"));
@@ -125,7 +125,9 @@ namespace GravityBox.Editor
             var normals = new[] { Vector3.down, Vector3.forward, Vector3.back, Vector3.right, Vector3.left };
             for (int i = 0; i < centres.Length; i++)
             {
-                var patch = Panel(c.Root, "Outer pane " + i, centres[i], normals[i], i == 0 ? new Vector2(ChapterX * 2, ChapterZ * 2) : new Vector2(i < 3 ? ChapterX * 2 : ChapterZ * 2, .40f), glass, false, Vector2.zero, 0, c.Surfaces);
+                bool hole = Vector3.Dot(normals[i], -c.Outward) > .99f && Mathf.Abs(Vector3.Dot(c.Exit - centres[i], normals[i])) < .001f;
+                Vector3 local = Quaternion.Inverse(Quaternion.LookRotation(normals[i], i == 0 ? Vector3.forward : Vector3.up)) * (c.Exit - centres[i]);
+                var patch = Panel(c.Root, "Outer pane " + i, centres[i], normals[i], i == 0 ? new Vector2(ChapterX * 2, ChapterZ * 2) : new Vector2(i < 3 ? ChapterX * 2 : ChapterZ * 2, .40f), glass, hole, new Vector2(local.x, local.y), hole ? c.Owner.ApertureRadius : 0, c.Surfaces);
                 patch.ExteriorGlass = true; patch.Selectable = i != 0;
             }
         }
@@ -170,7 +172,7 @@ namespace GravityBox.Editor
         }
         private static void ChapterKnife(ExpansionContext c)
         {
-            float x = c.Number == 26 || c.Number >= 29 ? -.42f : -.32f;
+            float x = c.Number == 24 || c.Number == 25 || c.Number == 26 || c.Number >= 29 ? -.42f : -.32f;
             if (x < -.4f) c.Spawn = new Vector3(-.48f, -.25f, -.28f);
             var knife = ExpansionKnife(c, "Knife", x, -.19f); knife.ReturnOnSeparation = true; knife.HoldUntilTissueClears = true;
             knife.Rail.Start = new Vector3(x, -.24f, -.19f);
@@ -191,6 +193,7 @@ namespace GravityBox.Editor
         private static void BuildViewExpansionGeometry(ExpansionContext c)
         {
             int n = c.Number;
+            if (n >= 23) { BuildSimultaneousLevel(c); return; }
             if (n == 15) { ChapterTransmission(c); return; }
             if (n == 18) { ChapterBranches(c); return; }
             if (n >= 22) { ChapterCooperation(c); return; }

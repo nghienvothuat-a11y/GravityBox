@@ -14,16 +14,6 @@ namespace GravityBox.Tests
         private T Mechanism<T>() where T : Component => game.Owner.Apparatus.GetComponentInChildren<T>();
         private COgheRailSlider NamedRail(string name) => game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>().Single(r => r.name == name);
         private int Side(bool left) => Enumerable.Range(0,32).OrderBy(i => (left ? 1 : -1) * game.Motion.Centre(i).x).First();
-        private IEnumerator ReleasePad(int holder)
-        {
-            game.SelectFragment(holder);var pad=Mechanism<COgheTapPad>();yield return Route.TapPad(holder,false);
-            yield return Until(15,()=>!pad.Sensor.Active,"Holder really leaves measured pad");
-        }
-        private IEnumerator ReholdPad(int holder)
-        {
-            game.SelectFragment(holder);var pad=Mechanism<COgheTapPad>();yield return Route.TapPad(holder,true);
-            yield return Until(20,()=>pad.Sensor.Active&&Vector3.Distance(game.Motion.Centre(holder),pad.Sensor.transform.position+Vector3.up*.019f)<.028f,"Holder returns and settles on measured pad");
-        }
         private void IntactInside()
         {Assert.IsFalse(game.Owner.Lost);Assert.AreEqual(0,game.Matter.EscapedCount);Assert.AreEqual(32,game.Matter.Bodies.Length);}
 
@@ -124,63 +114,6 @@ namespace GravityBox.Tests
             Assert.AreEqual(VenomCampaign.MergeFailure,game.Failure);Assert.IsFalse(game.Owner.Completed);
             game.ResetLevel();yield return Advance(.5f);AssertReset();Assert.IsNull(game.Motion.Get(0));
         }
-        [UnityTest] public IEnumerator View23ChangingOneApproachDoesNotCancelOtherPart()
-        {
-            yield return Load(23);yield return Route.Cut();int left=Side(true),right=Side(false);
-            game.SelectFragment(right);yield return Tap(new Vector3(.11f,-.30f,-.19f));
-            game.SelectFragment(left);yield return Tap(Route.Task("A").HandPoint);Assert.IsTrue(Route.Task("A").Busy);
-            game.SelectFragment(right);yield return Tap(Route.Task("B").HandPoint);Assert.IsTrue(Route.Task("B").Busy);
-            game.SelectFragment(left);yield return Tap(new Vector3(-.47f,-.30f,-.10f));Assert.IsFalse(Route.Task("A").Busy);
-            yield return Until(30,()=>Route.Task("B").CompletedJourneys==1,"B finishes despite A cancellation and selection changes");IntactInside();
-        }
-        private IEnumerator EarlyDoorRelease(int level)
-        {
-            yield return Load(level);int holder=0,worker=0;yield return Route.HoldAndSelectWorker((h,w)=>{holder=h;worker=w;});
-            var door=Mechanism<COgheSpringAccessDoor>();yield return Until(10,()=>door.Door.AtEnd,"Held door opens");
-            yield return ReleasePad(holder);yield return Until(10,()=>door.Door.Position<.003f,"Early release closes uncaught door");
-            Assert.IsFalse(door.Caught);Assert.AreEqual(2,game.Matter.TotalFragmentCount);
-            yield return ReholdPad(holder);yield return Until(10,()=>door.Door.AtEnd,"Recover by holding again");IntactInside();
-        }
-        [UnityTest] public IEnumerator View24EarlyReleaseClosesAndReholdingRecovers() {yield return EarlyDoorRelease(24);}
-        [UnityTest] public IEnumerator View25DoorDoesNotCatchBeforeFarHandle() {yield return EarlyDoorRelease(25);}
-        [UnityTest] public IEnumerator View26LoadLossStopsPartialBridgeAndReholdingResumes()
-        {
-            yield return Load(26);int holder=0,worker=0;yield return Route.HoldAndSelectWorker((h,w)=>{holder=h;worker=w;});
-            var b=Route.Task("B");yield return Tap(b.HandPoint);yield return Until(20,()=>b.Rail.Position>.04f,"Begin real bridge motion");
-            yield return ReleasePad(holder);yield return Until(5,()=>!b.Busy,"Lost load releases task ownership");
-            float stopped=b.Rail.Position;Assert.Less(stopped,b.Rail.Travel-.02f);yield return Advance(1);Assert.Less(Mathf.Abs(stopped-b.Rail.Position),.004f);
-            yield return ReholdPad(holder);game.SelectFragment(worker);yield return Route.Operate("B");Assert.IsTrue(b.AtEnd);IntactInside();
-        }
-        [UnityTest] public IEnumerator View27RemoteCatchPersistsAfterHolderLeaves()
-        {
-            yield return Load(27);int holder=0,worker=0;yield return Route.HoldAndSelectWorker((h,w)=>{holder=h;worker=w;});
-            yield return Route.Tube(Mechanism<COgheTubeNetwork>());yield return Route.Operate("B");
-            var drives=game.Owner.Apparatus.GetComponentsInChildren<COgheViewTransmission>();yield return Until(12,()=>drives.All(d=>d.FirstCaught),"Both far-side outputs catch");
-            yield return ReleasePad(holder);yield return Advance(2);Assert.IsTrue(drives.All(d=>d.First.AtEnd&&d.FirstCaught));IntactInside();
-        }
-        [UnityTest] public IEnumerator View28ReturningToWrongBranchPreservesBothCaughtOutputs()
-        {
-            yield return Load(28);yield return Route.HoldAndSelectWorker((h,w)=>{});var drive=Mechanism<COgheViewTransmission>();
-            yield return Until(10,()=>drive.FirstCaught,"First branch catches");yield return Route.Operate("B");yield return Until(10,()=>drive.SecondCaught,"Other branch catches");
-            yield return Route.Operate("B");yield return Advance(2);Assert.IsTrue(drive.First.AtEnd&&drive.Second.AtEnd);Assert.IsTrue(drive.FirstCaught&&drive.SecondCaught);IntactInside();
-        }
-        [UnityTest] public IEnumerator View29BridgeNeedsHolderAndCatchCanReleaseBothRoles()
-        {
-            yield return Load(29);int holder=0,worker=0;yield return Route.HoldAndSelectWorker((h,w)=>{holder=h;worker=w;});
-            yield return Route.Tube(Mechanism<COgheTubeNetwork>());yield return ReleasePad(holder);game.SelectFragment(worker);
-            Assert.IsFalse(Route.Task("B").Request(worker));Assert.Less(Route.Task("B").Rail.Position,.002f);
-            yield return ReholdPad(holder);game.SelectFragment(worker);yield return Route.Operate("B");yield return Route.Operate("C");
-            var door=Mechanism<COgheSpringAccessDoor>();yield return Until(10,()=>door.Caught,"Return catch engages before releasing holder");
-            yield return ReleasePad(holder);yield return Advance(2);Assert.IsTrue(door.Door.AtEnd&&Route.Task("B").AtEnd);IntactInside();
-        }
-        [UnityTest] public IEnumerator View30FinalCatchCannotBeUsedBeforeReunionBridge()
-        {
-            yield return Load(30);yield return Route.HoldAndSelectWorker((h,w)=>{});yield return Route.Tube(Mechanism<COgheTubeNetwork>());
-            Assert.IsFalse(Route.Task("C").Request(game.Motion.Selected));Assert.IsFalse(Mechanism<COgheSpringAccessDoor>().Caught);
-            yield return Route.Operate("P");var drive=game.Owner.Apparatus.GetComponentsInChildren<COgheViewTransmission>().Single(d=>d.Selector!=null);
-            yield return Until(12,()=>drive.FirstCaught,"First station opens access only");Assert.IsFalse(drive.SecondCaught);Assert.IsFalse(Route.Task("C").InterlockOpen);IntactInside();
-        }
-
         [UnityTest] public IEnumerator View11DirectExitCommandCannotSkipFarBank()
         {
             yield return Load(11);yield return Route.Operate("A");float farX=game.Motion.Centre(0).x,farZ=game.Motion.Centre(0).z;
@@ -213,21 +146,9 @@ namespace GravityBox.Tests
             Assert.AreEqual(32,sizes.Sum());Assert.AreEqual(2,sizes.Length);Assert.IsTrue(sizes.Any(n=>n!=16),"This off-centre approach must not be normalized to equal halves");
             IntactInside();
         }
-        [UnityTest] public IEnumerator View24SafetyEdgeStopsReturnUntilWorkerClearsDoor()
-        {
-            yield return Load(24);int holder=0,worker=0;yield return Route.HoldAndSelectWorker((h,w)=>{holder=h;worker=w;});
-            var door=Mechanism<COgheSpringAccessDoor>();yield return Until(10,()=>door.Door.AtEnd,"Open held doorway");
-            yield return Route.Walk(new Vector3(0,-.30f,.17f),"Worker stands in real swept opening",.022f);
-            yield return ReleasePad(holder);yield return Until(5,()=>door.Obstructed,"Safety edge measures tissue underneath");yield return Advance(.5f);
-            Assert.IsTrue(door.Obstructed);Assert.Greater(door.Door.Position,.12f);IntactInside();
-            game.SelectFragment(worker);yield return Route.Walk(new Vector3(.18f,-.30f,.17f),"Worker clears closing edge");
-            yield return Until(10,()=>door.Door.Position<.003f,"Return resumes once real opening is clear");IntactInside();
-        }
-
-
         [UnityTest] public IEnumerator View29ObliqueIntakeClearsTheActualDistalMouth()
         {
-            yield return Load(29);yield return Route.HoldAndSelectWorker((h,w)=>{});
+            yield return Load(29);var coop=Coop;yield return coop.Split();yield return coop.Hold("A",coop.Holder);game.SelectFragment(coop.Worker);
             var tube=Mechanism<COgheTubeNetwork>();int actor=game.Motion.Selected;
             yield return Route.AimTube(tube,0,actor);
             yield return Until(35,()=>tube.IsParticleInside(actor),"One request enters from the oblique floor approach");
@@ -236,7 +157,7 @@ namespace GravityBox.Tests
         }
         [UnityTest] public IEnumerator View30NewCommandCancelsPendingPipeApproach()
         {
-            yield return Load(30);yield return Route.HoldAndSelectWorker((h,w)=>{});
+            yield return Load(30);var coop=Coop;yield return coop.Split();yield return coop.Hold("A",coop.Holder);game.SelectFragment(coop.Worker);
             var tube=Mechanism<COgheTubeNetwork>();int actor=game.Motion.Selected;
             yield return Route.AimTube(tube,0,actor);Assert.IsTrue(tube.IsApproachingEntry(actor,0));yield return Advance(.15f);
             yield return Route.Walk(new Vector3(-.34f,-.30f,-.33f),"A new surface command replaces pending pipe intake",.025f);
@@ -247,12 +168,23 @@ namespace GravityBox.Tests
 
         [UnityTest] public IEnumerator View30DistantExitPlaneCannotFinishIntakeAtSource()
         {
-            yield return Load(30);yield return Route.HoldAndSelectWorker((h,w)=>{});
+            yield return Load(30);var coop=Coop;yield return coop.Split();yield return coop.Hold("A",coop.Holder);game.SelectFragment(coop.Worker);
             var tube=Mechanism<COgheTubeNetwork>();int actor=game.Motion.Selected;
+            // Isolated bent-tube regression fixture: the source is already past the distant mouth's
+            // infinite plane. Preserve this case even though R2's authored mouth now points along +X.
+            var path=new[]{new Vector3(-.21f,-.255f,-.20f),new Vector3(-.10f,-.19f,-.20f),
+                new Vector3(0,-.12f,-.10f),new Vector3(.46f,-.12f,.12f),
+                new Vector3(.46f,-.255f,.04f),new Vector3(.46f,-.255f,-.02f),new Vector3(.46f,-.255f,-.08f)};
+            var edge=tube.Edges[0];edge.ControlPoints=path;tube.Nodes[1].LocalPosition=path[path.Length-1];
+            var mesh=new Mesh();COgheTubeNetwork.BuildSweptMesh(COgheTubeNetwork.SampleCurve(path),tube.Radius,false,mesh);
+            edge.Filter.sharedMesh=mesh;edge.Collider.sharedMesh=mesh;tube.Configure(tube.Nodes,tube.Edges,tube.Radius);
+            Physics.SyncTransforms();game.Motion.BuildGraph(true);
+            Assert.Greater(Vector3.Dot(tube.Nodes[0].LocalPosition-tube.Nodes[1].LocalPosition,Vector3.back),.05f);
             yield return Route.AimTube(tube,0,actor);yield return Until(35,()=>tube.IsParticleInside(actor),"Intake remains assigned to its actual tube");
             yield return Advance(.1f);Assert.IsTrue(tube.IsParticleInside(actor));Assert.Less(game.Motion.Centre(actor).x,0);
             yield return Until(40,()=>!tube.IsParticleInside(actor),"Traverse the complete bent path");
             Assert.Greater(game.Motion.Centre(actor).x,.35f);Assert.AreEqual(1,tube.LastReachedNode);IntactInside();
+            Object.Destroy(mesh);
         }
 
         [UnityTest] public IEnumerator EveryNewKnifeWaitsAsPhysicalBarrierWhilePlayerChooses()

@@ -85,3 +85,8 @@ adb pull /sdcard/Android/data/com.gravityboxlab.venom/files/view-proof Artifacts
 ## Orbit and zoom feedback revision (28 September 2026)
 
 Mrk requested gradual near-edge appearance during orbit and a distinct level4 zoom lesson. Complete outer panes and their metal trim now interpolate opacity over a shallow angle band and settle using unscaled time, including after reversal or pause. Authored transparent URP variants are referenced by scenes for build stripping; full opacity restores original opaque depth and materials. Colliders, picking rules and physical state stay independent. Level4 now has a floor route around two alternating low satin baffles with fine guide grooves, replacing the duplicated ramp. Zoom enlarges the route without gating victory. The final expansion verification report covers these changes.
+
+
+## Simultaneous cooperation revision (28 September 2026)
+
+Mrk authorized rebuilding23–30 with shared two-input mechanisms and wall exits. Twin spring pulls, held brake/bridge drive and paired pressure lifts now require overlapping work. Terminal catches permit reunion before the exit; the Boss combines two roles at a time. Boundary grip overlays fade with their wall while keeping real adhesion/collision and visible handles. See [current design and implementation](COGHE_VIEW_V2_SIMULTANEOUS.md), [versioned dossiers](LevelDesign/COghe/ViewV2/SimultaneousR2) and [exact verification](Verification/COgheSimultaneous/README.md). Scene/content/save identities and the30-level catalog remain stable.

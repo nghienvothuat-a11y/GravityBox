@@ -40,7 +40,7 @@ namespace GravityBox.Venom.ChapterProof
             yield return StartWalk(point);
             yield return until(35, () => Vector3.Distance(game.Motion.Centre(actor), point + Vector3.up * .018f) < distance, why);
         }
-        private IEnumerator StartWalk(Vector3 point)
+        public IEnumerator StartWalk(Vector3 point)
         {
             int actor = game.Motion.Selected;
             for (int attempt = 0; attempt < 4; attempt++)
@@ -134,23 +134,6 @@ namespace GravityBox.Venom.ChapterProof
             var knife = Component<COgheGuillotine>(); yield return tap(knife.Rail.Body.position);
             yield return until(20, () => game.Matter.TotalFragmentCount > 1, "Knife cuts the actual tissue");
         }
-        public IEnumerator HoldAndSelectWorker(Action<int, int> actors)
-        {
-            yield return Cut(); int left = Extreme(true), right = Extreme(false);
-            TraceParts("cut", left, right);
-            if (game.Matter.Groups[left] == game.Matter.Groups[right]) throw new InvalidOperationException("Cut did not create independent parts");
-            game.SelectFragment(right); yield return StartWalk(game.Definition.Order == 26 || game.Definition.Order >= 29 ? new Vector3(-.20f,-.30f,-.33f) : new Vector3(-.09f, -.30f, -.34f));
-            TraceParts("worker route", left, right);
-            game.SelectFragment(left); var pad = Component<COgheTapPad>(); yield return TapPad(left,true);
-            yield return until(25, () => pad.Sensor.Active, "A receives enough real tissue load");
-            TraceParts("pad reached", left, right);
-            if (game.Matter.Groups[left] == game.Matter.Groups[right]) throw new InvalidOperationException("Parts reunited during pad approach; separate their physical routes");
-            game.SelectFragment(right); actors(left, right);
-        }
-        private void TraceParts(string state, int holder, int worker)
-        {
-            Debug.Log($"V2_PARTS {game.Definition.Order} {state} fragments={game.Matter.TotalFragmentCount} selected={game.Motion.Selected} holder={holder}@{game.Motion.Centre(holder):F4} target={game.Motion.Get(holder)?.Target} worker={worker}@{game.Motion.Centre(worker):F4} target={game.Motion.Get(worker)?.Target}");
-        }
         public IEnumerator Merge(Vector3 point)
         {
             var groups = new HashSet<int>();
@@ -159,6 +142,11 @@ namespace GravityBox.Venom.ChapterProof
         }
         private IEnumerator Cooperation(int n)
         {
+            if (n >= 23)
+            {
+                yield return new COgheSimultaneousScenario(game, tap, until, orbit).Solve();
+                yield break;
+            }
             if (n == 22)
             {
                 yield return Cut(); int left = Extreme(true), right = Extreme(false);
@@ -166,49 +154,8 @@ namespace GravityBox.Venom.ChapterProof
                 game.SelectFragment(right); yield return Walk(new Vector3(.10f, -.30f, -.12f), "Choose and move the other part");
                 yield return Merge(new Vector3(.20f, -.30f, .03f)); yield break;
             }
-            if (n == 23)
-            {
-                yield return Cut(); int left = Extreme(true), right = Extreme(false);
-                game.SelectFragment(right); yield return tap(new Vector3(.11f, -.30f, -.19f));
-                game.SelectFragment(left); yield return tap(Task("A").HandPoint);
-                game.SelectFragment(right); yield return Operate("B");
-                yield return until(35, () => Task("A").CompletedJourneys > 0, "Unselected part completes A independently");
-                yield return Merge(new Vector3(.22f, -.30f, .09f)); yield break;
-            }
-            int holder = -1, worker = -1;
-            yield return HoldAndSelectWorker((a, b) => { holder = a; worker = b; });
-            if (n == 24 || n == 25)
-            {
-                yield return until(10, () => Component<COgheSpringAccessDoor>().Door.AtEnd, "Held door physically opens");
-                yield return Walk(new Vector3(.16f, -.30f, .17f), "Worker passes temporary door");
-                yield return Operate("B");
-                if (n == 25) yield return until(10, () => Component<COgheSpringAccessDoor>().Caught, "Far-side hold-open catch engages");
-                if (n == 24) yield return Walk(new Vector3(-.075f, -.30f, .17f), "Worker returns while A remains held");
-            }
-            if (n == 26) yield return Operate("B");
-            if (n == 27)
-            {
-                yield return Tube(Component<COgheTubeNetwork>()); yield return Operate("B");
-                yield return until(10, () => Transmission.FirstCaught, "Direct return door catches");
-            }
-            if (n == 28)
-            {
-                yield return until(10, () => Transmission.FirstCaught, "First branch has a retained access catch");
-                yield return Operate("B"); yield return until(10, () => Transmission.SecondCaught, "Correct branch opens and catches");
-            }
-            if (n == 29 || n == 30)
-            {
-                yield return Tube(Component<COgheTubeNetwork>());
-                if (n == 29) yield return Operate("B");
-                else yield return PowerBoth("B");
-                yield return Operate("C"); yield return until(10, () => Component<COgheSpringAccessDoor>().Caught, "Return route caught for holder");
-            }
-            game.SelectFragment(holder); var pad = Component<COgheTapPad>(); yield return TapPad(holder,false);
-            yield return until(15, () => !pad.Sensor.Active, "Release A without losing completed outputs");
-            if (n == 26) { yield return Merge(new Vector3(-.31f, -.30f, .04f)); yield return CrossBridge(); }
-            else if (n == 29 || n == 30) { yield return CrossBridge(); yield return Merge(new Vector3(.32f, -.30f, .16f)); }
-            else yield return Merge(n == 24 ? new Vector3(-.25f,-.30f,-.10f) : new Vector3(.22f, -.30f, .15f));
         }
+
         public IEnumerator Solve()
         {
             int n = game.Definition.Order;

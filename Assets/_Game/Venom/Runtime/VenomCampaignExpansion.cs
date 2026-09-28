@@ -16,6 +16,12 @@ namespace GravityBox.Venom
         private void InitializeMechanisms()
         {
             Mechanisms=Owner.Apparatus.GetComponentsInChildren<COgheMechanism>(true);
+            // These drives consume current supported-hand state after tasks have observed cuts,
+            // merged commands and contact loss. Preserve the relative order of all older mechanisms.
+            var ordered = new COgheMechanism[Mechanisms.Length]; int next = 0;
+            foreach(var mechanism in Mechanisms)if(!(mechanism is COgheCooperativeDrive))ordered[next++]=mechanism;
+            foreach(var mechanism in Mechanisms)if(mechanism is COgheCooperativeDrive)ordered[next++]=mechanism;
+            Mechanisms=ordered;
             tapRails=Owner.Apparatus.GetComponentsInChildren<COgheTapRail>(true);
             foreach(var mechanism in Mechanisms)mechanism.InitializeMechanism(this);
             transportMechanisms=Array.FindAll(Mechanisms,m=>m.TransportsTissue);

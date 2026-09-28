@@ -54,3 +54,8 @@ PlayMode, 8/8 EditMode and 30/30 native touch replays in accelerated and realtim
 modes. Phone performance and novice usability remain separate acceptance items.
 
 Follow-up requests on the same date replace level04's duplicated ramp with a floor inspection route through alternating baffle gaps, and fade complete outer panes/trim smoothly during orbit. Level02 keeps the ramp. `RebuildViewFeedbackAndZoomMac` authors level04 then saves fade-material references in all30, comparing physical/input data before and after presentation setup. Zoom has no hidden victory gate; the source/runs for these changes belong to the expansion verification report.
+
+
+## Current V2 cooperation revision — 23–30 (28 September 2026)
+
+The active work replaces the first expansion's23–30 layouts with simultaneous twin pulls, brake/bridge and paired-valve lifts, including real wall apertures and upper/lower reunion routes. `COgheSimultaneousBuilder` owns these eight layouts. `COgheTapRail` has optional spring-held and required-grip modes; `COgheCooperativeDrive` consumes current supported inputs after tap tasks and owns finite output force/catches. Original runtime defaults remain for older scenes. See [implementation contract](COGHE_VIEW_V2_SIMULTANEOUS.md) and [verification state](Verification/COgheSimultaneous/README.md). Default catalog stays30 stable V2 IDs; the historical catalogs above remain archived/tested variants.

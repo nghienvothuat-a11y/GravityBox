@@ -17,6 +17,13 @@ namespace GravityBox.Venom
         public bool TwoSided;
         public bool TrackStandPoint;
         public COgheTissueSensor RequiredLoad;
+        // Optional spring-held inputs use the same approach, planted feet and finite muscle force.
+        public bool HoldAtEnd;
+        public float ReturnForce = .026f;
+        public COgheTapRail RequiredGrip;
+        public bool Holding { get; private set; }
+        public float AppliedEffort { get; private set; }
+        public bool CanInterrupt => HoldAtEnd || RequiredGrip != null;
         public COgheRailSlider RequiredRail;
         public COgheTissueClearance Clearance;
         public bool RequiredEnd = true;
@@ -45,10 +52,10 @@ namespace GravityBox.Venom
             }
         }
         public int NextStop => HasStops && !Busy && CurrentStop >= 0 ? (CurrentStop + 1) % Stops.Length : targetStop;
-        public bool InterlockOpen => (Clearance == null || !Clearance.Blocked) && (RequiredLoad == null || RequiredLoad.Active) &&
+        public bool InterlockOpen => (RequiredGrip == null || RequiredGrip.Holding) && (Clearance == null || !Clearance.Blocked) && (RequiredLoad == null || RequiredLoad.Active) &&
             (RequiredRail == null || (RequiredPosition >= 0 ? Mathf.Abs(RequiredRail.Position - RequiredPosition) <= RequiredRail.CatchTolerance :
                 RequiredEnd ? RequiredRail.AtEnd : RequiredRail.Position <= RequiredRail.CatchTolerance));
-        public override string Activity => Busy ? Label + (Phase == TaskPhase.Approaching ? " · Đang tới" : " · Đang chuyển") :
+        public override string Activity => Busy ? Label + (Phase == TaskPhase.Approaching ? " · Đang tới" : Holding ? " · Đang giữ" : RequiredGrip != null && !InterlockOpen ? " · Chờ nhả phanh" : " · Đang chuyển") :
             owner != null && owner.Matter.SimulationTime < messageUntil ? LastFailure : null;
         public Vector3 HandPoint => backSide&&AlternateHandle!=null?AlternateHandle.position:Handle != null ? Handle.position : Rail.Body.position;
         public Vector3 StandPoint => WorkingSurface.Closest(HandPoint + Rail.Frame.TransformDirection(stance)) + WorkingSurface.Normal * .022f;
@@ -68,6 +75,7 @@ namespace GravityBox.Venom
         public override void ResetMechanism(VenomCampaign game)
         {
             owner = game; Phase = TaskPhase.Idle; Actor = -1; order = null;
+            Holding = false; AppliedEffort = 0;
             CompletedJourneys = 0; LastFailure = null; messageUntil = 0; stableTime = 0;
             targetStop = 0; target = 0;
             stance=StandOffset;
@@ -80,7 +88,7 @@ namespace GravityBox.Venom
             point = velocity = Vector3.zero;
             if (Phase != TaskPhase.Operating || !Owns(anchor)) return false;
             point = StandPoint;
-            velocity = Rail.WorldAxis * Mathf.Clamp((target - Rail.Position) * 3, -Speed, Speed);
+            velocity = Rail.WorldAxis * (RequiredGrip != null && !InterlockOpen ? 0 : Mathf.Clamp((target - Rail.Position) * 3, -Speed, Speed));
             if(TrackStandPoint)velocity+=Vector3.ClampMagnitude(Vector3.ProjectOnPlane(point-owner.Motion.Centre(anchor),WorkingSurface.Normal)*4,Speed);
             return true;
         }
@@ -106,7 +114,7 @@ namespace GravityBox.Venom
         {
             if (!owner.Owner.CanControl || owner.Home || anchor < 0 || anchor >= CohesiveOrganism.ParticleCount || owner.Matter.Escaped[anchor]) return false;
             if (Busy) { Message("Cơ quan đang thực hiện"); return false; }
-            if (!InterlockOpen) { Message(Clearance != null && Clearance.Blocked ? "Có mô trong vùng chuyển — đưa về bệ an toàn" : RequiredLoad != null ? "Cần một phần giữ bàn đạp" : "Chốt đang khóa"); return false; }
+            if (!InterlockOpen && RequiredGrip == null) { Message(Clearance != null && Clearance.Blocked ? "Có mô trong vùng chuyển — đưa về bệ an toàn" : RequiredLoad != null ? "Cần một phần giữ bàn đạp" : "Chốt đang khóa"); return false; }
             if (!owner.PrepareTapCommand(anchor)) return false;
             stance=StandOffset;
             backSide=TwoSided&&Vector3.Dot(owner.Motion.Centre(anchor)-Rail.Body.position,Rail.Frame.TransformDirection(StandOffset))<0;
@@ -116,7 +124,8 @@ namespace GravityBox.Venom
             { Message("Đường tới cơ quan đang bị chặn"); return false; }
             Actor = anchor;
             actorCount = CountActor();
-            if (HasStops)
+            if (HoldAtEnd) target = Rail.Travel;
+            else if (HasStops)
             {
                 int current = CurrentStop;
                 if (current >= 0) targetStop = (current + 1) % Stops.Length;
@@ -140,16 +149,25 @@ namespace GravityBox.Venom
         }
         private void Message(string message)
         { LastFailure = message; messageUntil = owner.Matter.SimulationTime + 2.5f; }
+        public void CompleteHold()
+        {
+            if (!HoldAtEnd || !Busy) return;
+            CompletedJourneys++; CancelTask(); Message("Đã chốt — có thể rời tay nắm");
+        }
         public void CancelTask(string reason = null)
         {
             if (Actor >= 0 && ReferenceEquals(owner.Motion.Get(Actor), order)) owner.Motion.Cancel(Actor);
             Phase = TaskPhase.Idle; Actor = -1; order = null;
+            Holding = false; AppliedEffort = 0;
             if (reason != null) Message(reason);
         }
         private void OnDisable()
         {if(owner!=null&&owner.Motion!=null)CancelTask();}
         public override void StepMechanism(VenomCampaign game, float dt)
         {
+            Holding = false; AppliedEffort = 0;
+            if (HoldAtEnd && Rail.Position > .0002f)
+                Rail.ApplyEffort(-Rail.WorldAxis * ReturnForce);
             // The detent holds the measured position, including a cancelled partial journey.
             // Reissuing a partial journey resumes its target; only physically reaching a stop advances the cycle.
             Rail.Locked = !InterlockOpen || (HasStops && !Busy);
@@ -159,7 +177,7 @@ namespace GravityBox.Venom
             if (game.Owner.Lost || game.Home || !ReferenceEquals(game.Motion.Get(Actor), order) || CountActor() < actorCount)
             { CancelTask("Lệnh đã thay đổi"); return; }
             actorCount = CountActor();
-            if (!InterlockOpen) { CancelTask("Chốt đã khóa — giữ bàn đạp rồi thử lại"); return; }
+            if (!InterlockOpen && RequiredGrip == null) { CancelTask("Chốt đã khóa — giữ bàn đạp rồi thử lại"); return; }
             float now = game.Matter.SimulationTime;
             Vector3 centre = game.Motion.Centre(Actor);
             int feet = 0;
@@ -181,18 +199,22 @@ namespace GravityBox.Venom
             float velocity = Vector3.Dot(Rail.Body.linearVelocity - Rail.Frame.GetComponent<Rigidbody>().GetPointVelocity(Rail.Body.position), axis);
             bool reached = remaining <= Rail.CatchTolerance;
             stableTime = reached && Mathf.Abs(velocity) < .025f ? stableTime + dt : 0;
-            if (stableTime >= .10f)
+            if (!HoldAtEnd && stableTime >= .10f)
             { CompletedJourneys++; CancelTask(); game.Motion.BuildGraph(); return; }
             if (feet < 2 || Vector3.Distance(centre, HandPoint) > .145f)
             { CancelTask("Mất điểm bám — chạm lại để tiếp tục"); return; }
-            if (now - lastProgressAt > StallSeconds)
+            if (RequiredGrip != null && !InterlockOpen) { lastProgressAt = now; return; }
+            if (!(HoldAtEnd && reached) && now - lastProgressAt > StallSeconds)
             { CancelTask("Cơ quan bị kẹt hoặc phần này chưa đủ lực"); return; }
             float desired = Mathf.Clamp((target - Rail.Position) * 3, -Speed, Speed);
             float mass = actorCount * game.Matter.Profile.ParticleMass;
             // Finite hand effort, equal/opposite tissue reaction and actual planted-foot support.
-            float effort = Mathf.Clamp((desired - velocity) * Mathf.Max(Rail.Body.mass, .18f) * 25,
+            float gain = HoldAtEnd ? Rail.Body.mass * 20 : Mathf.Max(Rail.Body.mass, .18f) * 25;
+            float effort = Mathf.Clamp((desired - velocity) * gain + (HoldAtEnd ? ReturnForce + Rail.Resistance : 0),
                 -mass * 7, mass * 7);
-            if (reached) effort = 0;
+            if (reached && !HoldAtEnd) effort = 0;
+            AppliedEffort = Mathf.Max(0, effort);
+            Holding = HoldAtEnd && reached && effort >= ReturnForce * .9f;
             Vector3 force = axis * effort;
             Rail.ApplyEffort(force);
             game.Motion.BraceAgainstManipulation(Actor, force);

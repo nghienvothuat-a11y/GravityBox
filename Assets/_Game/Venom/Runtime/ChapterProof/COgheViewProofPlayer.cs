@@ -22,14 +22,19 @@ namespace GravityBox.Venom.ChapterProof
         }
         [Serializable] private sealed class FadeSample
         {public float yaw;public float[] opacity;}
+        [Serializable] private sealed class CooperationSample
+        {public int level,actorA,actorB,groupA,groupB,fragments;public string mechanism,image;public float fraction,overlapSeconds,effortA,effortB;}
         [Serializable] private sealed class Report
         {
             public string utc,unity,buildGuid,device,os,gpu,api,execution="Normal player loop; InputSystem touch events; screenshots excluded from frame samples. Author replay, not novice evidence.";
             public int width,height,passed,failed;public List<Result> levels=new List<Result>();public List<string> errors=new List<string>();public List<FadeSample> fadeSamples=new List<FadeSample>();
+            public List<CooperationSample> cooperation=new List<CooperationSample>();
         }
         private static string requested;private static bool previousPersistence;
         private string directory;private VenomCampaign game;private Touchscreen touchscreen;
         private Report report;private Result result;private bool measuring,fast;private int shot;
+        private COgheCooperativeDrive[] cooperativeDrives=Array.Empty<COgheCooperativeDrive>();
+        private readonly HashSet<COgheCooperativeDrive> capturedCooperation=new HashSet<COgheCooperativeDrive>();
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Prepare()
         {
@@ -72,6 +77,7 @@ namespace GravityBox.Venom.ChapterProof
                 result=new Result{level=n};report.levels.Add(result);
                 yield return SceneManager.LoadSceneAsync($"COgheView{n:00}");yield return null;
                 game=FindFirstObjectByType<VenomCampaign>();game.AutoAdvance=false;
+                cooperativeDrives=game.Owner.Apparatus.GetComponentsInChildren<COgheCooperativeDrive>();capturedCooperation.Clear();
                 if(fast){game.Owner.enabled=false;game.Owner.Rotation.enabled=false;Physics.simulationMode=SimulationMode.Script;for(int t=0;t<120;t++)Tick();}
                 yield return new WaitForSeconds(2);yield return Capture("start");
                 if(Array.IndexOf(args,"-coghe-view-fade-proof")>=0)yield return Guarded(FadeProof());
@@ -170,13 +176,32 @@ namespace GravityBox.Venom.ChapterProof
         {
             if(fast)
             {
-                for(int i=0;i<seconds*120&&!done()&&!game.Owner.Lost;i++){Tick();if(i%120==0)yield return null;}
+                for(int i=0;i<seconds*120&&!done()&&!game.Owner.Lost;i++){Tick();if(i%30==0&&HasCooperationFrame())yield return ObserveCooperation();if(i%120==0)yield return null;}
                 if(!done())throw new InvalidOperationException(message+State()+Nearby());
                 yield break;
             }
             float until=Time.realtimeSinceStartup+seconds;
-            while(!done()&&!game.Owner.Lost&&Time.realtimeSinceStartup<until)yield return null;
+            while(!done()&&!game.Owner.Lost&&Time.realtimeSinceStartup<until){if(HasCooperationFrame())yield return ObserveCooperation();yield return null;}
             if(!done())throw new InvalidOperationException(message+State()+Nearby());
+        }
+        private bool HasCooperationFrame()
+        {
+            foreach(var drive in cooperativeDrives)
+                if(!capturedCooperation.Contains(drive)&&drive.BothActive&&!drive.Caught&&drive.Output.Fraction>=.15f&&drive.Output.Fraction<=.80f)return true;
+            return false;
+        }
+        private IEnumerator ObserveCooperation()
+        {
+            foreach(var drive in cooperativeDrives)
+            {
+                if(capturedCooperation.Contains(drive)||!drive.BothActive||drive.Caught||drive.Output.Fraction<.15f||drive.Output.Fraction>.80f)continue;
+                capturedCooperation.Add(drive);string label="simultaneous-"+drive.Kind;
+                report.cooperation.Add(new CooperationSample{level=result.level,mechanism=drive.name,actorA=drive.A.Actor,actorB=drive.B.Actor,
+                    groupA=game.Matter.Groups[drive.A.Actor],groupB=game.Matter.Groups[drive.B.Actor],fragments=game.Matter.TotalFragmentCount,effortA=drive.A.AppliedEffort,effortB=drive.B.AppliedEffort,
+                    fraction=drive.Output.Fraction,overlapSeconds=drive.OverlapSeconds,image=$"{result.level:00}-{shot:000}-{label}.png"});
+                bool before=measuring;measuring=false;yield return Capture(label);yield return null;yield return null;
+                Array.Clear(COgheMobileMetrics.Milliseconds,0,4);measuring=before;
+            }
         }
         private void Tick(){game.Owner.Step(1f/120);game.Owner.Rotation.Step(1f/120);Physics.Simulate(1f/120);}
         private string State()
@@ -184,6 +209,11 @@ namespace GravityBox.Venom.ChapterProof
         private string Nearby()
         {
             string text="\nNearby colliders: ";foreach(var shape in Physics.OverlapSphere(game.Motion.Centre(game.Motion.Selected),.11f))if(shape.GetComponent<VenomContact>()==null)text+=$"\n{shape.name} bounds={shape.bounds} active={shape.gameObject.activeInHierarchy} enabled={shape.enabled}";
+            for(int i=0;i<32;i++)
+            {
+                game.Motion.Support(i,out var supporting, out _, out _);
+                text+=$"\nParticle {i} group={game.Matter.Groups[i]} position={game.Matter.Bodies[i].position:F5} support={supporting?.name}";
+            }
             foreach(var rail in game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())text+=$"\nRail {rail.name} pos={rail.Position:F5} target={rail.Travel:F5} end={rail.AtEnd}";
             foreach(var drive in game.Owner.Apparatus.GetComponentsInChildren<COgheViewTransmission>())
             {

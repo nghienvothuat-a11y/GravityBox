@@ -71,6 +71,8 @@ namespace GravityBox.Tests
             Assert.IsFalse(game.Owner.Lost); Assert.IsFalse(game.Owner.Completed); Assert.AreEqual(0, game.CameraRig.OrbitYaw); Assert.AreEqual(1, game.CameraRig.ZoomScale);
             foreach (var task in game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>()) { Assert.IsFalse(task.Busy); Assert.AreEqual(0, task.CompletedJourneys); }
             foreach (var door in game.Owner.Apparatus.GetComponentsInChildren<COgheSpringAccessDoor>()) Assert.IsFalse(door.Caught);
+            foreach (var drive in game.Owner.Apparatus.GetComponentsInChildren<COgheCooperativeDrive>())
+            { Assert.IsFalse(drive.Caught); Assert.AreEqual(0, drive.OverlapSeconds); if (drive.FinalGate) Assert.IsFalse(drive.ExitUnlocked); }
         }
         private IEnumerator Recovery(int level)
         {

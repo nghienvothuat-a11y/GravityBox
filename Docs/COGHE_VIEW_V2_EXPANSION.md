@@ -1,5 +1,7 @@
 # COghe V2 — levels 11–30
 
+> Current revision: levels23–30 now use [simultaneous cooperation R2](COGHE_VIEW_V2_SIMULTANEOUS.md). The layout table and513/513 evidence below describe the original R1 expansion and remain as history. See [R2 verification](Verification/COgheSimultaneous/README.md) for current results.
+
 Authorized by Mrk on 28 September 2026 after the [20-level concept](LevelDesign/COghe/ViewV2/ExpansionConcept/DESIGN.md). This is an extension of the view-only V2 campaign, with stable IDs `coghe.view.v2.11` through `.30`. The catalog lists all thirty V2 scenes. Follow-up requests authorize a distinct zoom lesson in level 04 and smooth outer-pane/trim visibility in all thirty. Original levels other than 04 preserve their physical layout; serialized presentation references are updated.
 
 **Verified Mac prototype:** full PlayMode 513/513, EditMode 8/8, native touch replay 30/30 in accelerated and realtime modes. [Final evidence, images and limits](Verification/COgheViewExpansion/README.md). Individual dossiers are in [ViewV2](LevelDesign/COghe/ViewV2). Diagnostic artifacts are under `Artifacts/COgheViewExpansion`; failed diagnostic runs are not release evidence.

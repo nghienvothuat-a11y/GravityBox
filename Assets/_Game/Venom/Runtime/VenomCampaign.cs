@@ -602,7 +602,7 @@ namespace GravityBox.Venom
             if(!Definition.ViewOnly&&selectedTissueHit&&Matter.Groups[chosen]!=Matter.Groups[Motion.Selected])
             {SelectFragment(chosen);return;}
             foreach(var task in tapRails)
-                if(task.Owns(Motion.Selected)&&task.Phase==COgheTapRail.TaskPhase.Operating)return;
+                if(task.Owns(Motion.Selected)&&task.Phase==COgheTapRail.TaskPhase.Operating&&!task.CanInterrupt)return;
             // The passive sphere still acknowledges the nearest shell point.
             // Its inward-facing collision mesh alone would select the far wall.
             // Orthographic framing may back away to keep the studio floor in

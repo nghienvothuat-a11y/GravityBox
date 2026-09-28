@@ -11,7 +11,7 @@ namespace GravityBox.Venom
             foreach (var rail in tapRails)
                 if (rail.Owns(anchor))
                 {
-                    if (rail.Phase == COgheTapRail.TaskPhase.Operating) return false;
+                    if (rail.Phase == COgheTapRail.TaskPhase.Operating && !rail.CanInterrupt) return false;
                     rail.CancelTask();
                 }
             return true;

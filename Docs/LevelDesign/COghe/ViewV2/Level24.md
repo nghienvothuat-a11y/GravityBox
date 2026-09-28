@@ -27,3 +27,7 @@ A giữ cửa tạm; B bên kia mở/chốt cửa cuối phía S; người đi q
 - `EveryNewKnifeWaitsAsPhysicalBarrierWhilePlayerChooses`: chờ hai giây sau cắt vẫn có hai phần, bảo toàn mô; đạt.
 
 [Báo cáo, source/build manifest, XML đầy đủ và giới hạn](../../../Verification/COgheViewExpansion/README.md). Kết quả này là replay tác giả; không thay cho đánh giá độ khó của người chơi mới.
+
+## Thiết kế thay thế R2 được giao ngày 28/09/2026
+
+Mrk yêu cầu dựng [cơ quan phối hợp đồng thời R2](SimultaneousR2/LEVEL_24.md). Hồ sơ và kết quả candidate22 bên trên là lịch sử R1; không dùng để xác nhận bản scene R2. Tiến độ/kiểm chứng mới được ghi riêng.

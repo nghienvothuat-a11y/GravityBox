@@ -25,6 +25,11 @@ namespace GravityBox.Editor
                 var renderer=patch.GetComponent<Renderer>();if(renderer==null)continue;
                 if(patch.ExteriorGlass)
                 {
+                    if(game.Definition.Order>=23&&patch.name.Contains("strip"))
+                    {
+                        // Grip overlays are part of the outer wall's cutaway, while the handles remain visible.
+                        renderer.sharedMaterial=blue;outer.Add(patch);paneVisuals.Add(patch.transform);continue;
+                    }
                     outer.Add(patch);renderer.enabled=false;
                     // Render the real perforated pane; trim stays outside its aperture and follows the cutaway.
                     var shell=Child(root,"V2 pane trim");shell.position=patch.transform.position;shell.rotation=patch.transform.rotation;
@@ -110,6 +115,7 @@ namespace GravityBox.Editor
                     {
                         if(handle==null)return;var original=handle.GetComponent<Renderer>();if(original!=null)original.enabled=false;
                         var cap=Child(prop.transform,"V2 rounded handle");cap.position=handle.position;
+                        if(task.HoldAtEnd)cap.rotation=Quaternion.LookRotation(-task.WorkingSurface.Normal,Vector3.up);
                         Box(cap,"Porcelain grip socket",new Vector3(0,-.007f,.005f),new Vector3(.073f,.008f,.045f),.003f,ivory);
                         Box(cap,"Amber rounded carriage",new Vector3(0,.010f,.003f),new Vector3(.065f,.037f,.034f),.008f,amber);
                         Disk(cap,"Grip metal bezel",new Vector3(0,.012f,-.016f),Vector3.back,.023f,.004f,alloy);

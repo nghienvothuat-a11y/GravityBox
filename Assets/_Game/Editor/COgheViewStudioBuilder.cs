@@ -103,16 +103,17 @@ namespace GravityBox.Editor
 
         private static void BuildViewTrack(Transform details,COgheTapRail task)
         {
-            var rail=task.Rail;Vector3 side=Vector3.Cross(rail.Axis,Vector3.up).normalized;
+            var rail=task.Rail;Vector3 support=task.HoldAtEnd?task.WorkingSurface.Normal:Vector3.up;
+            Vector3 side=Vector3.Cross(rail.Axis,support).normalized;
             // A bridge's rail stays by its handle on the bank, clear of the walking deck.
             Vector3 handleOffset=rail.Frame.InverseTransformVector(task.Handle.position-rail.transform.position);
-            Vector3 start=rail.Start+handleOffset+Vector3.down*.012f;
+            Vector3 start=rail.Start+handleOffset-support*.012f;
             foreach(float sign in new[]{-1f,1f})
                 ViewRod(details,"Paired satin guide",start+side*(sign*.023f)-rail.Axis*.015f,start+rail.Axis*(rail.Travel+.015f)+side*(sign*.023f),.0035f,alloy);
             foreach(float travel in new[]{0f,rail.Travel})
             {
                 var mount=Child(details,"Porcelain end bearing");mount.localPosition=start+rail.Axis*travel;
-                mount.localRotation=Quaternion.LookRotation(rail.Axis,Vector3.up);
+                mount.localRotation=Quaternion.LookRotation(rail.Axis,support);
                 Box(mount,"Rounded bearing block",Vector3.down*.003f,new Vector3(.072f,.029f,.022f),.005f,ivory);
                 foreach(float sign in new[]{-1f,1f})Disk(mount,"Satin bearing collar",new Vector3(sign*.023f,0,-.0115f),Vector3.forward,.005f,.002f,alloy);
             }
