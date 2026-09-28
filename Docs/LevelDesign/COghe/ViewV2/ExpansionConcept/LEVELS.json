@@ -1,0 +1,338 @@
+[
+  {
+    "n": 11,
+    "name": "Bến bí mật",
+    "role": "Nghỉ nhịp sau Boss",
+    "idea": "Cầu dời đi làm lộ lối cũ; quan sát hậu quả ngoài đích đang nhìn.",
+    "layout": "Spawn S ở bờ gần; cầu A nối bờ xa cùng cao độ. Hốc E sau vị trí đỗ cũ của cầu chỉ tiếp cận được từ đường vòng bờ xa. Vách cố định ngăn S đi tắt vào hốc.",
+    "mechanisms": "A: cầu trượt hai nấc, một tay nắm ở bờ gần và bến bắt thực.",
+    "steps": [
+      "Chạm A: cầu từ chỗ đỗ sang bến; hốc thoát lộ ra nhưng chỉ có đường tới từ bờ xa.",
+      "Đi qua cầu, vòng dải sàn cố định bờ xa rồi tới E."
+    ],
+    "recover": "Đảo A trước khi qua được phép; tay nắm không bị cầu che. Nếu đang trên cầu thì phải có đường tới bờ an toàn hoặc cơ quan báo đang có tải, không kẹp mô.",
+    "risk": "Đường bám mép/vách có thể bỏ qua cầu; phải kiểm tra tất cả mặt leo được. Hốc phải thật sự bị vật thể che đường, không chỉ khuất camera.",
+    "decisions": "1–2 quyết định, một cơ thể",
+    "kit": "Cầu/rail V2 hiện có; bố cục đường vòng mới."
+  },
+  {
+    "n": 12,
+    "name": "Dưới chiếc nắp",
+    "role": "Giới thiệu cách quan sát đường dưới nắp",
+    "idea": "Một mặt tưởng là sàn kín thực ra che đường xuống rộng.",
+    "layout": "S trên sàn chính, nắp A trượt ngang lộ dốc rộng xuống hành lang thấp, E cuối hành lang. Hành lang hở mặt trước khi xem; không yêu cầu camera chui dưới sàn.",
+    "mechanisms": "A: nắp trượt có vùng đứng cố định bên ray; hai đầu hành trình.",
+    "steps": [
+      "Chạm A tới nấc mở, lộ toàn bộ đầu dốc.",
+      "Chạm điểm dưới dốc rồi E; COghe đi bằng đường bám liên tục."
+    ],
+    "recover": "Có tay nắm/điểm gọi lại từ hai phía. Không cho nắp cắt ngang mô không báo; retry luôn đưa về spawn thoáng.",
+    "risk": "Đích dưới tầng có thể bị sàn trên che raycast; cần đổi yaw nhìn rõ mà không xuyên vách trong.",
+    "decisions": "1–2 quyết định, một cơ thể",
+    "kit": "Nắp và cơ quan liên kết V2; dốc/routing cần greybox."
+  },
+  {
+    "n": 13,
+    "name": "Đi vòng trở lại",
+    "role": "Kết hợp nắp và cầu",
+    "idea": "Lối ra gần nơi xuất phát nhưng chỉ tới được khi đi vòng sau vách.",
+    "layout": "Lối chữ U quanh vách đặc: S → hốc B → cầu → bờ xa → E sau vách gần S. A trên sàn S; B bị nắp che thật.",
+    "mechanisms": "A mở nắp; B đưa cầu tới bến. Hai tay nắm không chồng hình.",
+    "steps": [
+      "A mở nắp, làm lộ B và vùng đứng.",
+      "B nối cầu; đi qua bờ xa.",
+      "Theo đường U về E phía sau vách."
+    ],
+    "recover": "A/B đảo được từ vùng đứng an toàn; quay lại không làm mất lệnh hay đóng cửa vô hình.",
+    "risk": "Không để COghe leo qua đỉnh vách tạo đường tắt vô tình. Nếu vật lý cho đường khác hợp lệ, sửa bố cục hoặc chấp nhận và ghi lại.",
+    "decisions": "2–3 quyết định, một cơ thể",
+    "kit": "Hai cơ quan V2 đã có, tổ hợp mới."
+  },
+  {
+    "n": 14,
+    "name": "Răng truyền lực",
+    "role": "Giới thiệu truyền động nhìn thấy",
+    "idea": "Một thao tác gần làm cửa xa chuyển động qua bộ truyền rõ ràng.",
+    "layout": "S và tay nắm A trên sàn rộng. Rack/bánh răng ở bệ thấp bên cạnh đường đi; output nối cửa trước E.",
+    "mechanisms": "A cấp trạng thái truyền lực; ba bánh răng đủ để nhìn quan hệ; output rack và cửa có giới hạn thực.",
+    "steps": [
+      "Chạm A tới vị trí nối; chỉ khi bộ truyền ăn khớp thật mới có lực ra.",
+      "Chờ cửa đạt vị trí thông rồi tới E."
+    ],
+    "recover": "Rút A dừng truyền lực; cửa không được báo mở khi còn chắn. Kẹt đầu ra phải có phản hồi và cho thao tác lại.",
+    "risk": "COgheGearTrain có trong legacy nhưng chưa chứng minh tích hợp tap V2. Không giả vờ có mô phỏng từng răng hoặc người chơi phải căn pha.",
+    "decisions": "1–2 quyết định, một cơ thể; chỉ một kiến thức mới",
+    "kit": "Tham khảo COgheGearTrain + TapRail; cần nối/kiểm chứng V2."
+  },
+  {
+    "n": 15,
+    "name": "Chuyền bộ truyền",
+    "role": "Kết hợp trạng thái và chốt",
+    "idea": "Dùng lại cùng bộ truyền cho cửa sau mà cửa trước vẫn giữ kết quả nhờ chốt thật.",
+    "layout": "Hai cửa A/B trên hành lang; xe bánh răng G ở dải dịch vụ liên tục bên ngoài cả hai cửa. Tay nắm nguồn P có thể tới từ sàn chung.",
+    "mechanisms": "G chọn ổ truyền A/B; P nối nguồn; mỗi cửa có chốt giữ riêng thấy được. G không nối hai ổ cùng lúc.",
+    "steps": [
+      "G ở ổ A, chạm P cấp lực cho tới khi cửa A lên chốt.",
+      "Đưa P về ngắt; chuyển G sang ổ B, đi qua cửa A vẫn mở.",
+      "Nối P lại, B mở đủ rồi đi E."
+    ],
+    "recover": "Chuyển G quá sớm: cửa A chưa chốt thì trả G về, làm lại ngay. Cửa đã chốt giữ nguyên qua việc rút nguồn, chỉ Retry xóa.",
+    "risk": "Chốt phải dựa vị trí/vận tốc thực, không biến đã chạm A. Cần kiểm tra dùng chung nguồn và ownership khi chuyển ổ.",
+    "decisions": "3 quyết định chính, nhiều lệnh thi hành; một cơ thể",
+    "kit": "GearTrain.LatchOutput là nền; bộ chọn hai đầu ra/chốt trình bày cần phát triển và kiểm chứng."
+  },
+  {
+    "n": 16,
+    "name": "Hai nhịp cầu",
+    "role": "Bài thứ tự hình học",
+    "idea": "Dời đoạn thứ nhất vừa tạo đường vừa nhường ray cho đoạn thứ hai.",
+    "layout": "Hai bờ và đảo cố định ở giữa. A đỗ trong vùng hành trình của B; tay nắm A/B đều ở dải sàn dịch vụ, không buộc đứng trên đoạn chưa khớp.",
+    "mechanisms": "Hai cầu trên ray riêng, A tới bến đầu giải phóng đường dịch chuyển của B. Khoảng giao hành trình là vật cản thật.",
+    "steps": [
+      "Đưa A tới bến đầu, làm trống hành trình B.",
+      "Đưa B tới bến thứ hai; đọc hai chốt khớp.",
+      "Đi trên đường liên tục qua đảo tới E."
+    ],
+    "recover": "Chọn B trước thì bị cản, ngừng lực và báo kẹt; đưa A ra rồi thử B lại. Không âm thầm xếp hàng lệnh.",
+    "risk": "Giao ray có thể kẹp/đẩy cơ quan ra khỏi joint; cần giới hạn lực và clearances theo collider.",
+    "decisions": "2–3 quyết định, một cơ thể",
+    "kit": "Rail/bridge có sẵn; kiểm tra thứ tự hình học mới."
+  },
+  {
+    "n": 17,
+    "name": "Ống vòng lưng",
+    "role": "Giới thiệu transfer tube",
+    "idea": "Đi vào phía trước, xuất hiện phía sau vách ở cao độ khác; nhìn thấy đường đi xuyên ống.",
+    "layout": "Một ống chữ U vòng ngoài vách thấp, đầu vào sát S, đầu ra ở bệ rộng có E. Dốc cố định từ bệ về S cho phép quay lại.",
+    "mechanisms": "Một mạng ống, hai miệng Transfer; không miệng nào là FinalExit.",
+    "steps": [
+      "Chạm miệng vào; cơ thể di chuyển liên tục trong lòng ống tới bệ.",
+      "Đi trên bệ tới E; có thể quay ngược ống hoặc dốc để thử."
+    ],
+    "recover": "Đổi ý/quay đầu có đường đủ rộng. Kẹt cổ ống phải hủy được lệnh; không dịch chuyển mô sang đầu kia.",
+    "risk": "Ống legacy cần kiểm chứng trong hộp khóa xoay, chọn mouth/occlusion đúng V2; cửa ra lên bệ không tạo mép gây mắc.",
+    "decisions": "1–2 quyết định, một cơ thể",
+    "kit": "COgheTubeNetwork legacy; tích hợp điều khiển V2 chưa kiểm chứng."
+  },
+  {
+    "n": 18,
+    "name": "Rẽ nhánh",
+    "role": "Kết hợp chọn nhánh và đi-về",
+    "idea": "Phải thăm nhánh phụ trước để mở đường chính, rồi quay lại dùng chính ngã rẽ.",
+    "layout": "Ngã Y nối hai hốc tách biệt; nhánh trái tới tay nắm B, nhánh phải tới cửa E. Bộ chọn A ở sàn nút giao nhìn rõ hai nhánh.",
+    "mechanisms": "A đổi nối nhánh ống hai nấc; B mở/chốt cửa nhánh chính bằng liên kết rõ. Không có chỗ ống giao giả.",
+    "steps": [
+      "A chọn nhánh phụ; vào và thao tác B để cửa chính chốt mở.",
+      "Quay về nút giao qua cùng ống, đổi A sang nhánh chính.",
+      "Đi tới E."
+    ],
+    "recover": "Đi nhánh chính sớm chỉ gặp cửa đóng và quay lại được. Không chuyển A khi mô vắt qua chỗ ghép; có phản hồi chờ.",
+    "risk": "Bộ chọn đường ống có thể là component mới; phải thay đổi lối vật lý lẫn graph đồng bộ, không sửa graph để đi xuyên vách.",
+    "decisions": "3 quyết định, một cơ thể",
+    "kit": "Mạng ống + rail; bộ chuyển nhánh hai nấc là hạng mục phải làm/kiểm chứng."
+  },
+  {
+    "n": 19,
+    "name": "Mở rồi đóng",
+    "role": "Ôn đảo trạng thái trước Boss",
+    "idea": "Đóng lại lối vừa dùng mới mở được lối ra, trong khi kết quả chốt vẫn giữ.",
+    "layout": "Vestibule có hai cửa cạnh nhau, A hai mặt chọn cửa phụ/cửa chính. B ở hốc phụ nối cầu; cửa chính dẫn qua cầu tới E.",
+    "mechanisms": "A là một shutter che luân phiên hai lối; B đưa cầu lên chốt.",
+    "steps": [
+      "A mở lối phụ; vào tới B.",
+      "B nối và chốt cầu.",
+      "Quay lại vùng an toàn, đảo A để mở lối chính; qua cầu tới E."
+    ],
+    "recover": "Nếu đảo A trước B, trở về lối phụ được; tay nắm A còn dùng ở cả hai phía. Cầu không tụt khi A đổi.",
+    "risk": "Không giam cơ thể trong hốc hoặc để tay nắm sau mặt che không tới được.",
+    "decisions": "3–4 quyết định, một cơ thể",
+    "kit": "Shutter đảo + cầu + chốt đã giới thiệu."
+  },
+  {
+    "n": 20,
+    "name": "Boss: Cỗ máy vòng",
+    "role": "Boss một cơ thể",
+    "idea": "Tự nhận ra chuỗi đường mở bằng bộ cơ quan đã học, vòng cuối trở về gần khởi đầu.",
+    "layout": "Chữ U rộng: S/A → B và đầu ống → bệ C → cầu → D/E. Vách và khoảng hở tạo phụ thuộc tiếp cận thật, các liên kết nhìn được khi orbit.",
+    "mechanisms": "A mở nắp B; B nối gear train để mở/chốt cửa vào ống; C đưa cầu khớp bến; D rút shutter cuối.",
+    "steps": [
+      "A mở nắp rồi B cấp truyền lực tới cửa ống.",
+      "Qua ống chuyển tới bệ C, C nối cầu.",
+      "Qua cầu tới D, mở cửa cuối rồi E."
+    ],
+    "recover": "Mọi ngõ có đường quay lại, đầu ra đã chốt giữ khi ngắt nguồn. Sai thứ tự cho phản hồi khóa/chưa tới được; không mất toàn bộ tiến bộ.",
+    "risk": "Bốn phụ thuộc liên tiếp dễ bị kéo dài bởi di chuyển; ưu tiên lối ngắn và toàn cảnh rõ. Không đưa thêm luật mới vào Boss.",
+    "decisions": "4 phụ thuộc chính, một cơ thể; không hướng dẫn lời giải",
+    "kit": "Kết hợp bộ 11–19; không mới về luật."
+  },
+  {
+    "n": 21,
+    "name": "Lối tắt quen",
+    "role": "Nghỉ nhịp sau Boss",
+    "idea": "Một chuyển động tạo hai kết quả có liên kết nhìn thấy: nối cầu và mở đường vòng.",
+    "layout": "Một cầu ngắn nối bờ xa, thanh liên kết kéo shutter bên hông để mở vòng về E gần bờ đầu.",
+    "mechanisms": "A là cầu; output shutter dùng cùng liên kết vật lý. Không thêm điều khiển thứ hai.",
+    "steps": [
+      "A nối cầu đồng thời mở shutter qua thanh truyền.",
+      "Qua cầu theo vòng ngắn tới E."
+    ],
+    "recover": "Đảo A vẫn cho đường trở về phía đang đứng; tay nắm không bị che. Không tự đóng khi COghe vừa bỏ tay.",
+    "risk": "Kết quả kép dễ tưởng là ngẫu nhiên nếu thanh truyền bị che; kiểm tra hình trên điện thoại.",
+    "decisions": "1–2 quyết định, một cơ thể",
+    "kit": "Cầu + liên kết output V2, không kỹ năng mới."
+  },
+  {
+    "n": 22,
+    "name": "Tách rồi gặp",
+    "role": "Giới thiệu cắt/hợp thể an toàn",
+    "idea": "Hai phần vẫn là một cơ thể; đến gần và không có vật cản thì tự hợp.",
+    "layout": "Một dao bạc cố định trong làn ngắn, sau dao vách thấp tách hai lối; phía trước là sân tụ rộng và E. Cho đường vòng không dao để không gài điều kiện lịch sử cắt.",
+    "mechanisms": "Dao cắt theo mô thật, không ép 16/16; hai phần hoặc số phần phát sinh thực tế được chọn; bài học chủ đích hai phần.",
+    "steps": [
+      "Đưa cơ thể qua dao; quan sát phần mô thực tách.",
+      "Chọn từng phần đưa về sân tụ; khi gần không bị vách ngăn thì tự nhập.",
+      "Đưa toàn bộ cơ thể qua E."
+    ],
+    "recover": "Cắt lệch: chọn phần theo lượng mô thực; tụ sớm thì đưa lại qua dao nếu muốn học. Ra E trước khi nhập đủ dùng thông báo thua hiện có.",
+    "risk": "Bài học không được khóa thắng bằng đã cắt N lần. Người đi đường vòng được thắng nhưng lesson cắt chưa ghi đạt; bài 24/26 sẽ tạo nhu cầu phối hợp vật lý.",
+    "decisions": "Một kiến thức mới; dự kiến hai phần, không căn tỷ lệ chính xác",
+    "kit": "Cắt/tụ legacy; chọn phần và tutorial V2 phải kiểm chứng."
+  },
+  {
+    "n": 23,
+    "name": "Hai việc riêng",
+    "role": "Luyện chọn phần và lệnh độc lập",
+    "idea": "Chọn phần khác không hủy việc phần cũ; hai làn có thể xử lý theo thứ tự bất kỳ.",
+    "layout": "Dao tại vùng đầu; hai làn rộng cách bằng vách thật, mỗi làn có rail A/B, cuối là sân tụ chung trước E.",
+    "mechanisms": "A/B nhả hai chốt độc lập của cửa E; mỗi output chốt tại đầu thật.",
+    "steps": [
+      "Tách ở dao, đưa một phần vào làn A, phần kia vào làn B.",
+      "Giao việc cho A rồi đổi chọn B giao việc; A vẫn tiếp tục.",
+      "Khi hai output chốt, gọi cả hai về sân tụ rồi E."
+    ],
+    "recover": "Tụ sớm thì vẫn cho đường giải một cơ thể tuần tự nếu hợp vật lý; không đặt luật bắt buộc hai phần giả. Cắt lại là lựa chọn.",
+    "risk": "Phần chưa chọn bị hủy nhiệm vụ hoặc autopan khi đổi chọn là lỗi. Các làn phải tránh tự nhập xuyên vách.",
+    "decisions": "2–3 quyết định; học hai nhiệm vụ độc lập, có thể tuần tự",
+    "kit": "TapRail + chọn fragment; kiểm tra ownership khi nhập."
+  },
+  {
+    "n": 24,
+    "name": "Bạn đứng giữ",
+    "role": "Giới thiệu áp lực duy trì",
+    "idea": "Một phần đứng giữ để phần kia đi qua; nhiệm vụ giữ vẫn chạy khi đổi chọn.",
+    "layout": "Pad A ở hốc trái S; cửa tạm chặn tới rail B. B nhả chốt cửa E ở phía S, rồi phần đi quay lại qua cửa tạm đang được giữ. Vách ngắn ngăn tụ ngay cạnh pad.",
+    "mechanisms": "Pad A → cửa tạm; B → chốt cửa E. Output B giữ sau khi buông pad.",
+    "steps": [
+      "Tách và giao phần đủ tải giữ A.",
+      "Chọn phần còn lại qua cửa tới B, thao tác B tới chốt.",
+      "Đưa phần đi về sân cạnh S; gọi phần giữ ra hoặc đến gần đúng phía để nhập; E."
+    ],
+    "recover": "Rời A sớm: cửa về vị trí đóng có chống kẹp, phần ở xa còn lối lùi; giữ A lại để mở. Cắt lệch thì đổi vai, cắt lại khi cần.",
+    "risk": "Không để một thân trải dài vừa phủ A vừa chạm B. Khoảng cách/vách phải chứng minh phối hợp cần thiết; tải/force từng phần cần đo.",
+    "decisions": "3 quyết định chính, hai vai trò",
+    "kit": "COgheTapPad + sensor/temporary gate; chống kẹp và split V2 cần test."
+  },
+  {
+    "n": 25,
+    "name": "Gọi bạn về",
+    "role": "Luyện giải phóng vai trò giữ",
+    "idea": "Gài chốt ở bên kia để người giữ cũng sang được.",
+    "layout": "Pad A ở bờ đầu, cửa tạm giữa, chốt B ở bờ xa, sân tụ và E cùng bờ xa. Chỉ có một tuyến qua cửa.",
+    "mechanisms": "A giữ cửa mở; B gài cơ cấu giữ cửa ở cuối ray. Chốt B chỉ nhận khi cửa đủ mở thực.",
+    "steps": [
+      "Một phần giữ A; phần kia qua cửa tới B.",
+      "B gài chốt giữ; nhìn chốt ăn vào ray, đèn báo thật.",
+      "Chạm A để nhả hoặc giao đích cho phần giữ, qua cửa đã chốt và tụ trước E."
+    ],
+    "recover": "Gọi về trước chốt: A có thể giữ lại; B còn vùng lùi an toàn. Chưa khớp thì không hiện đã giữ.",
+    "risk": "Task release không được tự hủy khi chỉ đổi phần. Cửa không giữ bằng animation; đích nhả pad phải đủ xa cảm biến.",
+    "decisions": "3–4 quyết định, hai vai trò",
+    "kit": "TapPad đã có thao tác nhả; hold-open catch V2 cần dựng/kiểm chứng."
+  },
+  {
+    "n": 26,
+    "name": "Giữ để vận hành",
+    "role": "Kết hợp duy trì và hữu hạn",
+    "idea": "Bạn giữ để rút khóa, tôi thực hiện một hành trình; cầu tự đứng vững khi đã khớp.",
+    "layout": "A trong hốc cạnh S; B trên dải sàn khác ngăn bằng vách/xa khỏi A; cầu đến bến bên kia. Dải sàn về sân tụ nằm phía S.",
+    "mechanisms": "A rút chốt khóa rail B; B điều khiển cầu; bến có chốt độc lập.",
+    "steps": [
+      "Tách; phân phần đủ tải cho A, phần đủ lực cho B.",
+      "A giữ khóa rút; B đẩy cầu đến bến chốt thật.",
+      "B trở về sân tụ; nhả A, nhập rồi qua cầu tới E."
+    ],
+    "recover": "Nhả A giữa hành trình: rail dừng an toàn tại vị trí thực, giữ A lại rồi tiếp tục/đảo về. Nếu tụ sớm, giữ tiến độ cầu đã chốt.",
+    "risk": "Không đòi chia đôi chính xác. Khối lượng/lực phải có biên đủ rộng; nếu fragment quá nhỏ không đủ lực, báo và cho đổi vai/cắt lại.",
+    "decisions": "3–4 quyết định, tối đa hai vai trò",
+    "kit": "Pad + rail lock + bridge/latch; tích hợp V2 mới."
+  },
+  {
+    "n": 27,
+    "name": "Hai khoang",
+    "role": "Vận dụng phối hợp khác vị trí",
+    "idea": "Ở xa nhau nhưng tác động cùng một cơ quan qua liên kết thấy được.",
+    "layout": "Khoang trái có A; khoang phải có B, nối bằng ống cyan ngắn. Cửa trực tiếp giữa khoang chỉ mở khi B hoàn tất; sân tụ chung gần E.",
+    "mechanisms": "A nhả khóa B; B mở/chốt cửa kết nối. Ống chỉ là Transfer, không tính thoát.",
+    "steps": [
+      "Đưa một phần qua ống sang B, phần còn lại giữ A.",
+      "B vận hành rail tới chốt để mở đường trực tiếp giữa khoang.",
+      "Nhả A, gặp nhau qua cửa mới mở, hợp thể rồi E."
+    ],
+    "recover": "Người đi có thể quay ống trước khi cửa mở. Rời A chỉ dừng B; quay lại giữ để tiếp tục. Chọn phần bằng chip nếu bị vách che, không chạm xuyên vách.",
+    "risk": "Camera cố định pitch phải cho thấy đủ cửa/ống; nếu dùng chip khoang thì chỉ đổi view, không tự theo phần.",
+    "decisions": "3–4 quyết định, hai vai trò; tăng khoảng quan sát",
+    "kit": "Tube + Pad + rail/latch đã học."
+  },
+  {
+    "n": 28,
+    "name": "Đổi ý vẫn được",
+    "role": "Bài phục hồi có chủ đích",
+    "idea": "Sai nhánh không mất cửa đã mở; đưa bộ truyền về và thử nhánh còn lại.",
+    "layout": "A cạnh S nhả khóa xe chọn B. Ổ trái dẫn hốc kín rộng quay đầu; ổ phải truyền tới cửa E. Cửa truy cập đã mở có chốt rõ, không khóa sau lưng.",
+    "mechanisms": "A cho phép B dịch chuyển; B chọn ổ trái/phải; chốt C là trạng thái giữ của cửa tiếp cận, không phải lần chạm được ghi nhớ.",
+    "steps": [
+      "Tách, giữ A, đưa B tới ổ trái để nhìn kết quả hốc phụ.",
+      "Đưa B về ổ phải; cửa truy cập C vẫn chốt mở.",
+      "Đầu ra đúng lên chốt, nhả A và tụ tại sân E."
+    ],
+    "recover": "Người hiểu ngay chọn phải được giải trực tiếp. Không bắt buộc làm sai để tính thắng. B luôn có điểm thao tác và vùng đứng từ cả hai trạng thái.",
+    "risk": "Người chơi có thể hiểu nhánh sai là bug nếu phản hồi mơ hồ; phân biệt ký hiệu ổ và liên kết cơ khí, không chỉ màu.",
+    "decisions": "3–4 quyết định, hai vai trò; chuỗi sai tùy chọn",
+    "kit": "Bộ chọn/nguồn dùng lại màn 15/18; thiết kế đường quay đầu."
+  },
+  {
+    "n": 29,
+    "name": "Nhường đường",
+    "role": "Luyện tổ hợp trước Boss",
+    "idea": "Người đi trước xây đường quay về cho người giữ.",
+    "layout": "A ở bờ đầu; người đi qua một ống ngắn tới B trên bờ xa. B nối cầu, C gài cửa giữ mở; sân tụ rộng trước E.",
+    "mechanisms": "A nhả khóa B; B cầu có bến chốt; C hold-open catch cho cửa quay về.",
+    "steps": [
+      "Tách; một phần giữ A, phần kia qua ống tới B.",
+      "B nối cầu, tới C gài cửa giữ mở.",
+      "Nhả A, đưa người giữ qua cầu/cửa; gặp người đi, nhập rồi E."
+    ],
+    "recover": "Cầu đã chốt không tụt khi nhả A. Quên C thì giữ A lại/cho người đi quay lại C; không bắt replay phần ống nếu không cần.",
+    "risk": "Hai cơ quan khác nhau có thể nhầm là cùng một trạng thái giữ; hình pin cầu và catch cửa cần khác hình dáng.",
+    "decisions": "4–5 phụ thuộc, hai vai trò; không kiến thức mới",
+    "kit": "Tổ hợp 17/25/26, lối đi ngắn."
+  },
+  {
+    "n": 30,
+    "name": "Boss: Cùng trở về",
+    "role": "Boss hai vai trò",
+    "idea": "Cỗ máy chỉ hoàn tất khi cả hai phần đều có đường về; kết thúc bằng một cơ thể.",
+    "layout": "S/dao và A bên trái; ống ngắn tới xe bộ truyền B bên phải; ổ đầu mở/chốt cửa, ổ sau nối cầu tới C; C gài giữ đường quay về; sân tụ trước E nằm giữa bố cục.",
+    "mechanisms": "A nhả khóa xe B; P cấp lực, B chọn output cửa/cầu; cả hai output có chốt; C giữ cửa hồi. Tối đa năm điểm thao tác kể cả pad, không vai trò thứ ba.",
+    "steps": [
+      "Tách, phần thứ nhất giữ A, phần thứ hai qua ống tới cụm B/P.",
+      "P nối ổ cửa, chờ chốt; ngắt P, chuyển B sang ổ cầu, nối P cho cầu khớp.",
+      "Qua cầu tới C, gài giữ đường hồi; nhả A và đưa người giữ về sân tụ.",
+      "Hợp thể bên trong rồi toàn bộ qua E."
+    ],
+    "recover": "Kết quả cửa/cầu đã chốt giữ khi ngắt A/P. Nếu nhập sớm trước xong chuỗi, có đường về dao; không reset bí mật. Ra sớm dùng luật thua hợp thể hiện có.",
+    "risk": "Đây là bài rủi ro cao về khả giải hai vai trò, kẹt/anti-pinch, đường quay về và đọc trạng thái. Không thêm HUD lời giải để chữa bố cục rối.",
+    "decisions": "Khoảng 5 phụ thuộc chính, nhiều lệnh thi hành; hai vai trò, Boss không hint",
+    "kit": "Chỉ tái tổ hợp bộ 11–29; không luật mới, không phần thưởng tăng chỉ số."
+  }
+]

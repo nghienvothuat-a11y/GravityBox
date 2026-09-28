@@ -18,6 +18,7 @@ namespace GravityBox.Venom
         public bool TrackStandPoint;
         public COgheTissueSensor RequiredLoad;
         public COgheRailSlider RequiredRail;
+        public COgheTissueClearance Clearance;
         public bool RequiredEnd = true;
         // Negative retains the original terminal interlock. Otherwise a real cam at this rail position releases it.
         public float RequiredPosition = -1;
@@ -44,7 +45,7 @@ namespace GravityBox.Venom
             }
         }
         public int NextStop => HasStops && !Busy && CurrentStop >= 0 ? (CurrentStop + 1) % Stops.Length : targetStop;
-        public bool InterlockOpen => (RequiredLoad == null || RequiredLoad.Active) &&
+        public bool InterlockOpen => (Clearance == null || !Clearance.Blocked) && (RequiredLoad == null || RequiredLoad.Active) &&
             (RequiredRail == null || (RequiredPosition >= 0 ? Mathf.Abs(RequiredRail.Position - RequiredPosition) <= RequiredRail.CatchTolerance :
                 RequiredEnd ? RequiredRail.AtEnd : RequiredRail.Position <= RequiredRail.CatchTolerance));
         public override string Activity => Busy ? Label + (Phase == TaskPhase.Approaching ? " · Đang tới" : " · Đang chuyển") :
@@ -105,7 +106,7 @@ namespace GravityBox.Venom
         {
             if (!owner.Owner.CanControl || owner.Home || anchor < 0 || anchor >= CohesiveOrganism.ParticleCount || owner.Matter.Escaped[anchor]) return false;
             if (Busy) { Message("Cơ quan đang thực hiện"); return false; }
-            if (!InterlockOpen) { Message(RequiredLoad != null ? "Cần một phần giữ bàn đạp" : "Chốt đang khóa"); return false; }
+            if (!InterlockOpen) { Message(Clearance != null && Clearance.Blocked ? "Có mô trong vùng chuyển — đưa về bệ an toàn" : RequiredLoad != null ? "Cần một phần giữ bàn đạp" : "Chốt đang khóa"); return false; }
             if (!owner.PrepareTapCommand(anchor)) return false;
             stance=StandOffset;
             backSide=TwoSided&&Vector3.Dot(owner.Motion.Centre(anchor)-Rail.Body.position,Rail.Frame.TransformDirection(StandOffset))<0;

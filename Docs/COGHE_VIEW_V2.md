@@ -1,8 +1,8 @@
-# COghe V2 — 10 levels with view-only controls
+# COghe V2 — 30 levels with view-only controls
 
-Authorized by Mrk on 28 September 2026 (Buzz event `09cb747e27dc1fbdfb6763a0a443dba3db980f474115b1d5e2612518ef279825`). This replaces physical box rotation in the new ten-level catalog. Archived content retains its own controls and remains regression coverage.
+Authorized by Mrk on 28 September 2026 (Buzz event `09cb747e27dc1fbdfb6763a0a443dba3db980f474115b1d5e2612518ef279825`). The opening ten-level chapter replaces physical box rotation. The current catalog adds levels 11–30 and the follow-up camera/level04 revisions described below. Archived content retains its own controls and remains regression coverage.
 
-Unity 6000.3.19f1, URP 17.3.0, Input System 1.17.0. Implementation continues the existing worktree at base `317fdae`; tests/builds must identify the additional source diff.
+Unity 6000.3.19f1, URP 17.3.0, Input System 1.17.0. The initial ten-level implementation began at `317fdae`. Current source/build evidence is recorded in the [expansion report](Verification/COgheViewExpansion/README.md); historical checks do not certify subsequent changes.
 
 ## Player contract
 
@@ -17,7 +17,7 @@ Exterior faces looking toward the camera are omitted from picking and rendering,
 | 1 | coghe.view.v2.01 | Tap | Tap final aperture |
 | 2 | coghe.view.v2.02 | Climb | Broad ramp, then aperture |
 | 3 | coghe.view.v2.03 | Observe | Orbit around opaque L wall, tap visible aperture |
-| 4 | coghe.view.v2.04 | Zoom | Pinch and overview, broad ramp and aperture |
+| 4 | coghe.view.v2.04 | Zoom | Inspect fine floor grooves, alternate end gaps around two low baffles, floor exit |
 | 5 | coghe.view.v2.05 | One tap | A drives door; exit |
 | 6 | coghe.view.v2.06 | Practice | Mirrored A/door; exit |
 | 7 | coghe.view.v2.07 | Reverse | Open entrance, enter chamber, return A, exit |
@@ -52,7 +52,7 @@ See per-level dossiers in `LevelDesign/COghe/ViewV2`.
 
 ## Visual changes after physical validation
 
-Levels2/4 use a broad45° ramp to the raised platform. Level7 uses a floor aperture in the far compartment and a return shutter; its two-sided A handle remains available from inside. Levels8/10 slide a bridge along the aisle to align with the opposite bank; the banks and docked deck share a height. Boss C stands on a fixed bank outside the moving floor shutter's sweep. These retain the concepts' lessons while replacing geometry that caused collisions or ambiguous contact.
+Level2 uses a broad45° ramp to the raised platform. The original level4 reused it; the later user-authorized redesign replaces it with the floor inspection course described in its dossier. Level7 uses a floor aperture in the far compartment and a return shutter; its two-sided A handle remains available from inside. Levels8/10 slide a bridge along the aisle to align with the opposite bank; the banks and docked deck share a height. Boss C stands on a fixed bank outside the moving floor shutter's sweep. These retain the concepts' lessons while replacing geometry that caused collisions or ambiguous contact.
 
 Spawn clearance is validated for all32 sphere colliders before the first physics tick. The centre is y=-.250m above the floor at-.30m. This avoids initial slab penetration; the earlier centre at-.275m put lower particles on the underside of a thin floor.
 
@@ -76,3 +76,12 @@ adb pull /sdcard/Android/data/com.gravityboxlab.venom/files/view-proof Artifacts
 ## Verified prototype handoff
 
 [Final test report, raw XML/player results and Unity gallery](Verification/COgheViewV2/README.md). Unity checks passed at source commit `bd0ca04`; mobile hardware and novice acceptance remain open.
+
+
+## Extension 11–30 (28 September 2026)
+
+[V2 levels 11–30: implementation and verification](COGHE_VIEW_V2_EXPANSION.md). Twenty additional scenes implement the approved concept. Full PlayMode 513/513 and EditMode 8/8 passed; both native replay modes completed all 30 scenes. See that report and the per-level dossiers for evidence and device limits.
+
+## Orbit and zoom feedback revision (28 September 2026)
+
+Mrk requested gradual near-edge appearance during orbit and a distinct level4 zoom lesson. Complete outer panes and their metal trim now interpolate opacity over a shallow angle band and settle using unscaled time, including after reversal or pause. Authored transparent URP variants are referenced by scenes for build stripping; full opacity restores original opaque depth and materials. Colliders, picking rules and physical state stay independent. Level4 now has a floor route around two alternating low satin baffles with fine guide grooves, replacing the duplicated ramp. Zoom enlarges the route without gating victory. The final expansion verification report covers these changes.

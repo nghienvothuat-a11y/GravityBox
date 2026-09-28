@@ -30,11 +30,23 @@ namespace GravityBox.Venom.ChapterProof
         public IEnumerator Solve()
         {
             int n=game.Definition.Order;
-            if(n==2||n==4)
+            if(n>10){yield return new COgheViewExpansionScenario(game,tap,until,orbit).Solve();yield break;}
+            if(n==2)
             {
-                if(n==4){if(pinch!=null)yield return pinch();else game.CameraRig.Pinch(1.4f);game.CameraRig.Overview();}
                 yield return tap(new Vector3(.09f,-.20f,.24f));
                 yield return until(22,()=>game.Motion.Centre(0).y>-.19f,"Climb broad step");
+            }
+            if(n==4)
+            {
+                if(pinch!=null)yield return pinch();else game.CameraRig.Pinch(1.6f);
+                // Inspect the fine path first, then regain the overview to issue broad floor targets.
+                game.CameraRig.Overview();
+                foreach(var point in new[]{new Vector3(.27f,-.30f,-.225f),new Vector3(.27f,-.30f,0),
+                    new Vector3(-.27f,-.30f,0),new Vector3(-.27f,-.30f,.23f)})
+                {
+                    yield return tap(point);
+                    yield return until(30,()=>Vector3.Distance(game.Motion.Centre(0),point+Vector3.up*.018f)<.05f,"Follow inspected floor bend");
+                }
             }
             if(n==3)yield return Observe(72);
             if(n==5||n==6)yield return Operate("A");

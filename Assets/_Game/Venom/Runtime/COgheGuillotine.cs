@@ -12,6 +12,9 @@ namespace GravityBox.Venom
         public Vector3 CutHalfSize = new Vector3(.005f,.065f,.065f);
         public Renderer[] Lamps;
         public Vector3 TouchHalfSize; // Optional input-only envelope; never a cutting or collision volume.
+        public bool HoldUntilTissueClears; // The lowered physical blade separates the parts while the player chooses their routes.
+        private bool waitingForCutClear;
+        public override string Activity => waitingForCutClear ? "Dao đang giữ — dẫn các phần rời lưỡi" : null;
         public bool ReturnOnSeparation; // Beginner rooms finish one stroke when real tissue first separates.
         public VenomCampaign.BladePhase Phase { get; private set; }
         private float clock;
@@ -20,7 +23,7 @@ namespace GravityBox.Venom
         private readonly int[] groupsBeforeCut = new int[CohesiveOrganism.ParticleCount];
         public float WarningProgress => Phase == VenomCampaign.BladePhase.Warning ? Mathf.Clamp01(clock) : 0;
         public override void InitializeMechanism(VenomCampaign game) { owner = game; }
-        public override void ResetMechanism(VenomCampaign game) { owner = game; Phase = VenomCampaign.BladePhase.Ready; clock = 0; Rail.Locked = true; }
+        public override void ResetMechanism(VenomCampaign game) { owner = game; Phase = VenomCampaign.BladePhase.Ready; clock = 0; waitingForCutClear = false; Rail.Locked = true; }
         public override bool BlocksFusion(int a, int b) => owner != null && owner.Matter.CrossesBlade(Rail.Body.transform, CutHalfSize, a, b);
         public override bool TryTouch(VenomCampaign game, Ray ray, float nearestSolidDistance)
         {
@@ -62,7 +65,12 @@ namespace GravityBox.Venom
                     game.NotifyMechanismCut(Rail.Body.transform, groupsBeforeCut);
                     // Do not recut and cancel newly issued fragment commands in the same tutorial stroke.
                     // The blade still retracts under finite force and remains a real fusion barrier.
-                    if (ReturnOnSeparation) { Phase = VenomCampaign.BladePhase.Returning; clock = 0; }
+                    if (ReturnOnSeparation)
+                    {
+                        waitingForCutClear = HoldUntilTissueClears;
+                        Phase = waitingForCutClear ? VenomCampaign.BladePhase.AwaitClear : VenomCampaign.BladePhase.Returning;
+                        clock = 0;
+                    }
                 }
                 if ((clock += dt) >= .5f) { Phase = VenomCampaign.BladePhase.Returning; clock = 0; }
             }
@@ -71,7 +79,11 @@ namespace GravityBox.Venom
                 Rail.ApplyEffort(Rail.WorldAxis * Mathf.Clamp((Rail.Travel - Rail.Position) * 8 + .5f, 0, .8f));
                 if (Rail.AtEnd) Phase = VenomCampaign.BladePhase.AwaitClear;
             }
-            if (Phase == VenomCampaign.BladePhase.AwaitClear && !occupied) Phase = VenomCampaign.BladePhase.Ready;
+            if (Phase == VenomCampaign.BladePhase.AwaitClear && !occupied)
+            {
+                Phase = waitingForCutClear ? VenomCampaign.BladePhase.Returning : VenomCampaign.BladePhase.Ready;
+                waitingForCutClear = false;
+            }
             if (Lamps != null)
             {
                 if (block == null) block = new MaterialPropertyBlock();

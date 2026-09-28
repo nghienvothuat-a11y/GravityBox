@@ -46,7 +46,7 @@ namespace GravityBox.Editor
             material.SetTexture("_BaseMap",texture);EditorUtility.SetDirty(material);return material;
         }
 
-        private static void ViewFloorUV(VenomSurfacePatch patch)
+        private static void ViewFloorUV(VenomSurfacePatch patch, float halfX = .40f, float halfZ = .30f)
         {
             var filter=patch.GetComponent<MeshFilter>();
             // Copy only the render mesh. The MeshCollider keeps the original geometry.
@@ -55,7 +55,7 @@ namespace GravityBox.Editor
             for(int i=0;i<vertices.Length;i++)
             {
                 Vector3 p=patch.transform.TransformPoint(vertices[i]);
-                uv[i]=new Vector2((p.x+.4f)/.8f,(p.z+.3f)/.6f);
+                uv[i]=new Vector2((p.x+halfX)/(halfX*2),(p.z+halfZ)/(halfZ*2));
             }
             mesh.uv=uv;filter.sharedMesh=SavedMesh(mesh);
         }

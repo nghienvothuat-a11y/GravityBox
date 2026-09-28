@@ -12,3 +12,6 @@
 *.unity whitespace=-blank-at-eol,-blank-at-eof
 *.mat whitespace=-blank-at-eol,-blank-at-eof
 *.physicMaterial whitespace=-blank-at-eol,-blank-at-eof
+
+# Preserve NUnit diagnostic output exactly, including whitespace inside CDATA.
+Docs/Verification/COgheViewExpansion/FullPlay.xml whitespace=-blank-at-eol

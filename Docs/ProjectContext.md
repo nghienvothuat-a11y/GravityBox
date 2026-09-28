@@ -36,3 +36,21 @@ circular amber handles, paired metal guides and a lower concept-facing camera.
 `COgheViewArtVerification.Rebuild` compares collider/Rigidbody/joint/surface/rail/
 input serialized data across regeneration, then builds the Mac player.
 See `Docs/Verification/COgheViewArt/README.md` for current evidence and limits.
+
+
+## V2 expansion 11–30 (28 September 2026)
+
+Mrk authorized twenty additional V2 scenes from the approved five concept boards.
+`GenerateViewExpansion` preserves scenes01–10 and extends their catalog to30;
+standard Mac/Android builders select all30. New scenes and meshes are checked in.
+The new reusable pieces are a two-station measured transmission with retained
+catches and a tissue-clearance interlock. Optional spring-door latches and tube
+edge gates support held doors and selectable branches. New knives keep their
+physical blade down until tissue clears, without changing fusion or cut mass.
+A tube completion correction requires actual path-end arrival before the distal
+plane can release tissue. See [implementation](COGHE_VIEW_V2_EXPANSION.md) and
+[per-level dossiers](LevelDesign/COghe/ViewV2). [Final Mac verification](Verification/COgheViewExpansion/README.md) passed: 513/513
+PlayMode, 8/8 EditMode and 30/30 native touch replays in accelerated and realtime
+modes. Phone performance and novice usability remain separate acceptance items.
+
+Follow-up requests on the same date replace level04's duplicated ramp with a floor inspection route through alternating baffle gaps, and fade complete outer panes/trim smoothly during orbit. Level02 keeps the ramp. `RebuildViewFeedbackAndZoomMac` authors level04 then saves fade-material references in all30, comparing physical/input data before and after presentation setup. Zoom has no hidden victory gate; the source/runs for these changes belong to the expansion verification report.

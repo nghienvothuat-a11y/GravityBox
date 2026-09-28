@@ -19,15 +19,15 @@ namespace GravityBox.Editor
             Debug.Log("COGHE PIPE ART SUCCESS: level 15 presentation rebuilt.");
         }
 
-        private static void BuildPipeMazeArt(VenomCampaign game,Transform art)
+        private static void BuildPipeMazeArt(VenomCampaign game,Transform art,bool view=false)
         {
             var network=game.GetComponent<VenomLevelController>().Apparatus.GetComponentInChildren<COgheTubeNetwork>();
             if(network==null)return;
-            var bore=Glass("Maze teal bore",.24f,0,false);
-            bore.SetColor("_BaseColor",new Color(.035f,.38f,.34f,.24f));
-            var chamber=Glass("Maze clear junction",.14f,0,false);
-            chamber.SetColor("_BaseColor",new Color(.055f,.43f,.39f,.14f));
-            var copper=Lit("Maze copper spine",new Color(.64f,.31f,.13f),.38f,.48f);
+            var bore=Glass(view?"V2 cyan transfer bore":"Maze teal bore",.24f,0,false);
+            bore.SetColor("_BaseColor",view?new Color(.16f,.55f,.67f,.28f):new Color(.035f,.38f,.34f,.24f));
+            var chamber=Glass(view?"V2 clear pipe junction":"Maze clear junction",.14f,0,false);
+            chamber.SetColor("_BaseColor",view?new Color(.16f,.55f,.67f,.28f):new Color(.055f,.43f,.39f,.14f));
+            var copper=view?alloy:Lit("Maze copper spine",new Color(.64f,.31f,.13f),.38f,.48f);
             foreach(var renderer in network.GetComponentsInChildren<MeshRenderer>())renderer.sharedMaterial=chamber;
             // Trace the actual trimmed bore mesh. Decorative ribs and collars
             // have no collider, graph nodes or input interception.

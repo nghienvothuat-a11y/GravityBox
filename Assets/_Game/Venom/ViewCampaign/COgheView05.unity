@@ -2572,7 +2572,7 @@ Light:
     m_Strength: 0.27
     m_Bias: 0.008
     m_NormalBias: 0.015
-    m_NearPlane: 0.05
+    m_NearPlane: 0.099999994
     m_CullingMatrixOverride:
       e00: 1
       e01: 0
@@ -6585,6 +6585,14 @@ MonoBehaviour:
   - {fileID: 1214749044}
   - {fileID: 2124522117}
   - {fileID: 1098625570}
+  FadeSources:
+  - {fileID: 2100000, guid: 7e7cf20cd8fce487392604325b79b5e8, type: 2}
+  - {fileID: 2100000, guid: 975005e9b32724668a7d81a8d2652620, type: 2}
+  FadeVariants:
+  - {fileID: 2100000, guid: a08c364acca09407b88100bc0e0244e6, type: 2}
+  - {fileID: 2100000, guid: d0a76182f76144be9ad2b950c4e754a0, type: 2}
+  FadeSeconds: 0.18
+  AngleBand: 0.24
 --- !u!114 &1830446424
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7151,6 +7159,7 @@ MonoBehaviour:
   TrackStandPoint: 1
   RequiredLoad: {fileID: 0}
   RequiredRail: {fileID: 0}
+  Clearance: {fileID: 0}
   RequiredEnd: 1
   RequiredPosition: -1
   Stops: []

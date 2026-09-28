@@ -20,10 +20,12 @@ namespace GravityBox.Venom.ChapterProof
             public float seconds,fps,p50Ms,p95Ms,p99Ms,maxMs;public long peakAllocatedBytes;
             public string error;public List<float> frameMs=new List<float>();
         }
+        [Serializable] private sealed class FadeSample
+        {public float yaw;public float[] opacity;}
         [Serializable] private sealed class Report
         {
             public string utc,unity,buildGuid,device,os,gpu,api,execution="Normal player loop; InputSystem touch events; screenshots excluded from frame samples. Author replay, not novice evidence.";
-            public int width,height,passed,failed;public List<Result> levels=new List<Result>();public List<string> errors=new List<string>();
+            public int width,height,passed,failed;public List<Result> levels=new List<Result>();public List<string> errors=new List<string>();public List<FadeSample> fadeSamples=new List<FadeSample>();
         }
         private static string requested;private static bool previousPersistence;
         private string directory;private VenomCampaign game;private Touchscreen touchscreen;
@@ -63,13 +65,16 @@ namespace GravityBox.Venom.ChapterProof
             report=new Report{utc=DateTime.UtcNow.ToString("O"),unity=Application.unityVersion,buildGuid=Application.buildGUID,device=SystemInfo.deviceModel,os=SystemInfo.operatingSystem,gpu=SystemInfo.graphicsDeviceName,api=SystemInfo.graphicsDeviceType.ToString(),width=Screen.width,height=Screen.height};
             if(fast)report.execution="Accelerated author diagnosis: normal touch events; 120Hz scripted simulation. Not realtime performance evidence.";
             touchscreen=InputSystem.AddDevice<Touchscreen>();
-            for(int n=1;n<=10;n++)
+            int first=1,last=30;var args=Environment.GetCommandLineArgs();
+            for(int i=0;i<args.Length-1;i++){if(args[i]=="-coghe-view-first")first=int.Parse(args[i+1]);if(args[i]=="-coghe-view-last")last=int.Parse(args[i+1]);}
+            for(int n=first;n<=last;n++)
             {
                 result=new Result{level=n};report.levels.Add(result);
                 yield return SceneManager.LoadSceneAsync($"COgheView{n:00}");yield return null;
                 game=FindFirstObjectByType<VenomCampaign>();game.AutoAdvance=false;
                 if(fast){game.Owner.enabled=false;game.Owner.Rotation.enabled=false;Physics.simulationMode=SimulationMode.Script;for(int t=0;t<120;t++)Tick();}
                 yield return new WaitForSeconds(2);yield return Capture("start");
+                if(Array.IndexOf(args,"-coghe-view-fade-proof")>=0)yield return Guarded(FadeProof());
                 float started=Time.realtimeSinceStartup;int gc=GC.CollectionCount(0);COgheMobileMetrics.Enabled=!fast;Array.Clear(COgheMobileMetrics.Milliseconds,0,4);measuring=!fast;
                 yield return Guarded(new COgheViewScenario(game,Tap,Until,Orbit,Pinch).Solve());
                 measuring=false;COgheMobileMetrics.Enabled=false;result.gcCollections=GC.CollectionCount(0)-gc;result.seconds=Time.realtimeSinceStartup-started;
@@ -108,12 +113,39 @@ namespace GravityBox.Venom.ChapterProof
             =>InputSystem.QueueStateEvent(touchscreen,new TouchState{touchId=id,phase=phase,position=point});
         private IEnumerator Orbit(float degrees)
         {
-            float before=game.CameraRig.OrbitYaw;Vector2 start=new Vector2(Screen.width*.88f,Screen.height*.5f);
+            var priorOrder=game.Motion.Get(0);float before=game.CameraRig.OrbitYaw;Vector2 start=new Vector2(Screen.width*.88f,Screen.height*.5f);
             Contact(1,UnityEngine.InputSystem.TouchPhase.Began,start);yield return null;
             for(int step=1;step<=6;step++){Contact(1,UnityEngine.InputSystem.TouchPhase.Moved,start-Vector2.right*(Screen.width*degrees/240*step/6));yield return null;}
             Contact(1,UnityEngine.InputSystem.TouchPhase.Ended,start-Vector2.right*(Screen.width*degrees/240));yield return null;yield return null;
             if(Mathf.Abs(Mathf.DeltaAngle(before,game.CameraRig.OrbitYaw)-Mathf.DeltaAngle(0,degrees))>1)throw new InvalidOperationException("Real drag did not orbit by the requested angle");
-            if(game.Motion.Get(0)!=null)throw new InvalidOperationException("Drag issued a movement command");
+            if(game.Motion.Get(0)!=null&&!ReferenceEquals(priorOrder,game.Motion.Get(0)))throw new InvalidOperationException("Drag issued a movement command");
+        }
+        private IEnumerator FadeProof()
+        {
+            var view=game.GetComponent<COgheViewPresentation>();int partial=0;
+            foreach(float degrees in new[]{90f,-90f})
+            {
+                Vector2 start=new Vector2(Screen.width*(degrees>0?.85f:.25f),Screen.height*.5f);
+                Contact(1,UnityEngine.InputSystem.TouchPhase.Began,start);yield return null;
+                for(int step=1;step<=90;step++)
+                {
+                    Contact(1,UnityEngine.InputSystem.TouchPhase.Moved,start-Vector2.right*(Screen.width*degrees/240*step/90));yield return null;
+                    var sample=new FadeSample{yaw=game.CameraRig.OrbitYaw,opacity=new float[view.PaneVisuals.Length]};
+                    bool intermediate=false;
+                    for(int i=0;i<sample.opacity.Length;i++)
+                    {
+                        var r=view.PaneVisuals[i].GetComponentInChildren<Renderer>();var block=new MaterialPropertyBlock();r.GetPropertyBlock(block,0);
+                        sample.opacity[i]=!r.enabled?0:r.sharedMaterial.IsKeywordEnabled("_SURFACE_TYPE_TRANSPARENT")?block.GetColor("_BaseColor").a:1;
+                        intermediate|=sample.opacity[i]>.05f&&sample.opacity[i]<.95f;
+                    }
+                    report.fadeSamples.Add(sample);
+                    if(intermediate){partial++;if(partial%4==1)yield return Capture(degrees>0?"fade-out":"fade-return");}
+                }
+                Contact(1,UnityEngine.InputSystem.TouchPhase.Ended,start-Vector2.right*(Screen.width*degrees/240));yield return null;
+                yield return new WaitForSeconds(.3f);yield return Capture("fade-settled");
+            }
+            if(partial<8)throw new InvalidOperationException("Native orbit did not show a gradual cutaway transition");
+            if(game.Motion.Get(0)!=null)throw new InvalidOperationException("Fade orbit issued a movement command");
         }
         private IEnumerator Pinch()
         {
@@ -148,11 +180,17 @@ namespace GravityBox.Venom.ChapterProof
         }
         private void Tick(){game.Owner.Step(1f/120);game.Owner.Rotation.Step(1f/120);Physics.Simulate(1f/120);}
         private string State()
-        {string text="; "+game.Activity+"; "+game.Failure+"; centre="+game.Motion.Centre(0);foreach(var t in game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())text+=$"; {t.Label} position={t.Rail.Position} phase={t.Phase} last={t.LastFailure} stand={t.StandPoint} hand={t.HandPoint}";Vector3 intent=Vector3.zero,velocity=Vector3.zero;int feet=0;var support=new Dictionary<string,int>();for(int i=0;i<32;i++){intent+=game.Motion.Intent(i)/32;velocity+=game.Matter.Bodies[i].linearVelocity/32;if(game.Motion.HasGrip(i))feet++;if(game.Motion.Support(i,out var collider,out _,out _)){string key=collider.name;support[key]=support.TryGetValue(key,out int count)?count+1:1;}}text+=$"; intent={intent:F4} velocity={velocity:F4} feet={feet} supports=";foreach(var pair in support)text+=pair.Key+":"+pair.Value+",";var order=game.Motion.Get(0);if(order!=null){text+=$"; cursor={order.Cursor} target={order.Target} path=";foreach(var p in order.Path)text+=p+",";}return text;}
+        {string text="; "+game.Activity+"; "+game.Failure+"; selected="+game.Motion.Selected+" fragments="+game.Matter.TotalFragmentCount+" centre="+game.Motion.Centre(game.Motion.Selected);foreach(var t in game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())text+=$"; {t.Label} position={t.Rail.Position} phase={t.Phase} last={t.LastFailure} stand={t.StandPoint} hand={t.HandPoint}";Vector3 intent=Vector3.zero,velocity=Vector3.zero;int feet=0;var support=new Dictionary<string,int>();for(int i=0;i<32;i++){intent+=game.Motion.Intent(i)/32;velocity+=game.Matter.Bodies[i].linearVelocity/32;if(game.Motion.HasGrip(i))feet++;if(game.Motion.Support(i,out var collider,out _,out _)){string key=collider.name;support[key]=support.TryGetValue(key,out int count)?count+1:1;}}text+=$"; intent={intent:F4} velocity={velocity:F4} feet={feet} supports=";foreach(var pair in support)text+=pair.Key+":"+pair.Value+",";var groups=new HashSet<int>();for(int i=0;i<32;i++)if(groups.Add(game.Matter.Groups[i])){var o=game.Motion.Get(i);text+=$"; group {i} centre={game.Motion.Centre(i):F4} target={o?.Target} hold={o?.Holding} exit={o?.Exit}";}foreach(var pad in game.Owner.Apparatus.GetComponentsInChildren<COgheTapPad>())text+=$"; pad actor={pad.Actor} active={pad.Sensor.Active}";var order=game.Motion.Get(game.Motion.Selected);if(order!=null){text+=$"; cursor={order.Cursor} target={order.Target} path=";foreach(var p in order.Path)text+=p+",";}return text;}
         private string Nearby()
         {
-            string text="\nNearby colliders: ";foreach(var shape in Physics.OverlapSphere(game.Motion.Centre(0),.11f))if(shape.GetComponent<VenomContact>()==null)text+=$"\n{shape.name} bounds={shape.bounds} active={shape.gameObject.activeInHierarchy} enabled={shape.enabled}";
+            string text="\nNearby colliders: ";foreach(var shape in Physics.OverlapSphere(game.Motion.Centre(game.Motion.Selected),.11f))if(shape.GetComponent<VenomContact>()==null)text+=$"\n{shape.name} bounds={shape.bounds} active={shape.gameObject.activeInHierarchy} enabled={shape.enabled}";
             foreach(var rail in game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())text+=$"\nRail {rail.name} pos={rail.Position:F5} target={rail.Travel:F5} end={rail.AtEnd}";
+            foreach(var drive in game.Owner.Apparatus.GetComponentsInChildren<COgheViewTransmission>())
+            {
+                text+=$"\nDrive {drive.Power?.name} first={drive.FirstEngaged}/{drive.FirstCaught} second={drive.SecondEngaged}/{drive.SecondCaught}";
+                foreach(var wheel in drive.FirstWheels)text+=$" wheel={wheel.position:F4}";
+            }
+            foreach(var tube in game.Owner.Apparatus.GetComponentsInChildren<COgheTubeNetwork>()){text+="\nTube "+tube.DebugState(game.Motion.Selected); for(int n=0;n<tube.Nodes.Length;n++)if(tube.Nodes[n].Terminal==COgheTubeNetwork.TerminalKind.Entry)text+="\n"+tube.DebugEntryState(game.Motion.Selected,n);}
             return text;
         }
         private IEnumerator Capture(string label)

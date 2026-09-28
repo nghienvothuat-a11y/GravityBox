@@ -18,6 +18,8 @@ namespace GravityBox.Editor
             if(content<=0)content=number;
             meshDirectory=content==number?$"Meshes/Level{number:00}":$"Meshes/Campaign30/Content{content:00}Slot{number:00}";serial=0;
             if(!string.IsNullOrEmpty(isolatedMeshFolder))meshDirectory=isolatedMeshFolder;
+            // Archived content numbers do not identify the new V2 puzzles.
+            if(game.Definition.ViewOnly)content=-1;
             Directory.CreateDirectory(Folder+"/"+meshDirectory);AssetDatabase.Refresh();
             var owner=game.GetComponent<VenomLevelController>();var root=owner.Rotation.transform;
             Remove(root,ArtRoot);Remove(owner.transform,"Day Lab studio");InitializeMaterials(owner);

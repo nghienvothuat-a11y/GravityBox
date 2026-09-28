@@ -14,23 +14,23 @@ namespace GravityBox.Editor
     {
         public const string ViewFolder="Assets/_Game/Venom/ViewCampaign";
         private static readonly string[] ViewNames={"Chạm để đi","Chạm mặt khác","Kéo để nhìn","Nhìn gần hơn","Chạm cơ quan","Tự làm lại","Đưa trở về","Bắc một nhịp","Hai bước nhìn thấy","Cỗ máy nhỏ"};
-        private static readonly string[] ViewLessons={"Chạm vòng xanh để COghe tới lối ra.","Chạm bậc rộng để leo, rồi tới lối ra.","Kéo ngang để nhìn quanh vách. Hộp luôn đứng yên.","Tách hai ngón để nhìn gần. Toàn cảnh đưa góc nhìn về xa.","Chạm tay nắm A. COghe tự tới, đẩy và dừng ở nấc.","Tìm tay nắm và quan sát cửa thay đổi.","Vào khoang rồi đưa cửa trở về để mở lối bên kia.","Chạm tay nắm để nối cầu, rồi đi qua.","Quan sát nắp che và tay nắm bên dưới.",""};
+        private static readonly string[] ViewLessons={"Chạm vòng xanh để COghe tới lối ra.","Chạm bậc rộng để leo, rồi tới lối ra.","Kéo ngang để nhìn quanh vách. Hộp luôn đứng yên.","Phóng gần để đọc các khúc rẽ. Đi theo rãnh tới vòng xanh.","Chạm tay nắm A. COghe tự tới, đẩy và dừng ở nấc.","Tìm tay nắm và quan sát cửa thay đổi.","Vào khoang rồi đưa cửa trở về để mở lối bên kia.","Chạm tay nắm để nối cầu, rồi đi qua.","Quan sát nắp che và tay nắm bên dưới.",""};
         public static string[] ViewCampaignScenePaths()
-        {var paths=new string[10];for(int i=0;i<10;i++)paths[i]=$"{ViewFolder}/COgheView{i+1:00}.unity";return paths;}
+        {var paths=new string[30];for(int i=0;i<paths.Length;i++)paths[i]=$"{ViewFolder}/COgheView{i+1:00}.unity";return paths;}
 
-        [MenuItem("Gravity Box/COghe/V2/Generate ten view-only levels")]
+        [MenuItem("Gravity Box/COghe/V2/Generate all 30 view-only levels")]
         public static void GenerateViewCampaign()
         {
             PrepareCampaign30Assets();Directory.CreateDirectory(ViewFolder+"/Definitions");Directory.CreateDirectory(ViewFolder+"/Meshes");AssetDatabase.Refresh();
             string previousFolder=authoredMeshFolder;
-            try{authoredMeshFolder=ViewFolder+"/Meshes";for(int n=1;n<=10;n++)BuildViewLevel(n);}
+            try{authoredMeshFolder=ViewFolder+"/Meshes";for(int n=1;n<=30;n++){if(n<=10)BuildViewLevel(n);else BuildViewExpansionLevel(n);}}
             finally{authoredMeshFolder=previousFolder;}
             var scenes=new List<EditorBuildSettingsScene>();
             foreach(string path in ViewCampaignScenePaths())scenes.Add(new EditorBuildSettingsScene(path,true));
             // Archived scenes remain available to the full regression suite. Player builders use only the V2 catalog.
             foreach(var s in EditorBuildSettings.scenes)if(!scenes.Exists(x=>x.path==s.path))scenes.Add(s);
             EditorBuildSettings.scenes=scenes.ToArray();AssetDatabase.SaveAssets();
-            Debug.Log("COGHE V2 GENERATED: 10 new levels, default player catalog; old content and progress retained.");
+            Debug.Log("COGHE V2 GENERATED: 30 levels, default player catalog; old content and progress retained.");
         }
 
         public static void GenerateViewAndBuildMac(){GenerateViewCampaign();BuildMac();}
@@ -55,18 +55,20 @@ namespace GravityBox.Editor
             var pivot=new GameObject("Fixed chamber",typeof(Rigidbody),typeof(BoxRotationController));pivot.transform.SetParent(owner.Apparatus,false);
             pivot.GetComponent<Rigidbody>().isKinematic=true;pivot.GetComponent<Rigidbody>().useGravity=false;owner.Rotation=pivot.GetComponent<BoxRotationController>();
             var c=new ExpansionContext{Number=n,Owner=owner,Game=game,Definition=def,Root=pivot.transform,Spawn=new Vector3(-.25f,-.250f,-.17f),Exit=new Vector3(.12f,-.225f,.30f),Outward=Vector3.forward};
-            if(n==2||n==4)c.Exit=new Vector3(.16f,-.125f,.30f);
+            if(n==2)c.Exit=new Vector3(.16f,-.125f,.30f);
+            if(n==4){c.Exit=new Vector3(.22f,-.30f,.23f);c.Outward=Vector3.down;c.Spawn=new Vector3(-.26f,-.250f,-.235f);}
             if(n==6){c.Exit.x=-.15f;c.Spawn.x=.25f;}
             if(n==7){c.Exit=new Vector3(.22f,-.30f,.21f);c.Outward=Vector3.down;}
             bool bridge=n==8||n==10;
             if(bridge){c.Exit=new Vector3(.32f,-.30f,.16f);c.Outward=Vector3.down;c.Spawn=new Vector3(-.28f,-.250f,-.23f);}
             ViewShell(c,bridge);
             var floor=c.Surfaces[0];
-            if(n==2||n==4)
+            if(n==2)
             {
                 Panel(c.Root,"Broad step top",new Vector3(0,-.20f,.24f),Vector3.up,new Vector2(.8f,.12f),stone,false,Vector2.zero,0,c.Surfaces);
                 Panel(c.Root,"Broad inclined step",new Vector3(0,-.25f,.13f),new Vector3(0,1,-1).normalized,new Vector2(.8f,.1414214f),stone,false,Vector2.zero,0,c.Surfaces);
             }
+            if(n==4)ViewInspectionCourse(c);
             if(n==3)
             {
                 ViewBlock(c,"Observation wall",new Vector3(.12f,-.15f,.10f),new Vector3(.28f,.30f,.016f));
@@ -121,8 +123,8 @@ namespace GravityBox.Editor
         {
             if(!bridge)
             {
-                bool step=c.Number==2||c.Number==4;
-                Panel(c.Root,"Laboratory floor",new Vector3(0,-.30f,step?-.11f:0),Vector3.up,new Vector2(.80f,step?.38f:.60f),stone,c.Number==7,new Vector2(-c.Exit.x,c.Exit.z),c.Owner.ApertureRadius,c.Surfaces);
+                bool step=c.Number==2;
+                Panel(c.Root,"Laboratory floor",new Vector3(0,-.30f,step?-.11f:0),Vector3.up,new Vector2(.80f,step?.38f:.60f),stone,c.Number==7||c.Number==4,new Vector2(-c.Exit.x,c.Exit.z),c.Owner.ApertureRadius,c.Surfaces);
             }
             else
             {
@@ -136,12 +138,32 @@ namespace GravityBox.Editor
             var normals=new[]{Vector3.down,Vector3.forward,Vector3.back,Vector3.right,Vector3.left};
             for(int i=0;i<5;i++)
             {
-                bool hole=!bridge&&c.Number!=7&&i==2;Vector2 size=i==0?new Vector2(.8f,.60f):new Vector2(i<3?.8f:.60f,.34f);
+                bool hole=!bridge&&c.Number!=7&&c.Number!=4&&i==2;Vector2 size=i==0?new Vector2(.8f,.60f):new Vector2(i<3?.8f:.60f,.34f);
                 Vector3 local=Quaternion.Inverse(Quaternion.LookRotation(normals[i],i==0?Vector3.forward:Vector3.up))*(c.Exit-positions[i]);
                 var p=Panel(c.Root,"Outer pane "+i,positions[i],normals[i],size,glass,hole,new Vector2(local.x,local.y),hole?c.Owner.ApertureRadius:0,c.Surfaces);
                 p.ExteriorGlass=true;p.Selectable=i!=0;p.Slippery=bridge;
             }
         }
+        private static void ViewInspectionCourse(ExpansionContext c)
+        {
+            // Two low, satin-coated baffles make a real S route on the same floor.
+            // Zoom enlarges its thin guide grooves; it never unlocks a physical gate.
+            int first = c.Surfaces.Count;
+            ViewBlock(c, "Inspection baffle I", new Vector3(-.12f, -.265f, -.10f), new Vector3(.56f, .07f, .035f));
+            ViewBlock(c, "Inspection baffle II", new Vector3(.12f, -.265f, .10f), new Vector3(.56f, .07f, .035f));
+            for (int i = first; i < c.Surfaces.Count; i++) c.Surfaces[i].Slippery = true;
+            var path = new[] { new Vector3(-.26f,-.2985f,-.225f), new Vector3(.27f,-.2985f,-.225f),
+                new Vector3(.27f,-.2985f,0), new Vector3(-.27f,-.2985f,0),
+                new Vector3(-.27f,-.2985f,.23f), new Vector3(.16f,-.2985f,.23f) };
+            for (int i = 1; i < path.Length; i++)
+            {
+                Vector3 delta = path[i] - path[i-1];
+                var line = MechanismVisual(c.Root, "Inspection route groove", (path[i]+path[i-1])*.5f,
+                    new Vector3(.0025f,.001f,delta.magnitude), metal);
+                line.rotation = Quaternion.LookRotation(delta,Vector3.up);
+            }
+        }
+
         private static void ViewBlock(ExpansionContext c,string name,Vector3 centre,Vector3 size)
         {
             foreach(var n in new[]{Vector3.up,Vector3.down,Vector3.left,Vector3.right,Vector3.forward,Vector3.back})

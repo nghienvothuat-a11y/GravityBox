@@ -37,6 +37,9 @@ namespace GravityBox.Venom
             public Transform Geometry;
             public MeshFilter Filter;
             public MeshCollider Collider;
+            public COgheRailSlider AccessGate;
+            public bool GateAtEnd = true;
+            public bool Open => AccessGate == null || (GateAtEnd ? AccessGate.AtEnd : AccessGate.Position <= AccessGate.CatchTolerance);
 
             [NonSerialized] internal Vector3[] Path;
             [NonSerialized] internal float[] Distance;
@@ -236,6 +239,7 @@ namespace GravityBox.Venom
         }
 
         public bool IsParticleInside(int particle)=>SuppressesMotion(particle);
+        public bool IsApproachingEntry(int particle,int node)=>particle>=0&&particle<queuedEntry.Length&&queuedEntry[particle]==node;
 
         public bool IsEntryOpen(int node)
         {
@@ -269,7 +273,7 @@ namespace GravityBox.Venom
 
         public bool TryChoose(int anchor,int edgeIndex)
         {
-            if(game==null||edgeIndex<0||edgeIndex>=Edges.Length)return false;
+            if(game==null||edgeIndex<0||edgeIndex>=Edges.Length||!Edges[edgeIndex].Open)return false;
             Travel travel=TravelFor(anchor);
             if(travel==null)
             {
@@ -295,6 +299,7 @@ namespace GravityBox.Venom
 
         private bool NodeReadyForDeparture(Travel travel,int edgeIndex)
         {
+            if(!Edges[edgeIndex].Open)return false;
             if(travel.Node<0||Nodes[travel.Node].Terminal!=TerminalKind.Junction)return true;
             Edge edge=Edges[edgeIndex];bool forward=edge.A==travel.Node;
             Vector3 localNode=Nodes[travel.Node].LocalPosition;
@@ -398,7 +403,12 @@ namespace GravityBox.Venom
                 particleCount++;
                 Vector3 local=flowLocal[i],tangent=flowTangent[i];float along=flowAlong[i];
                 if(travel.Direction<0)tangent=-tangent;
+                float remaining=travel.Direction>0?edge.Length-along:along;
                 float beyond=Vector3.Dot(localBody-localEndpoint,terminalTangent);
+                // A bent pipe may cross its distal tangent plane near its source.
+                // Only tissue whose closest path point has reached the actual end
+                // can use the receiving lead or count as having cleared the mouth.
+                if(openTerminal&&remaining>.001f)beyond=Mathf.Min(beyond,-remaining);
                 beyondSum+=beyond;
                 if(terminal==TerminalKind.Exit&&beyond>=-.004f&&
                     Vector3.ProjectOnPlane(localBody-localEndpoint,terminalTangent).magnitude<game.Owner.ApertureRadius)
@@ -410,7 +420,6 @@ namespace GravityBox.Venom
                 Vector3 centre=root.TransformPoint(local),worldTangent=root.TransformDirection(tangent).normalized;
                 Vector3 radial=centre-body.position;
                 Vector3 relative=body.linearVelocity-(frame!=null?frame.GetPointVelocity(body.position):Vector3.zero);
-                float remaining=travel.Direction>0?edge.Length-along:along;
                 nearestEnd=Mathf.Min(nearestEnd,remaining);
                 // Decelerate to zero at the chamber centre. A non-zero minimum
                 // speed makes the head cross the junction while the tail is

@@ -213,3 +213,7 @@ Use **Gravity Box → COghe → V2 → Rebuild concept art and verify physics** 
 regenerate and compare serialized physical/input data before building the Mac
 preview. Camera/material differences are intentional. Review actual player
 captures, and measure on the target phone before claiming mobile performance.
+
+## V2 cutaway feedback (28 September 2026)
+
+User-requested: near outer walls and their trim must emerge gradually while the camera orbits, without a hard visibility switch. Fade by view angle with temporal smoothing that reverses from the current opacity. Keep physics, navigation and ray-picking independent. Restore the original opaque render state when fully visible; serialize transparent material variants so player builds retain the required URP shader variants. Validate slow drag, fast reversal, fixed intermediate angle and pause in both tests and the native player.

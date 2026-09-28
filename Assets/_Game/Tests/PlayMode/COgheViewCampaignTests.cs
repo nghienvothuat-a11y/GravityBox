@@ -13,7 +13,7 @@ using Object=UnityEngine.Object;
 
 namespace GravityBox.Tests
 {
-    public sealed class COgheViewCampaignTests
+    public sealed partial class COgheViewCampaignTests
     {
         private VenomCampaign game;
         private SimulationMode simulation;
@@ -100,7 +100,7 @@ namespace GravityBox.Tests
             yield return Load(9);var tasks=game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>();var b=Array.Find(tasks,t=>t.Label=="B");
             yield return Tap(b.HandPoint);Assert.IsFalse(b.Busy);Assert.IsFalse(b.InterlockOpen);
             for(int n=1;n<=10;n++)
-            {yield return Load(n);Assert.IsTrue(game.Definition.ViewOnly);Assert.IsFalse(game.Definition.CanRotate);Assert.AreEqual(10,game.PlayableLevelCount);Assert.AreEqual($"coghe.view.v2.{n:00}",game.Definition.Id);Assert.AreEqual("",game.Definition.ProgressKey);if(n==10)Assert.IsEmpty(game.Definition.Lesson);}
+            {yield return Load(n);Assert.IsTrue(game.Definition.ViewOnly);Assert.IsFalse(game.Definition.CanRotate);Assert.AreEqual(30,game.PlayableLevelCount);Assert.AreEqual($"coghe.view.v2.{n:00}",game.Definition.Id);Assert.AreEqual("",game.Definition.ProgressKey);if(n==10)Assert.IsEmpty(game.Definition.Lesson);}
         }
 
         [UnityTest] public IEnumerator DragAndThirdFingerDoNotBecomeMovementCommands()

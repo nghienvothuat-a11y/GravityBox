@@ -19,7 +19,7 @@ namespace GravityBox.Venom
         {
             Caught = Obstructed = false;
             Door.Locked = true;
-            LatchHandle.Locked = true;
+            if (LatchHandle != null) LatchHandle.Locked = true;
             if (FinalCover != null) FinalCover.Locked = true;
             Show();
         }
@@ -27,10 +27,10 @@ namespace GravityBox.Venom
         public override void StepMechanism(VenomCampaign game, float dt)
         {
             // Both real stops must meet. Pulling L early cannot remotely finish D.
-            if (Door.AtEnd && LatchHandle.AtEnd) Caught = true;
+            if (Door.AtEnd && LatchHandle != null && LatchHandle.AtEnd) Caught = true;
             bool powered = Input != null && Input.Active;
             Obstructed = !Caught && !powered && TissueBelowDoor(game);
-            LatchHandle.Locked = !Caught && !Door.AtEnd;
+            if (LatchHandle != null) LatchHandle.Locked = !Caught && !Door.AtEnd;
             Door.Locked = Caught || Obstructed || (powered ? Door.AtEnd : Door.Position <= .001f);
             if (!Door.Locked)
             {

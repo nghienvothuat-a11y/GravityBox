@@ -24,7 +24,7 @@ namespace GravityBox.Editor
             VenomCampaignBuilder.BuildMac();
         }
 
-        private static string CapturePhysics()
+        internal static string CapturePhysics()
         {
             var lines=new List<string>();
             foreach(string path in VenomCampaignBuilder.ViewCampaignScenePaths())
