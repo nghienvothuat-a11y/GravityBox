@@ -11,8 +11,11 @@ namespace GravityBox.Editor
         public static void ApplyViewLevel(VenomCampaign game)
         {
             ApplyExpansionLevel(game,$"Meshes/ViewV2/Level{game.Definition.Order:00}");
-            var blue=Lit("V2 pale blue casing",new Color(.68f,.80f,.86f),.04f,.38f);
-            var cream=Lit("V2 warm floor",new Color(.94f,.91f,.82f),.04f,.35f);
+            ivory=Lit("V2 porcelain",new Color(.87f,.83f,.75f),.02f,.38f);
+            amber=Lit("V2 honey resin",new Color(.91f,.55f,.18f),.08f,.49f);
+            alloy=Lit("V2 satin aluminium",new Color(.70f,.74f,.76f),.72f,.68f);
+            var blue=ViewWallMaterial();
+            var cream=ViewFloorMaterial();
             var lavender=Lit("V2 recovery satin",new Color(.48f,.44f,.62f),.05f,.35f);
             var root=game.GetComponent<VenomLevelController>().Rotation.transform;
             Remove(root,ArtRoot);
@@ -25,18 +28,13 @@ namespace GravityBox.Editor
                     outer.Add(patch);renderer.enabled=false;
                     // Render the real perforated pane; trim stays outside its aperture and follows the cutaway.
                     var shell=Child(root,"V2 pane trim");shell.position=patch.transform.position;shell.rotation=patch.transform.rotation;
-                    var surface=Child(shell,"Blue casing");surface.gameObject.AddComponent<MeshFilter>().sharedMesh=patch.GetComponent<MeshFilter>().sharedMesh;
-                    var casing=surface.gameObject.AddComponent<MeshRenderer>();casing.sharedMaterial=blue;casing.shadowCastingMode=ShadowCastingMode.Off;
-                    foreach(float side in new[]{-1f,1f})
-                    {
-                        Box(shell,"Porcelain edge",new Vector3(side*(patch.Size.x*.5f+.004f),0,-.004f),new Vector3(.009f,patch.Size.y+.016f,.014f),.003f,ivory);
-                        Box(shell,"Porcelain edge",new Vector3(0,side*(patch.Size.y*.5f+.004f),-.004f),new Vector3(patch.Size.x+.016f,.009f,.014f),.003f,ivory);
-                    }
+                    BuildViewPane(shell,patch,blue);
                     CombineByMaterial(shell);paneVisuals.Add(shell);continue;
                 }
                 if(patch.GetComponentInParent<VenomMovableProp>()!=null)continue;
                 renderer.sharedMaterial=patch.Slippery?lavender:Vector3.Dot(patch.Normal,Vector3.up)>.9f?cream:blue;
                 renderer.shadowCastingMode=ShadowCastingMode.On;
+                if(Vector3.Dot(patch.Normal,Vector3.up)>.9f&&!patch.Slippery)ViewFloorUV(patch);
                 if(patch.name=="Docked bridge top")renderer.enabled=false;
             }
             var presentation=game.GetComponent<COgheDayLabPresentation>();presentation.FadingFloors=System.Array.Empty<Renderer>();presentation.FocusOccluders=System.Array.Empty<Renderer>();
@@ -45,14 +43,14 @@ namespace GravityBox.Editor
             var details=Child(game.GetComponent<VenomLevelController>().Rotation.transform,"V2 porcelain platform");
             bool bridge=game.GetComponentInChildren<COgheDockedBridgeDeck>(true)!=null;
             bool floorExit=false;foreach(var patch in game.Surfaces)floorExit|=patch.Hole&&Vector3.Dot(patch.Normal,Vector3.up)>.9f;
-            if(!bridge&&!floorExit)Box(details,"Porcelain tray",new Vector3(0,-.320f,0),new Vector3(.83f,.036f,.63f),.012f,ivory);
+            if(!bridge&&!floorExit)Box(details,"Porcelain tray",new Vector3(0,-.330f,0),new Vector3(.856f,.056f,.656f),.009f,ivory);
             else
             {
-                float baseY=bridge?-.408f:-.320f;
+                float baseY=bridge?-.418f:-.330f;
                 foreach(float side in new[]{-1f,1f})
                 {
-                    Box(details,"Open-bottom tray edge",new Vector3(side*.408f,baseY,0),new Vector3(.018f,.024f,.63f),.006f,ivory);
-                    Box(details,"Open-bottom tray edge",new Vector3(0,baseY,side*.308f),new Vector3(.83f,.024f,.018f),.006f,ivory);
+                    Box(details,"Open-bottom tray edge",new Vector3(side*.418f,baseY,0),new Vector3(.026f,.056f,.656f),.006f,ivory);
+                    Box(details,"Open-bottom tray edge",new Vector3(0,baseY,side*.318f),new Vector3(.856f,.056f,.026f),.006f,ivory);
                 }
             }
             foreach(var prop in game.Props)
@@ -78,16 +76,18 @@ namespace GravityBox.Editor
                     {
                         if(handle==null)return;var original=handle.GetComponent<Renderer>();if(original!=null)original.enabled=false;
                         var cap=Child(prop.transform,"V2 rounded handle");cap.position=handle.position;
-                        Box(cap,"Porcelain grip socket",new Vector3(0,-.009f,0),new Vector3(.073f,.007f,.044f),.003f,ivory);
-                        Box(cap,"Amber thumb grip",Vector3.zero,new Vector3(.065f,.021f,.035f),.008f,amber);
-                        Label(cap,task.Label,new Vector3(0,.013f,0),Quaternion.Euler(90,0,0),.022f,ink);
+                        Box(cap,"Porcelain grip socket",new Vector3(0,-.007f,.005f),new Vector3(.073f,.008f,.045f),.003f,ivory);
+                        Box(cap,"Amber rounded carriage",new Vector3(0,.010f,.003f),new Vector3(.065f,.037f,.034f),.008f,amber);
+                        Disk(cap,"Grip metal bezel",new Vector3(0,.012f,-.016f),Vector3.back,.023f,.004f,alloy);
+                        Disk(cap,"Circular amber thumb grip",new Vector3(0,.012f,-.021f),Vector3.back,.020f,.009f,amber);
+                        Label(cap,task.Label,new Vector3(0,.012f,-.026f),Quaternion.identity,.012f,ivory);
                         CombineByMaterial(cap);
                     }
                     HandleArt(task.Handle);HandleArt(task.AlternateHandle);
-                    foreach(float travel in new[]{0f,task.Rail.Travel})
-                        Box(details,"Visible stop",task.Rail.Start+task.Rail.Axis*travel+new Vector3(0,-.012f,0),new Vector3(.080f,.010f,.060f),.004f,ivory);
+                    BuildViewTrack(details,task);
                 }
             }
+            FinishViewStudio(game,details);
             CombineByMaterial(details);
             // Save generated beveled meshes; runtime only moves shared geometry.
             foreach(var prop in game.Props)CombineByMaterial(prop.transform.Find("V2 shell"));

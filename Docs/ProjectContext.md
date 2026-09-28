@@ -27,3 +27,12 @@ The approved progression plan begins with an isolated ten-level pilot. `COgheOnb
 ## View-only V2 (28 September 2026)
 
 Mrk authorized ten new levels based on the V2 concept and mobile performance constraints. `GenerateViewCampaign` authors isolated scenes/assets under `Venom/ViewCampaign`; the standard catalog/build selects these ten scenes. Existing sixty-level and onboarding scenes remain available explicitly and to regression tests. New IDs use the existing production save key, retaining old completions and Home. The new controls are tap, camera yaw and midpoint pinch with no physical chamber rotation or Follow button. See [V2 contract and validation](COGHE_VIEW_V2.md). Device qualification and novice playtesting are separate from author replay.
+
+## V2 concept fidelity correction (28 September 2026)
+
+The V2 art kit now uses thicker rounded blue walls, tiled porcelain floors,
+circular amber handles, paired metal guides and a lower concept-facing camera.
+`COgheViewStudioBuilder` is used by the existing ten-level generator.
+`COgheViewArtVerification.Rebuild` compares collider/Rigidbody/joint/surface/rail/
+input serialized data across regeneration, then builds the Mac player.
+See `Docs/Verification/COgheViewArt/README.md` for current evidence and limits.

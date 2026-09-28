@@ -194,3 +194,22 @@ all four corner rays reach the tabletop within its edges and clipping range.
 For the ten new V2 scenes, Mrk's supplied concept direction supersedes the archived rotating cage layout: opaque pale-blue far panes, warm porcelain floor/base, rounded amber handles and mint mechanism state. Incoming exterior panes and their trim form a camera cutaway; their collision and adhesion remain intact. Interior opaque walls/lids still obstruct picking. Drag orbits worldY at fixed pitch, pinch zooms about the two-finger midpoint, and Overview resets the view. V2 has no creature-follow button.
 
 `COgheViewArtBuilder` and `COgheViewPresentation` own this presentation. Decorative geometry is batched by material; no extra colliders, realtime reflections or heavy post-processing. HUD uses the device safe area. Archived scenes retain their existing art/control contract. The concept is a direction, not an asserted visual-similarity score.
+
+### V2 concept fidelity pass (28 September 2026)
+
+Mrk requested a closer match to the supplied first-ten-level concepts after
+reviewing the V2 player screenshots. `COgheViewStudioBuilder` now adds outward
+blue wall thickness and rounded edges, a deeper porcelain tray, softly shaded
+tile joints, circular amber thumb grips, paired satin-metal guides and a neutral
+cream studio. Most V2 scenes use a 37° pitch / −16° yaw; lesson 03 retains its
+hidden-target viewpoint. These are presentation changes, not permission to
+reshape the validated puzzle or move its colliders.
+
+The V2 kit uses its own materials and two shared generated textures (512² floor,
+128² wall, both with mipmaps). The studio backdrop is unlit with the existing
+soft contact decal; equipment uses the existing one-shadow-key/fill/cubemap path.
+No realtime reflection, SSAO, bloom or additional runtime simulation is added.
+Use **Gravity Box → COghe → V2 → Rebuild concept art and verify physics** to
+regenerate and compare serialized physical/input data before building the Mac
+preview. Camera/material differences are intentional. Review actual player
+captures, and measure on the target phone before claiming mobile performance.
