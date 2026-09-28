@@ -2,7 +2,7 @@
 
 ## 1. Định danh, phạm vi và trạng thái
 ID `coghe.view.v2.08`; slot 8/10; phiên bản2. Scene `Assets/_Game/Venom/ViewCampaign/COgheView08.unity`, definition `Definitions/View08.asset`; builder `COgheViewCampaignBuilder.cs`. Người thực hiện Codex, 28/09/2026. Thiết kế dựa bộ concept10 màn và yêu cầu triển khai của Mrk ngày28/09 (event09cb747e27dc1fbdfb6763a0a443dba3db980f474115b1d5e2612518ef279825).
-Trạng thái: Đang kiểm chứng. Scene đã sinh; gameplay/input/art/build/device chỉ đạt khi có báo cáo tương ứng trong `Artifacts/COgheViewV2`.
+Trạng thái: Prototype đã đạt kiểm tra Unity và author replay; chưa nghiệm thu thiết bị mobile/người mới. Toàn bộ PlayMode441/441 và EditMode8/8 tại commit `bd0ca04`; [báo cáo và giới hạn](../../../Verification/COgheViewV2/README.md).
 
 ## 2. Mục tiêu và tiến trình
 Ý chính: Bắc một nhịp. Vai trò: giới thiệu hoặc kết hợp một ý chính. Một cơ thể, không cắt. Hướng dẫn ngắn trong definition; không cấp sức mạnh/chỉ số. Không mở phần thưởng vĩnh viễn mới.
@@ -28,7 +28,7 @@ Một cơ quan và một lần qua cầu.
 Giữ32 hạt/120Hz; chi phí rail, graph, skin và kính phải đo. Không chốt trần renderer/memory khi chưa có baseline thiết bị. Không biến điểm chạm nhỏ thành độ khó.
 
 ## 8. Kiểm chứng
-Test lời giải `COgheViewCampaignTests.View08Bridge`; assertions đủ32 hạt, một body, không Lost, hộp không xoay và retry reset. Chạy cùng toàn bộ PlayMode và EditMode. Thêm gesture/input/occlusion/catalog tests dùng chung. Native HUD, touch trên điện thoại và người chưa biết lời giải cần bằng chứng riêng. Kết quả chưa điền trước khi XML/player report tồn tại.
+Test lời giải `COgheViewCampaignTests.View08Bridge`; assertions đủ32 hạt, một body, không Lost, hộp không xoay và retry reset. Chạy cùng toàn bộ PlayMode và EditMode. Thêm gesture/input/occlusion/catalog tests dùng chung. Native HUD, touch trên điện thoại và người chưa biết lời giải cần bằng chứng riêng. XML cuối đạt; xem báo cáo chung để đối chiếu artifact và phạm vi thực sự đã chạy.
 
 ## 9. Hiệu năng thiết bị
 Mục tiêu60FPS, p95≤20ms, p99≤33.3ms; ghi spikes>50ms, memory/GC, CPU/GPU và phiên15–20 phút. Máy/SoC/OS, build/hash, chất lượng, thời lượng, số lượt: chờ báo cáo đo. ADB lúc bắt đầu không có thiết bị. Không dùng số đo Mac để nghiệm thu Android.

@@ -9,7 +9,7 @@ Build thông thường mở **10 màn mới `COgheView01`–`COgheView10`**: ch�
 - macOS: `bash Tools/build-venom.sh` → `Builds/Venom/macOS/Venom.app`.
 - Scene và mesh đã lưu trong source. Chỉ khi muốn sinh lại nội dung: **Gravity Box → COghe → V2 → Generate ten view-only levels**.
 - Tiến trình và Nhà dùng save cũ; ID của 10 puzzle mới tách riêng. Nội dung 60 màn cũ vẫn lưu để đối chiếu và chạy hồi quy.
-- [Hợp đồng điều khiển, nội dung và build](Docs/COGHE_VIEW_V2.md) · [Hồ sơ từng màn](Docs/LevelDesign/COghe/ViewV2/Level01.md).
+- [Hợp đồng điều khiển, nội dung và build](Docs/COGHE_VIEW_V2.md) · [Hồ sơ từng màn](Docs/LevelDesign/COghe/ViewV2/Level01.md) · [Kết quả test và ảnh Unity](Docs/Verification/COgheViewV2/README.md).
 
 Các mục Origin/Journey dưới đây ghi lại nội dung trước V2; các chỉ dẫn xoay vật lý, Theo COghe và số lượng 30/60 màn thuộc catalog cũ.
 

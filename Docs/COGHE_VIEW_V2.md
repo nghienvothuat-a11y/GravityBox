@@ -72,3 +72,7 @@ adb pull /sdcard/Android/data/com.gravityboxlab.venom/files/view-proof Artifacts
 ```
 
 `run.json` records the actual device/API/resolution, buildGUID, all ten results, frame samples, memory and instrumented CPU work. Scene loads, warm-up, screenshots and victory animation are outside sampled gameplay frames. Collection counts cover the replay including screenshots; they are not a zero-allocation gameplay assertion. This short author replay must be supplemented by a sustained15–20 minute session, manual gestures/HUD checks and new-player trials. The historical `coghe_benchmark` flag exercises old levels11–20; use `coghe_view_proof` for this catalog.
+
+## Verified prototype handoff
+
+[Final test report, raw XML/player results and Unity gallery](Verification/COgheViewV2/README.md). Unity checks passed at source commit `bd0ca04`; mobile hardware and novice acceptance remain open.
