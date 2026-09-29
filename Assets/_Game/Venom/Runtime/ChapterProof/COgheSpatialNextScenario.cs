@@ -329,6 +329,20 @@ namespace GravityBox.Venom.ChapterProof
     yield return until(60,()=>lift.Trips>=3&&lift.Rail.AtEnd,"75 % rides up");
     yield return Merge(W(.20f,-.06f,.22f));
    }
+   else if(n==28)
+   {
+    var q=Find<COgheQuantumSplitter>();var tube=Find<COgheTubeNetwork>();var gate=Slider("D climb gate");
+    yield return Split(q,Selected);int outer=q.LastLeft,inner=q.LastRight;
+    game.SelectFragment(outer);yield return Hold("A");
+    yield return until(10,()=>tube.Edges[3].Open,"Holding A opens J2's maintenance branch");
+    game.SelectFragment(inner);yield return EnterTube(tube,0);yield return Choose(tube,1,2);yield return Choose(tube,3,3);yield return LeaveTube(tube);
+    yield return Operate("C");yield return until(5,()=>Task("C").Rail.AtEnd,"C latches the maintenance route");
+    yield return Walk(outer,W(-.25f,.02f,.20f),"Outer half leaves A and climbs to station B");
+    game.SelectFragment(outer);yield return Operate("B");yield return until(5,()=>tube.Edges[5].Open,"B turns J3 onto the upper balcony");
+    game.SelectFragment(inner);yield return EnterTube(tube,4);yield return Choose(tube,3,4);yield return Choose(tube,5,5);yield return LeaveTube(tube);
+    yield return Operate("D");yield return until(8,()=>gate.AtEnd,"D lifts the gate at the head of the outer bridge");
+    yield return Merge(W(.28f,.08f,.10f));
+   }
    else throw new NotImplementedException("Spatial "+n+" route");
    yield return Exit();
   }

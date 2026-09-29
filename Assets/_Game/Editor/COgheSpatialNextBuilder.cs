@@ -76,6 +76,7 @@ namespace GravityBox.Editor
     case 25:Next25(c);break;
     case 26:Next26(c);break;
     case 27:Next27(c);break;
+    case 28:Next28(c);break;
     default:throw new NotImplementedException("Spatial "+n);
    }
    foreach(var surface in c.Surfaces)if(surface.ExteriorGlass)surface.Selectable=true;
@@ -676,6 +677,64 @@ namespace GravityBox.Editor
    NextTrace("A",new Vector3(-.33f,-.2992f,-.175f),new Vector3(-.33f,-.2992f,.185f),new Vector3(-.26f,-.2992f,.185f));
    NextTrace("A",new Vector3(.33f,-.2992f,-.175f),new Vector3(.33f,-.2992f,-.05f),new Vector3(.06f,-.2992f,-.05f),new Vector3(.06f,-.2992f,.0f),new Vector3(-.20f,-.2992f,.0f),new Vector3(-.20f,-.2992f,.185f),new Vector3(-.24f,-.2992f,.185f));
    NextTrace("B",new Vector3(-.18f,-.2992f,.19f),new Vector3(-.18f,-.2992f,.28f),new Vector3(-.17f,-.2992f,.28f));
+  }
+  // 28 · Tall box, tube network with windows at three heights (J1 low, J2 middle, J3 high); J1 has a return branch to the floor.
+  // Two 50 % halves: the outer half climbs the ivory faces to station A (a held valve lever for J2's maintenance
+  // branch), later to station B (J3's branch to the upper balcony). The inner half flows to the maintenance balcony
+  // and latches route A with C, then on to the upper balcony where D lifts the gate at the head of the outer bridge.
+  static void Next28(ExpansionContext c)
+  {
+   // The exit is in the back pane, well away from D, so bracing on D never pushes tissue out early.
+   c.Exit=new Vector3(.33f,.108f,.30f);c.Outward=Vector3.forward;c.Spawn=new Vector3(-.20f,-.25f,-.262f);c.Definition.CameraEuler=new Vector3(40,20,0);NextShell(c,.30f,true);var floor=c.Surfaces[0];
+   NextQuantum(c,new Vector3(-.20f,-.30f,-.20f),.025f,.13f);
+   // Outer route: ivory (climbable) front faces, lavender (slick) everywhere else.
+   var aFaces=NextPlinth(c,"Station A balcony",new Vector3(-.29f,-.21f,.14f),new Vector3(.22f,.18f,.32f));var aTop=Top(aFaces);
+   aFaces.First(f=>f.Normal.z<-.9f).Slippery=false;
+   var bFaces=NextPlinth(c,"Station B balcony",new Vector3(-.29f,-.05f,.22f),new Vector3(.22f,.14f,.16f));var bTop=Top(bFaces);
+   bFaces.First(f=>f.Normal.z<-.9f).Slippery=false;
+   var maintenance=Top(NextPlinth(c,"Maintenance balcony",new Vector3(.30f,-.19f,-.05f),new Vector3(.20f,.22f,.18f)));
+   var upper=Top(NextPlinth(c,"Upper balcony",new Vector3(.275f,-.11f,.18f),new Vector3(.25f,.38f,.24f)));
+   // Outer bridge rising along x (NextRamp assumes z): local x of a near-level panel runs along the slope.
+   {Vector3 from=new Vector3(-.18f,.02f,.22f),to=new Vector3(.15f,.08f,.22f),d=to-from;Vector3 n=new Vector3(-d.y,d.x,0).normalized;
+    Panel(c.Root,"Outer bridge",(from+to)*.5f,n,new Vector2(d.magnitude,.08f),stone,false,Vector2.zero,0,c.Surfaces);}
+   // Junction windows are 15–17 cm apart (a straight run survives both 6.8 cm bowls) and every bend point sits outside the 6.8 cm junction bowl.
+   var nodes=new[]{new COgheTubeNetwork.Node("Vào",new Vector3(.06f,-.255f,-.21f),COgheTubeNetwork.TerminalKind.Entry),
+    new COgheTubeNetwork.Node("J1",new Vector3(.06f,-.17f,-.04f)),
+    new COgheTubeNetwork.Node("Quay lại",new Vector3(-.08f,-.255f,.02f),COgheTubeNetwork.TerminalKind.Entry),
+    new COgheTubeNetwork.Node("J2",new Vector3(.08f,-.02f,-.02f)),
+    new COgheTubeNetwork.Node("Bệ bảo trì",new Vector3(.235f,-.045f,.01f),COgheTubeNetwork.TerminalKind.Entry),
+    new COgheTubeNetwork.Node("J3",new Vector3(.05f,.14f,.02f)),
+    new COgheTubeNetwork.Node("Ban công trên",new Vector3(.20f,.115f,.12f),COgheTubeNetwork.TerminalKind.Entry)};
+   var edges=new[]{Edge("Vào–J1",0,1,nodes,new Vector3(.06f,-.235f,-.15f),new Vector3(.06f,-.215f,-.12f)),
+    Edge("J1–Quay lại",1,2,nodes,new Vector3(-.01f,-.20f,-.01f),new Vector3(-.05f,-.245f,.015f)),
+    Edge("J1–J2",1,3,nodes),
+    Edge("J2–Bệ",3,4,nodes,new Vector3(.16f,-.04f,-.01f)),
+    Edge("J2–J3",3,5,nodes),
+    Edge("J3–Ban công",5,6,nodes,new Vector3(.13f,.12f,.07f))};
+   var tube=TubeNetwork(c.Root,"Three-level route network",nodes,edges,.038f,glass);tube.CaptureSurfaceCommandsWhileInside=true;
+   var safe=new GameObject("Valve safety",typeof(COgheTissueClearance)).GetComponent<COgheTissueClearance>();safe.transform.SetParent(c.Root,false);safe.Network=tube;safe.Size=Vector3.zero;
+   // A: a held lever on the station A balcony; C (neutral) on the maintenance balcony latches the same valve.
+   var a=ViewTask(c,"A",new Vector3(-.30f,-.097f,.10f),Vector3.right,.07f,aTop);a.HoldAtEnd=true;
+   // C's handle faces +x so the half standing beside it never hides it from the default camera.
+   var latchC=ViewTask(c,"C",new Vector3(.25f,-.057f,-.11f),Vector3.forward,.06f,maintenance);
+   latchC.Handle.localPosition=new Vector3(.042f,0,0);latchC.Handle.localRotation=Quaternion.Euler(0,90,0);latchC.StandOffset=new Vector3(.05f,0,0);
+   var valve=ViewGate(c,"A route valve",new Vector3(.15f,-.10f,-.02f),Vector3.up,.02f,new Vector3(.018f,.018f,.018f));
+   var route=new GameObject("A holds or C latches the maintenance route",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();route.transform.SetParent(c.Root,false);
+   route.Holds=new[]{a};route.Rails=new[]{latchC.Rail};route.Any=true;route.Retain=false;route.Output=valve;route.Clearance=safe;
+   edges[3].AccessGate=valve;
+   // B: J3's valve onto the upper balcony. Its handle faces the bank's open side (stand to +x).
+   var b=ViewTask(c,"B",new Vector3(-.34f,.043f,.18f),Vector3.forward,.07f,bTop);b.Clearance=safe;
+   b.Handle.localPosition=new Vector3(.042f,0,0);b.Handle.localRotation=Quaternion.Euler(0,90,0);b.StandOffset=new Vector3(.05f,0,0);
+   edges[5].AccessGate=b.Rail;
+   // D (neutral) on the upper balcony lifts the gate at the head of the outer bridge.
+   var latchD=ViewTask(c,"D",new Vector3(.30f,.103f,.20f),Vector3.right,.05f,upper);
+   var gate=ViewGate(c,"D climb gate",new Vector3(.138f,.112f,.22f),Vector3.up,.08f,new Vector3(.012f,.06f,.09f));
+   foreach(var f in gate.GetComponentsInChildren<VenomSurfacePatch>(true))f.Slippery=true;
+   ViewLink(c,latchD.Rail,gate,false,null);
+   MechanismVisual(c.Root,"J2 valve selector",new Vector3(.08f,-.02f,-.09f),new Vector3(.03f,.03f,.012f),metal);
+   MechanismVisual(c.Root,"J3 valve selector",new Vector3(.05f,.14f,-.05f),new Vector3(.03f,.03f,.012f),metal);
+   NextTrace("A",new Vector3(-.23f,-.1192f,.10f),new Vector3(-.19f,-.1192f,.10f));
+   NextTrace("B",new Vector3(-.26f,.0208f,.25f),new Vector3(-.19f,.0208f,.25f));
   }
   // 11 · A crate pushed along its rail into the socket beside a slick plinth becomes the step.
   static void Next11(ExpansionContext c)
