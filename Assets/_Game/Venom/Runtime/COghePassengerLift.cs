@@ -13,6 +13,9 @@ namespace GravityBox.Venom
         // Optional fixed call panels at the landings (0 = lower stop, 1 = upper stop) and props carried as cargo.
         public Transform[] CallPanels=System.Array.Empty<Transform>();
         public bool CarriesProps;
+        // Dead-man enable: while RequiredRail is not at its end the tray may not rise, and a raised tray returns to its
+        // lower landing under the same finite, damped motor (nothing is snapped; tissue on the deck rides down).
+        public bool ReturnWhenDisabled;
         public Transform BoardPoint;
         public bool Moving {get;private set;}
         public bool Boarding {get;private set;}
@@ -50,6 +53,7 @@ namespace GravityBox.Venom
             owner.Feedback.ShowCommand(pressed.position,Vector3.up,pressed);return true;
         }
         private void LateUpdate(){if(Panel!=null)Panel.localPosition=Vector3.Lerp(Panel.localPosition,panelRest+Vector3.down*(Moving?.004f:0),1-Mathf.Exp(-Time.deltaTime*12));}
+        private bool Enabled=>RequiredRail==null||RequiredRail.AtEnd;
         private bool OnDeck(int index)=>OnDeckPoint(game.Matter.Bodies[index].position,.009f);
         private bool OnDeckPoint(Vector3 world,float margin)
         {
@@ -65,8 +69,9 @@ namespace GravityBox.Venom
                 var current=owner.Motion.Get(actor);
                 if(current!=null&&!ReferenceEquals(current,boardingOrder)){Boarding=false;return;}
                 bool all=true;for(int i=0;i<32;i++)if(owner.Matter.Groups[i]==owner.Matter.Groups[actor]&&!OnDeck(i)){all=false;break;}
-                stable=all?stable+dt:0;if(stable>.2f)BeginTravel(Rail.AtEnd?0:Rail.Travel);
+                stable=all?stable+dt:0;if(stable>.2f&&(!ReturnWhenDisabled||Enabled))BeginTravel(Rail.AtEnd?0:Rail.Travel);
             }
+            if(ReturnWhenDisabled&&!Enabled&&Rail.Position>Rail.CatchTolerance*2&&!(Moving&&target<=0)){Boarding=false;BeginTravel(0,false);}
             if(!Moving)return;
             float error=target-Rail.Position,speed=Vector3.Dot(Rail.Body.linearVelocity,Rail.WorldAxis);
             float desired=Mathf.Clamp(error*4,-Speed,Speed);

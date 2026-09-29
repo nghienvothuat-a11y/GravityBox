@@ -34,6 +34,19 @@ namespace GravityBox.Venom.ChapterProof
    yield return until(seconds,()=>t.CompletedJourneys>before,"Operate "+label);
   }
   public IEnumerator Until(float seconds,Func<bool> done,string why){yield return until(seconds,done,why);}
+  // A dead-man handle: approach, pull to its end and keep bracing until another command releases it.
+  public IEnumerator Hold(string label)
+  {
+   var t=Task(label);
+   for(int attempt=0;attempt<3&&!t.Busy;attempt++)
+   {
+    yield return tap(t.HandPoint+Vector3.up*.004f);
+    if(!t.Busy&&attempt==0){yield return tap(t.StandPoint);yield return until(20,()=>Vector3.Distance(game.Motion.Centre(Selected),t.StandPoint)<.06f,"Step beside handle "+label);}
+   }
+   if(!t.Busy)throw new InvalidOperationException("Handle "+label+" rejected: "+t.LastFailure);
+   yield return until(40,()=>t.Holding,"Hold "+label);
+  }
+  public COgheRailSlider Slider(string name)=>Array.Find(game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>(),r=>r.name==name)??throw new InvalidOperationException("Missing rail "+name);
   // Tube travel through visible mouths and junction branches.
   public IEnumerator EnterTube(COgheTubeNetwork tube,int node)
   {
@@ -289,6 +302,32 @@ namespace GravityBox.Venom.ChapterProof
     game.SelectFragment(holder);yield return Grip(swing);
     yield return Swing(swing,1);
     yield return Merge(W(.30f,-.188f,.10f));
+   }
+   else if(n==27)
+   {
+    var q=Find<COgheQuantumSplitter>();var lift=Find<COghePassengerLift>();var bolt=Slider("A lock bolt");var pin=Slider("Lift enable pin");var latch=Task("C");
+    yield return Split(q,Selected);int l=q.LastLeft,r=q.LastRight;
+    yield return Walk(r,W(-.20f,-.30f,-.01f),"50 % waits behind Q");
+    yield return Split(q,l);int a1=q.LastLeft,a2=q.LastRight;
+    yield return Walk(a1,W(-.33f,-.298f,-.22f),"25 % onto A1");
+    yield return Walk(a2,W(.33f,-.298f,-.22f),"25 % onto A2");
+    yield return until(10,()=>bolt.AtEnd,"Both pads draw the bolt from lever B");
+    yield return Split(q,r);int holder=q.LastLeft,rider=q.LastRight;
+    yield return Walk(rider,W(-.06f,-.30f,.03f),"Rider waits in front of the lift");
+    game.SelectFragment(holder);yield return Hold("B");
+    yield return until(10,()=>pin.AtEnd,"Holding B powers the lift");
+    game.SelectFragment(rider);yield return tap(lift.Panel.position);
+    yield return until(45,()=>lift.Trips>=1&&lift.Rail.AtEnd,"B's power lifts the fourth part to the high platform");
+    game.SelectFragment(rider);yield return Operate("C");yield return until(5,()=>latch.Rail.AtEnd,"C latches the lift power");
+    yield return Walk(holder,W(-.08f,-.30f,0f),"Holder lets go of B");
+    yield return until(5,()=>pin.AtEnd&&lift.Rail.AtEnd,"Lift stays powered at the top");
+    yield return Command(a1,W(-.08f,-.30f,0f));yield return Command(a2,W(-.08f,-.30f,0f));
+    yield return until(45,()=>game.Matter.TotalFragmentCount==2,"Three holders merge on the floor");
+    int group=holder;
+    yield return tap(lift.CallPanels[0].position);yield return until(45,()=>lift.Rail.Position<=lift.Rail.CatchTolerance*2&&!lift.Moving,"Call the lift down");
+    game.SelectFragment(group);yield return tap(lift.Panel.position);
+    yield return until(60,()=>lift.Trips>=3&&lift.Rail.AtEnd,"75 % rides up");
+    yield return Merge(W(.20f,-.06f,.22f));
    }
    else throw new NotImplementedException("Spatial "+n+" route");
    yield return Exit();

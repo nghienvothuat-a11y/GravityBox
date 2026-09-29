@@ -75,6 +75,7 @@ namespace GravityBox.Editor
     case 24:Next24(c);break;
     case 25:Next25(c);break;
     case 26:Next26(c);break;
+    case 27:Next27(c);break;
     default:throw new NotImplementedException("Spatial "+n);
    }
    foreach(var surface in c.Surfaces)if(surface.ExteriorGlass)surface.Selectable=true;
@@ -642,6 +643,39 @@ namespace GravityBox.Editor
    NextSwing(c,"A",new Vector3(0,.14f,.14f),.28f,40f,new Vector3(-.23f,-.14f,.14f),bankBack,new[]{landing,dockedTop,middle},new[]{new Vector3(.26f,top+.02f,.14f),new Vector3(.26f,top+.02f,.14f),new Vector3(.26f,top+.02f,.14f)},floor);
    NextTrace("A",new Vector3(-.34f,-.1592f,.195f),new Vector3(-.34f,-.1592f,.15f),new Vector3(-.296f,-.1592f,.15f));
    NextTrace("B",new Vector3(.31f,-.1872f,-.135f),new Vector3(.385f,-.1872f,-.135f),new Vector3(.385f,-.1872f,.06f));
+  }
+  // 27 · Four 25 % parts. A1 and A2 on two floor corners draw the bolt from lever B; a third part holds B (a dead-man
+  // lever) which powers the lift tray that carries the fourth up to the high platform. There the fourth pulls the
+  // neutral latch C: it keeps the lift powered for everyone, so the three holders may leave, ride up and merge.
+  static void Next27(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.40f,-.032f,.22f);c.Outward=Vector3.right;c.Spawn=new Vector3(0,-.25f,-.262f);c.Definition.CameraEuler=new Vector3(40,20,0);NextShell(c,.30f,true);var floor=c.Surfaces[0];
+   NextQuantum(c,new Vector3(0,-.30f,-.20f));
+   var high=Top(NextPlinth(c,"High platform",new Vector3(.24f,-.18f,.14f),new Vector3(.32f,.24f,.32f)));
+   var a1=ExpansionPad(c,"A1",new Vector3(-.33f,-.298f,-.22f),.009f,.09f);var a2=ExpansionPad(c,"A2",new Vector3(.33f,-.298f,-.22f),.009f,.09f);
+   var bolt=ViewGate(c,"A lock bolt",new Vector3(-.25f,-.285f,.185f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
+   var pads=new GameObject("A1 A2 draw the bolt",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();pads.transform.SetParent(c.Root,false);
+   pads.Inputs=new[]{a1,a2};pads.Output=bolt;pads.Retain=false;
+   var b=ViewTask(c,"B",new Vector3(-.25f,-.277f,.14f),Vector3.right,.07f,floor);b.HoldAtEnd=true;b.RequiredRail=bolt;
+   // Lift tray: 2 cm deck on the floor landing; its upper stop sits 2 mm above the high platform top, 2 mm from its face.
+   var rail=ExpansionRail(c,"Lift tray",new Vector3(-.012f,-.288f,.16f),Vector3.up,.22f,0,new Vector3(.18f,.02f,.18f),.03f,.004f,true,false);
+   rail.GetComponent<VenomMovableProp>().Manipulable=false;TrimSideSlabs(rail);
+   foreach(var face in rail.GetComponentsInChildren<VenomSurfacePatch>()){face.MotionFrame=rail.Body;if(face.Normal.y<.9f)face.Slippery=true;}
+   var lift=rail.gameObject.AddComponent<COghePassengerLift>();lift.Rail=rail;lift.DeckSize=new Vector2(.18f,.18f);lift.DeckHeight=.01f;
+   lift.Deck=rail.GetComponentsInChildren<VenomSurfacePatch>().First(p=>p.Normal.y>.9f);lift.ReturnWhenDisabled=true;
+   lift.BoardPoint=new GameObject("Rider stance").transform;lift.BoardPoint.SetParent(rail.transform,false);lift.BoardPoint.localPosition=new Vector3(0,.028f,0);
+   lift.Panel=MechanismVisual(rail.transform,"Lift panel",new Vector3(.06f,.012f,-.06f),new Vector3(.03f,.008f,.03f),metal,PrimitiveType.Cylinder);
+   lift.CallPanels=new[]{MechanismVisual(c.Root,"Lower call panel",new Vector3(-.125f,-.296f,.215f),new Vector3(.03f,.008f,.03f),metal,PrimitiveType.Cylinder),
+    MechanismVisual(c.Root,"Upper call panel",new Vector3(.13f,-.058f,.27f),new Vector3(.03f,.008f,.03f),metal,PrimitiveType.Cylinder)};
+   foreach(float x in new[]{-.11f,.086f})MechanismVisual(c.Root,"Lift upright",new Vector3(x,-.02f,.262f),new Vector3(.012f,.56f,.012f),metal);
+   var pin=ViewGate(c,"Lift enable pin",new Vector3(-.16f,-.27f,.28f),Vector3.up,.03f,new Vector3(.012f,.012f,.012f));
+   lift.RequiredRail=pin;
+   var latch=ViewTask(c,"C",new Vector3(.22f,-.037f,.14f),Vector3.right,.07f,high);
+   var power=new GameObject("B holds or C latches the lift power",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();power.transform.SetParent(c.Root,false);
+   power.Holds=new[]{b};power.Rails=new[]{latch.Rail};power.Any=true;power.Retain=false;power.Output=pin;
+   NextTrace("A",new Vector3(-.33f,-.2992f,-.175f),new Vector3(-.33f,-.2992f,.185f),new Vector3(-.26f,-.2992f,.185f));
+   NextTrace("A",new Vector3(.33f,-.2992f,-.175f),new Vector3(.33f,-.2992f,-.05f),new Vector3(.06f,-.2992f,-.05f),new Vector3(.06f,-.2992f,.0f),new Vector3(-.20f,-.2992f,.0f),new Vector3(-.20f,-.2992f,.185f),new Vector3(-.24f,-.2992f,.185f));
+   NextTrace("B",new Vector3(-.18f,-.2992f,.19f),new Vector3(-.18f,-.2992f,.28f),new Vector3(-.17f,-.2992f,.28f));
   }
   // 11 · A crate pushed along its rail into the socket beside a slick plinth becomes the step.
   static void Next11(ExpansionContext c)
