@@ -171,19 +171,21 @@ namespace GravityBox.Venom
             }
         }
 
-        // A landing is any authored dock whose real contact envelope holds enough of the carried tissue
-        // (a docked replica and its moving deck are the same landing).
+        // The authored docks form one landing (a docked replica, its moving deck and the bank beside it): the body
+        // has landed once enough of the carried tissue rests on their real contact envelopes together.
         private int Landed(VenomCampaign game)
         {
+            int best = -1, bestContacts = 0, total = 0;
             for (int d = 0; d < Docks.Length; d++)
             {
                 if (Docks[d] == null || !Docks[d].isActiveAndEnabled) continue;
                 int contacts = 0;
                 for (int i = 0; i < 32; i++)
                     if (member[i] && game.Motion.Support(i, out var collider, out _, out _) && collider == Docks[d].Shape) contacts++;
-                if (contacts >= LandingContacts) return d;
+                total += contacts;
+                if (contacts > bestContacts) { best = d; bestContacts = contacts; }
             }
-            return -1;
+            return total >= LandingContacts ? best : -1;
         }
 
         // Finite spring-damper grip between each particle and the ring. Every reaction loads the rope.

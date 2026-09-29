@@ -262,6 +262,34 @@ namespace GravityBox.Venom.ChapterProof
     yield return Go(W(0,-.27f,.07f),"Onto the step");
     yield return Go(W(0,-.24f,.21f),"Onto the exit platform");
    }
+   else if(n==25)
+   {
+    var q=Find<COgheQuantumSplitter>();var bolt=Array.Find(game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>(),r=>r.name=="A lock bolt");var b=Task("B");
+    yield return Split(q,Selected);int l=q.LastLeft,big=q.LastRight;
+    yield return Walk(big,W(.12f,-.30f,-.06f),"50 % waits off the tray");
+    yield return Split(q,l);int s1=q.LastLeft,s2=q.LastRight;
+    yield return Walk(s1,W(-.31f,-.298f,.16f),"25 % onto A1");
+    yield return Walk(s2,W(.06f,-.298f,-.22f),"25 % onto A2");
+    yield return until(10,()=>bolt.AtEnd,"Both small loads draw the bolt");
+    game.SelectFragment(big);yield return Operate("B",40);yield return until(5,()=>b.Rail.AtEnd,"50 % pushes heavy B into its socket");
+    yield return Merge(W(-.05f,-.30f,-.02f));
+    yield return Go(W(.17f,-.27f,.005f),"Onto the fixed step");
+    yield return Go(W(.17f,-.24f,.12f),"Onto block B");
+    yield return Go(W(.31f,-.21f,.15f),"Onto the exit platform");
+   }
+   else if(n==26)
+   {
+    var q=Find<COgheQuantumSplitter>();var tube=Find<COgheTubeNetwork>();var swing=Find<COgheSwingTransfer>();
+    var flap=Array.Find(game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>(),r=>r.name=="B landing tray");
+    yield return Split(q,Selected);int holder=q.LastLeft,worker=q.LastRight;
+    yield return Walk(holder,W(-.34f,-.158f,.24f),"Holder loads pad A");
+    yield return until(10,()=>tube.IsEntryOpen(0),"Pad A holds the tube cap open");
+    game.SelectFragment(worker);yield return EnterTube(tube,0);yield return LeaveTube(tube);
+    yield return Operate("B");yield return until(10,()=>flap.AtEnd,"B slides the landing tray into the arc and latches the cap");
+    game.SelectFragment(holder);yield return Grip(swing);
+    yield return Swing(swing,1);
+    yield return Merge(W(.30f,-.188f,.10f));
+   }
    else throw new NotImplementedException("Spatial "+n+" route");
    yield return Exit();
   }

@@ -73,6 +73,8 @@ namespace GravityBox.Editor
     case 22:Next22(c);break;
     case 23:Next23(c);break;
     case 24:Next24(c);break;
+    case 25:Next25(c);break;
+    case 26:Next26(c);break;
     default:throw new NotImplementedException("Spatial "+n);
    }
    foreach(var surface in c.Surfaces)if(surface.ExteriorGlass)surface.Selectable=true;
@@ -579,6 +581,67 @@ namespace GravityBox.Editor
    latch.Pawl=MechanismVisual(c.Root,"Bridge pawl",new Vector3(0,-.238f,.118f),new Vector3(.03f,.006f,.008f),metal);
    NextTrace("A",new Vector3(-.33f,-.2992f,-.15f),new Vector3(-.33f,-.2992f,.09f));NextTrace("A",new Vector3(-.28f,-.2992f,.14f),new Vector3(-.105f,-.2992f,.14f),new Vector3(-.105f,-.2992f,.12f));
    NextTrace("B",new Vector3(.33f,-.2992f,-.15f),new Vector3(.33f,-.2992f,.09f));NextTrace("B",new Vector3(.28f,-.2992f,.14f),new Vector3(.105f,-.2992f,.14f),new Vector3(.105f,-.2992f,.12f));
+  }
+  // 25 · 50 % + 25 % + 25 %. The two small parts load A1 and A2, which draw the lock bolt from heavy block B's rail.
+  // B's dry friction is tuned so 25 % stalls and 50 % pushes it; once B sits in its socket its own catch holds it.
+  static void Next25(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.31f,-.142f,.30f);c.Spawn=new Vector3(-.185f,-.25f,-.262f);c.Definition.CameraEuler=new Vector3(44,20,0);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   NextQuantum(c,new Vector3(-.185f,-.30f,-.18f),.025f,.13f);
+   NextPlinth(c,"Exit platform",new Vector3(.3125f,-.255f,.15f),new Vector3(.175f,.09f,.30f));
+   NextPlinth(c,"Fixed low step",new Vector3(.17f,-.285f,.0125f),new Vector3(.10f,.03f,.085f));
+   var b=NextCrate(c,"B",new Vector3(-.02f,-.27f,.12f),Vector3.right,.19f,new Vector3(.10f,.06f,.12f),floor,new Vector3(-.058f,-.015f,0),new Vector3(-.052f,0,0),.08f,.25f,0,true);
+   b.Handle.localRotation=Quaternion.Euler(0,90,0);b.StallSeconds=4;b.CompensateLoad=true;
+   var a1=ExpansionPad(c,"A1",new Vector3(-.31f,-.298f,.16f),.009f,.09f);var a2=ExpansionPad(c,"A2",new Vector3(.06f,-.298f,-.22f),.009f,.09f);
+   var bolt=ViewGate(c,"A lock bolt",new Vector3(.05f,-.285f,.195f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
+   var hold=new GameObject("A1 A2 draw the bolt",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();hold.transform.SetParent(c.Root,false);
+   hold.Inputs=new[]{a1,a2};hold.Output=bolt;hold.Retain=false;
+   b.RequiredRail=bolt;b.RequiredEnd=true;
+   NextTrace("A",new Vector3(-.31f,-.2992f,.21f),new Vector3(-.31f,-.2992f,.25f),new Vector3(.05f,-.2992f,.25f),new Vector3(.05f,-.2992f,.205f));
+   NextTrace("A",new Vector3(.06f,-.2992f,-.175f),new Vector3(.06f,-.2992f,-.10f),new Vector3(.08f,-.2992f,-.10f),new Vector3(.08f,-.2992f,.19f));
+   NextOutline(c,"B socket",new Vector3(.17f,-.2995f,.12f),new Vector2(.105f,.125f));
+  }
+  // 26 · Q on the start bank. One half holds pad A (tube cap open) while the other flows through the low back tube
+  // onto the middle platform and pulls B: the landing tray slides out into the swing arc and the cap is latched.
+  // The holder then grips rope A and swings onto the tray; the halves merge on the platform.
+  static void Next26(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.40f,-.160f,.12f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.20f,-.11f,-.262f);c.Definition.CameraEuler=new Vector3(40,20,0);NextShell(c,.30f,true);var floor=c.Surfaces[0];
+   var bankFront=Top(NextPlinth(c,"Start bank",new Vector3(-.20f,-.23f,-.16f),new Vector3(.40f,.14f,.28f)));
+   var bankBack=Top(NextPlinth(c,"Start bank",new Vector3(-.28f,-.23f,.14f),new Vector3(.24f,.14f,.32f)));
+   // A shoulder behind Q's right tray: the right half walks behind the rear housing to the back bank.
+   // It stops short of the swing plane (z .14) so the rope arc never scrapes it.
+   NextPlinth(c,"Start bank shoulder",new Vector3(-.125f,-.23f,.03f),new Vector3(.07f,.14f,.10f));
+   NextRamp(c,"Recovery ramp",new Vector3(-.045f,-.30f,.10f),new Vector3(-.045f,-.16f,-.02f),.06f);
+   NextQuantum(c,new Vector3(-.20f,-.16f,-.18f),.025f,.14f);
+   var a=ExpansionPad(c,"A",new Vector3(-.34f,-.158f,.24f),.009f,.09f);
+   // Middle platform (slick sides, walkable top at -.188). The landing tray is stored inside it and slides out
+   // through a slot under the top of its left face, so the top stays clear for the half that arrives by tube.
+   // The top slab reaches 8 mm down; the stored tray (top -.198) clears it by 2 mm.
+   const float top=-.188f;float mid=(top-.30f)*.5f;
+   var middle=Panel(c.Root,"Middle platform",new Vector3(.3075f,top,.05f),Vector3.up,new Vector2(.185f,.50f),stone,false,Vector2.zero,0,c.Surfaces);
+   Panel(c.Root,"Middle platform",new Vector3(.3075f,mid,-.20f),Vector3.back,new Vector2(.185f,top+.30f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
+   void Left(float y0,float y1,float z0,float z1)=>Panel(c.Root,"Middle platform",new Vector3(.215f,(y0+y1)*.5f,(z0+z1)*.5f),Vector3.left,new Vector2(z1-z0,y1-y0),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
+   Left(-.30f,-.2255f,-.20f,.30f);Left(-.2255f,top,-.20f,.058f);Left(-.2255f,top,.222f,.30f);Left(-.1965f,top,.058f,.222f);
+   var tube=ChapterTube(c,"Low back tube",new Vector3(-.25f,-.115f,.17f),new Vector3(-.25f,-.12f,.24f),new Vector3(-.18f,-.14f,.27f),new Vector3(-.10f,-.24f,.27f),new Vector3(0,-.255f,.27f),new Vector3(.10f,-.235f,.27f),new Vector3(.18f,-.18f,.27f),new Vector3(.245f,-.149f,.27f));
+   var cap=ViewGate(c,"A tube cap",new Vector3(-.25f,-.113f,.148f),Vector3.up,.12f,new Vector3(.092f,.092f,.012f));
+   tube.EntryBlocker=cap.GetComponent<VenomMovableProp>().CollisionShapes[0];
+   // B's handle faces the back, toward the tube's landing.
+   var b=ViewTask(c,"B",new Vector3(.27f,top+.023f,-.10f),Vector3.right,.07f,middle);
+   b.Handle.localPosition=new Vector3(0,0,.035f);b.Handle.localRotation=Quaternion.identity;b.StandOffset=new Vector3(0,0,.05f);
+   var flap=ExpansionRail(c,"B landing tray",new Vector3(.315f,-.211f,.14f),Vector3.left,.15f,0,new Vector3(.10f,.026f,.16f),.03f,.006f,false,false);
+   flap.GetComponent<VenomMovableProp>().Manipulable=false;flap.LatchAtEnd=true;TrimSideSlabs(flap);
+   foreach(var f in flap.GetComponentsInChildren<VenomSurfacePatch>())if(f.Normal.y<.9f)f.Slippery=true;
+   int first=c.Surfaces.Count;var dockedTop=Panel(c.Root,"B landing tray docked",new Vector3(.165f,-.198f,.14f),Vector3.up,new Vector2(.10f,.16f),stone,false,Vector2.zero,0,c.Surfaces);dockedTop.gameObject.SetActive(false);
+   var deck=flap.gameObject.AddComponent<COgheDockedBridgeDeck>();deck.Rail=flap;deck.MovingSurfaces=flap.GetComponentsInChildren<VenomSurfacePatch>(true);deck.DockedSurfaces=new[]{dockedTop};
+   ViewLink(c,b.Rail,flap,false,null);
+   var safe=new GameObject("Tube cap safety",typeof(COgheTissueClearance)).GetComponent<COgheTissueClearance>();safe.transform.SetParent(c.Root,false);safe.transform.localPosition=new Vector3(-.25f,-.115f,.14f);safe.Network=tube;safe.Size=new Vector3(.10f,.10f,.05f);
+   var hold=new GameObject("A holds, B latches the tube cap",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();hold.transform.SetParent(c.Root,false);
+   hold.Inputs=new[]{a};hold.Rails=new[]{b.Rail};hold.Output=cap;hold.Any=true;hold.Retain=false;hold.Clearance=safe;
+   var landing=flap.GetComponentsInChildren<VenomSurfacePatch>(true).First(f=>f.Normal.y>.9f);
+   NextSwing(c,"A",new Vector3(0,.14f,.14f),.28f,40f,new Vector3(-.23f,-.14f,.14f),bankBack,new[]{landing,dockedTop,middle},new[]{new Vector3(.26f,top+.02f,.14f),new Vector3(.26f,top+.02f,.14f),new Vector3(.26f,top+.02f,.14f)},floor);
+   NextTrace("A",new Vector3(-.34f,-.1592f,.195f),new Vector3(-.34f,-.1592f,.15f),new Vector3(-.296f,-.1592f,.15f));
+   NextTrace("B",new Vector3(.31f,-.1872f,-.135f),new Vector3(.385f,-.1872f,-.135f),new Vector3(.385f,-.1872f,.06f));
   }
   // 11 · A crate pushed along its rail into the socket beside a slick plinth becomes the step.
   static void Next11(ExpansionContext c)
