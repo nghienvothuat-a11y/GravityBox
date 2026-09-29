@@ -78,6 +78,7 @@ namespace GravityBox.Editor
     case 27:Next27(c);break;
     case 28:Next28(c);break;
     case 29:Next29(c);break;
+    case 30:Next30(c);break;
     default:throw new NotImplementedException("Spatial "+n);
    }
    foreach(var surface in c.Surfaces)if(surface.ExteriorGlass)surface.Selectable=true;
@@ -177,17 +178,19 @@ namespace GravityBox.Editor
   }
 
   // Rope swing: one anchor on a beam, a ring on a finite rope constraint (planar), parked on a hook by the winch.
-  static COgheSwingTransfer NextSwing(ExpansionContext c,string label,Vector3 pivot,float length,float startAngle,Vector3 stand,VenomSurfacePatch startBank,VenomSurfacePatch[] docks,Vector3[] targets,VenomSurfacePatch rescue)
+  static COgheSwingTransfer NextSwing(ExpansionContext c,string label,Vector3 pivot,float length,float startAngle,Vector3 stand,VenomSurfacePatch startBank,VenomSurfacePatch[] docks,Vector3[] targets,VenomSurfacePatch rescue,Vector3? acrossDirection=null)
   {
+   // across: horizontal direction of travel from the start hook toward the docks (default +x).
+   Vector3 across=acrossDirection??Vector3.right,normal=Vector3.Cross(across,Vector3.up);
    var swing=new GameObject(label+" rope swing",typeof(COgheSwingTransfer)).GetComponent<COgheSwingTransfer>();swing.transform.SetParent(c.Root,false);swing.Label=label;
    swing.Pivot=NextMarker(c,label+" rope anchor",pivot);swing.RopeLength=length;
-   float a=startAngle*Mathf.Deg2Rad;Vector3 hook=pivot+new Vector3(-Mathf.Sin(a),-Mathf.Cos(a),0)*length;
+   float a=startAngle*Mathf.Deg2Rad;Vector3 hook=pivot+(-across*Mathf.Sin(a)+Vector3.down*Mathf.Cos(a))*length;swing.PlaneNormal=normal;
    swing.StartHook=NextMarker(c,label+" start hook",hook);swing.StandPoint=NextMarker(c,label+" grip stance",stand);
    var ringGo=new GameObject(label+" grip ring",typeof(Rigidbody));ringGo.transform.SetParent(c.Owner.Apparatus,false);ringGo.transform.position=c.Root.TransformPoint(hook);
    var ring=ringGo.GetComponent<Rigidbody>();ring.mass=.03f;ring.useGravity=false;ring.isKinematic=true;ring.interpolation=RigidbodyInterpolation.Interpolate;ring.inertiaTensor=Vector3.one*1e-5f;ring.inertiaTensorRotation=Quaternion.identity;
    ring.linearDamping=0;ring.angularDamping=0;ring.collisionDetectionMode=CollisionDetectionMode.ContinuousSpeculative;
    var joint=ringGo.AddComponent<ConfigurableJoint>();joint.connectedBody=c.Root.GetComponent<Rigidbody>();joint.autoConfigureConnectedAnchor=false;joint.anchor=Vector3.zero;joint.connectedAnchor=pivot;
-   joint.axis=Vector3.forward;joint.secondaryAxis=Vector3.up;joint.xMotion=ConfigurableJointMotion.Locked;joint.yMotion=joint.zMotion=ConfigurableJointMotion.Limited;
+   joint.axis=normal;joint.secondaryAxis=Vector3.up;joint.xMotion=ConfigurableJointMotion.Locked;joint.yMotion=joint.zMotion=ConfigurableJointMotion.Limited;
    joint.angularXMotion=joint.angularYMotion=joint.angularZMotion=ConfigurableJointMotion.Locked;joint.linearLimit=new SoftJointLimit{limit=length,contactDistance=.002f};
    swing.Ring=ring;
    var visual=new GameObject(label+" ring visual").transform;visual.SetParent(ringGo.transform,false);swing.RingVisual=visual;
@@ -196,9 +199,9 @@ namespace GravityBox.Editor
    swing.StartBank=startBank;swing.Docks=docks;swing.RescueFloor=rescue;
    swing.DockTargets=new Transform[targets.Length];for(int i=0;i<targets.Length;i++)swing.DockTargets[i]=NextMarker(c,label+" landing "+i,targets[i]);
    swing.Rope=swing.gameObject.AddComponent<LineRenderer>();swing.Rope.useWorldSpace=true;swing.Rope.startWidth=swing.Rope.endWidth=.004f;swing.Rope.sharedMaterial=metal;swing.Rope.positionCount=2;
-   swing.Drum=MechanismVisual(c.Root,label+" winch drum",pivot+Vector3.up*.012f,new Vector3(.05f,.012f,.05f),metal,PrimitiveType.Cylinder);swing.Drum.localRotation=Quaternion.Euler(90,0,0);
-   MechanismVisual(c.Root,label+" rope beam",new Vector3(pivot.x,pivot.y+.03f,pivot.z),new Vector3(.36f,.016f,.02f),metal);
-   MechanismVisual(c.Root,label+" start hook post",hook+new Vector3(-.018f,-.004f,0),new Vector3(.006f,.03f,.006f),metal);
+   swing.Drum=MechanismVisual(c.Root,label+" winch drum",pivot+Vector3.up*.012f,new Vector3(.05f,.012f,.05f),metal,PrimitiveType.Cylinder);swing.Drum.localRotation=Quaternion.FromToRotation(Vector3.up,normal);
+   MechanismVisual(c.Root,label+" rope beam",new Vector3(pivot.x,pivot.y+.03f,pivot.z),new Vector3(.36f,.016f,.02f),metal).localRotation=Quaternion.FromToRotation(Vector3.right,across);
+   MechanismVisual(c.Root,label+" start hook post",hook-across*.018f+Vector3.down*.004f,new Vector3(.006f,.03f,.006f),metal);
    return swing;
   }
 
@@ -787,6 +790,77 @@ namespace GravityBox.Editor
    NextOutline(c,"C far socket",new Vector3(-.126f,-.2995f,.07f),new Vector2(.104f,.18f));
    NextTrace("A",new Vector3(.34f,-.2992f,-.155f),new Vector3(.34f,-.2992f,-.07f),new Vector3(-.16f,-.2992f,-.07f),new Vector3(-.16f,-.2992f,.17f),new Vector3(-.22f,-.2992f,.17f)); // under the road to the bolt
    NextTrace("A",new Vector3(.295f,-.2992f,-.065f),new Vector3(.24f,-.2992f,-.065f),new Vector3(.24f,-.2992f,-.07f));
+  }
+  // 30 · BOSS. Three bays in a U open to the camera. Left: Q, pad A and the tube up to latch A on the high ledge.
+  // Right: pad B and rope B from the front bank to the back dock with latch B, whose gate opens the ramp home.
+  // Each pad holds its bolt drawn; each latch only catches a drawn bolt, which frees the holder. Bolt A frees the tall
+  // far block C, bolt B the low near block D; C starts in D's socket, so it goes in first. Merged, the whole body winds
+  // E: two spans rise out of the deck's pit and latch, the only way across to the exit behind them.
+  static void Next30(ExpansionContext c)
+  {
+   c.Exit=new Vector3(-.02f,-.182f,.30f);c.Outward=Vector3.forward;c.Spawn=new Vector3(-.22f,-.25f,-.262f);c.Definition.CameraEuler=new Vector3(42,20,0);NextShell(c,.30f,true);var floor=c.Surfaces[0];
+   NextQuantum(c,new Vector3(-.22f,-.30f,-.16f),.025f,.13f); // 9 cm corridor in front of Q to the right bay
+   // Left bay: the high ledge with latch A is reached only through the tube (which also brings the worker home).
+   var ledgeA=Top(NextPlinth(c,"Latch A ledge",new Vector3(-.285f,-.16f,.21f),new Vector3(.23f,.28f,.18f)));
+   var padA=ExpansionPad(c,"A",new Vector3(-.35f,-.298f,-.02f),.009f,.09f);
+   // The foot mouth faces the centre (+x), 9 cm behind pad A, so a part entering never brushes the pad's holder;
+   // the tube climbs in front of the ledge and ends at its far-left, well inside its top.
+   ChapterTube(c,"Left tube",new Vector3(-.27f,-.255f,.07f),new Vector3(-.31f,-.25f,.07f),new Vector3(-.362f,-.18f,.075f),new Vector3(-.362f,-.06f,.08f),new Vector3(-.362f,0f,.10f),new Vector3(-.362f,.015f,.16f));
+   // Latch A at the ledge's right end: taps on it pass well clear of the tube mouth's pick radius.
+   var latchA=ViewTask(c,"A",new Vector3(-.22f,.003f,.27f),Vector3.left,.04f,ledgeA);
+   var boltA=ViewGate(c,"A bolt",new Vector3(-.06f,-.285f,.02f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
+   var holdA=new GameObject("Pad A holds, latch A catches bolt A",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();holdA.transform.SetParent(c.Root,false);
+   holdA.Inputs=new[]{padA};holdA.Rails=new[]{latchA.Rail};holdA.Any=true;holdA.Retain=false;holdA.Output=boltA;latchA.RequiredRail=boltA;
+   // Right bay: rope B runs front to back (+z), 30 cm clear of the ramps; the dock ledge's ramp home is gated by latch B.
+   // A 10 cm bank still reaches the parked ring (grip reach is 11 cm). Its ivory left face is the climb (no ramp
+   // with an open underside to wander into); every other face is slick.
+   var bankFaces=NextPlinth(c,"Rope B start bank",new Vector3(.28f,-.25f,-.24f),new Vector3(.24f,.10f,.12f));var bank=Top(bankFaces);
+   bankFaces.First(f=>f.Normal.x<-.9f).Slippery=false;
+   // Measured arc of a 25 % part on this rope: its lowest particle passes z .115 at y ≈ -.17. The dock edge sits
+   // there with its top 1.8 cm lower, inside the contact envelope, so the part clears the lip and lands.
+   var dock=Top(NextPlinth(c,"Latch B dock",new Vector3(.28f,-.244f,.1975f),new Vector3(.24f,.112f,.165f)));
+   NextRamp(c,"Return ramp",new Vector3(.20f,-.30f,-.01f),new Vector3(.20f,-.188f,.115f),.08f);
+   // Pad B sits off the camera ray through the parked ring (a tap over a part selects that part).
+   var padB=ExpansionPad(c,"B",new Vector3(.285f,-.298f,.045f),.009f,.09f);
+   NextSwing(c,"B",new Vector3(.30f,.14f,-.02f),.28f,40f,new Vector3(.30f,-.18f,-.25f),bank,new[]{dock},new[]{new Vector3(.30f,-.168f,.17f)},floor,Vector3.forward);
+   var latchB=ViewTask(c,"B",new Vector3(.30f,-.165f,.235f),Vector3.right,.05f,dock);
+   var boltB=ViewGate(c,"B bolt",new Vector3(-.06f,-.285f,-.10f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
+   var holdB=new GameObject("Pad B holds, latch B catches bolt B",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();holdB.transform.SetParent(c.Root,false);
+   holdB.Inputs=new[]{padB};holdB.Rails=new[]{latchB.Rail};holdB.Any=true;holdB.Retain=false;holdB.Output=boltB;latchB.RequiredRail=boltB;
+   var gate=ViewGate(c,"B return gate",new Vector3(.20f,-.158f,.121f),Vector3.up,.07f,new Vector3(.08f,.06f,.012f));
+   foreach(var f in gate.GetComponentsInChildren<VenomSurfacePatch>(true))f.Slippery=true;
+   ViewLink(c,latchB.Rail,gate,false,null);
+   // Centre deck (9 cm, slick sides): front strip with winch E | pit with two lifting spans (open ends) | exit strip.
+   const float top=-.21f,x0=-.16f,x1=.12f;float xm=(x0+x1)*.5f,w=x1-x0;
+   var deckFront=Panel(c.Root,"Centre deck",new Vector3(xm,top,.10f),Vector3.up,new Vector2(w,.12f),stone,false,Vector2.zero,0,c.Surfaces);
+   Panel(c.Root,"Centre deck",new Vector3(xm,top,.26f),Vector3.up,new Vector2(w,.08f),stone,false,Vector2.zero,0,c.Surfaces);
+   void Slick(Vector3 centre,Vector3 normal,Vector2 size)=>Panel(c.Root,"Centre deck side",centre,normal,size,stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
+   Slick(new Vector3(xm,-.255f,.04f),Vector3.back,new Vector2(w,.09f));
+   foreach(var (z,d) in new[]{(.10f,.12f),(.26f,.08f)}){Slick(new Vector3(x0,-.255f,z),Vector3.left,new Vector2(d,.09f));Slick(new Vector3(x1,-.255f,z),Vector3.right,new Vector2(d,.09f));}
+   Slick(new Vector3(xm,-.257f,.16f),Vector3.forward,new Vector2(w,.086f));Slick(new Vector3(xm,-.257f,.22f),Vector3.back,new Vector2(w,.086f));
+   // Steps: floor → D (3 cm) → C (6 cm) → deck (9 cm). C starts in D's socket; both handles face +x (stand on the floor).
+   var far=NextCrate(c,"C",new Vector3(.02f,-.27f,-.078f),Vector3.forward,.08f,new Vector3(.116f,.06f,.076f),floor,new Vector3(.066f,0,0),new Vector3(.052f,0,0),.04f,.01f,0,true);
+   far.Handle.localRotation=Quaternion.Euler(0,90,0);far.RequiredRail=boltA;
+   var near=NextCrate(c,"D",new Vector3(.02f,-.285f,-.162f),Vector3.forward,.084f,new Vector3(.116f,.03f,.076f),floor,new Vector3(.066f,0,0),new Vector3(.052f,0,0),.04f,.01f,0,true);
+   near.Handle.localRotation=Quaternion.Euler(0,90,0);near.RequiredRail=boltB;
+   // Winch E: whole-body load (two spans, 0.49 N through the cables); half a body cannot wind it.
+   // Handle stroke = span travel + cable stretch at its load (0.245 N / 45 N/m): the handle ends as the spans dock.
+   var winch=ViewTask(c,"E",new Vector3(.06f,-.187f,.14f),Vector3.left,.066f,deckFront);winch.CompensateLoad=true;winch.StallSeconds=6;
+   foreach(float sx in new[]{-.09f,.05f})
+   {
+    var span=ExpansionRail(c,"E lifting span",new Vector3(sx,-.283f,.19f),Vector3.up,.06f,0,new Vector3(.136f,.026f,.056f),.025f,.01f,true,false);
+    span.GetComponent<VenomMovableProp>().Manipulable=false;span.CatchTolerance=.004f;span.LatchAtEnd=true;TrimSideSlabs(span);
+    foreach(var face in span.GetComponentsInChildren<VenomSurfacePatch>())if(face.Normal.y<.9f)face.Slippery=true;
+    var cable=new GameObject("E winch cable").AddComponent<COghePulleyDrive>();cable.transform.SetParent(c.Root,false);cable.Stiffness=45;cable.Input=winch.Rail;cable.Command=winch;cable.Output=span;
+    cable.Cable=cable.gameObject.AddComponent<LineRenderer>();cable.Cable.sharedMaterial=metal;cable.Cable.startWidth=cable.Cable.endWidth=.0028f;cable.Cable.useWorldSpace=true;
+    var guides=new List<Transform>();foreach(var g in new[]{new Vector3(.06f,.12f,.14f),new Vector3(sx,.12f,.19f)}){guides.Add(NextMarker(c,"E rope guide",g));var wheel=MechanismVisual(c.Root,"E pulley wheel",g,new Vector3(.05f,.014f,.05f),metal,PrimitiveType.Cylinder);wheel.localRotation=Quaternion.Euler(90,0,0);}
+    cable.Guides=guides.ToArray();
+   }
+   NextOutline(c,"C socket",new Vector3(.02f,-.2995f,.002f),new Vector2(.12f,.08f));NextOutline(c,"D socket",new Vector3(.02f,-.2995f,-.078f),new Vector2(.12f,.08f));
+   NextTrace("A",new Vector3(-.305f,-.2992f,-.02f),new Vector3(-.17f,-.2992f,-.02f),new Vector3(-.17f,-.2992f,.02f),new Vector3(-.07f,-.2992f,.02f));
+   NextTrace("A",new Vector3(-.235f,-.0192f,.25f),new Vector3(-.215f,-.0192f,.25f),new Vector3(-.215f,-.0192f,.16f));
+   NextTrace("B",new Vector3(.285f,-.2992f,.0f),new Vector3(.285f,-.2992f,-.02f),new Vector3(.25f,-.2992f,-.10f),new Vector3(-.05f,-.2992f,-.10f));
+   NextTrace("B",new Vector3(.37f,-.1872f,.235f),new Vector3(.37f,-.1872f,.13f),new Vector3(.25f,-.1872f,.13f));
   }
   // 11 · A crate pushed along its rail into the socket beside a slick plinth becomes the step.
   static void Next11(ExpansionContext c)

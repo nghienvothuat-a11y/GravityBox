@@ -358,6 +358,36 @@ namespace GravityBox.Venom.ChapterProof
     yield return Operate("B",60);yield return until(15,()=>span.Caught,"Whole body winds B; the span's far end rises level and its pawl catches");
     yield return Go(W(.33f,-.18f,.05f),"Across the span to the exit platform");
    }
+   else if(n==30)
+   {
+    var q=Find<COgheQuantumSplitter>();var tube=Find<COgheTubeNetwork>();var swing=Find<COgheSwingTransfer>();
+    var boltA=Slider("A bolt");var boltB=Slider("B bolt");var gate=Slider("B return gate");
+    var spans=Array.FindAll(game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>(),r=>r.name=="E lifting span");
+    yield return Split(q,Selected);int l=q.LastLeft,r=q.LastRight;
+    yield return Walk(r,W(-.08f,-.30f,.0f),"50 % waits in the corridor right of Q");
+    yield return Split(q,l);int holderA=q.LastLeft,holderB=q.LastRight;
+    yield return Walk(holderA,W(-.35f,-.298f,-.02f),"25 % holds pad A");
+    yield return Walk(holderB,W(.12f,-.30f,-.25f),"Round the front of the blocks");yield return Walk(holderB,W(.285f,-.298f,.045f),"25 % holds pad B");
+    yield return until(10,()=>boltA.AtEnd&&boltB.AtEnd,"Both pads draw their bolts");
+    // The tube worker leaves from the right tray (behind Q, clear of pad A); the swinger from the left tray along the front.
+    yield return Split(q,r);int tubeWorker=q.LastRight,swinger=q.LastLeft;
+    yield return Walk(tubeWorker,W(-.08f,-.30f,.02f),"Tube worker up the corridor right of Q");
+    game.SelectFragment(tubeWorker);yield return EnterTube(tube,0);yield return LeaveTube(tube);
+    yield return Operate("A");yield return until(5,()=>Task("A").Rail.AtEnd,"Latch A catches bolt A");
+    yield return Walk(swinger,W(.12f,-.30f,-.25f),"Swinger goes round the front of the blocks");
+    game.SelectFragment(swinger);yield return Grip(swing);yield return Swing(swing,0);
+    yield return Operate("B");yield return until(8,()=>Task("B").Rail.AtEnd&&gate.AtEnd,"Latch B catches bolt B and opens the ramp home");
+    // Both holders are free. The swinger comes home down the ramp and pairs with pad B's holder; that 50 % pair sets
+    // the far block C, then the near block D. The tube worker returns through the tube; then all four merge.
+    game.SelectFragment(tubeWorker);yield return EnterTube(tube,1);yield return LeaveTube(tube);
+    yield return Command(swinger,W(.285f,-.30f,-.05f));yield return Command(holderB,W(.285f,-.30f,-.05f));
+    yield return until(40,()=>game.Matter.Groups[swinger]==game.Matter.Groups[holderB],"Right pair merges");
+    game.SelectFragment(holderB);yield return Operate("C");yield return until(5,()=>Task("C").Rail.AtEnd,"Far block C goes in first");
+    game.SelectFragment(holderB);yield return Operate("D");yield return until(5,()=>Task("D").Rail.AtEnd,"Near block D follows");
+    yield return Merge(W(.14f,-.30f,-.22f));
+    yield return Operate("E",60);yield return until(15,()=>Array.TrueForAll(spans,s=>s.AtEnd),"Whole body winds E; both spans rise and latch");
+    yield return Go(W(-.02f,-.21f,.26f),"Across the spans to the exit strip");
+   }
    else throw new NotImplementedException("Spatial "+n+" route");
    yield return Exit();
   }

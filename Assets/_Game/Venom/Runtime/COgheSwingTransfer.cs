@@ -24,6 +24,8 @@ namespace GravityBox.Venom
         public int LandingContacts = 8;
         public LineRenderer Rope;
         public Transform Drum, RingVisual;
+        // Normal of the swing plane (presentation only: the drum turns about it).
+        public Vector3 PlaneNormal = Vector3.forward;
         public string Label = "A";
 
         public SwingPhase Phase { get; private set; }
@@ -175,7 +177,10 @@ namespace GravityBox.Venom
         // has landed once enough of the carried tissue rests on their real contact envelopes together.
         private int Landed(VenomCampaign game)
         {
-            int best = -1, bestContacts = 0, total = 0;
+            int best = -1, bestContacts = 0, total = 0, carried = 0;
+            for (int i = 0; i < 32; i++) if (member[i]) carried++;
+            // "Enough tissue" scales with what the rope carries: 3/8 of it, at least 3, never more than LandingContacts.
+            int need = Mathf.Min(LandingContacts, Mathf.Max(3, carried * 3 / 8));
             for (int d = 0; d < Docks.Length; d++)
             {
                 if (Docks[d] == null || !Docks[d].isActiveAndEnabled) continue;
@@ -185,7 +190,7 @@ namespace GravityBox.Venom
                 total += contacts;
                 if (contacts > bestContacts) { best = d; bestContacts = contacts; }
             }
-            return total >= LandingContacts ? best : -1;
+            return total >= need ? best : -1;
         }
 
         // Finite spring-damper grip between each particle and the ring. Every reaction loads the rope.
@@ -210,7 +215,7 @@ namespace GravityBox.Venom
             if (Rope != null) { Rope.positionCount = 2; Rope.SetPosition(0, Pivot.position); Rope.SetPosition(1, Ring.position); }
             Vector3 rope = Ring.position - Pivot.position;
             if (RingVisual != null && rope.sqrMagnitude > .0001f) RingVisual.rotation = Quaternion.FromToRotation(Vector3.down, rope.normalized) * StartHook.rotation;
-            if (Drum != null) Drum.localRotation = drumRest * Quaternion.Euler(0, 0, Vector3.SignedAngle(Vector3.down, rope, Vector3.forward) * 3);
+            if (Drum != null) Drum.localRotation = drumRest * Quaternion.Euler(0, 0, Vector3.SignedAngle(Vector3.down, rope, PlaneNormal) * 3);
         }
     }
 }
