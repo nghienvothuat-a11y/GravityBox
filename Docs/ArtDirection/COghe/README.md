@@ -1,5 +1,7 @@
 # COghe — Phòng nghiên cứu trở thành nhà
 
+**Concept mới cho Blender và hybrid casual (28/09/2026):** [Gameplay, bộ module và tư thế COghe](BlenderConceptV2/README.md). Đã triển khai thử nghiệm Blender trên V2 01–10 của nhánh `NewGraphic`; [nguồn asset](../../../ArtSource/COghe/NewGraphic/README.md), [báo cáo kiểm tra](../../Verification/COgheNewGraphic/README.md). Quy chuẩn Day Lab bên dưới tiếp tục áp dụng ngoài phạm vi thử nghiệm này.
+
 Concept và kế hoạch ngày 15/09/2026. **Đã chốt Day Lab ngày 16/09/2026: 3D cách điệu, phòng nghiên cứu vũ trụ sáng và ấm áp.** Sinh vật dựa trên hình ảnh runtime hiện tại của nhánh Venom.
 
 Chuẩn áp dụng hiện tại: [STYLE_RULES](STYLE_RULES.md). Xem [10 màn trong Unity và kết quả kiểm chứng](Campaign/README.md). Các concept phía dưới là lịch sử định hướng; Boss hiện dùng cùng Day Lab sáng, chưa áp concept Night Trial.
@@ -39,3 +41,7 @@ Tạo bằng **imagegen tích hợp**, dùng screenshot local làm tham chiếu 
 Các hình là concept, không phải bản build Unity hoặc bằng chứng performance. Độ mờ nền trong tranh có thể thay bằng nền chuẩn bị sẵn khi triển khai; phản xạ/bóng cần giản lược theo ngân sách thiết bị. Chi tiết khe, bo cạnh và ray cơ quan phải được dựng và kiểm chứng theo kích thước gameplay thật.
 
 Ngày 16/09/2026: từ [bản mẫu Day Lab màn 07 trong Unity](Runtime/README.md) đã được người dùng duyệt, bộ art được mở rộng cho cả 10 màn Origin. Giữ cơ chế, đường giải và bộ mô phỏng cũ; tên ứng dụng vẫn giữ Venom. Ba ảnh phía trên vẫn là concept, không phải ảnh bản build.
+
+29/09/2026: người dùng chọn phương án **C** của glass depth study. Màn mẫu 01 giữ hộp kính, bóng tiếp xúc, phản xạ dịu và nền lab; 30 màn V2 có nhãn nhựa ghi số mẫu vật. Xem [quy tắc hiện hành](STYLE_RULES.md#selected-c-and-specimen-numbers-29-september-2026) và [kết quả Unity](../../Verification/COgheSpecimenPlates/README.md).
+
+29/09/2026 — [Nghiên cứu cơ quan theo màu và puzzle theo chiều cao](VerticalMechanisms/review.html): ba bảng minh họa theo glass C, [kế hoạch và đối chiếu code](VerticalMechanisms/PLAN.md), hai hồ sơ thử nghiệm V01/V02. Đây là đề xuất thiết kế, chưa đổi scene/campaign hoặc quy chuẩn màu đã chốt.

@@ -24,7 +24,8 @@ namespace GravityBox.Tests
         }
         [UnityTest] public IEnumerator CutawayReversalFadesPaneAndTrimWithoutChangingPhysicsOrAssets()
         {
-            yield return Load(1);
+            // Level 01 is now optical glass; level 02 retains the opaque cutaway contract.
+            yield return Load(2);
             var view = game.GetComponent<COgheViewPresentation>(); view.enabled = false;
             int index = Array.FindIndex(view.Panes, p => p.Normal.z > .9f);
             var renderers = view.PaneVisuals[index].GetComponentsInChildren<Renderer>();
@@ -61,7 +62,8 @@ namespace GravityBox.Tests
         }
         [UnityTest] public IEnumerator CutawayKeepsAnIntermediateAngleAndSettlesWhilePaused()
         {
-            yield return Load(1);
+            // Level 01 is now optical glass; level 02 retains the opaque cutaway contract.
+            yield return Load(2);
             var view = game.GetComponent<COgheViewPresentation>(); view.enabled = false;
             int index = Array.FindIndex(view.Panes, p => p.Normal.z > .9f);
             var r = view.PaneVisuals[index].GetComponentInChildren<Renderer>(); var normal = view.Panes[index].Normal;
@@ -77,6 +79,56 @@ namespace GravityBox.Tests
                 game.Owner.TogglePause();
             }
             finally { if(game.Owner.Paused)game.Owner.TogglePause(); game.Owner.View.transform.rotation = camera; view.enabled = true; view.Refresh(1); }
+        }
+        [UnityTest] public IEnumerator GlassDepthVariantsRetainExitAndClearContactAfterEscape()
+        {
+            int selection=COgheGlassDepthStudy.Selection;
+            try
+            {
+                for(int variant=0;variant<4;variant++)
+                {
+                    COgheGlassDepthStudy.Selection=variant;yield return Load(1);yield return null;
+                    var study=game.GetComponent<COgheGlassDepthStudy>();Assert.AreEqual(variant,study.Active);
+                    game.CameraRig.Frame(720,1280,0,true);Capture(1,"depth-"+variant);
+                    if(variant>0)
+                    {
+                        bool contact=false;var block=new MaterialPropertyBlock();
+                        foreach(var renderer in study.Surfaces){renderer.GetPropertyBlock(block);contact|=block.GetFloat("_ContactAlpha")>0;}
+                        Assert.IsTrue(contact,"Resting tissue must cast local contact shading");
+                    }
+                    yield return new COgheViewScenario(game,Tap,Until).Solve();yield return null;
+                    Assert.AreEqual(32,game.Matter.EscapedCount);Assert.IsTrue(game.Owner.Completed);Assert.IsFalse(game.Owner.Lost);
+                    if(variant>0)
+                    {
+                        var block=new MaterialPropertyBlock();
+                        foreach(var renderer in study.Surfaces){renderer.GetPropertyBlock(block);Assert.AreEqual(0,block.GetFloat("_ContactAlpha"),"No stranded contact stain after exit");}
+                    }
+                }
+            }
+            finally{COgheGlassDepthStudy.Selection=selection;}
+        }
+        [UnityTest] public IEnumerator GlassPilotKeepsTransparentPanesAndPhysicsThroughOrbit()
+        {
+            yield return Load(1);
+            var initialRotation=game.Root.rotation;
+            var glass=Array.FindAll(game.Surfaces,p=>p.ExteriorGlass);
+            Assert.GreaterOrEqual(glass.Length,5);
+            var frame=game.Root.Find("Glass preview frame");Assert.IsNotNull(frame);
+            Assert.IsEmpty(frame.GetComponentsInChildren<Collider>(),"Decorative frame cannot obstruct tissue or picking");
+            foreach(float drag in new[]{180f,-360f,180f})
+            {
+                game.CameraRig.Orbit(drag,720);game.CameraRig.Frame(720,1280,0,true);
+                game.GetComponent<COgheViewPresentation>().Refresh(1);
+                foreach(var pane in glass)
+                {
+                    var r=pane.GetComponent<Renderer>();Assert.IsTrue(r.enabled);
+                    Assert.That(r.sharedMaterial.shader.name,Is.EqualTo("COghe/Lab Glass").Or.EqualTo("COghe/Depth Study Glass"));
+                    Assert.Less(r.sharedMaterial.GetColor("_BaseColor").a,.1f);
+                    Assert.IsTrue(pane.Shape.enabled);
+                }
+                Assert.AreEqual(initialRotation,game.Root.rotation);
+                Assert.IsNull(game.Motion.Get(0));
+            }
         }
         [UnityTest] public IEnumerator View04HasAnInspectionRouteWhoseDetailsEnlargeWithZoom()
         {

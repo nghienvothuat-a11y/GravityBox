@@ -39,3 +39,7 @@ CatalogV2 mặc định có10 entry, ID mới; key save production giữ nguyên
 
 ## Điều chỉnh sau test 28/09
 Cầu chuyển dọc trụcZ, từ z=-.17 tới+.13m (hành trình .30m), để khớp bến phải. Deck rộng .198m bắc khe .21m; khi vào chốt có hai mép nối nhìn thấy được phủ đường ghép (rộng tổng .23m). Đầu cầu và hai bờ đồng mức y=-.30m. Mặt bám/collider khi ghép có cùng độ dày .026m; hình học di động được thay bằng mặt ghép cố định khi chốt thật đã tới. Chạm mặt cầu rồi bờ phải; không kéo cầu bằng tay.
+
+## NewGraphic — 29/09/2026
+
+Thử nghiệm art Blender: vỏ sứ bo cạnh, panel xanh nhạt, cơ quan amber, viền thoát mint; giữ bố cục và đường giải của hồ sơ này. Không đổi collider, input, rail, solver hay điều kiện thắng. Nguồn và kiểm tra A/B xem [báo cáo](../../../Verification/COgheNewGraphic/README.md).

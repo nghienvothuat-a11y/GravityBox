@@ -1,5 +1,7 @@
 # COghe — Day Lab Puzzle Prototype
 
+**Hướng đồ hoạ hiện tại — hộp kính:** ngày 29/09, người dùng dừng phương án Blender. Màn 1 V2 đã được dựng lại thành hộp kính Day Lab để đánh giá; các màn khác mặc định dùng art trước Blender. [Ảnh thực tế và bản Mac](Docs/Verification/COgheGlassPreview/README.md). Thử nghiệm Blender và [báo cáo A/B](Docs/Verification/COgheNewGraphic/README.md) được giữ làm lịch sử, không phải hướng đang triển khai.
+
 
 ## Bản mặc định hiện tại — COghe V2, 28/09/2026
 
@@ -228,3 +230,7 @@ Five hollow slippery vessels follow displayed level7 at56–60: vase, mask, teap
 The isolated ten-level learning pilot uses source slots `1 → 2 → 41 → 8 → 14 → 18 → 9 → 16 → 42 → 10`, with state-driven visual guidance and its own save. Build it with `bash Tools/build-venom.sh --onboarding` or `bash Tools/build-venom-android.sh --onboarding`. Outputs: `Builds/COgheOnboarding/macOS/COghe Learn.app` and `Builds/COgheOnboarding/Android/COghe-Learn.apk`. Android installs alongside the main game.
 
 At the time of the pilot release, the normal build contained the existing 60-level campaign; the V2 section above now defines the default build. The full progression mapping remains a design hypothesis pending novice playtests. [Pilot and test sheet](Docs/COGHE_ONBOARDING_PILOT_2026_09_24.md) · [60-level candidate](Docs/LevelDesign/COghe/ONBOARDING_PROGRESSION_DRAFT.md).
+
+- **Glass depth test (29/09/2026):** V2 level 01 compares Original / A lighting / B materials / C lab background. Mac build: `Builds/GlassDepth/macOS/COghe.app`. [Comparison and verification](Docs/Verification/COgheGlassDepth/README.md). Experimental presentation; other levels keep their current art.
+
+- **Selected C + specimen numbers (29/09/2026):** C selected for the level-01 glass pilot; normal play hides A/B/C controls. All 30 V2 enclosures have a small numbered plastic tag. Mac: `Builds/GlassLab/macOS/COghe.app`. [Verification](Docs/Verification/COgheSpecimenPlates/README.md).

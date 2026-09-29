@@ -35,3 +35,22 @@ Mục tiêu60FPS, p95≤20ms, p99≤33.3ms; ghi spikes>50ms, memory/GC, CPU/GPU 
 
 ## 10. Tích hợp và tương thích
 CatalogV2 mặc định có10 entry, ID mới; key save production giữ nguyên nên completion legacy và Nhà không bị xoá. Next/selector dùng SceneSequenceV2; không phụ thuộc cờ pilot. Chưa gọi nghiệm thu mobile trước khi có thiết bị. Hồ sơ này bổ sung lịch sử; không thay file thiết kế level cũ.
+
+## NewGraphic — 29/09/2026
+
+Thử nghiệm art Blender: vỏ sứ bo cạnh, panel xanh nhạt, cơ quan amber, viền thoát mint; giữ bố cục và đường giải của hồ sơ này. Không đổi collider, input, rail, solver hay điều kiện thắng. Nguồn và kiểm tra A/B xem [báo cáo](../../../Verification/COgheNewGraphic/README.md).
+
+
+## Thay đổi phần nhìn — 29/09/2026
+
+Theo yêu cầu bỏ phương án Blender: màn 01 trở lại hộp kính trong, khung nhôm mảnh, góc sứ, sàn xanh nhạt và viền lỗ mint. Giữ layout/kích thước/physics/luật thắng/ID V2. Mặt kính gần camera vẫn nhìn thấy rất nhẹ bằng shader kính; bỏ cơ chế che hoàn toàn vách đặc của màn này. Thao tác chạm chọn mặt và orbit không đổi. Builder: `COgheGlassPreviewBuilder`, được gọi từ bộ dựng art V2 cho màn 01. Bằng chứng và bản Mac: [Glass preview](../../../Verification/COgheGlassPreview/README.md).
+
+## Thử chiều sâu đồ hoạ — 29/09/2026
+
+Thêm bộ so sánh Gốc/A/B/C ở màn 01: ánh sáng và bóng tiếp xúc; phản xạ kính và chất liệu; nền lab nhẹ. Đây là thử nghiệm theo yêu cầu người dùng, chưa chọn thành style chung. Đổi phương án tải lại màn 01. Chỉ đọc vị trí mô để vẽ bóng tiếp xúc, không sửa collider, solver, mục tiêu chạm hay luật thắng. Xem [kết quả thật](../../../Verification/COgheGlassDepth/README.md).
+
+## Chốt C và nhãn mẫu vật — 29/09/2026
+
+Người dùng chọn C. Màn mẫu 01 dùng C mặc định và ẩn nút so sánh. Thêm nhãn nhựa nhỏ ghi số **1**, ngàm gắn lên mép trước phía trên hộp. Builder áp nhãn tương ứng cho cả 30 màn V2, không sửa bố cục hay cơ quan. Xem [kiểm tra](../../../Verification/COgheSpecimenPlates/README.md).
+
+Hiệu chỉnh theo concept gốc: bảng nhựa màu ngà ghi **01** và gạch nhỏ, áp trực tiếp ngoài mặt kính ở góc trên trái, dưới mép khung. Bỏ kiểu bảng có ngàm dựng trên khung đã bị người dùng từ chối.

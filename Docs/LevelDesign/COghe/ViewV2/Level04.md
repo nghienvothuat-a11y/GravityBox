@@ -39,3 +39,7 @@ CatalogV2 mặc định có30 entry, ID mới; key save production giữ nguyên
 
 ## Lịch sử — bố cục cũ, được thay theo yêu cầu mới
 Bậc có mặt chuyển nghiêng45°, cao .10m, rộng .80m; sàn phía trước kết thúc ở z=.08m, mặt trên bắt đầu z=.18m. Giữ bài học đổi mặt bám, giảm mép vuông trong bài đầu.
+
+## NewGraphic — 29/09/2026
+
+Thử nghiệm art Blender: vỏ sứ bo cạnh, panel xanh nhạt, cơ quan amber, viền thoát mint; giữ bố cục và đường giải của hồ sơ này. Không đổi collider, input, rail, solver hay điều kiện thắng. Nguồn và kiểm tra A/B xem [báo cáo](../../../Verification/COgheNewGraphic/README.md).

@@ -39,3 +39,7 @@ CatalogV2 mặc định có10 entry, ID mới; key save production giữ nguyên
 
 ## Điều chỉnh sau test 28/09
 Tay nắm có hai phía; mở cửa vách rồi kéo camera để thấy sàn khoang trong. Đảo tay nắm từ bên trong đóng lối vào và mở nắp thoát trên sàn ở(.22,-.30,.21). Nắp đỗ ở mép phải để không chắn đường từ tay nắm tới lối thoát.
+
+## NewGraphic — 29/09/2026
+
+Thử nghiệm art Blender: vỏ sứ bo cạnh, panel xanh nhạt, cơ quan amber, viền thoát mint; giữ bố cục và đường giải của hồ sơ này. Không đổi collider, input, rail, solver hay điều kiện thắng. Nguồn và kiểm tra A/B xem [báo cáo](../../../Verification/COgheNewGraphic/README.md).

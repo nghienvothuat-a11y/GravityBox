@@ -57,7 +57,8 @@ namespace GravityBox.Venom
             }
             if(!found)bounds=new Bounds(Vector3.zero,Vector3.one*game.Definition.ViewRadius*1.3f);
             bounds.Encapsulate(game.Root.InverseTransformPoint(game.Owner.Outlet.position));
-            bounds.Expand(.036f); // Glass thickness, frame rails and corner sockets.
+            var graphics=game.GetComponent<COgheGraphicProfile>();
+            bounds.Expand(graphics!=null&&graphics.ActiveNew?graphics.FramingPadding:.036f); // Presentation shell clearance, sampled once.
             OverviewBounds=bounds;
             spherical=game.Surfaces.Length==1&&game.Surfaces[0].SphereRadius>0;
             Reset();

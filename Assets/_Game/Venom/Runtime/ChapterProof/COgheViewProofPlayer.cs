@@ -27,9 +27,11 @@ namespace GravityBox.Venom.ChapterProof
         [Serializable] private sealed class Report
         {
             public string utc,unity,buildGuid,device,os,gpu,api,execution="Normal player loop; InputSystem touch events; screenshots excluded from frame samples. Author replay, not novice evidence.";
+            public string graphicProfile;
             public int width,height,passed,failed;public List<Result> levels=new List<Result>();public List<string> errors=new List<string>();public List<FadeSample> fadeSamples=new List<FadeSample>();
             public List<CooperationSample> cooperation=new List<CooperationSample>();
         }
+        public static bool IsRunning { get; private set; }
         private static string requested;private static bool previousPersistence;
         private string directory;private VenomCampaign game;private Touchscreen touchscreen;
         private Report report;private Result result;private bool measuring,fast;private int shot;
@@ -38,7 +40,7 @@ namespace GravityBox.Venom.ChapterProof
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Prepare()
         {
-            previousPersistence=VenomCampaignSave.PersistenceEnabled;requested=null;var args=Environment.GetCommandLineArgs();
+            IsRunning=false;previousPersistence=VenomCampaignSave.PersistenceEnabled;requested=null;var args=Environment.GetCommandLineArgs();
             for(int i=0;i<args.Length-1;i++)if(args[i]=="-coghe-view-proof")requested=args[i+1];
 #if UNITY_ANDROID
             using(var player=new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
@@ -46,13 +48,13 @@ namespace GravityBox.Venom.ChapterProof
             using(var intent=activity.Call<AndroidJavaObject>("getIntent"))
                 if(intent.Call<bool>("hasExtra","coghe_view_proof"))requested=Path.Combine(Application.persistentDataPath,"view-proof");
 #endif
-            if(!string.IsNullOrEmpty(requested))VenomCampaignSave.PersistenceEnabled=false;
+            if(!string.IsNullOrEmpty(requested)){IsRunning=true;VenomCampaignSave.PersistenceEnabled=false;}
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Begin()
         {if(string.IsNullOrEmpty(requested))return;var go=new GameObject("Requested V2 author replay");DontDestroyOnLoad(go);go.AddComponent<COgheViewProofPlayer>();}
         private void OnEnable()=>Application.logMessageReceived+=Log;
-        private void OnDestroy(){Application.logMessageReceived-=Log;if(touchscreen!=null)InputSystem.RemoveDevice(touchscreen);}
+        private void OnDestroy(){IsRunning=false;Application.logMessageReceived-=Log;if(touchscreen!=null)InputSystem.RemoveDevice(touchscreen);}
         private void Log(string message,string trace,LogType type)
         {if(type==LogType.Error||type==LogType.Exception||type==LogType.Assert)report?.errors.Add(message+"\n"+trace);}
         private void Update()
@@ -68,10 +70,23 @@ namespace GravityBox.Venom.ChapterProof
             fast=Array.IndexOf(Environment.GetCommandLineArgs(),"-coghe-view-fast")>=0;
             directory=Path.Combine(Path.GetFullPath(requested),DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ"));Directory.CreateDirectory(directory);
             report=new Report{utc=DateTime.UtcNow.ToString("O"),unity=Application.unityVersion,buildGuid=Application.buildGUID,device=SystemInfo.deviceModel,os=SystemInfo.operatingSystem,gpu=SystemInfo.graphicsDeviceName,api=SystemInfo.graphicsDeviceType.ToString(),width=Screen.width,height=Screen.height};
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-coghe-depth-record")>=0)report.execution="Visual recording with synchronous frame capture. FPS is not performance evidence.";
             if(fast)report.execution="Accelerated author diagnosis: normal touch events; 120Hz scripted simulation. Not realtime performance evidence.";
             touchscreen=InputSystem.AddDevice<Touchscreen>();
             int first=1,last=30;var args=Environment.GetCommandLineArgs();
             for(int i=0;i<args.Length-1;i++){if(args[i]=="-coghe-view-first")first=int.Parse(args[i+1]);if(args[i]=="-coghe-view-last")last=int.Parse(args[i+1]);}
+#if UNITY_ANDROID
+            using(var player=new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+            using(var activity=player.GetStatic<AndroidJavaObject>("currentActivity"))
+            using(var intent=activity.Call<AndroidJavaObject>("getIntent"))
+            {
+                first=intent.Call<int>("getIntExtra","coghe_view_first",first);
+                last=intent.Call<int>("getIntExtra","coghe_view_last",last);
+            }
+#endif
+            first=Mathf.Clamp(first,1,30);last=Mathf.Clamp(last,first,30);
+            report.graphicProfile=COgheGraphicProfile.UseNew?"BlenderMobile":"Current";
+            if(Array.IndexOf(args,"-coghe-depth")>=0)report.graphicProfile="GlassDepth-"+COgheGlassDepthStudy.Selection;
             for(int n=first;n<=last;n++)
             {
                 result=new Result{level=n};report.levels.Add(result);

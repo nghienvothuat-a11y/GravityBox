@@ -16,6 +16,9 @@ namespace GravityBox.Editor
         [MenuItem("Gravity Box/COghe/Build Android test APK")]
         public static void Build() => BuildScenes(VenomCampaignBuilder.CampaignScenePaths(), Output);
 
+        [MenuItem("Gravity Box/COghe/NewGraphic/Build Android A-B test APK")]
+        public static void BuildNewGraphic() => BuildScenes(VenomCampaignBuilder.ViewCampaignScenePaths(), "Builds/NewGraphic/Android/COghe-NewGraphic.apk");
+
         [MenuItem("Gravity Box/COghe/Build Tap Campaign · Android test APK")]
         public static void BuildTap() => BuildScenes(VenomCampaignBuilder.TapCampaignScenePaths(), "Builds/COgheTapChapter/Android/COghe.apk");
 

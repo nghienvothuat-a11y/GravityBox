@@ -175,6 +175,7 @@ namespace GravityBox.Editor
                 drive.SecondLamp=Status(drive.Second,"Catch II status");
                 drive.Waiting=graphite;drive.Ready=mint;
             }
+            if(game.Definition.Order==1)ApplyGlassPreview(game);else ApplySpecimenPlate(game);
             AssetDatabase.SaveAssets();
         }
     }

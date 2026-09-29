@@ -217,3 +217,26 @@ captures, and measure on the target phone before claiming mobile performance.
 ## V2 cutaway feedback (28 September 2026)
 
 User-requested: near outer walls and their trim must emerge gradually while the camera orbits, without a hard visibility switch. Fade by view angle with temporal smoothing that reverses from the current opacity. Keep physics, navigation and ray-picking independent. Restore the original opaque render state when fully visible; serialize transparent material variants so player builds retain the required URP shader variants. Validate slow drag, fast reversal, fixed intermediate angle and pause in both tests and the native player.
+
+
+## Return to glass — level 01 pilot (29 September 2026)
+
+The user rejected the Blender presentation after device testing and requested the creature inside a glass enclosure again. This supersedes the opaque V2/Blender casing for the level 01 pilot. Restore transparent optical panes, slender aluminium rails, small porcelain corner mounts, a pale-blue inspection floor and a flush mint exit. Keep the dark liquid body, existing warm/cool Day Lab lights and quiet cream background. The box must visibly read as a closed glass volume, with the existing glass shader keeping foreground panes subtle.
+
+Scope now: V2 01 only. Retain its current puzzle, dimensions, collider aperture, tap/orbit/pinch controls and save ID. Drag remains a camera orbit, not a physical box rotation. Other levels return to the pre-Blender profile by default; converting their opaque V2 walls to glass is not part of this pilot. Blender source assets and verification stay archived for history; they are no longer the default direction. `COgheGlassPreviewBuilder` rebuilds the pilot, and the V2 art generator calls its level-01 adapter so regeneration preserves it. Validate in the native Mac player before reporting the look.
+
+### Glass depth study — level 01 only (29 September 2026)
+
+User authorized testing greater depth with lighting, materials and background. This is an **experiment awaiting visual selection**, not a new approved campaign style. Level 01 exposes Original / A lighting / B materials / C lab-background controls. C is the pilot default. Switching reloads the same level; all geometry, inputs and puzzle rules remain unchanged.
+
+Use one existing shadow-casting key and the existing static studio cubemap. A adds floor shadow reception and surface-local tissue contact shading; B adds restrained cubemap reflections, rougher porcelain and softer wet-body highlights; C adds low-contrast procedural lab silhouettes and a cool-to-warm background. These silhouettes are screen-space background art, not movable lab props. No new physics queries, realtime reflection capture, SSAO, bloom or depth-of-field. Contact shading is a proximity-based approximation that reads tissue positions and clears on escape; it is not simulated light transport. It stays attached to the actual support-plane coordinates and cannot fill a hole.
+
+Keep study materials/shaders under `Art/GlassDepth`, never edit shared Day Lab assets for this trial. `COgheGlassDepthStudy` owns runtime presentation; `COgheGlassDepthBuilder` configures it through the existing glass builder. [Actual captures, tests and performance limits](../../Verification/COgheGlassDepth/README.md).
+
+### Selected C and specimen numbers (29 September 2026)
+
+The user selected **C**. C is the approved glass direction, replacing the pending-selection status above. The current implemented glass pilot remains V2 01; rolling glass geometry out to other layouts is separate from adding identification tags. Hide the comparison controls in normal play; explicit benchmark selection remains available for historical comparisons.
+
+User correction: the first rail-clip prototype was rejected. Match the original `Concepts/01-day-lab.png`: a small ivory-plastic plaque adhered directly to the outside of the front glass, just below its upper-left rail. Rounded corners, dark blue-grey two-digit number (01–30) and a short printed underline. No clips, raised sign above the rim or billboard. Use depth-tested world-space text, no collider or click target; keep clear of the exit. The plaque follows the chamber and is hidden during victory.
+
+`COgheSpecimenPlateBuilder` owns the repeatable tag build; the V2 art generator and glass pilot rebuild call it. Shared plastic material and font atlas, batched plaque/underline geometry; three renderers per enclosure. Preserve existing campaign numbering, camera framing and gameplay. [Verification](../../Verification/COgheSpecimenPlates/README.md).

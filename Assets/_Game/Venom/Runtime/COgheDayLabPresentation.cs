@@ -19,6 +19,7 @@ namespace GravityBox.Venom
         private VenomCampaign game;
         private COgheCooperationPresentation cooperation;
         private COgheTapLesson tapLesson;
+        private COgheGraphicProfile graphicProfile;
         private GUIStyle brand, caption, title, body, chip, selected, action, status, footer;
         private Texture2D tile, chosen, pressed;
         private MaterialPropertyBlock block;
@@ -28,6 +29,7 @@ namespace GravityBox.Venom
         {
             game=GetComponent<VenomCampaign>();cooperation=GetComponent<COgheCooperationPresentation>();block=new MaterialPropertyBlock();
             tapLesson=GetComponent<COgheTapLesson>();
+            graphicProfile=GetComponent<COgheGraphicProfile>();
             ConfigureExitOutline(GetComponent<VenomLevelController>());
             Font.textureRebuilt+=RefreshFontAtlas;RefreshFontAtlas(WorldTextFont);
             if(GlassSurfaces==null)return;
@@ -108,6 +110,11 @@ namespace GravityBox.Venom
         {
             if(game==null||game.Owner==null)return;
             if(brand==null)Styles();
+            var oldEnabled=GUI.enabled;
+#if (DEVELOPMENT_BUILD || COGHE_MOBILE_BENCHMARK) && !UNITY_EDITOR
+            // The author replay owns navigation; a HUD reload invalidates its scene references.
+            if(ChapterProof.COgheViewProofPlayer.IsRunning)GUI.enabled=false;
+#endif
             var old=GUI.matrix;var oldColor=GUI.color;var oldBackground=GUI.backgroundColor;var oldContent=GUI.contentColor;
             var area=game.Definition.ViewOnly?Screen.safeArea:new Rect(0,0,Screen.width,Screen.height);
             float s=Mathf.Min(area.width/540f,area.height/960f),h=area.height/s;
@@ -115,7 +122,7 @@ namespace GravityBox.Venom
             GUI.color=GUI.backgroundColor=GUI.contentColor=Color.white;
             if(game.CameraRig.Inspecting)GUI.Box(new Rect(17,8,506,game.CameraRig.ShowZones?237:191),GUIContent.none,chip);
             GUI.Label(new Rect(26,13,240,48),"COghe",brand);
-            GUI.Label(new Rect(300,20,214,30),game.Home?"A  P L A C E  T O  B E L O N G":(game.Definition.Boss?"B O S S   /   ":"D A Y   L A B   /   ")+game.Definition.Order.ToString("00"),caption);
+            GUI.Label(new Rect(300,20,214,30),graphicProfile!=null&&graphicProfile.ShowComparison&&!game.Home?graphicProfile.Meter:game.Home?"A  P L A C E  T O  B E L O N G":(game.Definition.Boss?"B O S S   /   ":"D A Y   L A B   /   ")+game.Definition.Order.ToString("00"),caption);
             int levelCount=game.PlayableLevelCount,pageCount=(levelCount+LevelPageSize-1)/LevelPageSize;
             game.LevelPage=Mathf.Clamp(game.LevelPage,0,pageCount-1);
             float pageWidth=494f/pageCount;
@@ -192,8 +199,10 @@ namespace GravityBox.Venom
                 if(GUI.Button(new Rect(100,h-119,160,29),"Cho ăn",chip))game.FeedHome();
                 if(GUI.Button(new Rect(280,h-119,160,29),"Chơi cùng",chip))game.GreetHome();
             }
+            if(graphicProfile!=null&&graphicProfile.ShowComparison&&!game.Home&&!game.Owner.Completed&&game.Matter.TotalFragmentCount==1)
+                if(GUI.Button(new Rect(65,h-119,410,29),graphicProfile.ActiveNew?"Đồ hoạ Blender · đổi sang bản cũ ↻":"Đồ hoạ cũ · đổi sang Blender ↻",chip))graphicProfile.Toggle();
             GUI.Label(new Rect(26,h-29,488,20),game.Onboarding!=null?"COghe  /  BẢN THỬ HỌC CÁCH CHƠI":"COghe  /  PHÒNG NGHIÊN CỨU",footer);
-            GUI.matrix=old;GUI.color=oldColor;GUI.backgroundColor=oldBackground;GUI.contentColor=oldContent;
+            GUI.enabled=oldEnabled;GUI.matrix=old;GUI.color=oldColor;GUI.backgroundColor=oldBackground;GUI.contentColor=oldContent;
         }
         private void OnDestroy()
         {Font.textureRebuilt-=RefreshFontAtlas;if(tile!=null)Destroy(tile);if(chosen!=null)Destroy(chosen);if(pressed!=null)Destroy(pressed);}

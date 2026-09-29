@@ -1,0 +1,739 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="100" result="Passed" total="100" passed="100" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-28 17:20:26Z" end-time="2026-09-28 17:22:33Z" duration="126.8015597">
+  <test-suite type="TestSuite" id="1573" name="Gravity Box" fullname="Gravity Box" runstate="Runnable" testcasecount="521" result="Passed" start-time="2026-09-28 17:20:26Z" end-time="2026-09-28 17:22:33Z" duration="126.801560" total="100" passed="100" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1567" name="GravityBox.Tests.PlayMode.dll" fullname="/Users/mrk/GravityBox/Library/ScriptAssemblies/GravityBox.Tests.PlayMode.dll" runstate="Runnable" testcasecount="521" result="Passed" start-time="2026-09-28 17:20:26Z" end-time="2026-09-28 17:22:33Z" duration="126.794027" total="100" passed="100" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="12640" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1568" name="GravityBox" fullname="GravityBox" runstate="Runnable" testcasecount="521" result="Passed" start-time="2026-09-28 17:20:26Z" end-time="2026-09-28 17:22:33Z" duration="126.791543" total="100" passed="100" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1569" name="Tests" fullname="GravityBox.Tests" runstate="Runnable" testcasecount="521" result="Passed" start-time="2026-09-28 17:20:26Z" end-time="2026-09-28 17:22:33Z" duration="126.788677" total="100" passed="100" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1375" name="COgheViewCampaignTests" fullname="GravityBox.Tests.COgheViewCampaignTests" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" testcasecount="24" result="Passed" start-time="2026-09-28 17:20:26Z" end-time="2026-09-28 17:20:45Z" duration="18.773979" total="24" passed="24" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1388" name="ClosedLidBlocksHandleAndEverySceneUsesNewCatalog" fullname="GravityBox.Tests.COgheViewCampaignTests.ClosedLidBlocksHandleAndEverySceneUsesNewCatalog" methodname="ClosedLidBlocksHandleAndEverySceneUsesNewCatalog" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1876625492" result="Passed" start-time="2026-09-28 17:20:26Z" end-time="2026-09-28 17:20:29Z" duration="3.149884" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1397" name="CutawayKeepsAnIntermediateAngleAndSettlesWhilePaused" fullname="GravityBox.Tests.COgheViewCampaignTests.CutawayKeepsAnIntermediateAngleAndSettlesWhilePaused" methodname="CutawayKeepsAnIntermediateAngleAndSettlesWhilePaused" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="534656880" result="Passed" start-time="2026-09-28 17:20:29Z" end-time="2026-09-28 17:20:30Z" duration="0.297084" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1396" name="CutawayReversalFadesPaneAndTrimWithoutChangingPhysicsOrAssets" fullname="GravityBox.Tests.COgheViewCampaignTests.CutawayReversalFadesPaneAndTrimWithoutChangingPhysicsOrAssets" methodname="CutawayReversalFadesPaneAndTrimWithoutChangingPhysicsOrAssets" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1064646293" result="Passed" start-time="2026-09-28 17:20:30Z" end-time="2026-09-28 17:20:30Z" duration="0.306435" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1389" name="DragAndThirdFingerDoNotBecomeMovementCommands" fullname="GravityBox.Tests.COgheViewCampaignTests.DragAndThirdFingerDoNotBecomeMovementCommands" methodname="DragAndThirdFingerDoNotBecomeMovementCommands" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="327882719" result="Passed" start-time="2026-09-28 17:20:30Z" end-time="2026-09-28 17:20:30Z" duration="0.572133" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1391" name="FocusLossAndPauseDropPendingTap" fullname="GravityBox.Tests.COgheViewCampaignTests.FocusLossAndPauseDropPendingTap" methodname="FocusLossAndPauseDropPendingTap" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1585194904" result="Passed" start-time="2026-09-28 17:20:30Z" end-time="2026-09-28 17:20:31Z" duration="0.427638" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1394" name="NearPanesPassInputAndInteriorWallStillOccludes" fullname="GravityBox.Tests.COgheViewCampaignTests.NearPanesPassInputAndInteriorWallStillOccludes" methodname="NearPanesPassInputAndInteriorWallStillOccludes" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="541094424" result="Passed" start-time="2026-09-28 17:20:31Z" end-time="2026-09-28 17:20:31Z" duration="0.556300" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1393" name="OneTapPauseReverseAndRetryUsePhysicalGateState" fullname="GravityBox.Tests.COgheViewCampaignTests.OneTapPauseReverseAndRetryUsePhysicalGateState" methodname="OneTapPauseReverseAndRetryUsePhysicalGateState" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1047233438" result="Passed" start-time="2026-09-28 17:20:31Z" end-time="2026-09-28 17:20:32Z" duration="0.905226" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1386" name="OrbitAndZoomNeverRotateChamberAndRetryRestoresView" fullname="GravityBox.Tests.COgheViewCampaignTests.OrbitAndZoomNeverRotateChamberAndRetryRestoresView" methodname="OrbitAndZoomNeverRotateChamberAndRetryRestoresView" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1991968388" result="Passed" start-time="2026-09-28 17:20:32Z" end-time="2026-09-28 17:20:33Z" duration="0.304688" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1392" name="PinchKeepsMidpointAndOverviewFitsTallSafeArea" fullname="GravityBox.Tests.COgheViewCampaignTests.PinchKeepsMidpointAndOverviewFitsTallSafeArea" methodname="PinchKeepsMidpointAndOverviewFitsTallSafeArea" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="475345371" result="Passed" start-time="2026-09-28 17:20:33Z" end-time="2026-09-28 17:20:33Z" duration="0.294418" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1387" name="RealPinchReleaseDoesNotIssueCommand" fullname="GravityBox.Tests.COgheViewCampaignTests.RealPinchReleaseDoesNotIssueCommand" methodname="RealPinchReleaseDoesNotIssueCommand" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="2072492165" result="Passed" start-time="2026-09-28 17:20:33Z" end-time="2026-09-28 17:20:33Z" duration="0.418897" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1390" name="RetryDuringPinchRequiresAllFingersToRelease" fullname="GravityBox.Tests.COgheViewCampaignTests.RetryDuringPinchRequiresAllFingersToRelease" methodname="RetryDuringPinchRequiresAllFingersToRelease" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1537711673" result="Passed" start-time="2026-09-28 17:20:33Z" end-time="2026-09-28 17:20:34Z" duration="0.487461" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1395" name="V2CompletionRetainsLegacyProgressAndHome" fullname="GravityBox.Tests.COgheViewCampaignTests.V2CompletionRetainsLegacyProgressAndHome" methodname="V2CompletionRetainsLegacyProgressAndHome" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="316084169" result="Passed" start-time="2026-09-28 17:20:34Z" end-time="2026-09-28 17:20:34Z" duration="0.302713" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1376" name="View01Tap" fullname="GravityBox.Tests.COgheViewCampaignTests.View01Tap" methodname="View01Tap" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1549813955" result="Passed" start-time="2026-09-28 17:20:34Z" end-time="2026-09-28 17:20:35Z" duration="0.779190" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1377" name="View02Climb" fullname="GravityBox.Tests.COgheViewCampaignTests.View02Climb" methodname="View02Climb" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1016756467" result="Passed" start-time="2026-09-28 17:20:35Z" end-time="2026-09-28 17:20:35Z" duration="0.536313" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1378" name="View03Orbit" fullname="GravityBox.Tests.COgheViewCampaignTests.View03Orbit" methodname="View03Orbit" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="628609880" result="Passed" start-time="2026-09-28 17:20:35Z" end-time="2026-09-28 17:20:36Z" duration="0.570100" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1398" name="View04HasAnInspectionRouteWhoseDetailsEnlargeWithZoom" fullname="GravityBox.Tests.COgheViewCampaignTests.View04HasAnInspectionRouteWhoseDetailsEnlargeWithZoom" methodname="View04HasAnInspectionRouteWhoseDetailsEnlargeWithZoom" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="959322157" result="Passed" start-time="2026-09-28 17:20:36Z" end-time="2026-09-28 17:20:36Z" duration="0.348159" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1399" name="View04KnownRouteCanBeCompletedWithoutAHiddenZoomFlag" fullname="GravityBox.Tests.COgheViewCampaignTests.View04KnownRouteCanBeCompletedWithoutAHiddenZoomFlag" methodname="View04KnownRouteCanBeCompletedWithoutAHiddenZoomFlag" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1552994114" result="Passed" start-time="2026-09-28 17:20:36Z" end-time="2026-09-28 17:20:37Z" duration="1.026985" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1379" name="View04Zoom" fullname="GravityBox.Tests.COgheViewCampaignTests.View04Zoom" methodname="View04Zoom" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1062264321" result="Passed" start-time="2026-09-28 17:20:37Z" end-time="2026-09-28 17:20:38Z" duration="1.057659" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1380" name="View05Slider" fullname="GravityBox.Tests.COgheViewCampaignTests.View05Slider" methodname="View05Slider" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="864344544" result="Passed" start-time="2026-09-28 17:20:38Z" end-time="2026-09-28 17:20:39Z" duration="0.803549" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1381" name="View06Practice" fullname="GravityBox.Tests.COgheViewCampaignTests.View06Practice" methodname="View06Practice" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1007019879" result="Passed" start-time="2026-09-28 17:20:39Z" end-time="2026-09-28 17:20:40Z" duration="0.784805" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1382" name="View07Reverse" fullname="GravityBox.Tests.COgheViewCampaignTests.View07Reverse" methodname="View07Reverse" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="121355418" result="Passed" start-time="2026-09-28 17:20:40Z" end-time="2026-09-28 17:20:41Z" duration="1.160800" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Disconnected surface route 7: (-0.27, -0.28, -0.11) -> (-0.15, -0.28, 0.17), 900 nodes
+]]></output>
+            </test-case>
+            <test-case id="1383" name="View08Bridge" fullname="GravityBox.Tests.COgheViewCampaignTests.View08Bridge" methodname="View08Bridge" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1612786624" result="Passed" start-time="2026-09-28 17:20:41Z" end-time="2026-09-28 17:20:42Z" duration="0.856831" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1384" name="View09Cover" fullname="GravityBox.Tests.COgheViewCampaignTests.View09Cover" methodname="View09Cover" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1118685092" result="Passed" start-time="2026-09-28 17:20:42Z" end-time="2026-09-28 17:20:43Z" duration="1.150752" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1385" name="View10Boss" fullname="GravityBox.Tests.COgheViewCampaignTests.View10Boss" methodname="View10Boss" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1228089328" result="Passed" start-time="2026-09-28 17:20:43Z" end-time="2026-09-28 17:20:45Z" duration="1.652802" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1269" name="COgheViewExpansionTests" fullname="GravityBox.Tests.COgheViewExpansionTests" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" testcasecount="76" result="Passed" start-time="2026-09-28 17:20:45Z" end-time="2026-09-28 17:22:33Z" duration="108.000565" total="76" passed="76" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1305" name="EveryNewKnifeWaitsAsPhysicalBarrierWhilePlayerChooses" fullname="GravityBox.Tests.COgheViewExpansionTests.EveryNewKnifeWaitsAsPhysicalBarrierWhilePlayerChooses" methodname="EveryNewKnifeWaitsAsPhysicalBarrierWhilePlayerChooses" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1149880887" result="Passed" start-time="2026-09-28 17:20:45Z" end-time="2026-09-28 17:20:49Z" duration="4.131761" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1299" name="View11DirectExitCommandCannotSkipFarBank" fullname="GravityBox.Tests.COgheViewExpansionTests.View11DirectExitCommandCannotSkipFarBank" methodname="View11DirectExitCommandCannotSkipFarBank" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="2132774326" result="Passed" start-time="2026-09-28 17:20:49Z" end-time="2026-09-28 17:20:51Z" duration="2.373012" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1306" name="View11FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View11FullSolution" methodname="View11FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="739689847" result="Passed" start-time="2026-09-28 17:20:51Z" end-time="2026-09-28 17:20:53Z" duration="1.434124" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1287" name="View11ParkedBridgeHidesExitUntilActuallyDocked" fullname="GravityBox.Tests.COgheViewExpansionTests.View11ParkedBridgeHidesExitUntilActuallyDocked" methodname="View11ParkedBridgeHidesExitUntilActuallyDocked" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1726144950" result="Passed" start-time="2026-09-28 17:20:53Z" end-time="2026-09-28 17:20:54Z" duration="0.761576" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1307" name="View11RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View11RecoveryAndPortrait" methodname="View11RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="864073978" result="Passed" start-time="2026-09-28 17:20:54Z" end-time="2026-09-28 17:20:54Z" duration="0.468711" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1308" name="View12FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View12FullSolution" methodname="View12FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1375405932" result="Passed" start-time="2026-09-28 17:20:54Z" end-time="2026-09-28 17:20:55Z" duration="1.053161" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1288" name="View12LidReversesAndReopensWithoutReset" fullname="GravityBox.Tests.COgheViewExpansionTests.View12LidReversesAndReopensWithoutReset" methodname="View12LidReversesAndReopensWithoutReset" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="812539114" result="Passed" start-time="2026-09-28 17:20:55Z" end-time="2026-09-28 17:20:56Z" duration="1.014187" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1309" name="View12RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View12RecoveryAndPortrait" methodname="View12RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="183794005" result="Passed" start-time="2026-09-28 17:20:56Z" end-time="2026-09-28 17:20:57Z" duration="0.458262" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1289" name="View13CoveredBridgeCannotBeCommandedUntilCoverClears" fullname="GravityBox.Tests.COgheViewExpansionTests.View13CoveredBridgeCannotBeCommandedUntilCoverClears" methodname="View13CoveredBridgeCannotBeCommandedUntilCoverClears" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1493771856" result="Passed" start-time="2026-09-28 17:20:57Z" end-time="2026-09-28 17:20:58Z" duration="1.447111" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1310" name="View13FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View13FullSolution" methodname="View13FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="258212309" result="Passed" start-time="2026-09-28 17:20:58Z" end-time="2026-09-28 17:21:00Z" duration="2.077672" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1311" name="View13RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View13RecoveryAndPortrait" methodname="View13RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="2119353232" result="Passed" start-time="2026-09-28 17:21:00Z" end-time="2026-09-28 17:21:01Z" duration="0.492423" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1312" name="View14FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View14FullSolution" methodname="View14FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="95241577" result="Passed" start-time="2026-09-28 17:21:01Z" end-time="2026-09-28 17:21:01Z" duration="0.894920" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1313" name="View14RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View14RecoveryAndPortrait" methodname="View14RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="20876105" result="Passed" start-time="2026-09-28 17:21:01Z" end-time="2026-09-28 17:21:02Z" duration="0.455654" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1290" name="View14UncaughtOutputReturnsWhenSourceDisengages" fullname="GravityBox.Tests.COgheViewExpansionTests.View14UncaughtOutputReturnsWhenSourceDisengages" methodname="View14UncaughtOutputReturnsWhenSourceDisengages" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="767495596" result="Passed" start-time="2026-09-28 17:21:02Z" end-time="2026-09-28 17:21:03Z" duration="0.774688" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1314" name="View15FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View15FullSolution" methodname="View15FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="26548105" result="Passed" start-time="2026-09-28 17:21:03Z" end-time="2026-09-28 17:21:05Z" duration="2.055375" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1315" name="View15RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View15RecoveryAndPortrait" methodname="View15RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="319680754" result="Passed" start-time="2026-09-28 17:21:05Z" end-time="2026-09-28 17:21:05Z" duration="0.488689" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1291" name="View15WrongStationFirstCanBeRecoveredAndBothCatchesPersist" fullname="GravityBox.Tests.COgheViewExpansionTests.View15WrongStationFirstCanBeRecoveredAndBothCatchesPersist" methodname="View15WrongStationFirstCanBeRecoveredAndBothCatchesPersist" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="46029115" result="Passed" start-time="2026-09-28 17:21:05Z" end-time="2026-09-28 17:21:08Z" duration="2.503457" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1316" name="View16FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View16FullSolution" methodname="View16FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1921778494" result="Passed" start-time="2026-09-28 17:21:08Z" end-time="2026-09-28 17:21:10Z" duration="1.828295" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1317" name="View16RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View16RecoveryAndPortrait" methodname="View16RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="2131950475" result="Passed" start-time="2026-09-28 17:21:10Z" end-time="2026-09-28 17:21:10Z" duration="0.480310" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1292" name="View16SecondDeckHitsRealDogThenRecoversAfterFirstMoves" fullname="GravityBox.Tests.COgheViewExpansionTests.View16SecondDeckHitsRealDogThenRecoversAfterFirstMoves" methodname="View16SecondDeckHitsRealDogThenRecoversAfterFirstMoves" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1300509210" result="Passed" start-time="2026-09-28 17:21:10Z" end-time="2026-09-28 17:21:12Z" duration="1.548753" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1318" name="View17FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View17FullSolution" methodname="View17FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="205286433" result="Passed" start-time="2026-09-28 17:21:12Z" end-time="2026-09-28 17:21:13Z" duration="1.356748" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1319" name="View17RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View17RecoveryAndPortrait" methodname="View17RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="2063123031" result="Passed" start-time="2026-09-28 17:21:13Z" end-time="2026-09-28 17:21:13Z" duration="0.336098" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1300" name="View17RetryDuringTransitClearsOwnershipAndRestoresWholeBody" fullname="GravityBox.Tests.COgheViewExpansionTests.View17RetryDuringTransitClearsOwnershipAndRestoresWholeBody" methodname="View17RetryDuringTransitClearsOwnershipAndRestoresWholeBody" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="288798256" result="Passed" start-time="2026-09-28 17:21:13Z" end-time="2026-09-28 17:21:14Z" duration="1.153670" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1293" name="View17TransferWorksBothWaysWithoutEscaping" fullname="GravityBox.Tests.COgheViewExpansionTests.View17TransferWorksBothWaysWithoutEscaping" methodname="View17TransferWorksBothWaysWithoutEscaping" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1780038833" result="Passed" start-time="2026-09-28 17:21:14Z" end-time="2026-09-28 17:21:16Z" duration="1.924299" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1320" name="View18FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View18FullSolution" methodname="View18FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1050669389" result="Passed" start-time="2026-09-28 17:21:16Z" end-time="2026-09-28 17:21:20Z" duration="3.793061" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Disconnected surface route 18: (-0.24, -0.28, 0.32) -> (-0.43, -0.13, 0.06), 1625 nodes
+Disconnected surface route 18: (0.24, -0.28, 0.32) -> (-0.03, 0.03, 0.22), 1621 nodes
+]]></output>
+            </test-case>
+            <test-case id="1321" name="View18RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View18RecoveryAndPortrait" methodname="View18RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1241910726" result="Passed" start-time="2026-09-28 17:21:20Z" end-time="2026-09-28 17:21:21Z" duration="0.517669" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1294" name="View18WrongBranchReturnsAndOccupiedTubeLocksSelector" fullname="GravityBox.Tests.COgheViewExpansionTests.View18WrongBranchReturnsAndOccupiedTubeLocksSelector" methodname="View18WrongBranchReturnsAndOccupiedTubeLocksSelector" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1008342432" result="Passed" start-time="2026-09-28 17:21:21Z" end-time="2026-09-28 17:21:24Z" duration="3.167681" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Disconnected surface route 18: (0.24, -0.28, 0.32) -> (0.31, -0.13, 0.06), 1625 nodes
+Disconnected surface route 18: (0.24, -0.28, 0.32) -> (-0.03, -0.02, 0.16), 1625 nodes
+Disconnected surface route 18: (-0.24, -0.28, 0.32) -> (-0.43, -0.13, 0.06), 1625 nodes
+]]></output>
+            </test-case>
+            <test-case id="1322" name="View19FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View19FullSolution" methodname="View19FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1308135798" result="Passed" start-time="2026-09-28 17:21:24Z" end-time="2026-09-28 17:21:26Z" duration="2.564000" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1323" name="View19RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View19RecoveryAndPortrait" methodname="View19RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="721986586" result="Passed" start-time="2026-09-28 17:21:26Z" end-time="2026-09-28 17:21:27Z" duration="0.570308" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1295" name="View19ReturningSelectorWithoutBridgeNeverCreatesOne" fullname="GravityBox.Tests.COgheViewExpansionTests.View19ReturningSelectorWithoutBridgeNeverCreatesOne" methodname="View19ReturningSelectorWithoutBridgeNeverCreatesOne" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="849372222" result="Passed" start-time="2026-09-28 17:21:27Z" end-time="2026-09-28 17:21:28Z" duration="1.044385" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1296" name="View20CoverBlocksPowerAndPipeMouthOnlyOpensAfterPower" fullname="GravityBox.Tests.COgheViewExpansionTests.View20CoverBlocksPowerAndPipeMouthOnlyOpensAfterPower" methodname="View20CoverBlocksPowerAndPipeMouthOnlyOpensAfterPower" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="805494906" result="Passed" start-time="2026-09-28 17:21:28Z" end-time="2026-09-28 17:21:29Z" duration="1.351444" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1324" name="View20FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View20FullSolution" methodname="View20FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="63789990" result="Passed" start-time="2026-09-28 17:21:29Z" end-time="2026-09-28 17:21:33Z" duration="3.129068" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1325" name="View20RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View20RecoveryAndPortrait" methodname="View20RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1991249793" result="Passed" start-time="2026-09-28 17:21:33Z" end-time="2026-09-28 17:21:33Z" duration="0.520128" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1326" name="View21FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View21FullSolution" methodname="View21FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1822582149" result="Passed" start-time="2026-09-28 17:21:33Z" end-time="2026-09-28 17:21:35Z" duration="1.547008" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1297" name="View21OneJourneyMovesBridgeAndSeparateExitCover" fullname="GravityBox.Tests.COgheViewExpansionTests.View21OneJourneyMovesBridgeAndSeparateExitCover" methodname="View21OneJourneyMovesBridgeAndSeparateExitCover" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="850477224" result="Passed" start-time="2026-09-28 17:21:35Z" end-time="2026-09-28 17:21:35Z" duration="0.848009" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1327" name="View21RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View21RecoveryAndPortrait" methodname="View21RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="2000915811" result="Passed" start-time="2026-09-28 17:21:35Z" end-time="2026-09-28 17:21:36Z" duration="0.490326" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1328" name="View22FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View22FullSolution" methodname="View22FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="495715092" result="Passed" start-time="2026-09-28 17:21:36Z" end-time="2026-09-28 17:21:37Z" duration="0.934294" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1301" name="View22OffCentreApproachMakesUnequalCuts" fullname="GravityBox.Tests.COgheViewExpansionTests.View22OffCentreApproachMakesUnequalCuts" methodname="View22OffCentreApproachMakesUnequalCuts" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1100514422" result="Passed" start-time="2026-09-28 17:21:37Z" end-time="2026-09-28 17:21:37Z" duration="0.391363" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1329" name="View22RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View22RecoveryAndPortrait" methodname="View22RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="952970837" result="Passed" start-time="2026-09-28 17:21:37Z" end-time="2026-09-28 17:21:38Z" duration="0.342433" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1298" name="View22UnmergedExitFailsAndRetryRemovesOldCommands" fullname="GravityBox.Tests.COgheViewExpansionTests.View22UnmergedExitFailsAndRetryRemovesOldCommands" methodname="View22UnmergedExitFailsAndRetryRemovesOldCommands" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="547841282" result="Passed" start-time="2026-09-28 17:21:38Z" end-time="2026-09-28 17:21:38Z" duration="0.738619" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1285" name="View23ApproachingPartnerCanMergeWithHeldBody" fullname="GravityBox.Tests.COgheViewExpansionTests.View23ApproachingPartnerCanMergeWithHeldBody" methodname="View23ApproachingPartnerCanMergeWithHeldBody" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="720449286" result="Passed" start-time="2026-09-28 17:21:38Z" end-time="2026-09-28 17:21:39Z" duration="1.069177" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1272" name="View23ChangingOneTaskPreservesOtherHeldInput" fullname="GravityBox.Tests.COgheViewExpansionTests.View23ChangingOneTaskPreservesOtherHeldInput" methodname="View23ChangingOneTaskPreservesOtherHeldInput" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1499512795" result="Passed" start-time="2026-09-28 17:21:39Z" end-time="2026-09-28 17:21:41Z" duration="1.182344" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1283" name="View23FragmentAtOpenWallExitLosesBeforeAnyWin" fullname="GravityBox.Tests.COgheViewExpansionTests.View23FragmentAtOpenWallExitLosesBeforeAnyWin" methodname="View23FragmentAtOpenWallExitLosesBeforeAnyWin" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1015206772" result="Passed" start-time="2026-09-28 17:21:41Z" end-time="2026-09-28 17:21:42Z" duration="1.543279" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1330" name="View23FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View23FullSolution" methodname="View23FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="25522324" result="Passed" start-time="2026-09-28 17:21:42Z" end-time="2026-09-28 17:21:44Z" duration="1.906670" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1331" name="View23RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View23RecoveryAndPortrait" methodname="View23RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1247358233" result="Passed" start-time="2026-09-28 17:21:44Z" end-time="2026-09-28 17:21:44Z" duration="0.463184" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1274" name="View23ReleaseReturnsDoorAndReholdingRecovers" fullname="GravityBox.Tests.COgheViewExpansionTests.View23ReleaseReturnsDoorAndReholdingRecovers" methodname="View23ReleaseReturnsDoorAndReholdingRecovers" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1589844177" result="Passed" start-time="2026-09-28 17:21:44Z" end-time="2026-09-28 17:21:46Z" duration="1.669964" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1286" name="View23ReturnSafetyFixtureCannotCreateCatchOrOpenAperture" fullname="GravityBox.Tests.COgheViewExpansionTests.View23ReturnSafetyFixtureCannotCreateCatchOrOpenAperture" methodname="View23ReturnSafetyFixtureCannotCreateCatchOrOpenAperture" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="864208388" result="Passed" start-time="2026-09-28 17:21:46Z" end-time="2026-09-28 17:21:47Z" duration="0.334595" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1273" name="View23ReverseInputOrderStillCatchesAndReleasesBoth" fullname="GravityBox.Tests.COgheViewExpansionTests.View23ReverseInputOrderStillCatchesAndReleasesBoth" methodname="View23ReverseInputOrderStillCatchesAndReleasesBoth" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="2100776503" result="Passed" start-time="2026-09-28 17:21:47Z" end-time="2026-09-28 17:21:48Z" duration="1.648417" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1270" name="View23WholeBodyAThenBCannotComplete" fullname="GravityBox.Tests.COgheViewExpansionTests.View23WholeBodyAThenBCannotComplete" methodname="View23WholeBodyAThenBCannotComplete" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1040108048" result="Passed" start-time="2026-09-28 17:21:48Z" end-time="2026-09-28 17:21:50Z" duration="1.365573" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1271" name="View23WholeBodyBThenACannotComplete" fullname="GravityBox.Tests.COgheViewExpansionTests.View23WholeBodyBThenACannotComplete" methodname="View23WholeBodyBThenACannotComplete" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="555203958" result="Passed" start-time="2026-09-28 17:21:50Z" end-time="2026-09-28 17:21:51Z" duration="1.574062" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1276" name="View24BrakeLossPausesWorkerAndReholdingResumesSameTask" fullname="GravityBox.Tests.COgheViewExpansionTests.View24BrakeLossPausesWorkerAndReholdingResumesSameTask" methodname="View24BrakeLossPausesWorkerAndReholdingResumesSameTask" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="361414374" result="Passed" start-time="2026-09-28 17:21:51Z" end-time="2026-09-28 17:21:53Z" duration="1.687732" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1332" name="View24FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View24FullSolution" methodname="View24FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1087015083" result="Passed" start-time="2026-09-28 17:21:53Z" end-time="2026-09-28 17:21:55Z" duration="2.003252" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1333" name="View24RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View24RecoveryAndPortrait" methodname="View24RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1700403957" result="Passed" start-time="2026-09-28 17:21:55Z" end-time="2026-09-28 17:21:55Z" duration="0.481535" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1284" name="View24UnequalRealCutStillCompletesBothRoles" fullname="GravityBox.Tests.COgheViewExpansionTests.View24UnequalRealCutStillCompletesBothRoles" methodname="View24UnequalRealCutStillCompletesBothRoles" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1182319082" result="Passed" start-time="2026-09-28 17:21:55Z" end-time="2026-09-28 17:21:57Z" duration="1.491818" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1277" name="View24WorkerAloneCannotMoveBrakedBridgeAndCanCancelWaiting" fullname="GravityBox.Tests.COgheViewExpansionTests.View24WorkerAloneCannotMoveBrakedBridgeAndCanCancelWaiting" methodname="View24WorkerAloneCannotMoveBrakedBridgeAndCanCancelWaiting" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1338360383" result="Passed" start-time="2026-09-28 17:21:57Z" end-time="2026-09-28 17:21:57Z" duration="0.725978" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1278" name="View25BrakeHolderAloneCannotDriveFarBridge" fullname="GravityBox.Tests.COgheViewExpansionTests.View25BrakeHolderAloneCannotDriveFarBridge" methodname="View25BrakeHolderAloneCannotDriveFarBridge" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="796248293" result="Passed" start-time="2026-09-28 17:21:57Z" end-time="2026-09-28 17:21:58Z" duration="0.913212" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1334" name="View25FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View25FullSolution" methodname="View25FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="304133108" result="Passed" start-time="2026-09-28 17:21:58Z" end-time="2026-09-28 17:22:01Z" duration="2.767056" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1335" name="View25RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View25RecoveryAndPortrait" methodname="View25RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1568010399" result="Passed" start-time="2026-09-28 17:22:01Z" end-time="2026-09-28 17:22:02Z" duration="0.489366" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1282" name="View26CutawayWallStillAcceptsAndSupportsHeldInput" fullname="GravityBox.Tests.COgheViewExpansionTests.View26CutawayWallStillAcceptsAndSupportsHeldInput" methodname="View26CutawayWallStillAcceptsAndSupportsHeldInput" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="153071044" result="Passed" start-time="2026-09-28 17:22:02Z" end-time="2026-09-28 17:22:03Z" duration="0.877887" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1336" name="View26FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View26FullSolution" methodname="View26FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1087814595" result="Passed" start-time="2026-09-28 17:22:03Z" end-time="2026-09-28 17:22:05Z" duration="2.425387" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1337" name="View26RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View26RecoveryAndPortrait" methodname="View26RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="497533253" result="Passed" start-time="2026-09-28 17:22:05Z" end-time="2026-09-28 17:22:05Z" duration="0.487014" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1275" name="View26ReleaseDumpsPressureAndReholdingRecovers" fullname="GravityBox.Tests.COgheViewExpansionTests.View26ReleaseDumpsPressureAndReholdingRecovers" methodname="View26ReleaseDumpsPressureAndReholdingRecovers" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1959524971" result="Passed" start-time="2026-09-28 17:22:05Z" end-time="2026-09-28 17:22:07Z" duration="1.706544" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1279" name="View27CornerPullUsesRealWallSupportAndKeepsCatchAfterRelease" fullname="GravityBox.Tests.COgheViewExpansionTests.View27CornerPullUsesRealWallSupportAndKeepsCatchAfterRelease" methodname="View27CornerPullUsesRealWallSupportAndKeepsCatchAfterRelease" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1820403204" result="Passed" start-time="2026-09-28 17:22:07Z" end-time="2026-09-28 17:22:09Z" duration="1.495404" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1338" name="View27FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View27FullSolution" methodname="View27FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="370434126" result="Passed" start-time="2026-09-28 17:22:09Z" end-time="2026-09-28 17:22:11Z" duration="1.866513" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1339" name="View27RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View27RecoveryAndPortrait" methodname="View27RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="269818602" result="Passed" start-time="2026-09-28 17:22:11Z" end-time="2026-09-28 17:22:11Z" duration="0.459652" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1280" name="View28FirstRouteMustCatchBeforeSelectorCanChange" fullname="GravityBox.Tests.COgheViewExpansionTests.View28FirstRouteMustCatchBeforeSelectorCanChange" methodname="View28FirstRouteMustCatchBeforeSelectorCanChange" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="813186679" result="Passed" start-time="2026-09-28 17:22:11Z" end-time="2026-09-28 17:22:13Z" duration="2.057531" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1340" name="View28FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View28FullSolution" methodname="View28FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1807583292" result="Passed" start-time="2026-09-28 17:22:13Z" end-time="2026-09-28 17:22:17Z" duration="3.780022" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1341" name="View28RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View28RecoveryAndPortrait" methodname="View28RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1712426495" result="Passed" start-time="2026-09-28 17:22:17Z" end-time="2026-09-28 17:22:17Z" duration="0.517406" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1342" name="View29FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View29FullSolution" methodname="View29FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="78357380" result="Passed" start-time="2026-09-28 17:22:17Z" end-time="2026-09-28 17:22:21Z" duration="3.830812" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1302" name="View29ObliqueIntakeClearsTheActualDistalMouth" fullname="GravityBox.Tests.COgheViewExpansionTests.View29ObliqueIntakeClearsTheActualDistalMouth" methodname="View29ObliqueIntakeClearsTheActualDistalMouth" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="943742212" result="Passed" start-time="2026-09-28 17:22:21Z" end-time="2026-09-28 17:22:23Z" duration="1.617366" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1343" name="View29RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View29RecoveryAndPortrait" methodname="View29RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="490921025" result="Passed" start-time="2026-09-28 17:22:23Z" end-time="2026-09-28 17:22:23Z" duration="0.488589" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1304" name="View30DistantExitPlaneCannotFinishIntakeAtSource" fullname="GravityBox.Tests.COgheViewExpansionTests.View30DistantExitPlaneCannotFinishIntakeAtSource" methodname="View30DistantExitPlaneCannotFinishIntakeAtSource" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="585809171" result="Passed" start-time="2026-09-28 17:22:23Z" end-time="2026-09-28 17:22:25Z" duration="2.157006" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1281" name="View30FinalValvesLockedUntilActualReturnBridge" fullname="GravityBox.Tests.COgheViewExpansionTests.View30FinalValvesLockedUntilActualReturnBridge" methodname="View30FinalValvesLockedUntilActualReturnBridge" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1920471620" result="Passed" start-time="2026-09-28 17:22:25Z" end-time="2026-09-28 17:22:26Z" duration="0.374664" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1344" name="View30FullSolution" fullname="GravityBox.Tests.COgheViewExpansionTests.View30FullSolution" methodname="View30FullSolution" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="1905688613" result="Passed" start-time="2026-09-28 17:22:26Z" end-time="2026-09-28 17:22:30Z" duration="4.410428" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1303" name="View30NewCommandCancelsPendingPipeApproach" fullname="GravityBox.Tests.COgheViewExpansionTests.View30NewCommandCancelsPendingPipeApproach" methodname="View30NewCommandCancelsPendingPipeApproach" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="162410362" result="Passed" start-time="2026-09-28 17:22:30Z" end-time="2026-09-28 17:22:32Z" duration="2.071324" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1345" name="View30RecoveryAndPortrait" fullname="GravityBox.Tests.COgheViewExpansionTests.View30RecoveryAndPortrait" methodname="View30RecoveryAndPortrait" classname="GravityBox.Tests.COgheViewExpansionTests" runstate="Runnable" seed="2142746447" result="Passed" start-time="2026-09-28 17:22:32Z" end-time="2026-09-28 17:22:33Z" duration="0.548232" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: /Users/mrk/Library/Application Support/Gravity Box Lab/Gravity Box/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
