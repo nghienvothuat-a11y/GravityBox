@@ -183,7 +183,7 @@ namespace GravityBox.Venom
                     for(int i=0;i<32;i++)
                     {
                         int group=game.Matter.Groups[i];if(seenGroups[group]||game.Matter.Escaped[i])continue;seenGroups[group]=true;
-                        if(GUI.Button(new Rect(26+(slot%columns)*cell,h-119-(slot/columns)*32,cell-6,29),cooperation!=null?cooperation.FragmentLabel(i,slot+1):"Phần "+(slot+1),game.Matter.Groups[game.Motion.Selected]==group?selected:chip))game.SelectFragment(i);
+                        if(GUI.Button(new Rect(26+(slot%columns)*cell,h-119-(slot/columns)*32,cell-6,29),cooperation!=null?cooperation.FragmentLabel(i,slot+1):PartLabel(group,slot+1),game.Matter.Groups[game.Motion.Selected]==group?selected:chip))game.SelectFragment(i);
                         slot++;
                     }
                 }
@@ -203,6 +203,13 @@ namespace GravityBox.Venom
                 if(GUI.Button(new Rect(65,h-119,410,29),graphicProfile.ActiveNew?"Đồ hoạ Blender · đổi sang bản cũ ↻":"Đồ hoạ cũ · đổi sang Blender ↻",chip))graphicProfile.Toggle();
             GUI.Label(new Rect(26,h-29,488,20),game.Onboarding!=null?"COghe  /  BẢN THỬ HỌC CÁCH CHƠI":"COghe  /  PHÒNG NGHIÊN CỨU",footer);
             GUI.enabled=oldEnabled;GUI.matrix=old;GUI.color=oldColor;GUI.backgroundColor=oldBackground;GUI.contentColor=oldContent;
+        }
+        // "Phần N · 25%": the share of the body's tissue this part holds (Q splits by particle count, so shares are exact).
+        private string PartLabel(int group,int number)
+        {
+            int count=0,total=0;
+            for(int i=0;i<32;i++){if(game.Matter.Escaped[i])continue;total++;if(game.Matter.Groups[i]==group)count++;}
+            return "Phần "+number+" · "+Mathf.RoundToInt(100f*count/Mathf.Max(1,total))+"%";
         }
         private void OnDestroy()
         {Font.textureRebuilt-=RefreshFontAtlas;if(tile!=null)Destroy(tile);if(chosen!=null)Destroy(chosen);if(pressed!=null)Destroy(pressed);}

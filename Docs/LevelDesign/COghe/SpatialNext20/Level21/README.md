@@ -97,3 +97,5 @@ Chưa có APK/binary hoặc log cho màn này. Khi dựng, ghi hash/build/commit
 29/09/2026 — **bản dựng**: Thùng rời đẩy lên khay tải chìm trong hố; dây qua hai ròng rọc nâng đầu xa của ván lên ngang, pawl bắt. Khác hồ sơ: Ván nâng lên ngang thay vì “hạ xuống hai gối” — cùng cơ chế mômen thật. Bằng chứng: `COgheSpatialCampaignTests.Spatial21Solve` (PlayMode 120 Hz, chạm thật, 32/32 hạt qua lỗ cuối, 1 cơ thể, Retry về đầu); replay native Mac cùng kịch bản; ảnh `Docs/Verification/COgheSpatialNext20/21-*.png`. Chưa kiểm: OPPO/FPS điện thoại, người chơi mới, từng ca phục hồi và đường thay thế ở mục 8 (mới có đường giải chính).
 
 29/09/2026 chiều — **sửa phục hồi**: dốc cứu hộ hẹp thay bằng hai bậc ngà (dốc cũ kẹt ở mép bờ khi leo lên từ sàn). Test `COgheSpatialFallRecoveryTests` kiểm rơi/xuống sàn rồi leo lại bằng chạm thật.
+
+29/09/2026 tối — **sửa trọng lực**: ván trước đó chịu hai lần trọng lực (campaign + cơ quan ván). Bỏ lực trong `COgheSeesawBridge`; `Spatial21Solve` và `Spatial21ClimbBack` đạt với tải thật.

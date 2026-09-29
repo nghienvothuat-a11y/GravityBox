@@ -45,7 +45,7 @@ namespace GravityBox.Venom
         public override void StepMechanism(VenomCampaign game, float dt)
         {
             if (Caught) { Tension = 0; return; }
-            Plank.AddForce(Vector3.down * 9.81f, ForceMode.Acceleration);
+            // Weight comes from the campaign, which accelerates every prop (the plank is one) — never add it twice.
             // Rope length is fixed: the tray's descent must equal the anchor's rise. Tension only pulls.
             Vector3 anchorNow = Plank.transform.parent.InverseTransformPoint(Anchor.position);
             float rise = anchorNow.y - anchorRest.y, descent = Tray.Position;

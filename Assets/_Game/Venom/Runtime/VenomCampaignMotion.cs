@@ -87,6 +87,10 @@ namespace GravityBox.Venom
             }
         }
         public bool Busy(int anchor)=>Get(anchor)?.Holding??false;
+        // A grip overload peeled this group off its surface in the last .45 s. A peel drops the group's order on its
+        // own; mechanisms walking a body to a handle use this to tell it from the player giving a new command.
+        public bool Peeled(int anchor)
+        {int group=game.Matter.Groups[anchor];for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group&&detachedUntil[i]>game.Matter.SimulationTime)return true;return false;}
         public void BraceAgainstManipulation(int anchor,Vector3 reaction)
         {
             int group=game.Matter.Groups[anchor],feet=0;

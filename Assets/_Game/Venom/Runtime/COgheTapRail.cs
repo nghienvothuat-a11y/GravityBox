@@ -70,7 +70,7 @@ namespace GravityBox.Venom
         private VenomCampaignMotion.Order order;
         private readonly List<Vector3> route = new List<Vector3>();
         private float target, lastProgressAt, bestDistance, stableTime, messageUntil;
-        private int actorCount;
+        private int actorCount, replans;
         private int targetStop;
         private Vector3 pinRest;
         private Vector3 stance;
@@ -94,7 +94,11 @@ namespace GravityBox.Venom
             point = velocity = Vector3.zero;
             if (Phase != TaskPhase.Operating || !Owns(anchor)) return false;
             point = StandPoint;
-            velocity = Rail.WorldAxis * (RequiredGrip != null && !InterlockOpen ? 0 : Mathf.Clamp((target - Rail.Position) * 3, -Speed, Speed));
+            // The body walks on its working surface: a rail tilted out of that plane (29's frame) leads it along the
+            // surface, never down off its edge. Rails in the plane or square to it are unchanged.
+            Vector3 axis = Rail.WorldAxis;
+            if (Mathf.Abs(Vector3.Dot(axis, WorkingSurface.Normal)) < .5f) axis = Vector3.ProjectOnPlane(axis, WorkingSurface.Normal).normalized;
+            velocity = axis * (RequiredGrip != null && !InterlockOpen ? 0 : Mathf.Clamp((target - Rail.Position) * 3, -Speed, Speed));
             if(TrackStandPoint)velocity+=Vector3.ClampMagnitude(Vector3.ProjectOnPlane(point-owner.Motion.Centre(anchor),WorkingSurface.Normal)*4,Speed);
             return true;
         }
@@ -140,12 +144,17 @@ namespace GravityBox.Venom
             }
             else if (Rail.AtEnd) target = 0;
             else if (Rail.Position <= Rail.CatchTolerance) target = Rail.Travel;
-            owner.Motion.Move(anchor, StandPoint, true);
-            order = owner.Motion.Get(anchor);
-            Phase = TaskPhase.Approaching; LastFailure = null;
-            lastProgressAt = owner.Matter.SimulationTime;
-            bestDistance = Vector3.Distance(owner.Motion.Centre(anchor), StandPoint); stableTime = 0;
+            replans = 0; LastFailure = null;
+            Reapproach(owner);
             return true;
+        }
+        private void Reapproach(VenomCampaign game)
+        {
+            game.Motion.Move(Actor, StandPoint, true);
+            order = game.Motion.Get(Actor);
+            Phase = TaskPhase.Approaching;
+            lastProgressAt = game.Matter.SimulationTime;
+            bestDistance = Vector3.Distance(game.Motion.Centre(Actor), StandPoint); stableTime = 0;
         }
         private int CountActor()
         {
@@ -181,8 +190,14 @@ namespace GravityBox.Venom
             if (InterlockPin != null) InterlockPin.localPosition = pinRest + (InterlockOpen ? Vector3.up * .025f : Vector3.zero);
             if (!Busy) return;
             // A merge keeps Motion's newest real command; a cut never leaves a force owned by the old body.
-            if (game.Owner.Lost || game.Home || !ReferenceEquals(game.Motion.Get(Actor), order) || CountActor() < actorCount)
-            { CancelTask("Lệnh đã thay đổi"); return; }
+            if (game.Owner.Lost || game.Home || CountActor() < actorCount) { CancelTask("Lệnh đã thay đổi"); return; }
+            if (!ReferenceEquals(game.Motion.Get(Actor), order))
+            {
+                // A peel on the way (or at the handle) dropped the walk, not the player: walk back to the handle and
+                // carry on. A player's new tap has already ended this task through PrepareTapCommand.
+                if (game.Motion.Get(Actor) == null && game.Motion.Peeled(Actor) && replans < 3) { replans++; Reapproach(game); return; }
+                CancelTask("Lệnh đã thay đổi"); return;
+            }
             actorCount = CountActor();
             if (!InterlockOpen && RequiredGrip == null) { CancelTask("Chốt đã khóa — giữ bàn đạp rồi thử lại"); return; }
             float now = game.Matter.SimulationTime;

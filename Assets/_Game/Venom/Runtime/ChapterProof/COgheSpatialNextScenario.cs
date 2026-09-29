@@ -298,9 +298,9 @@ namespace GravityBox.Venom.ChapterProof
     yield return Merge(W(.24f,-.30f,-.15f));
     yield return Go(W(.05f,-.30f,.05f),"Walk round behind Q");yield return Go(W(-.24f,-.30f,.05f),"Along the corridor");yield return Go(W(-.24f,-.30f,-.10f),"Beside the crate lane");
     yield return Operate("C");yield return until(5,()=>Task("C").Rail.AtEnd,"Crate parked at the bench");
-    yield return Go(W(-.30f,-.24f,.17f),"Climb crate and winch bench");
+    yield return Go(W(-.30f,-.21f,.17f),"Climb crate and winch bench");
     yield return Operate("D",60);yield return until(15,()=>span.AtEnd,"Full body winds the span up");
-    yield return Go(W(-.02f,-.24f,.23f),"Cross the span to the exit platform");
+    yield return Go(W(-.02f,-.21f,.23f),"Cross the span to the exit platform");
    }
    else if(n==21)
    {
@@ -418,21 +418,23 @@ namespace GravityBox.Venom.ChapterProof
    }
    else if(n==29)
    {
-    var q=Find<COgheQuantumSplitter>();var bolt=Slider("A piece bolt");var span=Find<COgheSeesawBridge>();
-    yield return Split(q,Selected);int l=q.LastLeft,worker=q.LastRight;
-    yield return Walk(worker,W(-.33f,-.30f,-.25f),"50 % waits at the foot of the ramp");
-    yield return Split(q,l);int s1=q.LastLeft,s2=q.LastRight;
+    var q=Find<COgheQuantumSplitter>();var bolt=Slider("A piece bolt");var frame=Find<COgheSeesawBridge>();var frameLock=Slider("Frame lock bolt");
+    // The left half is the worker: its way to the stairs never passes the other half's tray (touching parts fuse).
+    yield return Split(q,Selected);int worker=q.LastLeft,r=q.LastRight;
+    yield return Walk(worker,W(-.33f,-.30f,-.25f),"50 % waits at the foot of the stairs");
+    yield return Split(q,r);int s1=q.LastLeft,s2=q.LastRight;
     yield return Walk(s2,W(.34f,-.298f,-.20f),"25 % onto A1");
     // Behind Q, well clear of the part already standing on A1 (touching parts fuse).
     yield return Walk(s1,W(-.05f,-.30f,-.05f),"25 % steps north of the left tray");yield return Walk(s1,W(.22f,-.30f,.0f),"25 % goes round behind Q");yield return Walk(s1,W(.34f,-.298f,-.065f),"25 % onto A2");
     yield return until(10,()=>bolt.AtEnd,"Both pads draw the piece bolt");
-    game.SelectFragment(worker);yield return Operate("C");yield return until(5,()=>Task("C").Rail.AtEnd,"Far piece C slides through the near socket into the far one");
+    game.SelectFragment(worker);yield return Operate("C");yield return until(5,()=>Task("C").Rail.AtEnd,"Far piece C slides down the frame through the near seat into the far one");
     game.SelectFragment(worker);yield return Operate("D");yield return until(5,()=>Task("D").Rail.AtEnd,"Near piece D slides in from its bay");
-    yield return Merge(W(-.30f,-.30f,-.25f));
-    // The assembled road is the only way up: ramp → landing → D → C → winch platform.
-    yield return Go(W(-.34f,-.18f,.13f),"Up the ramp onto the landing");yield return Go(W(-.10f,-.18f,.20f),"Across piece D onto piece C"); // the only link from the landing to C is D; this spot is clear of both handles' pick boxes
-    yield return Operate("B",60);yield return until(15,()=>span.Caught,"Whole body winds B; the span's far end rises level and its pawl catches");
-    yield return Go(W(.33f,-.18f,.11f),"Across the span to the exit platform");
+    yield return until(10,()=>frameLock.AtEnd,"Both seats caught: the frame lock frees B");
+    // Meet on the floor in front of the frame, left of Q's tray and clear of B's handle.
+    yield return Merge(W(-.14f,-.30f,-.20f));
+    yield return Operate("B",60);yield return until(15,()=>frame.Caught,"Whole body winds B; the frame rises level with both pieces and its pawl catches");
+    yield return Go(W(-.34f,-.18f,.13f),"Up the stairs onto the landing");
+    yield return Go(W(.02f,-.18f,.20f),"Across the lifted bridge onto the exit platform");
    }
    else if(n==30)
    {

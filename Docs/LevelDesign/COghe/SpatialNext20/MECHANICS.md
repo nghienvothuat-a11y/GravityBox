@@ -19,6 +19,11 @@ Một cửa vào rộng, khoang quét nhìn xuyên được, hai khay ra, vách 
 
 `Idle → Receiving → Gathered → Separating → Clearing → Idle`.
 
+**Bản dựng (29/09/2026):** “đi vào máy” nghĩa là người chơi **chạm Q** với phần đang chọn: phần đó đi vào buồng và
+được chia. Buồng có nóc và vách trơn nên không phần nào lọt vào hay leo qua Q ngoài ý muốn; phần chỉ đi ngang trước Q
+không bị chia. Codex ghi nhận khác biệt so với câu chữ “phần đi vào thì tự chia”; giữ cách này vì một cú chạm sàn gần
+Q không được phép tách thân ngoài ý người chơi.
+
 - Chỉ xử lý nhóm đang vào, sau khi toàn bộ mô của nhóm đã qua vùng nhận và hai lối ra còn trống. Hai nhóm cùng tiến vào: nhóm đến sau chờ ở ngoài; không nuốt mô hoặc trộn ID ngẫu nhiên.
 - Tự chạy khi vào đủ; không thêm nút “cắt”. Một lượt vào chỉ kích hoạt một lần. Mô đứng ở khay ra không bị chia liên tiếp mỗi frame. Phải đi ra khỏi vùng nhận và quay vào để tách tiếp; đây là điều kiện hình học, không phải thời gian chờ hợp thể.
 - Dùng lực hữu hạn để gom và tạo hai thuỳ, rồi đổi topology thành hai nhóm cân bằng. Không teleport hạt vào hai vị trí đặt trước. Phân vùng phải giữ mỗi nhóm liên thông, đúng khối lượng, không có hạt kẹt trong vách. Đây là rủi ro cần prototype trước, chưa có bằng chứng solver hiện tại làm được.

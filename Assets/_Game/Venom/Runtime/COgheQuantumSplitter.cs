@@ -54,7 +54,8 @@ namespace GravityBox.Venom
         private int requested = -1;
         private VenomCampaignMotion.Order requestOrder;
 
-        public override void InitializeMechanism(VenomCampaign game) { owner = game; }
+        private Rigidbody frameBody;
+        public override void InitializeMechanism(VenomCampaign game) { owner = game; frameBody = Chamber != null ? Chamber.GetComponentInParent<Rigidbody>() : null; }
         public override void ResetMechanism(VenomCampaign game)
         {
             owner = game; Phase = SplitPhase.Idle; Splits = 0; LastLeft = LastRight = -1; LastMessage = null; messageUntil = 0;
@@ -244,25 +245,24 @@ namespace GravityBox.Venom
             owner.Motion.BuildGraph();
         }
 
-        private void DriveGates(VenomCampaign game, bool open)
+        // Called every tick, so it allocates nothing: one helper per gate instead of a temporary array.
+        private void DriveGates(VenomCampaign game, bool open) { DriveGate(game, LeftGate, open); DriveGate(game, RightGate, open); }
+        private void DriveGate(VenomCampaign game, COgheRailSlider gate, bool open)
         {
-            foreach (var gate in new[] { LeftGate, RightGate })
-            {
-                if (gate == null) continue;
-                bool occupied = false;
-                if (!open)
-                    for (int i = 0; i < 32 && !occupied; i++)
-                    {
-                        if (game.Matter.Escaped[i]) continue;
-                        Vector3 p = gate.Body.transform.InverseTransformPoint(game.Matter.Bodies[i].position);
-                        // Anti-pinch: never lower a gate onto tissue standing in its lane.
-                        occupied = Mathf.Abs(p.x) < .025f && Mathf.Abs(p.z) < .035f;
-                    }
-                bool raise = open || occupied && gate.Position > gate.CatchTolerance;
-                gate.Locked = false;
-                float target = raise ? gate.Travel : 0, speed = Vector3.Dot(gate.Body.linearVelocity, gate.WorldAxis);
-                gate.ApplyEffort(gate.WorldAxis * Mathf.Clamp((target - gate.Position) * 10 - speed * 1.2f, -SeptumForce, SeptumForce));
-            }
+            if (gate == null) return;
+            bool occupied = false;
+            if (!open)
+                for (int i = 0; i < 32 && !occupied; i++)
+                {
+                    if (game.Matter.Escaped[i]) continue;
+                    Vector3 p = gate.Body.transform.InverseTransformPoint(game.Matter.Bodies[i].position);
+                    // Anti-pinch: never lower a gate onto tissue standing in its lane.
+                    occupied = Mathf.Abs(p.x) < .025f && Mathf.Abs(p.z) < .035f;
+                }
+            bool raise = open || occupied && gate.Position > gate.CatchTolerance;
+            gate.Locked = false;
+            float target = raise ? gate.Travel : 0, speed = Vector3.Dot(gate.Body.linearVelocity, gate.WorldAxis);
+            gate.ApplyEffort(gate.WorldAxis * Mathf.Clamp((target - gate.Position) * 10 - speed * 1.2f, -SeptumForce, SeptumForce));
         }
         private void DriveSeptum(float direction)
         {
@@ -278,7 +278,8 @@ namespace GravityBox.Venom
         private void Pull(int i, Vector3 target, float dt)
         {
             var body = owner.Matter.Bodies[i];
-            Vector3 relative = body.linearVelocity - Chamber.GetComponentInParent<Rigidbody>().GetPointVelocity(body.position);
+            if (frameBody == null) frameBody = Chamber.GetComponentInParent<Rigidbody>();
+            Vector3 relative = body.linearVelocity - frameBody.GetPointVelocity(body.position);
             Vector3 desired = Vector3.ClampMagnitude((target - body.position) * 5, .15f);
             Vector3 acceleration = Vector3.ClampMagnitude((desired - relative) * 25, Acceleration) + Vector3.up * 9.81f;
             body.AddForce(acceleration * body.mass);

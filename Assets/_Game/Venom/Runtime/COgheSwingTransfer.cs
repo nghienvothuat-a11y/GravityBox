@@ -42,6 +42,7 @@ namespace GravityBox.Venom
 
         private VenomCampaign owner;
         private VenomCampaignMotion.Order order;
+        private int replans;
         private readonly bool[] member = new bool[CohesiveOrganism.ParticleCount];
         private readonly Vector3[] offset = new Vector3[CohesiveOrganism.ParticleCount];
         private bool parked, carrying, passedLowest;
@@ -90,7 +91,7 @@ namespace GravityBox.Venom
             {
                 if (!game.PrepareTapCommand(selected)) return true;
                 Actor = selected; game.Motion.Move(Actor, StandPoint.position, true); order = game.Motion.Get(Actor);
-                Phase = SwingPhase.Approaching; clock = 0;
+                Phase = SwingPhase.Approaching; clock = 0; replans = 0;
                 game.Feedback.ShowCommand(Ring.position, Vector3.up, Ring.transform);
                 return true;
             }
@@ -122,7 +123,13 @@ namespace GravityBox.Venom
             if (!Ring.isKinematic) Ring.AddForce(Vector3.down * 9.81f, ForceMode.Acceleration);
             if (Phase == SwingPhase.Approaching)
             {
-                if (!ReferenceEquals(game.Motion.Get(Actor), order)) { Phase = SwingPhase.Idle; Actor = -1; order = null; return; }
+                if (!ReferenceEquals(game.Motion.Get(Actor), order))
+                {
+                    // A peel on the climb to the ring dropped the walk, not the player: head for the ring again.
+                    if (game.Motion.Get(Actor) == null && game.Motion.Peeled(Actor) && replans < 3)
+                    { replans++; game.Motion.Move(Actor, StandPoint.position, true); order = game.Motion.Get(Actor); return; }
+                    Phase = SwingPhase.Idle; Actor = -1; order = null; return;
+                }
                 Vector3 centre = game.Motion.Centre(Actor);
                 if (Vector3.Distance(centre, StandPoint.position) < .05f && Vector3.Distance(centre, Hang) < .11f)
                 {
