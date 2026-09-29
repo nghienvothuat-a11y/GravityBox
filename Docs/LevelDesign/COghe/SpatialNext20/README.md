@@ -1,6 +1,6 @@
 # Spatial 11–30 — kế hoạch 20 màn tiếp
 
-> **Cập nhật 29/09/2026 — đã dựng đủ 20 màn** (scene, definition, catalog 01–30, art Glass C) và giải trọn bằng chạm thật trong Unity PlayMode (replay native Mac: xem AS_BUILT). Bố cục thực tế, khác biệt với hồ sơ, số đo và phần chưa kiểm (OPPO, người chơi mới): **[AS_BUILT_2026_09_29](AS_BUILT_2026_09_29.md)**. Đoạn dưới giữ nguyên nội dung bàn giao thiết kế.
+> **Cập nhật 29/09/2026 — đã dựng đủ 20 màn** (scene, definition, catalog 01–30, art Glass C) và giải trọn bằng chạm thật trong Unity PlayMode và native Mac ([ảnh, kết quả](../../../Verification/COgheSpatialNext20/README.md)). Bố cục thực tế, khác biệt với hồ sơ, số đo và phần chưa kiểm (OPPO, người chơi mới): **[AS_BUILT_2026_09_29](AS_BUILT_2026_09_29.md)**. Đoạn dưới giữ nguyên nội dung bàn giao thiết kế.
 
 29/09/2026 · **Bàn giao kế hoạch trên `NewGraphic`, chưa triển khai Unity**. Phong cách Glass C / mạch điện mảnh / ray dịu và ràng buộc gameplay được chốt trong bộ bàn giao. Bố cục từng màn vẫn là thiết kế cần chứng minh trong prototype, giữ trạng thái `design-only`. Nối sau Spatial Pilot 01–10, không thay thế catalog V2 cũ. Máy Q chia đôi khối lượng phần vào, lặp lại nếu quay vào; gần nhau tự tụ. Tối đa bốn phần trong lời giải, chưa đặt hard cap cho toàn game.
 

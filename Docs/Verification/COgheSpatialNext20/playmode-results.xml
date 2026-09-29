@@ -1,0 +1,1036 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="76" result="Passed" total="76" passed="76" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-09-29 12:14:38Z" end-time="2026-09-29 12:16:06Z" duration="88.6628943">
+  <test-suite type="TestSuite" id="1626" name="Gravity Box" fullname="Gravity Box" runstate="Runnable" testcasecount="573" result="Passed" start-time="2026-09-29 12:14:38Z" end-time="2026-09-29 12:16:06Z" duration="88.662894" total="76" passed="76" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1620" name="GravityBox.Tests.PlayMode.dll" fullname="/Users/tommynguyen/.buzz/REPOS/GravityBox-spatial20/Library/ScriptAssemblies/GravityBox.Tests.PlayMode.dll" runstate="Runnable" testcasecount="573" result="Passed" start-time="2026-09-29 12:14:38Z" end-time="2026-09-29 12:16:06Z" duration="88.659138" total="76" passed="76" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="55962" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1621" name="GravityBox" fullname="GravityBox" runstate="Runnable" testcasecount="573" result="Passed" start-time="2026-09-29 12:14:38Z" end-time="2026-09-29 12:16:06Z" duration="88.657912" total="76" passed="76" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1622" name="Tests" fullname="GravityBox.Tests" runstate="Runnable" testcasecount="573" result="Passed" start-time="2026-09-29 12:14:38Z" end-time="2026-09-29 12:16:06Z" duration="88.656997" total="76" passed="76" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1346" name="COgheSpatialCampaignTests" fullname="GravityBox.Tests.COgheSpatialCampaignTests" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" testcasecount="50" result="Passed" start-time="2026-09-29 12:14:38Z" end-time="2026-09-29 12:15:53Z" duration="75.797763" total="50" passed="50" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1396" name="BoardingCanBeCancelledByAnotherTap" fullname="GravityBox.Tests.COgheSpatialCampaignTests.BoardingCanBeCancelledByAnotherTap" methodname="BoardingCanBeCancelledByAnotherTap" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="2053247364" result="Passed" start-time="2026-09-29 12:14:38Z" end-time="2026-09-29 12:14:38Z" duration="0.350900" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1395" name="ElevatorRoundTripCarriesAllTissue" fullname="GravityBox.Tests.COgheSpatialCampaignTests.ElevatorRoundTripCarriesAllTissue" methodname="ElevatorRoundTripCarriesAllTissue" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1882371" result="Passed" start-time="2026-09-29 12:14:38Z" end-time="2026-09-29 12:14:39Z" duration="0.818012" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1392" name="MechanismsStartClearOfFixedScenery" fullname="GravityBox.Tests.COgheSpatialCampaignTests.MechanismsStartClearOfFixedScenery" methodname="MechanismsStartClearOfFixedScenery" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1715009472" result="Passed" start-time="2026-09-29 12:14:39Z" end-time="2026-09-29 12:14:40Z" duration="1.576106" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1393" name="NoIdleMechanismOpensAndCatalogIsIsolated" fullname="GravityBox.Tests.COgheSpatialCampaignTests.NoIdleMechanismOpensAndCatalogIsIsolated" methodname="NoIdleMechanismOpensAndCatalogIsIsolated" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="2116529358" result="Passed" start-time="2026-09-29 12:14:40Z" end-time="2026-09-29 12:14:43Z" duration="2.483875" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1394" name="PulleyCanBeReversedAndReset" fullname="GravityBox.Tests.COgheSpatialCampaignTests.PulleyCanBeReversedAndReset" methodname="PulleyCanBeReversedAndReset" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1298942093" result="Passed" start-time="2026-09-29 12:14:43Z" end-time="2026-09-29 12:14:44Z" duration="0.648008" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1347" name="Spatial01Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial01Solve" methodname="Spatial01Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="66002190" result="Passed" start-time="2026-09-29 12:14:44Z" end-time="2026-09-29 12:14:44Z" duration="0.360522" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1348" name="Spatial02Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial02Solve" methodname="Spatial02Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1826349432" result="Passed" start-time="2026-09-29 12:14:44Z" end-time="2026-09-29 12:14:44Z" duration="0.520434" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1349" name="Spatial03Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial03Solve" methodname="Spatial03Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1790679742" result="Passed" start-time="2026-09-29 12:14:44Z" end-time="2026-09-29 12:14:45Z" duration="0.491963" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1350" name="Spatial04Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial04Solve" methodname="Spatial04Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="716073358" result="Passed" start-time="2026-09-29 12:14:45Z" end-time="2026-09-29 12:14:45Z" duration="0.505675" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1351" name="Spatial05Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial05Solve" methodname="Spatial05Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1448897602" result="Passed" start-time="2026-09-29 12:14:45Z" end-time="2026-09-29 12:14:46Z" duration="0.565436" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1352" name="Spatial06Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial06Solve" methodname="Spatial06Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="608114109" result="Passed" start-time="2026-09-29 12:14:46Z" end-time="2026-09-29 12:14:47Z" duration="0.829725" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1353" name="Spatial07Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial07Solve" methodname="Spatial07Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1919398016" result="Passed" start-time="2026-09-29 12:14:47Z" end-time="2026-09-29 12:14:47Z" duration="0.613776" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1354" name="Spatial08Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial08Solve" methodname="Spatial08Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="907275711" result="Passed" start-time="2026-09-29 12:14:47Z" end-time="2026-09-29 12:14:48Z" duration="0.592388" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1355" name="Spatial09Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial09Solve" methodname="Spatial09Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1825371908" result="Passed" start-time="2026-09-29 12:14:48Z" end-time="2026-09-29 12:14:49Z" duration="1.008655" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1356" name="Spatial10Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial10Solve" methodname="Spatial10Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="288425295" result="Passed" start-time="2026-09-29 12:14:49Z" end-time="2026-09-29 12:14:50Z" duration="1.331176" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1371" name="Spatial11Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial11Solve" methodname="Spatial11Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="665295407" result="Passed" start-time="2026-09-29 12:14:50Z" end-time="2026-09-29 12:14:51Z" duration="0.702590" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1372" name="Spatial12Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial12Solve" methodname="Spatial12Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="911453480" result="Passed" start-time="2026-09-29 12:14:51Z" end-time="2026-09-29 12:14:53Z" duration="1.449248" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1358" name="Spatial13PushTrace" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial13PushTrace" methodname="Spatial13PushTrace" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1436552824" result="Passed" start-time="2026-09-29 12:14:53Z" end-time="2026-09-29 12:14:54Z" duration="1.574149" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SPATIAL13 FORCE PROBE 0.0883/0.038 0.1087/0.413 0.1603/0.789 0.2100/0.000 0.2100/0.000 0.2100/0.000 overlaps=A crate surface->Upper landing@Fixed chamber,A crate surface->Upper landing@Fixed chamber
+SPATIAL13 PUSH
+ t=0.0 crate=(0.210, -0.057, 0.184) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.063, -0.055, 0.110) held=none target=(0.127, -0.253, 0.180) contact=(0.038, -0.255, 0.128) act=Bò / leo
+ t=0.5 crate=(0.210, -0.057, 0.184) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.128, -0.056, 0.102) held=A crate target=(0.210, -0.057, 0.184) contact=(0.160, -0.057, 0.134) act=Đẩy
+ t=1.0 crate=(0.208, -0.057, 0.161) v=(-0.002, 0.000, -0.028) sleep=False kin=False body=(0.127, -0.056, 0.079) held=A crate target=(0.207, -0.057, 0.141) contact=(0.159, -0.057, 0.111) act=Kéo
+ t=1.5 crate=(0.208, -0.057, 0.153) v=(-0.001, 0.000, -0.010) sleep=False kin=False body=(0.126, -0.055, 0.070) held=A crate target=(0.207, -0.057, 0.141) contact=(0.158, -0.057, 0.103) act=Kéo
+ t=2.0 crate=(0.208, -0.057, 0.150) v=(0.000, 0.000, -0.003) sleep=False kin=False body=(0.126, -0.055, 0.067) held=A crate target=(0.207, -0.057, 0.141) contact=(0.158, -0.057, 0.100) act=Kéo
+ t=2.5 crate=(0.208, -0.057, 0.149) v=(0.000, 0.000, -0.001) sleep=False kin=False body=(0.126, -0.055, 0.066) held=A crate target=(0.207, -0.057, 0.141) contact=(0.158, -0.057, 0.099) act=Kéo
+ t=3.0 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.055, 0.066) held=A crate target=(0.207, -0.057, 0.141) contact=(0.158, -0.057, 0.098) act=Kéo
+ t=3.5 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.066) held=A crate target=(0.207, -0.057, 0.141) contact=(0.158, -0.057, 0.098) act=Kéo
+ t=4.0 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.127, -0.056, 0.064) held=none target=(0.207, -0.057, 0.141) contact=(0.158, -0.057, 0.098) act=Idle
+ t=4.5 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.127, -0.056, 0.063) held=none target=(0.207, -0.057, 0.141) contact=(0.158, -0.057, 0.098) act=Idle
+ t=5.0 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.066) held=A crate target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Đẩy
+ t=5.5 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.066) held=A crate target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Đẩy
+ t=6.0 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.066) held=A crate target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Đẩy
+ t=6.5 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.066) held=A crate target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Đẩy
+ t=7.0 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.066) held=A crate target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Đẩy
+ t=7.5 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.066) held=A crate target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Đẩy
+ t=8.0 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.065) held=none target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Idle
+ t=8.5 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.064) held=none target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Idle
+ t=9.0 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.066) held=A crate target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Đẩy
+ t=9.5 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.066) held=A crate target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Đẩy
+ t=10.0 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.066) held=A crate target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Đẩy
+ t=10.5 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.066) held=A crate target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Đẩy
+ t=11.0 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.066) held=A crate target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Đẩy
+ t=11.5 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.126, -0.056, 0.066) held=A crate target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Đẩy
+ t=12.0 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.127, -0.056, 0.065) held=none target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Idle
+ t=12.5 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.127, -0.056, 0.064) held=none target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Idle
+ t=13.0 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.127, -0.056, 0.063) held=none target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Idle
+ t=13.5 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.127, -0.056, 0.062) held=none target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Idle
+ t=14.0 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.127, -0.056, 0.061) held=none target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Idle
+ t=14.5 crate=(0.208, -0.057, 0.148) v=(0.000, 0.000, 0.000) sleep=False kin=False body=(0.127, -0.056, 0.060) held=none target=(0.208, -0.057, 0.148) contact=(0.158, -0.057, 0.098) act=Idle
+]]></output>
+            </test-case>
+            <test-case id="1373" name="Spatial13Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial13Solve" methodname="Spatial13Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1186322657" result="Passed" start-time="2026-09-29 12:14:54Z" end-time="2026-09-29 12:14:57Z" duration="2.457530" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1374" name="Spatial14Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial14Solve" methodname="Spatial14Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1832636609" result="Passed" start-time="2026-09-29 12:14:57Z" end-time="2026-09-29 12:14:58Z" duration="1.015563" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1357" name="Spatial14StepTrace" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial14StepTrace" methodname="Spatial14StepTrace" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="935126174" result="Passed" start-time="2026-09-29 12:14:58Z" end-time="2026-09-29 12:14:58Z" duration="0.863121" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SPATIAL14 STEPS
+ after operate centre=(-0.202, -0.282, -0.199) inside=False t=2.72 sel=0
+ after open centre=(-0.202, -0.282, -0.199) inside=False t=2.72 sel=0
+ after enter centre=(-0.291, -0.282, 0.067) inside=True t=4.85 sel=0
+ after leave centre=(0.312, -0.254, 0.120) inside=False t=15.62 sel=0
+]]></output>
+            </test-case>
+            <test-case id="1370" name="Spatial14TubeTrace" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial14TubeTrace" methodname="Spatial14TubeTrace" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1745126613" result="Passed" start-time="2026-09-29 12:14:58Z" end-time="2026-09-29 12:15:00Z" duration="1.369860" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SPATIAL14 TRACE
+ t=0.0 inside=False approach=True outside centre=(-0.2535, -0.2806, -0.1746) exit=False localRadius=0.387..0.445[p0L(-0.272, -0.291, -0.160)/W(-0.272, -0.291, -0.160)/v(-0.036, 0.000, 0.133);p1L order=(-0.296, -0.281, 0.120)
+ t=0.5 inside=False approach=True outside centre=(-0.2757, -0.2814, -0.1159) exit=False localRadius=0.382..0.442[p0L(-0.285, -0.291, -0.095)/W(-0.285, -0.291, -0.095)/v(-0.018, 0.000, 0.161);p1L order=(-0.296, -0.281, 0.120)
+ t=1.0 inside=False approach=True outside centre=(-0.2825, -0.2821, -0.0354) exit=False localRadius=0.374..0.429[p0L(-0.292, -0.291, -0.014)/W(-0.292, -0.291, -0.014)/v(-0.015, 0.000, 0.162);p1L order=(-0.296, -0.281, 0.120)
+ t=1.5 inside=False approach=True outside centre=(-0.2895, -0.2823, 0.0453) exit=False localRadius=0.381..0.436[p0L(-0.299, -0.291, 0.066)/W(-0.299, -0.291, 0.066)/v(-0.014, 0.000, 0.162);p1L(-0 order=(-0.296, -0.281, 0.120)
+ t=2.0 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.6023 maxEnd=0.5217 maxRadial=0.0602@p17 plane=-0.5210..-0.4590 avg=-0.4917 behind=32[p0(-0.250, -0.273, 0.123)/v(0.12 order=none
+ t=2.5 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.5428 maxEnd=0.4815 maxRadial=0.0262@p17 plane=-0.4812..-0.4005 avg=-0.4381 behind=32[p0(-0.195, -0.262, 0.134)/v(0.10 order=none
+ t=3.0 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.4939 maxEnd=0.4424 maxRadial=0.0239@p21 plane=-0.4423..-0.3561 avg=-0.3937 behind=32[p0(-0.148, -0.251, 0.135)/v(0.06 order=none
+ t=3.5 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.4637 maxEnd=0.4183 maxRadial=0.0232@p21 plane=-0.4182..-0.3349 avg=-0.3706 behind=32[p0(-0.124, -0.239, 0.134)/v(0.03 order=none
+ t=4.0 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.4351 maxEnd=0.3943 maxRadial=0.0221@p21 plane=-0.3938..-0.3199 avg=-0.3511 behind=32[p0(-0.104, -0.222, 0.134)/v(0.04 order=none
+ t=4.5 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.4044 maxEnd=0.3717 maxRadial=0.0210@p2 plane=-0.3701..-0.3101 avg=-0.3355 behind=32[p0(-0.085, -0.199, 0.133)/v(0.032 order=none
+ t=5.0 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.3772 maxEnd=0.3572 maxRadial=0.0214@p2 plane=-0.3510..-0.2978 avg=-0.3227 behind=32[p0(-0.074, -0.173, 0.132)/v(0.020 order=none
+ t=5.5 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.3526 maxEnd=0.3537 maxRadial=0.0218@p2 plane=-0.3377..-0.2770 avg=-0.3078 behind=32[p0(-0.062, -0.147, 0.132)/v(0.031 order=none
+ t=6.0 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.3235 maxEnd=0.3454 maxRadial=0.0209@p31 plane=-0.3257..-0.2493 avg=-0.2857 behind=32[p0(-0.042, -0.125, 0.132)/v(0.04 order=none
+ t=6.5 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.2926 maxEnd=0.3353 maxRadial=0.0214@p31 plane=-0.3082..-0.2197 avg=-0.2587 behind=32[p0(-0.018, -0.113, 0.132)/v(0.05 order=none
+ t=7.0 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.2615 maxEnd=0.3209 maxRadial=0.0212@p5 plane=-0.2834..-0.1922 avg=-0.2299 behind=32[p0(0.009, -0.114, 0.132)/v(0.050, order=none
+ t=7.5 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.2316 maxEnd=0.3010 maxRadial=0.0210@p5 plane=-0.2550..-0.1703 avg=-0.2057 behind=32[p0(0.031, -0.124, 0.131)/v(0.039, order=none
+ t=8.0 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.1976 maxEnd=0.2719 maxRadial=0.0207@p2 plane=-0.2237..-0.1547 avg=-0.1850 behind=32[p0(0.051, -0.142, 0.131)/v(0.032, order=none
+ t=8.5 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.1648 maxEnd=0.2420 maxRadial=0.0208@p2 plane=-0.1989..-0.1451 avg=-0.1707 behind=32[p0(0.064, -0.167, 0.130)/v(0.022, order=none
+ t=9.0 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.1337 maxEnd=0.2134 maxRadial=0.0201@p2 plane=-0.1817..-0.1286 avg=-0.1563 behind=32[p0(0.077, -0.198, 0.129)/v(0.037, order=none
+ t=9.5 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.0940 maxEnd=0.1850 maxRadial=0.0206@p2 plane=-0.1688..-0.0957 avg=-0.1317 behind=32[p0(0.103, -0.232, 0.129)/v(0.064, order=none
+ t=10.0 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.0547 maxEnd=0.1532 maxRadial=0.0205@p2 plane=-0.1476..-0.0552 avg=-0.0986 behind=32[p0(0.140, -0.255, 0.129)/v(0.073, order=none
+ t=10.5 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.0157 maxEnd=0.1185 maxRadial=0.0202@p2 plane=-0.1172..-0.0155 avg=-0.0625 behind=32[p0(0.179, -0.268, 0.129)/v(0.082, order=none
+ t=11.0 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.0000 maxEnd=0.0837 maxRadial=0.0211@p13 plane=-0.0836..0.0211 avg=-0.0266 behind=31[p0(0.216, -0.270, 0.129)/v(0.071, order=none
+ t=11.5 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.0000 maxEnd=0.0566 maxRadial=0.0566@p13 plane=-0.0473..0.0564 avg=0.0093 behind=16[p0(0.253, -0.269, 0.129)/v(0.075,  order=none
+ t=12.0 inside=True approach=False edge=0:Transfer dir=1 count=32 minRemain=0.0000 maxEnd=0.0849 maxRadial=0.0849@p13 plane=-0.0096..0.0848 avg=0.0444 behind=4[p4(0.252, -0.258, 0.110)/v(0.060, 0 order=none
+ t=12.5 inside=False approach=False outside centre=(0.3131, -0.2595, 0.1203) exit=False localRadius=0.387..0.456[p0L(0.309, -0.277, 0.130)/W(0.309, -0.277, 0.130)/v(-0.012, -0.064, -0.010);p1L(0.3 order=none
+ t=13.0 inside=False approach=False outside centre=(0.3133, -0.2809, 0.1204) exit=False localRadius=0.406..0.469[p0L(0.310, -0.291, 0.128)/W(0.310, -0.291, 0.128)/v(0.003, 0.000, 0.000);p1L(0.327, order=none
+ t=13.5 inside=False approach=False outside centre=(0.3141, -0.2818, 0.1203) exit=False localRadius=0.406..0.472[p0L(0.311, -0.291, 0.128)/W(0.311, -0.291, 0.128)/v(0.000, 0.000, 0.002);p1L(0.327, order=none
+ t=14.0 inside=False approach=False outside centre=(0.3151, -0.2830, 0.1202) exit=False localRadius=0.407..0.475[p0L(0.311, -0.291, 0.131)/W(0.311, -0.291, 0.131)/v(0.000, 0.000, 0.003);p1L(0.328, order=none
+ t=14.5 inside=False approach=False outside centre=(0.3157, -0.2835, 0.1202) exit=False localRadius=0.407..0.477[p0L(0.311, -0.291, 0.132)/W(0.311, -0.291, 0.132)/v(0.000, 0.000, 0.002);p1L(0.327, order=none
+ t=15.0 inside=False approach=False outside centre=(0.3162, -0.2839, 0.1202) exit=False localRadius=0.407..0.477[p0L(0.311, -0.291, 0.133)/W(0.311, -0.291, 0.133)/v(0.000, 0.000, 0.002);p1L(0.327, order=none
+ t=15.5 inside=False approach=False outside centre=(0.3166, -0.2842, 0.1201) exit=False localRadius=0.407..0.478[p0L(0.311, -0.291, 0.134)/W(0.311, -0.291, 0.134)/v(0.000, 0.000, 0.002);p1L(0.327, order=none
+ t=16.0 inside=False approach=False outside centre=(0.3170, -0.2856, 0.1201) exit=False localRadius=0.406..0.482[p0L(0.310, -0.291, 0.135)/W(0.310, -0.291, 0.135)/v(-0.015, 0.000, 0.006);p1L(0.326 order=none
+ t=16.5 inside=False approach=False outside centre=(0.3175, -0.2864, 0.1200) exit=False localRadius=0.406..0.483[p0L(0.310, -0.291, 0.136)/W(0.310, -0.291, 0.136)/v(0.000, 0.000, 0.001);p1L(0.326, order=none
+ t=17.0 inside=False approach=False outside centre=(0.3179, -0.2865, 0.1200) exit=False localRadius=0.406..0.484[p0L(0.309, -0.291, 0.137)/W(0.309, -0.291, 0.137)/v(0.000, 0.000, 0.001);p1L(0.326, order=none
+ t=17.5 inside=False approach=False outside centre=(0.3182, -0.2865, 0.1200) exit=False localRadius=0.406..0.484[p0L(0.309, -0.291, 0.137)/W(0.309, -0.291, 0.137)/v(0.000, 0.000, 0.000);p1L(0.327, order=none
+ t=18.0 inside=False approach=False outside centre=(0.3185, -0.2866, 0.1199) exit=False localRadius=0.406..0.485[p0L(0.310, -0.291, 0.137)/W(0.310, -0.291, 0.137)/v(0.000, 0.000, 0.000);p1L(0.327, order=none
+ t=18.5 inside=False approach=False outside centre=(0.3187, -0.2866, 0.1199) exit=False localRadius=0.406..0.485[p0L(0.310, -0.291, 0.137)/W(0.310, -0.291, 0.137)/v(0.000, 0.000, 0.000);p1L(0.327, order=none
+ t=19.0 inside=False approach=False outside centre=(0.3188, -0.2866, 0.1199) exit=False localRadius=0.406..0.485[p0L(0.309, -0.291, 0.137)/W(0.309, -0.291, 0.137)/v(0.000, 0.000, 0.000);p1L(0.328, order=none
+ t=19.5 inside=False approach=False outside centre=(0.3189, -0.2866, 0.1199) exit=False localRadius=0.406..0.485[p0L(0.309, -0.291, 0.137)/W(0.309, -0.291, 0.137)/v(0.000, 0.000, 0.000);p1L(0.328, order=none
+]]></output>
+            </test-case>
+            <test-case id="1359" name="Spatial15ExitTrace" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial15ExitTrace" methodname="Spatial15ExitTrace" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1023355464" result="Passed" start-time="2026-09-29 12:15:00Z" end-time="2026-09-29 12:15:02Z" duration="1.835650" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SPATIAL15 EXIT
+ landed centre=(0.230, -0.076, 0.114) nonex23 Right landingx9 
+ path=(0.219, -0.099, 0.120)(0.270, -0.099, 0.120)(0.322, -0.099, 0.171)(0.373, -0.099, 0.171)(0.376, -0.052, 0.190) target=(0.376, -0.052, 0.190) outlet=(0.400, -0.052, 0.190) door=(0.250, 0.044, 0.120)
+ t=0.0 centre=(0.287, -0.100, 0.144) act=Bò / leo order=True Right landingx16 Right landing|Right landingx10 nonex6 
+ t=0.5 centre=(0.382, -0.054, 0.189) act=Rơi / trượt order=True nonex32 
+ t=1.0 centre=(0.514, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+ t=1.5 centre=(0.539, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+ t=2.0 centre=(0.540, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+ t=2.5 centre=(0.540, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+ t=3.0 centre=(0.540, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+ t=3.5 centre=(0.540, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+ t=4.0 centre=(0.540, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+ t=4.5 centre=(0.540, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+ t=5.0 centre=(0.540, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+ t=5.5 centre=(0.540, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+ t=6.0 centre=(0.540, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+ t=6.5 centre=(0.540, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+ t=7.0 centre=(0.540, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+ t=7.5 centre=(0.540, -0.052, 0.190) act=Rơi / trượt order=True nonex32 
+]]></output>
+            </test-case>
+            <test-case id="1375" name="Spatial15Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial15Solve" methodname="Spatial15Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="848238595" result="Passed" start-time="2026-09-29 12:15:02Z" end-time="2026-09-29 12:15:03Z" duration="1.664202" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1360" name="Spatial16QuantumTrace" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial16QuantumTrace" methodname="Spatial16QuantumTrace" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1203813475" result="Passed" start-time="2026-09-29 12:15:03Z" end-time="2026-09-29 12:15:05Z" duration="1.267611" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SPATIAL16 Q
+ median-gap=[-0.001,0.016] t=0.00 phase=Idle act=Giữ inside=16 x[-0.021,0.037] y[0.009,0.049] z[-0.079,-0.014] septum=0.000 frags=1 order=True
+ median-gap=[0.001,0.016] t=0.25 phase=Gathering act=Q · Đang gom inside=32 x[-0.019,0.037] y[0.009,0.048] z[-0.041,0.023] septum=0.000 frags=1 order=False
+ median-gap=[-0.005,0.010] t=0.50 phase=Gathering act=Q · Đang gom inside=32 x[-0.023,0.029] y[0.010,0.055] z[-0.032,0.030] septum=0.000 frags=1 order=False
+ median-gap=[-0.011,0.012] t=0.75 phase=Separating act=Q · Tạo hai thuỳ inside=32 x[-0.032,0.033] y[0.011,0.055] z[-0.029,0.030] septum=0.000 frags=1 order=False
+ median-gap=[-0.018,0.022] t=1.00 phase=Sealing act=Q · Vách phân luồng khép inside=32 x[-0.044,0.045] y[0.011,0.056] z[-0.028,0.030] septum=0.017 frags=1 order=False
+ median-gap=[-0.026,0.028] t=1.25 phase=Sealing act=Q · Vách phân luồng khép inside=32 x[-0.055,0.054] y[0.011,0.054] z[-0.025,0.027] septum=0.090 frags=1 order=False
+ median-gap=[-0.033,0.036] t=1.50 phase=Clearing act=Q · Đưa hai phần ra khay inside=32 x[-0.067,0.066] y[0.011,0.051] z[-0.021,0.030] septum=0.099 frags=2 order=False
+ median-gap=[-0.052,0.055] t=1.75 phase=Clearing act=Q · Đưa hai phần ra khay inside=17 x[-0.094,0.092] y[0.009,0.049] z[-0.011,0.041] septum=0.100 frags=2 order=False
+ median-gap=[-0.067,0.066] t=2.00 phase=Clearing act=Q · Đưa hai phần ra khay inside=4 x[-0.128,0.126] y[0.010,0.047] z[0.000,0.042] septum=0.100 frags=2 order=False
+ median-gap=[-0.098,0.089] t=2.25 phase=Clearing act=Q · Đưa hai phần ra khay inside=0 x[-0.157,0.156] y[0.009,0.045] z[0.010,0.044] septum=0.100 frags=2 order=False
+ median-gap=[-0.106,0.098] t=2.50 phase=Idle act=Idle inside=0 x[-0.168,0.168] y[0.009,0.037] z[0.007,0.047] septum=0.033 frags=2 order=False
+ median-gap=[-0.105,0.097] t=2.75 phase=Idle act=Idle inside=0 x[-0.169,0.171] y[0.009,0.036] z[0.001,0.048] septum=0.004 frags=2 order=False
+ median-gap=[-0.106,0.097] t=3.00 phase=Idle act=Idle inside=0 x[-0.169,0.172] y[0.009,0.035] z[0.000,0.048] septum=0.003 frags=2 order=False
+ median-gap=[-0.106,0.096] t=3.25 phase=Idle act=Idle inside=0 x[-0.169,0.173] y[0.009,0.035] z[-0.001,0.048] septum=0.003 frags=2 order=False
+ median-gap=[-0.106,0.096] t=3.50 phase=Idle act=Idle inside=0 x[-0.169,0.173] y[0.009,0.035] z[-0.001,0.048] septum=0.003 frags=2 order=False
+ median-gap=[-0.106,0.096] t=3.75 phase=Idle act=Idle inside=0 x[-0.169,0.173] y[0.009,0.035] z[-0.002,0.048] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.096] t=4.00 phase=Idle act=Idle inside=0 x[-0.169,0.173] y[0.009,0.034] z[-0.002,0.048] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.096] t=4.25 phase=Idle act=Idle inside=0 x[-0.169,0.173] y[0.009,0.034] z[-0.003,0.048] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=4.50 phase=Idle act=Idle inside=0 x[-0.170,0.173] y[0.009,0.034] z[-0.003,0.049] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=4.75 phase=Idle act=Idle inside=0 x[-0.170,0.173] y[0.009,0.030] z[-0.004,0.050] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=5.00 phase=Idle act=Idle inside=0 x[-0.170,0.173] y[0.009,0.027] z[-0.004,0.050] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=5.25 phase=Idle act=Idle inside=0 x[-0.170,0.173] y[0.009,0.026] z[-0.004,0.051] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=5.50 phase=Idle act=Idle inside=0 x[-0.169,0.173] y[0.009,0.025] z[-0.005,0.051] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=5.75 phase=Idle act=Idle inside=0 x[-0.169,0.173] y[0.009,0.025] z[-0.005,0.052] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=6.00 phase=Idle act=Idle inside=0 x[-0.169,0.173] y[0.009,0.024] z[-0.005,0.052] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=6.25 phase=Idle act=Idle inside=0 x[-0.169,0.173] y[0.009,0.024] z[-0.006,0.053] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=6.50 phase=Idle act=Idle inside=0 x[-0.168,0.173] y[0.009,0.024] z[-0.006,0.053] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=6.75 phase=Idle act=Idle inside=0 x[-0.168,0.173] y[0.009,0.024] z[-0.006,0.054] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=7.00 phase=Idle act=Idle inside=0 x[-0.168,0.173] y[0.009,0.023] z[-0.006,0.054] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=7.25 phase=Idle act=Idle inside=0 x[-0.168,0.173] y[0.009,0.023] z[-0.007,0.054] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=7.50 phase=Idle act=Idle inside=0 x[-0.168,0.173] y[0.009,0.023] z[-0.007,0.055] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=7.75 phase=Idle act=Idle inside=0 x[-0.168,0.173] y[0.009,0.023] z[-0.007,0.055] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=8.00 phase=Idle act=Idle inside=0 x[-0.168,0.173] y[0.009,0.023] z[-0.007,0.055] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=8.25 phase=Idle act=Idle inside=0 x[-0.168,0.174] y[0.009,0.023] z[-0.007,0.056] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=8.50 phase=Idle act=Idle inside=0 x[-0.169,0.174] y[0.009,0.023] z[-0.007,0.056] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=8.75 phase=Idle act=Idle inside=0 x[-0.169,0.174] y[0.009,0.023] z[-0.008,0.056] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=9.00 phase=Idle act=Idle inside=0 x[-0.169,0.174] y[0.009,0.023] z[-0.008,0.056] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=9.25 phase=Idle act=Idle inside=0 x[-0.169,0.175] y[0.009,0.023] z[-0.008,0.056] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=9.50 phase=Idle act=Idle inside=0 x[-0.169,0.175] y[0.009,0.023] z[-0.008,0.056] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=9.75 phase=Idle act=Idle inside=0 x[-0.169,0.175] y[0.009,0.022] z[-0.008,0.056] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=10.00 phase=Idle act=Idle inside=0 x[-0.169,0.175] y[0.009,0.022] z[-0.008,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.108,0.095] t=10.25 phase=Idle act=Idle inside=0 x[-0.169,0.175] y[0.009,0.022] z[-0.008,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=10.50 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.008,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=10.75 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.008,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=11.00 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.008,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=11.25 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.008,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=11.50 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=11.75 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=12.00 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=12.25 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=12.50 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=12.75 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=13.00 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=13.25 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=13.50 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=13.75 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.107,0.095] t=14.00 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.106,0.095] t=14.25 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.106,0.095] t=14.50 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+ median-gap=[-0.106,0.095] t=14.75 phase=Idle act=Idle inside=0 x[-0.169,0.176] y[0.009,0.022] z[-0.009,0.057] septum=0.003 frags=2 order=False
+]]></output>
+            </test-case>
+            <test-case id="1376" name="Spatial16Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial16Solve" methodname="Spatial16Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="26946831" result="Passed" start-time="2026-09-29 12:15:05Z" end-time="2026-09-29 12:15:06Z" duration="1.130626" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Disconnected surface route 16: (-0.27, -0.28, 0.00) -> (0.09, -0.28, 0.06), 1069 nodes
+Disconnected surface route 16: (0.27, -0.28, 0.00) -> (0.09, -0.28, 0.06), 1069 nodes
+Disconnected surface route 16: (0.08, -0.29, 0.02) -> (0.09, -0.28, 0.06), 1069 nodes
+]]></output>
+            </test-case>
+            <test-case id="1361" name="Spatial16StepTrace" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial16StepTrace" methodname="Spatial16StepTrace" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="212411274" result="Passed" start-time="2026-09-29 12:15:06Z" end-time="2026-09-29 12:15:07Z" duration="0.857297" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Disconnected surface route 16: (-0.27, -0.28, 0.00) -> (0.09, -0.28, 0.06), 1069 nodes
+Disconnected surface route 16: (0.27, -0.28, 0.00) -> (0.09, -0.28, 0.06), 1069 nodes
+Disconnected surface route 16: (0.08, -0.29, 0.02) -> (0.09, -0.28, 0.06), 1069 nodes
+SPATIAL16 STEPS
+ split g0:16@(-0.241, -0.275, -0.157) g1:16@(0.039, -0.275, -0.157) sel=0 q=Idle/1
+ padA g0:16@(-0.267, -0.284, -0.029) g1:16@(0.041, -0.287, -0.157) sel=0 q=Idle/1
+ padB g0:16@(-0.269, -0.284, 0.003) g1:16@(0.233, -0.285, -0.012) sel=1 q=Idle/1 caught=False
+ caught g0:16@(-0.269, -0.285, 0.003) g1:16@(0.258, -0.285, 0.009) sel=1 q=Idle/1
+ merged g0:32@(0.065, -0.285, 0.026) sel=1 q=Idle/1
+]]></output>
+            </test-case>
+            <test-case id="1377" name="Spatial17Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial17Solve" methodname="Spatial17Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="354390674" result="Passed" start-time="2026-09-29 12:15:07Z" end-time="2026-09-29 12:15:09Z" duration="2.140279" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1378" name="Spatial18Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial18Solve" methodname="Spatial18Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1349894110" result="Passed" start-time="2026-09-29 12:15:09Z" end-time="2026-09-29 12:15:09Z" duration="0.493150" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+]]></output>
+            </test-case>
+            <test-case id="1362" name="Spatial18SwingTrace" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial18SwingTrace" methodname="Spatial18SwingTrace" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="352399941" result="Passed" start-time="2026-09-29 12:15:09Z" end-time="2026-09-29 12:15:10Z" duration="0.970356" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+SPATIAL18 SWING
+ gripped ring=(-0.180, -0.074, 0.120) centre=(-0.183, -0.110, 0.120)
+ t=0.0 phase=Swinging ring=(-0.160, -0.090, 0.120) v=0.49 centre=(-0.171, -0.137, 0.120) minY=-0.152 dockSupport=0 landings=0
+ t=0.1 phase=Swinging ring=(-0.110, -0.118, 0.120) v=0.73 centre=(-0.114, -0.161, 0.120) minY=-0.184 dockSupport=0 landings=0
+ t=0.2 phase=Swinging ring=(-0.026, -0.139, 0.120) v=0.91 centre=(-0.031, -0.199, 0.120) minY=-0.220 dockSupport=0 landings=0
+ t=0.3 phase=Swinging ring=(0.063, -0.133, 0.120) v=0.86 centre=(0.067, -0.189, 0.120) minY=-0.210 dockSupport=0 landings=0
+ t=0.4 phase=Recovering ring=(0.123, -0.110, 0.120) v=0.34 centre=(0.135, -0.163, 0.120) minY=-0.186 dockSupport=14 landings=1
+ t=0.5 phase=Recovering ring=(0.102, -0.094, 0.120) v=0.63 centre=(0.163, -0.171, 0.120) minY=-0.191 dockSupport=16 landings=1
+ t=0.6 phase=Recovering ring=(-0.004, -0.086, 0.120) v=1.29 centre=(0.179, -0.177, 0.120) minY=-0.191 dockSupport=26 landings=1
+ t=0.7 phase=Recovering ring=(-0.096, -0.081, 0.120) v=0.65 centre=(0.195, -0.179, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=0.8 phase=Recovering ring=(-0.140, -0.079, 0.120) v=0.31 centre=(0.211, -0.180, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=0.9 phase=Recovering ring=(-0.161, -0.078, 0.120) v=0.14 centre=(0.226, -0.180, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=1.0 phase=Recovering ring=(-0.171, -0.078, 0.120) v=0.07 centre=(0.231, -0.181, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=1.1 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.181, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=1.2 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.181, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=1.3 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.181, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=1.4 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.182, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=1.5 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.182, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=1.6 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.182, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=1.7 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.182, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=1.8 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.182, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=1.9 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.182, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=2.0 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.182, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=2.1 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.182, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=2.2 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.182, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=2.3 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.182, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=2.4 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.182, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=2.5 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.182, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=2.6 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.182, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=2.7 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.183, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=2.8 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.183, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=2.9 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.183, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=3.0 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.183, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=3.1 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.183, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=3.2 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.183, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=3.3 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.183, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=3.4 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.183, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=3.5 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.183, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=3.6 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.183, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=3.7 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.183, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=3.8 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.183, 0.120) minY=-0.191 dockSupport=28 landings=1
+ t=3.9 phase=Idle ring=(-0.180, -0.074, 0.120) v=0.00 centre=(0.231, -0.183, 0.120) minY=-0.191 dockSupport=28 landings=1
+]]></output>
+            </test-case>
+            <test-case id="1363" name="Spatial19ClimbTrace" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial19ClimbTrace" methodname="Spatial19ClimbTrace" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1951170274" result="Passed" start-time="2026-09-29 12:15:10Z" end-time="2026-09-29 12:15:11Z" duration="0.760917" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+SPATIAL19 CLIMB
+ order target=(-0.300, -0.215, -0.206) path=(-0.077, -0.271, -0.188)(-0.147, -0.279, -0.226)(-0.206, -0.279, -0.226)(-0.257, -0.213, -0.207)(-0.300, -0.213, -0.207)(-0.300, -0.215, -0.206)
+ t=0.0 centre=(-0.157, -0.280, -0.221) act=Bò / leo order=2/6
+ t=0.5 centre=(-0.219, -0.250, -0.215) act=Bò / leo order=3/6
+ t=1.0 centre=(-0.245, -0.221, -0.204) act=Bò / leo order=4/6
+ t=1.5 centre=(-0.290, -0.219, -0.203) act=Bò / leo order=5/6
+ t=2.0 centre=(-0.299, -0.219, -0.203) act=Bò / leo order=5/6
+ t=2.5 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=3.0 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=3.5 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=4.0 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=4.5 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=5.0 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=5.5 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=6.0 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=6.5 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=7.0 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=7.5 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=8.0 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=8.5 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=9.0 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=9.5 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=10.0 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=10.5 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=11.0 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=11.5 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=12.0 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=12.5 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=13.0 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=13.5 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=14.0 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+ t=14.5 centre=(-0.300, -0.219, -0.203) act=Bò / leo order=5/6
+]]></output>
+            </test-case>
+            <test-case id="1379" name="Spatial19Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial19Solve" methodname="Spatial19Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="263972767" result="Passed" start-time="2026-09-29 12:15:11Z" end-time="2026-09-29 12:15:12Z" duration="0.839876" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+]]></output>
+            </test-case>
+            <test-case id="1365" name="Spatial20BTrace" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial20BTrace" methodname="Spatial20BTrace" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="629969518" result="Passed" start-time="2026-09-29 12:15:12Z" end-time="2026-09-29 12:15:13Z" duration="0.983048" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SPATIAL20 B
+ after tube centre=(0.200, -0.061, 0.232) hand=(0.290, -0.077, 0.235) stand=(0.290, -0.078, 0.185)
+  hit Outer pane 0 d=1.712
+  hit Outer pane 2 d=2.375
+  hit B balcony d=2.322
+  hit B carriage surface d=2.293
+  hit B carriage surface d=2.295
+  hit B balcony d=2.363
+ after tap busy=True last= order=(0.290, -0.078, 0.185) tube=outside centre=(0.2003, -0.0613, 0.2323) exit=False localRad sel=0 act=Đang luồn qua ống
+]]></output>
+            </test-case>
+            <test-case id="1364" name="Spatial20MergeTrace" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial20MergeTrace" methodname="Spatial20MergeTrace" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1542055963" result="Passed" start-time="2026-09-29 12:15:13Z" end-time="2026-09-29 12:15:15Z" duration="2.193850" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SPATIAL20 MERGE
+ before merge L=(0.377, -0.253, -0.075) R=(0.115, -0.285, -0.238)
+ merged at (0.118, -0.287, -0.057)
+ C busy=True last= path=(0.09, -0.28, -0.06)(0.03, -0.28, -0.06)(-0.02, -0.23, -0.07)(-0.09, -0.18, -0.07)(-0.16, -0.20, -0.07)(-0.18, -0.23, -0.07)(-0.22, -0.26, -0.10)(-0.22, -0.28, -0.10)(-0.27, -0.28, -0.11)(-0.32, -0.28, -0.11)(-0.34, -0.28, -0.12)
+ t=0.0 centre=(0.041, -0.282, -0.057) C=Approaching act=C · Đang tới
+ t=0.5 centre=(-0.017, -0.231, -0.055) C=Approaching act=C · Đang tới
+ t=1.0 centre=(-0.052, -0.185, -0.057) C=Approaching act=C · Đang tới
+ t=1.5 centre=(-0.122, -0.186, -0.069) C=Approaching act=C · Đang tới
+ t=2.0 centre=(-0.189, -0.195, -0.083) C=Approaching act=C · Đang tới
+ t=2.5 centre=(-0.250, -0.226, -0.105) C=Approaching act=C · Đang tới
+ t=3.0 centre=(-0.317, -0.285, -0.106) C=Operating act=C · Đang chuyển
+ t=3.5 centre=(-0.338, -0.286, -0.065) C=Operating act=C · Đang chuyển
+ t=4.0 centre=(-0.340, -0.286, -0.033) C=Operating act=C · Đang chuyển
+ t=4.5 centre=(-0.340, -0.286, -0.026) C=Operating act=C · Đang chuyển
+ t=5.0 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+ t=5.5 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+ t=6.0 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+ t=6.5 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+ t=7.0 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+ t=7.5 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+ t=8.0 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+ t=8.5 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+ t=9.0 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+ t=9.5 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+ t=10.0 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+ t=10.5 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+ t=11.0 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+ t=11.5 centre=(-0.340, -0.286, -0.025) C=Idle act=Idle
+]]></output>
+            </test-case>
+            <test-case id="1380" name="Spatial20Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial20Solve" methodname="Spatial20Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="562055865" result="Passed" start-time="2026-09-29 12:15:15Z" end-time="2026-09-29 12:15:18Z" duration="3.035646" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1366" name="Spatial20WinchTrace" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial20WinchTrace" methodname="Spatial20WinchTrace" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1981808561" result="Passed" start-time="2026-09-29 12:15:18Z" end-time="2026-09-29 12:15:21Z" duration="3.115794" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SPATIAL20 WINCH
+ t=0.00 phase=Operating applied=0.415 railEffort=0.000 in=0.0000 out=0.0000 tension=0.000 latched=True locked=False centre=(-0.330, -0.222, 0.145) last=
+ t=0.25 phase=Operating applied=0.298 railEffort=0.222 in=0.0098 out=0.0000 tension=0.406 latched=False locked=False centre=(-0.328, -0.224, 0.161) last=
+ t=0.50 phase=Operating applied=0.457 railEffort=0.175 in=0.0182 out=0.0070 tension=0.486 latched=False locked=False centre=(-0.322, -0.225, 0.167) last=
+ t=0.75 phase=Operating applied=0.371 railEffort=0.075 in=0.0290 out=0.0176 tension=0.499 latched=False locked=False centre=(-0.317, -0.225, 0.169) last=
+ t=1.00 phase=Operating applied=0.273 railEffort=-0.066 in=0.0364 out=0.0248 tension=0.518 latched=False locked=False centre=(-0.314, -0.226, 0.170) last=
+ t=1.25 phase=Operating applied=0.365 railEffort=-0.243 in=0.0406 out=0.0286 tension=0.549 latched=False locked=False centre=(-0.312, -0.226, 0.170) last=
+ t=1.50 phase=Operating applied=0.543 railEffort=-0.155 in=0.0415 out=0.0286 tension=0.589 latched=False locked=False centre=(-0.311, -0.226, 0.170) last=
+ t=1.75 phase=Operating applied=0.672 railEffort=-0.005 in=0.0420 out=0.0286 tension=0.606 latched=False locked=False centre=(-0.310, -0.226, 0.170) last=
+ t=2.00 phase=Operating applied=0.626 railEffort=-0.017 in=0.0428 out=0.0286 tension=0.641 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=2.25 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=2.50 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=2.75 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=3.00 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=3.25 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=3.50 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=3.75 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=4.00 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=4.25 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=4.50 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=4.75 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=5.00 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=5.25 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=5.50 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=5.75 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=6.00 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=6.25 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=6.50 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=6.75 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=7.00 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=7.25 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=7.50 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=7.75 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=8.00 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=8.25 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=8.50 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=8.75 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=9.00 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=9.25 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=9.50 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+ t=9.75 phase=Idle applied=0.000 railEffort=-0.647 in=0.0430 out=0.0286 tension=0.647 latched=False locked=False centre=(-0.310, -0.227, 0.170) last=
+]]></output>
+            </test-case>
+            <test-case id="1367" name="Spatial21CrateProbe" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial21CrateProbe" methodname="Spatial21CrateProbe" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1601134878" result="Passed" start-time="2026-09-29 12:15:21Z" end-time="2026-09-29 12:15:21Z" duration="0.411938" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SPATIAL21 CRATE z=-0.100/0.020 z=0.125/0.000 z=0.125/0.000 z=0.125/0.000 z=0.125/0.000 z=0.125/0.000 z=0.125/0.000 z=0.125/0.000 z=0.125/0.000 z=0.125/0.000
+ A crate surface -> Load deck side @Fixed chamber bounds=(-0.280, -0.252, 0.174)/(0.120, 0.096, 0.008)
+ A crate surface -> Load deck side @Fixed chamber bounds=(-0.280, -0.252, 0.174)/(0.120, 0.096, 0.008)
+ A crate surface -> Load tray surface @Load tray bounds=(-0.280, -0.272, 0.110)/(0.115, 0.008, 0.115)
+ A crate surface -> Load deck side @Fixed chamber bounds=(-0.280, -0.252, 0.174)/(0.120, 0.096, 0.008)
+ A crate surface -> Load deck side @Fixed chamber bounds=(-0.280, -0.252, 0.174)/(0.120, 0.096, 0.008)
+ A crate surface -> Load deck side @Fixed chamber bounds=(-0.280, -0.252, 0.174)/(0.120, 0.096, 0.008)
+]]></output>
+            </test-case>
+            <test-case id="1368" name="Spatial21PushTrace" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial21PushTrace" methodname="Spatial21PushTrace" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="750143214" result="Passed" start-time="2026-09-29 12:15:21Z" end-time="2026-09-29 12:15:22Z" duration="0.893875" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SPATIAL21 PUSH
+ t=0.0 crate=-0.100 v=0.000 held=True target=(-0.280, -0.185, -0.100) contact=(-0.280, -0.185, -0.185) body=(-0.280, -0.180, -0.230) act=Đối trọng đang kéo cầu
+ t=0.5 crate=-0.066 v=0.071 held=True target=(-0.272, -0.185, 0.129) contact=(-0.279, -0.185, -0.151) body=(-0.279, -0.181, -0.195) act=Đối trọng đang kéo cầu
+ t=1.0 crate=-0.030 v=0.071 held=True target=(-0.272, -0.185, 0.129) contact=(-0.278, -0.185, -0.116) body=(-0.278, -0.181, -0.159) act=Đối trọng đang kéo cầu
+ t=1.5 crate=0.006 v=0.071 held=True target=(-0.272, -0.185, 0.129) contact=(-0.276, -0.185, -0.080) body=(-0.276, -0.182, -0.124) act=Đối trọng đang kéo cầu
+ t=2.0 crate=0.041 v=0.071 held=True target=(-0.272, -0.185, 0.129) contact=(-0.275, -0.185, -0.044) body=(-0.275, -0.182, -0.088) act=Đối trọng đang kéo cầu
+ t=2.5 crate=0.066 v=0.029 held=True target=(-0.288, -0.185, 0.086) contact=(-0.282, -0.185, -0.019) body=(-0.282, -0.182, -0.063) act=Đối trọng đang kéo cầu
+ t=3.0 crate=0.075 v=0.010 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.010) body=(-0.285, -0.182, -0.055) act=Đối trọng đang kéo cầu
+ t=3.5 crate=0.078 v=0.003 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.007) body=(-0.286, -0.182, -0.052) act=Đối trọng đang kéo cầu
+ t=4.0 crate=0.079 v=0.001 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.182, -0.051) act=Đối trọng đang kéo cầu
+ t=4.5 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.182, -0.050) act=Đối trọng đang kéo cầu
+ t=5.0 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.182, -0.050) act=Đối trọng đang kéo cầu
+ t=5.5 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.183, -0.050) act=Đối trọng đang kéo cầu
+ t=6.0 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.183, -0.050) act=Đối trọng đang kéo cầu
+ t=6.5 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.183, -0.050) act=Đối trọng đang kéo cầu
+ t=7.0 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.183, -0.050) act=Đối trọng đang kéo cầu
+ t=7.5 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.183, -0.050) act=Đối trọng đang kéo cầu
+ t=8.0 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.183, -0.050) act=Đối trọng đang kéo cầu
+ t=8.5 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.183, -0.050) act=Đối trọng đang kéo cầu
+ t=9.0 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.183, -0.050) act=Đối trọng đang kéo cầu
+ t=9.5 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.183, -0.050) act=Đối trọng đang kéo cầu
+ t=10.0 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.183, -0.050) act=Đối trọng đang kéo cầu
+ t=10.5 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.183, -0.050) act=Đối trọng đang kéo cầu
+ t=11.0 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.183, -0.050) act=Đối trọng đang kéo cầu
+ t=11.5 crate=0.079 v=0.000 held=True target=(-0.288, -0.185, 0.086) contact=(-0.285, -0.185, -0.006) body=(-0.286, -0.183, -0.050) act=Đối trọng đang kéo cầu
+]]></output>
+            </test-case>
+            <test-case id="1381" name="Spatial21Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial21Solve" methodname="Spatial21Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1530993441" result="Passed" start-time="2026-09-29 12:15:22Z" end-time="2026-09-29 12:15:23Z" duration="1.061843" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+]]></output>
+            </test-case>
+            <test-case id="1382" name="Spatial22Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial22Solve" methodname="Spatial22Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1774611712" result="Passed" start-time="2026-09-29 12:15:23Z" end-time="2026-09-29 12:15:26Z" duration="2.128970" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1383" name="Spatial23Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial23Solve" methodname="Spatial23Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="814544279" result="Passed" start-time="2026-09-29 12:15:26Z" end-time="2026-09-29 12:15:27Z" duration="1.260496" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1384" name="Spatial24Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial24Solve" methodname="Spatial24Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="172471075" result="Passed" start-time="2026-09-29 12:15:27Z" end-time="2026-09-29 12:15:29Z" duration="1.933611" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1369" name="Spatial24SplitTrace" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial24SplitTrace" methodname="Spatial24SplitTrace" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1189517815" result="Passed" start-time="2026-09-29 12:15:29Z" end-time="2026-09-29 12:15:30Z" duration="1.469668" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SPATIAL24 SPLIT
+ t=0.00 Idle act=Giữ req=0 armedIn=0 n=16 x[-0.150,-0.089] septum=0.003 gates=0.000/0.000 splits=1
+ t=0.25 Idle act=Giữ req=0 armedIn=0 n=16 x[-0.139,-0.089] septum=0.003 gates=0.000/0.000 splits=1
+ t=0.50 Idle act=Giữ req=0 armedIn=0 n=16 x[-0.135,-0.103] septum=0.003 gates=0.000/0.000 splits=1
+ t=0.75 Idle act=Giữ req=0 armedIn=0 n=16 x[-0.125,-0.082] septum=0.003 gates=0.000/0.000 splits=1
+ t=1.00 Idle act=Giữ req=0 armedIn=0 n=16 x[-0.104,-0.058] septum=0.003 gates=0.000/0.000 splits=1
+ t=1.25 Idle act=Giữ req=0 armedIn=2 n=16 x[-0.083,-0.036] septum=0.003 gates=0.000/0.000 splits=1
+ t=1.50 Idle act=Giữ req=0 armedIn=13 n=16 x[-0.057,-0.013] septum=0.003 gates=0.000/0.000 splits=1
+ t=1.75 Gathering act=Q · Đang gom req=-1 armedIn=0 n=16 x[-0.035,0.007] septum=0.003 gates=0.000/0.000 splits=1
+ t=2.00 Gathering act=Q · Đang gom req=-1 armedIn=0 n=16 x[-0.025,0.016] septum=0.003 gates=0.000/0.000 splits=1
+ t=2.25 Separating act=Q · Tạo hai thuỳ req=-1 armedIn=0 n=16 x[-0.038,0.034] septum=0.003 gates=0.000/0.000 splits=1
+ t=2.50 Sealing act=Q · Vách phân luồng khép req=-1 armedIn=0 n=16 x[-0.052,0.049] septum=0.072 gates=0.065/0.065 splits=1
+ t=2.75 Sealing act=Q · Vách phân luồng khép req=-1 armedIn=0 n=16 x[-0.058,0.055] septum=0.097 gates=0.086/0.086 splits=1
+ t=3.00 Clearing act=Q · Đưa hai phần ra khay req=-1 armedIn=0 n=8 x[0.051,0.076] septum=0.099 gates=0.089/0.089 splits=2
+ t=3.25 Clearing act=Q · Đưa hai phần ra khay req=-1 armedIn=0 n=8 x[0.069,0.105] septum=0.100 gates=0.090/0.090 splits=2
+ t=3.50 Clearing act=Q · Đưa hai phần ra khay req=-1 armedIn=0 n=8 x[0.104,0.142] septum=0.100 gates=0.090/0.090 splits=2
+ t=3.75 Idle act=Idle req=-1 armedIn=0 n=8 x[0.109,0.149] septum=0.017 gates=0.016/0.016 splits=2
+ t=4.00 Idle act=Idle req=-1 armedIn=0 n=8 x[0.109,0.150] septum=0.003 gates=0.002/0.002 splits=2
+ t=4.25 Idle act=Idle req=-1 armedIn=0 n=8 x[0.108,0.150] septum=0.003 gates=0.000/0.000 splits=2
+ t=4.50 Idle act=Idle req=-1 armedIn=0 n=8 x[0.108,0.151] septum=0.003 gates=0.000/0.000 splits=2
+ t=4.75 Idle act=Idle req=-1 armedIn=0 n=8 x[0.108,0.151] septum=0.003 gates=0.000/0.000 splits=2
+ t=5.00 Idle act=Idle req=-1 armedIn=0 n=8 x[0.107,0.151] septum=0.003 gates=0.000/0.000 splits=2
+ t=5.25 Idle act=Idle req=-1 armedIn=0 n=8 x[0.107,0.151] septum=0.003 gates=0.000/0.000 splits=2
+ t=5.50 Idle act=Idle req=-1 armedIn=0 n=8 x[0.107,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=5.75 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=6.00 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=6.25 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=6.50 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=6.75 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=7.00 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=7.25 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=7.50 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=7.75 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=8.00 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=8.25 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=8.50 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=8.75 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=9.00 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=9.25 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=9.50 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=9.75 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=10.00 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=10.25 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=10.50 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=10.75 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=11.00 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=11.25 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=11.50 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=11.75 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=12.00 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=12.25 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=12.50 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=12.75 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=13.00 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=13.25 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=13.50 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=13.75 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=14.00 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=14.25 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=14.50 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+ t=14.75 Idle act=Idle req=-1 armedIn=0 n=8 x[0.106,0.152] septum=0.003 gates=0.000/0.000 splits=2
+]]></output>
+            </test-case>
+            <test-case id="1385" name="Spatial25Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial25Solve" methodname="Spatial25Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1981768170" result="Passed" start-time="2026-09-29 12:15:30Z" end-time="2026-09-29 12:15:32Z" duration="1.965216" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1386" name="Spatial26Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial26Solve" methodname="Spatial26Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="2031287555" result="Passed" start-time="2026-09-29 12:15:32Z" end-time="2026-09-29 12:15:34Z" duration="2.276037" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+]]></output>
+            </test-case>
+            <test-case id="1387" name="Spatial27Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial27Solve" methodname="Spatial27Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="22113761" result="Passed" start-time="2026-09-29 12:15:34Z" end-time="2026-09-29 12:15:38Z" duration="3.845941" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1388" name="Spatial28Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial28Solve" methodname="Spatial28Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1348047592" result="Passed" start-time="2026-09-29 12:15:38Z" end-time="2026-09-29 12:15:42Z" duration="3.429942" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1389" name="Spatial29Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial29Solve" methodname="Spatial29Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="538759375" result="Passed" start-time="2026-09-29 12:15:42Z" end-time="2026-09-29 12:15:45Z" duration="3.454378" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+]]></output>
+            </test-case>
+            <test-case id="1390" name="Spatial30Solve" fullname="GravityBox.Tests.COgheSpatialCampaignTests.Spatial30Solve" methodname="Spatial30Solve" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1398045195" result="Passed" start-time="2026-09-29 12:15:45Z" end-time="2026-09-29 12:15:51Z" duration="5.739929" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+Setting angular velocity of a kinematic body is not supported.
+Setting linear velocity of a kinematic body is not supported.
+]]></output>
+            </test-case>
+            <test-case id="1391" name="SpatialStepProbe" fullname="GravityBox.Tests.COgheSpatialCampaignTests.SpatialStepProbe" methodname="SpatialStepProbe" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="602708802" result="Passed" start-time="2026-09-29 12:15:51Z" end-time="2026-09-29 12:15:53Z" duration="2.492751" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[SPATIAL STEP PROBE h=0.020 reached=True centreY=0.017; h=0.035 reached=True centreY=0.016; h=0.050 reached=False centreY=-0.036; h=0.065 reached=False centreY=-0.051; h=0.080 reached=False centreY=-0.066; 
+]]></output>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1426" name="COgheViewCampaignTests" fullname="GravityBox.Tests.COgheViewCampaignTests" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" testcasecount="26" result="Passed" start-time="2026-09-29 12:15:53Z" end-time="2026-09-29 12:16:06Z" duration="12.850000" total="26" passed="26" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1439" name="ClosedLidBlocksHandleAndEverySceneUsesNewCatalog" fullname="GravityBox.Tests.COgheViewCampaignTests.ClosedLidBlocksHandleAndEverySceneUsesNewCatalog" methodname="ClosedLidBlocksHandleAndEverySceneUsesNewCatalog" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1072422409" result="Passed" start-time="2026-09-29 12:15:53Z" end-time="2026-09-29 12:15:55Z" duration="1.719144" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1448" name="CutawayKeepsAnIntermediateAngleAndSettlesWhilePaused" fullname="GravityBox.Tests.COgheViewCampaignTests.CutawayKeepsAnIntermediateAngleAndSettlesWhilePaused" methodname="CutawayKeepsAnIntermediateAngleAndSettlesWhilePaused" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="500545564" result="Passed" start-time="2026-09-29 12:15:55Z" end-time="2026-09-29 12:15:55Z" duration="0.192938" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1447" name="CutawayReversalFadesPaneAndTrimWithoutChangingPhysicsOrAssets" fullname="GravityBox.Tests.COgheViewCampaignTests.CutawayReversalFadesPaneAndTrimWithoutChangingPhysicsOrAssets" methodname="CutawayReversalFadesPaneAndTrimWithoutChangingPhysicsOrAssets" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1815942660" result="Passed" start-time="2026-09-29 12:15:55Z" end-time="2026-09-29 12:15:56Z" duration="0.192250" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1440" name="DragAndThirdFingerDoNotBecomeMovementCommands" fullname="GravityBox.Tests.COgheViewCampaignTests.DragAndThirdFingerDoNotBecomeMovementCommands" methodname="DragAndThirdFingerDoNotBecomeMovementCommands" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="2070378657" result="Passed" start-time="2026-09-29 12:15:56Z" end-time="2026-09-29 12:15:56Z" duration="0.438694" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1442" name="FocusLossAndPauseDropPendingTap" fullname="GravityBox.Tests.COgheViewCampaignTests.FocusLossAndPauseDropPendingTap" methodname="FocusLossAndPauseDropPendingTap" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="587676374" result="Passed" start-time="2026-09-29 12:15:56Z" end-time="2026-09-29 12:15:56Z" duration="0.323317" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1449" name="GlassDepthVariantsRetainExitAndClearContactAfterEscape" fullname="GravityBox.Tests.COgheViewCampaignTests.GlassDepthVariantsRetainExitAndClearContactAfterEscape" methodname="GlassDepthVariantsRetainExitAndClearContactAfterEscape" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1546287698" result="Passed" start-time="2026-09-29 12:15:56Z" end-time="2026-09-29 12:15:57Z" duration="1.140855" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1450" name="GlassPilotKeepsTransparentPanesAndPhysicsThroughOrbit" fullname="GravityBox.Tests.COgheViewCampaignTests.GlassPilotKeepsTransparentPanesAndPhysicsThroughOrbit" methodname="GlassPilotKeepsTransparentPanesAndPhysicsThroughOrbit" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1030139206" result="Passed" start-time="2026-09-29 12:15:57Z" end-time="2026-09-29 12:15:58Z" duration="0.191139" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1445" name="NearPanesPassInputAndInteriorWallStillOccludes" fullname="GravityBox.Tests.COgheViewCampaignTests.NearPanesPassInputAndInteriorWallStillOccludes" methodname="NearPanesPassInputAndInteriorWallStillOccludes" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="218944429" result="Passed" start-time="2026-09-29 12:15:58Z" end-time="2026-09-29 12:15:58Z" duration="0.369434" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1444" name="OneTapPauseReverseAndRetryUsePhysicalGateState" fullname="GravityBox.Tests.COgheViewCampaignTests.OneTapPauseReverseAndRetryUsePhysicalGateState" methodname="OneTapPauseReverseAndRetryUsePhysicalGateState" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="2057347428" result="Passed" start-time="2026-09-29 12:15:58Z" end-time="2026-09-29 12:15:59Z" duration="0.579438" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1437" name="OrbitAndZoomNeverRotateChamberAndRetryRestoresView" fullname="GravityBox.Tests.COgheViewCampaignTests.OrbitAndZoomNeverRotateChamberAndRetryRestoresView" methodname="OrbitAndZoomNeverRotateChamberAndRetryRestoresView" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1743104198" result="Passed" start-time="2026-09-29 12:15:59Z" end-time="2026-09-29 12:15:59Z" duration="0.196861" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1443" name="PinchKeepsMidpointAndOverviewFitsTallSafeArea" fullname="GravityBox.Tests.COgheViewCampaignTests.PinchKeepsMidpointAndOverviewFitsTallSafeArea" methodname="PinchKeepsMidpointAndOverviewFitsTallSafeArea" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="858640405" result="Passed" start-time="2026-09-29 12:15:59Z" end-time="2026-09-29 12:15:59Z" duration="0.191482" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1438" name="RealPinchReleaseDoesNotIssueCommand" fullname="GravityBox.Tests.COgheViewCampaignTests.RealPinchReleaseDoesNotIssueCommand" methodname="RealPinchReleaseDoesNotIssueCommand" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="402396028" result="Passed" start-time="2026-09-29 12:15:59Z" end-time="2026-09-29 12:15:59Z" duration="0.306821" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1441" name="RetryDuringPinchRequiresAllFingersToRelease" fullname="GravityBox.Tests.COgheViewCampaignTests.RetryDuringPinchRequiresAllFingersToRelease" methodname="RetryDuringPinchRequiresAllFingersToRelease" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1675324900" result="Passed" start-time="2026-09-29 12:15:59Z" end-time="2026-09-29 12:16:00Z" duration="0.374256" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1446" name="V2CompletionRetainsLegacyProgressAndHome" fullname="GravityBox.Tests.COgheViewCampaignTests.V2CompletionRetainsLegacyProgressAndHome" methodname="V2CompletionRetainsLegacyProgressAndHome" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="27333168" result="Passed" start-time="2026-09-29 12:16:00Z" end-time="2026-09-29 12:16:00Z" duration="0.192977" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1427" name="View01Tap" fullname="GravityBox.Tests.COgheViewCampaignTests.View01Tap" methodname="View01Tap" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1569916257" result="Passed" start-time="2026-09-29 12:16:00Z" end-time="2026-09-29 12:16:00Z" duration="0.321038" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1428" name="View02Climb" fullname="GravityBox.Tests.COgheViewCampaignTests.View02Climb" methodname="View02Climb" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="448768293" result="Passed" start-time="2026-09-29 12:16:00Z" end-time="2026-09-29 12:16:01Z" duration="0.362439" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1429" name="View03Orbit" fullname="GravityBox.Tests.COgheViewCampaignTests.View03Orbit" methodname="View03Orbit" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="625806216" result="Passed" start-time="2026-09-29 12:16:01Z" end-time="2026-09-29 12:16:01Z" duration="0.368535" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1451" name="View04HasAnInspectionRouteWhoseDetailsEnlargeWithZoom" fullname="GravityBox.Tests.COgheViewCampaignTests.View04HasAnInspectionRouteWhoseDetailsEnlargeWithZoom" methodname="View04HasAnInspectionRouteWhoseDetailsEnlargeWithZoom" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="965918580" result="Passed" start-time="2026-09-29 12:16:01Z" end-time="2026-09-29 12:16:01Z" duration="0.220902" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1452" name="View04KnownRouteCanBeCompletedWithoutAHiddenZoomFlag" fullname="GravityBox.Tests.COgheViewCampaignTests.View04KnownRouteCanBeCompletedWithoutAHiddenZoomFlag" methodname="View04KnownRouteCanBeCompletedWithoutAHiddenZoomFlag" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="532768614" result="Passed" start-time="2026-09-29 12:16:01Z" end-time="2026-09-29 12:16:02Z" duration="0.629142" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1430" name="View04Zoom" fullname="GravityBox.Tests.COgheViewCampaignTests.View04Zoom" methodname="View04Zoom" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="411696985" result="Passed" start-time="2026-09-29 12:16:02Z" end-time="2026-09-29 12:16:02Z" duration="0.637902" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1431" name="View05Slider" fullname="GravityBox.Tests.COgheViewCampaignTests.View05Slider" methodname="View05Slider" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1093370289" result="Passed" start-time="2026-09-29 12:16:02Z" end-time="2026-09-29 12:16:03Z" duration="0.483107" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1432" name="View06Practice" fullname="GravityBox.Tests.COgheViewCampaignTests.View06Practice" methodname="View06Practice" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="51266312" result="Passed" start-time="2026-09-29 12:16:03Z" end-time="2026-09-29 12:16:03Z" duration="0.476674" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1433" name="View07Reverse" fullname="GravityBox.Tests.COgheViewCampaignTests.View07Reverse" methodname="View07Reverse" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="835963400" result="Passed" start-time="2026-09-29 12:16:03Z" end-time="2026-09-29 12:16:04Z" duration="0.715678" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Disconnected surface route 7: (-0.27, -0.28, -0.11) -> (-0.15, -0.28, 0.17), 900 nodes
+]]></output>
+            </test-case>
+            <test-case id="1434" name="View08Bridge" fullname="GravityBox.Tests.COgheViewCampaignTests.View08Bridge" methodname="View08Bridge" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1585111966" result="Passed" start-time="2026-09-29 12:16:04Z" end-time="2026-09-29 12:16:05Z" duration="0.528879" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1435" name="View09Cover" fullname="GravityBox.Tests.COgheViewCampaignTests.View09Cover" methodname="View09Cover" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1818861682" result="Passed" start-time="2026-09-29 12:16:05Z" end-time="2026-09-29 12:16:05Z" duration="0.700884" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1436" name="View10Boss" fullname="GravityBox.Tests.COgheViewCampaignTests.View10Boss" methodname="View10Boss" classname="GravityBox.Tests.COgheViewCampaignTests" runstate="Runnable" seed="1411902715" result="Passed" start-time="2026-09-29 12:16:05Z" end-time="2026-09-29 12:16:06Z" duration="0.973666" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: /Users/tommynguyen/Library/Application Support/Gravity Box Lab/Gravity Box/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

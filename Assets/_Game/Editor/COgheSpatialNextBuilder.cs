@@ -816,10 +816,10 @@ namespace GravityBox.Editor
    var holdA=new GameObject("Pad A holds, latch A catches bolt A",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();holdA.transform.SetParent(c.Root,false);
    holdA.Inputs=new[]{padA};holdA.Rails=new[]{latchA.Rail};holdA.Any=true;holdA.Retain=false;holdA.Output=boltA;latchA.RequiredRail=boltA;
    // Right bay: rope B runs front to back (+z), 30 cm clear of the ramps; the dock ledge's ramp home is gated by latch B.
-   // A 10 cm bank still reaches the parked ring (grip reach is 11 cm). Its ivory left face is the climb (no ramp
-   // with an open underside to wander into); every other face is slick.
+   // A 10 cm bank still reaches the parked ring (grip reach is 11 cm). Its ivory back face, opening onto the wide
+   // rescue floor, is the climb (no ramp with an open underside to wander into); every other face is slick.
    var bankFaces=NextPlinth(c,"Rope B start bank",new Vector3(.28f,-.25f,-.24f),new Vector3(.24f,.10f,.12f));var bank=Top(bankFaces);
-   bankFaces.First(f=>f.Normal.x<-.9f).Slippery=false;
+   bankFaces.First(f=>f.Normal.z>.9f).Slippery=false;
    // Measured arc of a 25 % part on this rope: its lowest particle passes z .115 at y ≈ -.17. The dock edge sits
    // there with its top 1.8 cm lower, inside the contact envelope, so the part clears the lip and lands.
    var dock=Top(NextPlinth(c,"Latch B dock",new Vector3(.28f,-.244f,.1975f),new Vector3(.24f,.112f,.165f)));

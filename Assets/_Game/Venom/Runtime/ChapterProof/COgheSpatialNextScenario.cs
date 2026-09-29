@@ -98,7 +98,19 @@ namespace GravityBox.Venom.ChapterProof
    if(Count(q.LastLeft)!=mass/2||Count(q.LastRight)!=mass/2||game.Matter.Groups[q.LastLeft]==game.Matter.Groups[q.LastRight])
     throw new InvalidOperationException($"Q split was not exact: {mass} -> {Count(q.LastLeft)}/{Count(q.LastRight)}");
   }
-  public IEnumerator Walk(int actor,Vector3 world,string why,float tolerance=.05f){yield return Command(actor,world);yield return until(40,()=>Vector3.Distance(game.Motion.Centre(actor),world+Vector3.up*.02f)<tolerance,why);}
+  public IEnumerator Walk(int actor,Vector3 world,string why,float tolerance=.05f)
+  {
+   bool Arrived()=>Vector3.Distance(game.Motion.Centre(actor),world+Vector3.up*.02f)<tolerance;
+   yield return Command(actor,world);
+   // A part that stalls on the way (or drops its order) is sent again, as a player taps the spot a second time.
+   for(int retry=0;retry<2&&!Arrived();retry++)
+   {
+    float start=game.Matter.SimulationTime;
+    yield return until(40,()=>Arrived()||game.Motion.Get(actor)==null||game.Matter.SimulationTime-start>20,why);
+    if(!Arrived())yield return Command(actor,world);
+   }
+   yield return until(40,Arrived,why);
+  }
   // A tap whose ray passes over another part selects that part (game rule); try nearby visible floor points.
   public IEnumerator Command(int actor,Vector3 world)
   {
@@ -166,7 +178,12 @@ namespace GravityBox.Venom.ChapterProof
   // Rope swing: tap the ring (grip), then tap the chosen landing; gravity swings the body across.
   public IEnumerator Grip(COgheSwingTransfer swing)
   {
-   yield return tap(swing.Ring.position);
+   // If the approach gives up ("cannot reach ring"), the player taps the ring again from where the part now is.
+   for(int attempt=0;attempt<2&&swing.Phase!=COgheSwingTransfer.SwingPhase.Ready;attempt++)
+   {
+    yield return tap(swing.Ring.position);
+    yield return until(40,()=>swing.Phase==COgheSwingTransfer.SwingPhase.Ready||swing.Phase==COgheSwingTransfer.SwingPhase.Idle&&swing.Actor<0,"Grip ring "+swing.Label);
+   }
    yield return until(40,()=>swing.Phase==COgheSwingTransfer.SwingPhase.Ready,"Grip ring "+swing.Label);
   }
   public IEnumerator Swing(COgheSwingTransfer swing,int dock)
@@ -273,6 +290,8 @@ namespace GravityBox.Venom.ChapterProof
     yield return Split(q,Selected);int left=q.LastLeft,right=q.LastRight;
     yield return Walk(right,W(.13f,-.298f,-.25f),"One half loads pad A");
     yield return until(10,()=>tube.IsEntryOpen(0),"Pad A holds the tube cap open");
+    // Into the corridor behind Q first; a straight line to the mouth hugs Q's back corner.
+    yield return Walk(left,W(-.24f,-.30f,.03f),"Round Q's back corner into the corridor");
     game.SelectFragment(left);yield return EnterTube(tube,0);yield return LeaveTube(tube);
     yield return Operate("B");yield return until(10,()=>gate.AtEnd,"B lifts the return gate and latches the cap");
     yield return Walk(left,W(.36f,-.29f,-.14f),"Down the return ramp",.07f);
@@ -364,6 +383,8 @@ namespace GravityBox.Venom.ChapterProof
     yield return Walk(a2,W(.33f,-.298f,-.22f),"25 % onto A2");
     yield return until(10,()=>bolt.AtEnd,"Both pads draw the bolt from lever B");
     yield return Split(q,r);int holder=q.LastLeft,rider=q.LastRight;
+    // Wide of Q's back-right corner first (floor taps straight behind Q pass through Q's own touch zone).
+    yield return Walk(rider,W(.20f,-.30f,-.08f),"Rider steps wide of Q's back-right corner");
     yield return Walk(rider,W(-.06f,-.30f,.03f),"Rider waits in front of the lift");
     game.SelectFragment(holder);yield return Hold("B");
     yield return until(10,()=>pin.AtEnd,"Holding B powers the lift");
@@ -402,7 +423,8 @@ namespace GravityBox.Venom.ChapterProof
     yield return Walk(worker,W(-.33f,-.30f,-.25f),"50 % waits at the foot of the ramp");
     yield return Split(q,l);int s1=q.LastLeft,s2=q.LastRight;
     yield return Walk(s2,W(.34f,-.298f,-.20f),"25 % onto A1");
-    yield return Walk(s1,W(.34f,-.298f,-.065f),"25 % onto A2");
+    // Behind Q, well clear of the part already standing on A1 (touching parts fuse).
+    yield return Walk(s1,W(-.05f,-.30f,-.05f),"25 % steps north of the left tray");yield return Walk(s1,W(.22f,-.30f,.0f),"25 % goes round behind Q");yield return Walk(s1,W(.34f,-.298f,-.065f),"25 % onto A2");
     yield return until(10,()=>bolt.AtEnd,"Both pads draw the piece bolt");
     game.SelectFragment(worker);yield return Operate("C");yield return until(5,()=>Task("C").Rail.AtEnd,"Far piece C slides through the near socket into the far one");
     game.SelectFragment(worker);yield return Operate("D");yield return until(5,()=>Task("D").Rail.AtEnd,"Near piece D slides in from its bay");
@@ -429,6 +451,7 @@ namespace GravityBox.Venom.ChapterProof
     game.SelectFragment(tubeWorker);yield return EnterTube(tube,0);yield return LeaveTube(tube);
     yield return Operate("A");yield return until(5,()=>Task("A").Rail.AtEnd,"Latch A catches bolt A");
     yield return Walk(swinger,W(.12f,-.30f,-.25f),"Swinger goes round the front of the blocks");
+    yield return Walk(swinger,W(.22f,-.30f,-.04f),"Swinger at the foot of the bank's climbing face, on the open rescue floor");
     game.SelectFragment(swinger);yield return Grip(swing);yield return Swing(swing,0);
     yield return Operate("B");yield return until(8,()=>Task("B").Rail.AtEnd&&gate.AtEnd,"Latch B catches bolt B and opens the ramp home");
     // Both holders are free. The swinger comes home down the ramp and pairs with pad B's holder; that 50 % pair sets

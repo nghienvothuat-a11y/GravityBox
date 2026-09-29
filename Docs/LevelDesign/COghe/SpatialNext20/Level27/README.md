@@ -5,7 +5,7 @@ Theo [LEVEL_TEMPLATE](../../LEVEL_TEMPLATE.md). Nguồn: [quy tắc](../../../..
 ## 1. Định danh, phạm vi và trạng thái
 
 - ID: `coghe.spatial.next.27` · vị trí đề xuất 27 sau Spatial Pilot 01–10 · hồ sơ v0.1, 29/09/2026.
-- Trạng thái **Nháp thiết kế**. Chưa tạo scene/definition/build; Editor/Mac/OPPO chưa kiểm chứng gameplay màn này. Tên component mới trong hồ sơ là đề xuất, không phải mã đã tồn tại.
+- Trạng thái **Đã dựng — greybox + art Glass C** (29/09/2026): scene `Assets/_Game/Venom/SpatialCampaign/COgheSpatial27.unity`, definition `Definitions/Spatial27.asset`, ID giữ nguyên. Giải trọn bằng chạm thật trong Unity PlayMode (bộ hồi quy 76/76) và native Mac (20/20 màn 11–30); chưa đo OPPO, chưa chơi thử người mới. Bố cục thực tế và khác biệt ở mục 10 và [AS_BUILT](../AS_BUILT_2026_09_29.md).
 - [Minh hoạ](../Illustrations/27.png) · [sơ đồ phụ thuộc](../Routes/27.svg). Ảnh là concept, không phải screenshot hoặc bản kích thước thi công.
 - Được yêu cầu: thiết kế tiếp 20 màn, đẩy/kéo/xếp khối, ròng rọc, đu dây, ống, Q tách 50/50. Bố trí riêng màn này là đề xuất để người dùng xem.
 - Cổng chất lượng: đủ hồ sơ → greybox chơi trọn → art/animation → hồi quy và thiết bị thật. Hiện mới ở hồ sơ, không tự chứng nhận mốc sau.
@@ -97,3 +97,5 @@ Chưa có APK/binary hoặc log cho màn này. Khi dựng, ghi hash/build/commit
 Đề xuất nối sau Spatial Pilot 10 bằng ID ổn định, giữ catalog V2/Origin để đối chiếu. Không ghi đè ID hoặc save 01–10. Definition/scene/builder/prefab **chưa tạo**; quyết định đường dẫn sau greybox. Migration tiến độ thử lặp an toàn, thắng/replay không cấp trùng phần thưởng; tắt app giữa ăn mừng/lưu vẫn nhất quán.
 
 29/09/2026: tạo hồ sơ và concept v0.1 theo yêu cầu 20 màn tiếp. Kết luận: **đề xuất thiết kế, chưa nghiệm thu khả giải hoặc performance**. Tiếp theo: prototype cơ quan mới, dựng greybox, kiểm chứng theo các mốc; không lấy hình làm bằng chứng physics.
+
+29/09/2026 — **bản dựng**: Khay thang 20×20 cm (đủ cho 75% đứng trọn). Bốn phần 25%: A1+A2 rút chốt cần B; phần ba giữ B (cần phải giữ) cấp lực cho thang; phần tư đi thang lên bệ cao, kéo C (móc trung tính) giữ lực thang cho cả nhóm; ba phần còn lại gọi thang, lên, tụ. Khác hồ sơ: Khay thang đã ở bến dưới (không có bước “đưa khay vào bến” riêng); B là cần giữ cấp lực, không kéo tải bằng sức 25%. Bằng chứng: `COgheSpatialCampaignTests.Spatial27Solve` (PlayMode 120 Hz, chạm thật, 32/32 hạt qua lỗ cuối, 1 cơ thể, Retry về đầu); replay native Mac cùng kịch bản; ảnh `Docs/Verification/COgheSpatialNext20/27-*.png`. Chưa kiểm: OPPO/FPS điện thoại, người chơi mới, từng ca phục hồi và đường thay thế ở mục 8 (mới có đường giải chính).
