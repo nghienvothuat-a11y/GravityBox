@@ -154,6 +154,33 @@ namespace GravityBox.Tests
    for(int k=0;k<40;k++){for(int i=0;i<30;i++)Tick();yield return null;log+=$"\n t={k*.25f:F2} phase={d.Phase} applied={d.AppliedEffort:F3} railEffort={d.Rail.Effort:F3} in={d.Rail.Position:F4} out={span.Position:F4} tension={cable.Tension:F3} latched={d.Rail.Latched} locked={d.Rail.Locked} centre={game.Root.InverseTransformPoint(game.Motion.Centre(0)):F3} last={d.LastFailure}";}
    Debug.Log("SPATIAL20 WINCH"+log);
   }
+  [UnityTest] public IEnumerator Spatial21CrateProbe()
+  {
+   yield return Load(21);var crate=System.Array.Find(game.Props,p=>p.name=="A crate");string log="";
+   for(int i=0;i<600;i++){crate.Body.AddForce(game.Root.forward*.15f);Tick();if(i%60==0){log+=$" z={game.Root.InverseTransformPoint(crate.Body.position).z:F3}/{crate.Body.linearVelocity.z:F3}";yield return null;}}
+   foreach(var col in crate.CollisionShapes)foreach(var hit in Physics.OverlapBox(col.bounds.center,col.bounds.extents+Vector3.one*.001f))if(!hit.transform.IsChildOf(crate.transform))log+="\n "+col.name+" -> "+hit.name+" @"+(hit.attachedRigidbody!=null?hit.attachedRigidbody.name:"static")+" bounds="+game.Root.InverseTransformPoint(hit.bounds.center).ToString("F3")+"/"+hit.bounds.size.ToString("F3");
+   Debug.Log("SPATIAL21 CRATE"+log);
+  }
+  [UnityTest] public IEnumerator Spatial21PushTrace()
+  {
+   yield return Load(21);var crate=System.Array.Find(game.Props,p=>p.name=="A crate");string log="";
+   var f=typeof(VenomCampaign).GetField("propTarget",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance);
+   yield return Tap(crate.Body.position+Vector3.up*.012f);
+   for(int k=0;k<24;k++){if(k%4==1)yield return Tap(game.Root.TransformPoint(new Vector3(-.28f,-.187f,.108f)));for(int i=0;i<60;i++)Tick();yield return null;
+    log+=$"\n t={k*.5f:F1} crate={game.Root.InverseTransformPoint(crate.Body.position).z:F3} v={crate.Body.linearVelocity.z:F3} held={(game.HeldProp!=null)} target={game.Root.InverseTransformPoint((Vector3)f.GetValue(game)):F3} contact={game.Root.InverseTransformPoint(game.PropContact):F3} body={game.Root.InverseTransformPoint(game.Motion.Centre(0)):F3} act={game.Activity}";}
+   Debug.Log("SPATIAL21 PUSH"+log);
+  }
+  [UnityTest] public IEnumerator Spatial24SplitTrace()
+  {
+   yield return Load(24);var s=new COgheSpatialNextScenario(game,Tap,Until);var q=s.Find<COgheQuantumSplitter>();string log="";
+   yield return s.Split(q,game.Motion.Selected);int l=q.LastLeft,r=q.LastRight;
+   yield return s.Walk(r,game.Root.TransformPoint(new Vector3(.20f,-.30f,-.02f)),"r off");
+   game.SelectFragment(l);yield return Tap(q.transform.position+q.transform.rotation*new Vector3(0,.1f,-.02f));
+   for(int k=0;k<60;k++){for(int i=0;i<30;i++)Tick();yield return null;
+    float minX=9,maxX=-9;int n=0;for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[l]){var p=q.transform.InverseTransformPoint(game.Matter.Bodies[i].position);minX=Mathf.Min(minX,p.x);maxX=Mathf.Max(maxX,p.x);n++;}
+    log+=$"\n t={k*.25f:F2} {q.Phase} act={game.Activity} req={q.Requested} armedIn={q.ArmedInside} n={n} x[{minX:F3},{maxX:F3}] septum={q.Septum.Position:F3} gates={q.LeftGate.Position:F3}/{q.RightGate.Position:F3} splits={q.Splits}";}
+   Debug.Log("SPATIAL24 SPLIT"+log);
+  }
   [UnityTest] public IEnumerator Spatial14TubeTrace()
   {
    yield return Load(14);var s=new COgheSpatialNextScenario(game,Tap,Until);var tube=s.Find<COgheTubeNetwork>();

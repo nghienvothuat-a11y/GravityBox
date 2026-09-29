@@ -15,5 +15,9 @@ namespace GravityBox.Tests
   [UnityTest] public IEnumerator Spatial18Solve(){yield return Solve(18);}
   [UnityTest] public IEnumerator Spatial19Solve(){yield return Solve(19);}
   [UnityTest] public IEnumerator Spatial20Solve(){yield return Solve(20);}
+  [UnityTest] public IEnumerator Spatial21Solve(){yield return Solve(21);}
+  [UnityTest] public IEnumerator Spatial22Solve(){yield return Solve(22);}
+  [UnityTest] public IEnumerator Spatial23Solve(){yield return Solve(23);}
+  [UnityTest] public IEnumerator Spatial24Solve(){yield return Solve(24);}
  }
 }

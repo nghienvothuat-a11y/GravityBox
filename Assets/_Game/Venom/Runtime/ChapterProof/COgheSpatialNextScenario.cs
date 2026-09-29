@@ -55,9 +55,11 @@ namespace GravityBox.Venom.ChapterProof
   {
    yield return tap(prop.Body.position+Vector3.up*.012f);
    yield return until(20,()=>game.Attached,"Grasp "+prop.name);
+   Vector3 direction=Vector3.ProjectOnPlane(target-prop.Body.position,Vector3.up).normalized;
    for(int attempt=0;attempt<6&&Flat(prop.Body.position-target)>tolerance;attempt++)
    {
-    yield return tap(target);
+    // Re-taps aim at the floor just beyond the crate, so the ray never lands on the crate's own top.
+    yield return tap(attempt==0?target:target+direction*.05f);
     float start=game.Matter.SimulationTime;
     yield return until(12,()=>Flat(prop.Body.position-target)<=tolerance||game.Matter.SimulationTime-start>2.5f||!game.Attached,"Slide "+prop.name);
     if(!game.Attached&&Flat(prop.Body.position-target)>tolerance){yield return tap(prop.Body.position+Vector3.up*.012f);yield return until(20,()=>game.Attached,"Regrasp "+prop.name);}
@@ -216,6 +218,49 @@ namespace GravityBox.Venom.ChapterProof
     yield return Go(W(-.30f,-.24f,.17f),"Climb crate and winch bench");
     yield return Operate("D",60);yield return until(15,()=>span.AtEnd,"Full body winds the span up");
     yield return Go(W(-.02f,-.24f,.23f),"Cross the span to the exit platform");
+   }
+   else if(n==21)
+   {
+    var seesaw=Find<COgheSeesawBridge>();var crate=Array.Find(game.Props,p=>p.name=="A crate");
+    yield return Push(crate,W(-.28f,-.187f,.108f),.012f);
+    yield return until(20,()=>seesaw.Caught,"Loaded tray sinks; rope lifts the plank level; pawl catches");
+    yield return Go(W(0,-.20f,.10f),"Onto the level plank");
+    yield return Go(W(.25f,-.20f,.12f),"Across to the exit platform");
+   }
+   else if(n==22)
+   {
+    var a=Task("A").Rail;var b=Task("B").Rail;var span=Task("C").Rail;
+    yield return Operate("B");yield return until(5,()=>b.Position<=b.CatchTolerance,"Tall block waits aside");
+    yield return Operate("C");yield return until(5,()=>span.AtEnd,"Span reaches its far bearers");
+    yield return Operate("B");yield return until(5,()=>b.AtEnd,"Tall block into its socket");
+    yield return Operate("A");yield return until(5,()=>a.AtEnd,"Low block into its socket");
+    yield return Go(W(-.12f,-.27f,.08f),"Mount the low block");
+    yield return Go(W(-.016f,-.24f,.08f),"Mount the tall block");
+    yield return Go(W(.095f,-.24f,.08f),"Onto the span");
+    yield return Go(W(.27f,-.24f,.12f),"Onto the exit platform");
+   }
+   else if(n==23)
+   {
+    var tube=Find<COgheTubeNetwork>();
+    yield return EnterTube(tube,0);yield return Choose(tube,1,1);yield return LeaveTube(tube);
+    yield return Operate("A");yield return until(8,()=>tube.Edges[2].Open,"A turns the junction valve onto the upper route");
+    yield return EnterTube(tube,2);yield return Choose(tube,1,2);yield return LeaveTube(tube);
+   }
+   else if(n==24)
+   {
+    var q=Find<COgheQuantumSplitter>();var latch=Find<COgheLoadLatch>();
+    yield return Split(q,Selected);int l=q.LastLeft,r=q.LastRight;
+    yield return Walk(r,W(.20f,-.30f,-.02f),"Right half waits off the tray");
+    yield return Split(q,l);int l1=q.LastLeft,l2=q.LastRight;
+    yield return Walk(l1,W(-.33f,-.298f,-.20f),"25 % onto A1");
+    yield return Walk(l2,W(.33f,-.298f,-.20f),"25 % onto B1");
+    yield return Split(q,r);int r1=q.LastLeft,r2=q.LastRight;
+    yield return Walk(r1,W(-.33f,-.298f,.14f),"25 % onto A2");
+    yield return Walk(r2,W(.33f,-.298f,.14f),"25 % onto B2");
+    yield return until(20,()=>latch.Caught,"Four loads slide the step out; pawl catches");
+    yield return Merge(W(.12f,-.30f,-.02f));
+    yield return Go(W(0,-.27f,.07f),"Onto the step");
+    yield return Go(W(0,-.24f,.21f),"Onto the exit platform");
    }
    else throw new NotImplementedException("Spatial "+n+" route");
    yield return Exit();
