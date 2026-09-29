@@ -343,6 +343,21 @@ namespace GravityBox.Venom.ChapterProof
     yield return Operate("D");yield return until(8,()=>gate.AtEnd,"D lifts the gate at the head of the outer bridge");
     yield return Merge(W(.28f,.08f,.10f));
    }
+   else if(n==29)
+   {
+    var q=Find<COgheQuantumSplitter>();var bolt=Slider("A piece bolt");var span=Find<COgheSeesawBridge>();
+    yield return Split(q,Selected);int l=q.LastLeft,worker=q.LastRight;
+    yield return Walk(worker,W(-.33f,-.30f,-.25f),"50 % waits at the foot of the ramp");
+    yield return Split(q,l);int s1=q.LastLeft,s2=q.LastRight;
+    yield return Walk(s2,W(.34f,-.298f,-.20f),"25 % onto A1");
+    yield return Walk(s1,W(.34f,-.298f,-.065f),"25 % onto A2");
+    yield return until(10,()=>bolt.AtEnd,"Both pads draw the piece bolt");
+    game.SelectFragment(worker);yield return Operate("C");yield return until(5,()=>Task("C").Rail.AtEnd,"Far piece C slides through the near socket into the far one");
+    game.SelectFragment(worker);yield return Operate("D");yield return until(5,()=>Task("D").Rail.AtEnd,"Near piece D slides in from its bay");
+    yield return Merge(W(-.30f,-.30f,-.25f));
+    yield return Operate("B",60);yield return until(15,()=>span.Caught,"Whole body winds B; the span's far end rises level and its pawl catches");
+    yield return Go(W(.33f,-.18f,.05f),"Across the span to the exit platform");
+   }
    else throw new NotImplementedException("Spatial "+n+" route");
    yield return Exit();
   }

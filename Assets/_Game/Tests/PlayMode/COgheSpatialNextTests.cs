@@ -23,5 +23,6 @@ namespace GravityBox.Tests
   [UnityTest] public IEnumerator Spatial26Solve(){yield return Solve(26);}
   [UnityTest] public IEnumerator Spatial27Solve(){yield return Solve(27);}
   [UnityTest] public IEnumerator Spatial28Solve(){yield return Solve(28);}
+  [UnityTest] public IEnumerator Spatial29Solve(){yield return Solve(29);}
  }
 }
