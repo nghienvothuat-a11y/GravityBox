@@ -98,3 +98,5 @@ Chưa có APK/binary hoặc log cho màn này. Khi dựng, ghi hash/build/commit
 29/09/2026: tạo hồ sơ và concept v0.1 theo yêu cầu 20 màn tiếp. Kết luận: **đề xuất thiết kế, chưa nghiệm thu khả giải hoặc performance**. Tiếp theo: prototype cơ quan mới, dựng greybox, kiểm chứng theo các mốc; không lấy hình làm bằng chứng physics.
 
 29/09/2026 — **bản dựng**: Một nửa giữ A mở nắp ống; nửa kia qua ống kéo B: chốt cửa về và nắp. Khác hồ sơ: Như hồ sơ. Bằng chứng: `COgheSpatialCampaignTests.Spatial17Solve` (PlayMode 120 Hz, chạm thật, 32/32 hạt qua lỗ cuối, 1 cơ thể, Retry về đầu); replay native Mac cùng kịch bản; ảnh `Docs/Verification/COgheSpatialNext20/17-*.png`. Chưa kiểm: OPPO/FPS điện thoại, người chơi mới, từng ca phục hồi và đường thay thế ở mục 8 (mới có đường giải chính).
+
+29/09/2026 chiều — **cập nhật sau replay native**: B là chốt một chiều: đã mở thì cửa về và nắp giữ vĩnh viễn, chạm lại không kéo ngược.

@@ -98,3 +98,5 @@ Chưa có APK/binary hoặc log cho màn này. Khi dựng, ghi hash/build/commit
 29/09/2026: tạo hồ sơ và concept v0.1 theo yêu cầu 20 màn tiếp. Kết luận: **đề xuất thiết kế, chưa nghiệm thu khả giải hoặc performance**. Tiếp theo: prototype cơ quan mới, dựng greybox, kiểm chứng theo các mốc; không lấy hình làm bằng chứng physics.
 
 29/09/2026 — **bản dựng**: Hộp cao; J1/J2/J3 ở ba cao độ, J1 có nhánh quay về sàn. Phần ngoài leo mặt ngà giữ A (van J2), phần trong tới bệ bảo trì chốt C; phần ngoài lên B đổi J3; phần trong lên ban công trên kéo D mở cổng đầu cầu ngoài; tụ và thoát. Khác hồ sơ: Bỏ “vòng quay lại” thứ tư ở J1 (hai miệng quá gần làm lưới PhysX suy biến); J3 là cửa sổ hai nhánh. Bằng chứng: `COgheSpatialCampaignTests.Spatial28Solve` (PlayMode 120 Hz, chạm thật, 32/32 hạt qua lỗ cuối, 1 cơ thể, Retry về đầu); replay native Mac cùng kịch bản; ảnh `Docs/Verification/COgheSpatialNext20/28-*.png`. Chưa kiểm: OPPO/FPS điện thoại, người chơi mới, từng ca phục hồi và đường thay thế ở mục 8 (mới có đường giải chính).
+
+29/09/2026 chiều — **cập nhật sau replay native**: C và D là chốt một chiều.

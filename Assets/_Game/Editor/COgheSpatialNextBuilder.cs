@@ -281,6 +281,19 @@ namespace GravityBox.Editor
    Vector3 d=b-a;Vector3 side=Vector3.Cross(Vector3.up,Vector3.ProjectOnPlane(d,Vector3.up)).normalized;Vector3 normal=Vector3.Cross(d.normalized,side);if(normal.y<0)normal=-normal;
    return Panel(c.Root,name,(a+b)*.5f,normal,new Vector2(width,d.magnitude),stone,false,Vector2.zero,0,c.Surfaces);
   }
+  // Ivory stairs from the floor up to a platform edge: solid climbable blocks (no open underside), each riser
+  // ≈ 5 cm, the top step flush with the platform so there is no lip. A slope panel met a platform edge at a lip a
+  // body could climb to but not over (Spatial 18/19 recovery, 29/09/2026).
+  static void NextStairs(ExpansionContext c,string name,Vector3 edge,Vector3 away,float top,float width,int steps,float depth)
+  {
+   away=Vector3.ProjectOnPlane(away,Vector3.up).normalized;Vector3 across=Vector3.Cross(Vector3.up,away);
+   for(int i=1;i<=steps;i++)
+   {
+    float h=(top+.30f)*i/steps;Vector3 centre=new Vector3(edge.x,-.30f+h*.5f,edge.z)+away*((steps-i+.5f)*depth);
+    Vector3 size=new Vector3(Mathf.Abs(away.x)*depth+Mathf.Abs(across.x)*width,h,Mathf.Abs(away.z)*depth+Mathf.Abs(across.z)*width);
+    NextPlinth(c,name,centre,size,false);
+   }
+  }
   static Transform NextMarker(ExpansionContext c,string name,Vector3 point)
   {var t=new GameObject(name).transform;t.SetParent(c.Root,false);t.localPosition=point;return t;}
 
@@ -389,7 +402,7 @@ namespace GravityBox.Editor
     new Vector3(.12f,-.06f,.23f),new Vector3(.17f,-.19f,.225f),new Vector3(.20f,-.25f,.18f),new Vector3(.20f,-.255f,.12f));
    var cap=ViewGate(c,"A tube cap",new Vector3(-.10f,-.253f,.098f),Vector3.up,.12f,new Vector3(.092f,.092f,.012f));
    tube.EntryBlocker=cap.GetComponent<VenomMovableProp>().CollisionShapes[0];
-   var b=ViewTask(c,"B",new Vector3(.25f,-.277f,-.02f),Vector3.right,.08f,floor);
+   var b=ViewTask(c,"B",new Vector3(.25f,-.277f,-.02f),Vector3.right,.08f,floor);b.OneWay=true;
    ViewLink(c,b.Rail,door,false,null);
    var safe=new GameObject("Tube cap safety",typeof(COgheTissueClearance)).GetComponent<COgheTissueClearance>();safe.transform.SetParent(c.Root,false);safe.transform.localPosition=new Vector3(-.10f,-.255f,.10f);
    safe.Network=tube;safe.Size=new Vector3(.05f,.10f,.10f);
@@ -403,8 +416,10 @@ namespace GravityBox.Editor
   static void Next18(ExpansionContext c)
   {
    c.Exit=new Vector3(.40f,-.132f,.12f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.30f,-.11f,.12f);NextShell(c,.30f,true);var floor=c.Surfaces[0];
-   var left=NextPlinth(c,"Start bank",new Vector3(-.28f,-.23f,.10f),new Vector3(.24f,.14f,.40f));
-   NextRamp(c,"Recovery ramp",new Vector3(-.30f,-.30f,-.29f),new Vector3(-.30f,-.16f,-.10f),.12f); // the climb back up from the rescue floor
+   // The start bank is ivory all round: a body that drops onto the rescue floor climbs straight back from anywhere
+   // (only the receiving side must stay slick).
+   var left=NextPlinth(c,"Start bank",new Vector3(-.28f,-.23f,.10f),new Vector3(.24f,.14f,.40f),false);
+   NextStairs(c,"Recovery stairs",new Vector3(-.30f,0,-.10f),Vector3.back,-.16f,.12f,3,.06f); // the climb back up from the rescue floor
    // Placed on the measured arc of the loaded rope: the edge sits just short of the apex and the top 2 cm under the
    // body's lowest point there, so the body clears the lip and settles on the tray (not a symmetric ideal pendulum).
    var right=NextPlinth(c,"Receiving bank",new Vector3(.2575f,-.25f,.12f),new Vector3(.285f,.10f,.36f));
@@ -415,8 +430,8 @@ namespace GravityBox.Editor
   static void Next19(ExpansionContext c)
   {
    c.Exit=new Vector3(.215f,-.132f,.30f);c.Outward=Vector3.forward;c.Spawn=new Vector3(-.10f,-.25f,-.20f);NextShell(c,.30f,true);var floor=c.Surfaces[0];
-   var left=NextPlinth(c,"Start bank",new Vector3(-.28f,-.23f,.10f),new Vector3(.24f,.14f,.40f));
-   NextRamp(c,"Start ramp",new Vector3(-.30f,-.30f,-.29f),new Vector3(-.30f,-.16f,-.10f),.12f); // the fixed way up from the floor
+   var left=NextPlinth(c,"Start bank",new Vector3(-.28f,-.23f,.10f),new Vector3(.24f,.14f,.40f),false); // ivory: climbable back from the floor
+   NextStairs(c,"Start stairs",new Vector3(-.30f,0,-.10f),Vector3.back,-.16f,.12f,3,.06f); // the fixed way up from the floor
    var tray=ExpansionRail(c,"B landing tray",new Vector3(.295f,-.215f,.13f),Vector3.left,.08f,0,new Vector3(.20f,.03f,.32f),.05f,.01f,false,false);
    tray.GetComponent<VenomMovableProp>().Manipulable=false;tray.LatchAtEnd=true;TrimSideSlabs(tray);
    foreach(var face in tray.GetComponentsInChildren<VenomSurfacePatch>())if(face.Normal.y<.9f)face.Slippery=true;
@@ -446,7 +461,7 @@ namespace GravityBox.Editor
    var tube=ChapterTube(c,"Balcony tube",new Vector3(.20f,-.255f,.02f),new Vector3(.20f,-.24f,.065f),new Vector3(.20f,-.16f,.085f),new Vector3(.20f,-.09f,.10f),new Vector3(.20f,-.057f,.135f),new Vector3(.20f,-.057f,.18f));
    var cap=ViewGate(c,"A tube cap",new Vector3(.20f,-.253f,-.002f),Vector3.up,.12f,new Vector3(.092f,.092f,.012f));
    tube.EntryBlocker=cap.GetComponent<VenomMovableProp>().CollisionShapes[0];
-   var b=ViewTask(c,"B",new Vector3(.29f,-.077f,.27f),Vector3.right,.07f,balcony);b.StandOffset=new Vector3(0,0,-.05f);
+   var b=ViewTask(c,"B",new Vector3(.29f,-.077f,.27f),Vector3.right,.07f,balcony);b.StandOffset=new Vector3(0,0,-.05f);b.OneWay=true;
    NextRamp(c,"Return ramp",new Vector3(.36f,-.30f,-.10f),new Vector3(.36f,-.10f,.12f),.08f);
    var gate=ViewGate(c,"B return gate",new Vector3(.358f,-.069f,.11f),Vector3.up,.08f,new Vector3(.074f,.06f,.012f));
    ViewLink(c,b.Rail,gate,false,null);
@@ -455,7 +470,9 @@ namespace GravityBox.Editor
    hold.Inputs=new[]{a};hold.Rails=new[]{b.Rail};hold.Output=cap;hold.Any=true;hold.Retain=false;hold.Clearance=safe;
    var bench=Top(NextPlinth(c,"Winch bench",new Vector3(-.30f,-.27f,.21f),new Vector3(.20f,.06f,.18f)));
    NextPlinth(c,"Exit platform",new Vector3(-.02f,-.27f,.21f),new Vector3(.16f,.06f,.18f));
-   NextCrate(c,"C",new Vector3(-.34f,-.285f,-.02f),Vector3.forward,.096f,new Vector3(.09f,.03f,.08f),floor,new Vector3(0,0,-.048f),new Vector3(0,0,-.052f),.04f,.01f,0,true);
+   // Crate C: 4 cm with ivory sides — the floor-to-crate climb is easy and crate-to-bench is a 2 cm step; the 6 cm
+   // slick bench still cannot be climbed without it.
+   NextCrate(c,"C",new Vector3(-.34f,-.28f,-.02f),Vector3.forward,.096f,new Vector3(.09f,.04f,.08f),floor,new Vector3(0,0,-.048f),new Vector3(0,0,-.052f),.04f,.01f,0,false);
    // Handle stroke = span travel + cable stretch at the load (0.5 N / 45 N/m): the handle ends as the span docks.
    var winch=ViewTask(c,"D",new Vector3(-.355f,-.217f,.255f),Vector3.right,.046f,bench);winch.CompensateLoad=true;winch.StallSeconds=6;
    var span=ExpansionRail(c,"Winch lifting span",new Vector3(-.15f,-.2855f,.21f),Vector3.up,.0325f,0,new Vector3(.094f,.026f,.17f),.05f,.01f,true,false);
@@ -491,7 +508,7 @@ namespace GravityBox.Editor
    c.Exit=new Vector3(.40f,-.132f,.12f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.30f,-.15f,-.18f);NextShell(c,.30f,true);var floor=c.Surfaces[0];
    var deck=NextDeckWithPit(c,"Load deck",new Rect(-.40f,-.30f,.25f,.60f),-.20f,new Rect(-.34f,.05f,.12f,.12f));
    NextPlinth(c,"Exit platform",new Vector3(.275f,-.25f,.125f),new Vector3(.25f,.10f,.35f));
-   NextRamp(c,"Gap recovery ramp",new Vector3(0,-.30f,-.28f),new Vector3(-.13f,-.20f,-.28f),.06f);
+   NextStairs(c,"Gap recovery stairs",new Vector3(-.15f,0,-.26f),Vector3.right,-.20f,.08f,2,.06f);
    var tray=ExpansionRail(c,"Load tray",new Vector3(-.28f,-.215f,.11f),Vector3.down,.066f,0,new Vector3(.115f,.026f,.115f),.01f,.004f,true,false);
    tray.GetComponent<VenomMovableProp>().Manipulable=false;TrimSideSlabs(tray);foreach(var f in tray.GetComponentsInChildren<VenomSurfacePatch>())f.MotionFrame=tray.Body;
    NextLooseCrate(c,"A crate",new Vector3(-.28f,-.185f,-.10f),new Vector3(.09f,.03f,.09f),.04f,Vector3.back);
@@ -615,12 +632,13 @@ namespace GravityBox.Editor
   static void Next26(ExpansionContext c)
   {
    c.Exit=new Vector3(.40f,-.160f,.12f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.20f,-.11f,-.262f);c.Definition.CameraEuler=new Vector3(40,20,0);NextShell(c,.30f,true);var floor=c.Surfaces[0];
-   var bankFront=Top(NextPlinth(c,"Start bank",new Vector3(-.20f,-.23f,-.16f),new Vector3(.40f,.14f,.28f)));
-   var bankBack=Top(NextPlinth(c,"Start bank",new Vector3(-.28f,-.23f,.14f),new Vector3(.24f,.14f,.32f)));
+   // The start banks are ivory all round: a half that drops off the rope climbs straight back (the goal side stays slick).
+   var bankFront=Top(NextPlinth(c,"Start bank",new Vector3(-.20f,-.23f,-.16f),new Vector3(.40f,.14f,.28f),false));
+   var bankBack=Top(NextPlinth(c,"Start bank",new Vector3(-.28f,-.23f,.14f),new Vector3(.24f,.14f,.32f),false));
    // A shoulder behind Q's right tray: the right half walks behind the rear housing to the back bank.
    // It stops short of the swing plane (z .14) so the rope arc never scrapes it.
-   NextPlinth(c,"Start bank shoulder",new Vector3(-.125f,-.23f,.03f),new Vector3(.07f,.14f,.10f));
-   NextRamp(c,"Recovery ramp",new Vector3(-.045f,-.30f,.10f),new Vector3(-.045f,-.16f,-.02f),.06f);
+   NextPlinth(c,"Start bank shoulder",new Vector3(-.125f,-.23f,.03f),new Vector3(.07f,.14f,.10f),false);
+   NextStairs(c,"Recovery stairs",new Vector3(-.045f,0,-.02f),Vector3.forward,-.16f,.08f,3,.05f);
    NextQuantum(c,new Vector3(-.20f,-.16f,-.18f),.025f,.14f);
    var a=ExpansionPad(c,"A",new Vector3(-.34f,-.158f,.24f),.009f,.09f);
    // Middle platform (slick sides, walkable top at -.188). The landing tray is stored inside it and slides out
@@ -635,7 +653,7 @@ namespace GravityBox.Editor
    var cap=ViewGate(c,"A tube cap",new Vector3(-.25f,-.113f,.148f),Vector3.up,.12f,new Vector3(.092f,.092f,.012f));
    tube.EntryBlocker=cap.GetComponent<VenomMovableProp>().CollisionShapes[0];
    // B's handle faces the back, toward the tube's landing.
-   var b=ViewTask(c,"B",new Vector3(.27f,top+.023f,-.10f),Vector3.right,.07f,middle);
+   var b=ViewTask(c,"B",new Vector3(.27f,top+.023f,-.10f),Vector3.right,.07f,middle);b.OneWay=true; // B opens the tray for good
    b.Handle.localPosition=new Vector3(0,0,.035f);b.Handle.localRotation=Quaternion.identity;b.StandOffset=new Vector3(0,0,.05f);
    var flap=ExpansionRail(c,"B landing tray",new Vector3(.315f,-.211f,.14f),Vector3.left,.15f,0,new Vector3(.10f,.026f,.16f),.03f,.006f,false,false);
    flap.GetComponent<VenomMovableProp>().Manipulable=false;flap.LatchAtEnd=true;TrimSideSlabs(flap);
@@ -678,7 +696,7 @@ namespace GravityBox.Editor
    foreach(float x in new[]{-.13f,.086f})MechanismVisual(c.Root,"Lift upright",new Vector3(x,-.02f,.275f),new Vector3(.012f,.56f,.012f),metal);
    var pin=ViewGate(c,"Lift enable pin",new Vector3(-.16f,-.27f,.28f),Vector3.up,.03f,new Vector3(.012f,.012f,.012f));
    lift.RequiredRail=pin;
-   var latch=ViewTask(c,"C",new Vector3(.22f,-.037f,.14f),Vector3.right,.07f,high);
+   var latch=ViewTask(c,"C",new Vector3(.22f,-.037f,.14f),Vector3.right,.07f,high);latch.OneWay=true;
    var power=new GameObject("B holds or C latches the lift power",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();power.transform.SetParent(c.Root,false);
    power.Holds=new[]{b};power.Rails=new[]{latch.Rail};power.Any=true;power.Retain=false;power.Output=pin;
    NextTrace("A",new Vector3(-.33f,-.2992f,-.175f),new Vector3(-.33f,-.2992f,.185f),new Vector3(-.26f,-.2992f,.185f));
@@ -723,7 +741,7 @@ namespace GravityBox.Editor
    // A: a held lever on the station A balcony; C (neutral) on the maintenance balcony latches the same valve.
    var a=ViewTask(c,"A",new Vector3(-.30f,-.097f,.10f),Vector3.right,.07f,aTop);a.HoldAtEnd=true;
    // C's handle faces +x so the half standing beside it never hides it from the default camera.
-   var latchC=ViewTask(c,"C",new Vector3(.25f,-.057f,-.11f),Vector3.forward,.06f,maintenance);
+   var latchC=ViewTask(c,"C",new Vector3(.25f,-.057f,-.11f),Vector3.forward,.06f,maintenance);latchC.OneWay=true;
    latchC.Handle.localPosition=new Vector3(.042f,0,0);latchC.Handle.localRotation=Quaternion.Euler(0,90,0);latchC.StandOffset=new Vector3(.05f,0,0);
    var valve=ViewGate(c,"A route valve",new Vector3(.15f,-.10f,-.02f),Vector3.up,.02f,new Vector3(.018f,.018f,.018f));
    var route=new GameObject("A holds or C latches the maintenance route",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();route.transform.SetParent(c.Root,false);
@@ -734,7 +752,7 @@ namespace GravityBox.Editor
    b.Handle.localPosition=new Vector3(.042f,0,0);b.Handle.localRotation=Quaternion.Euler(0,90,0);b.StandOffset=new Vector3(.05f,0,0);
    edges[5].AccessGate=b.Rail;
    // D (neutral) on the upper balcony lifts the gate at the head of the outer bridge.
-   var latchD=ViewTask(c,"D",new Vector3(.30f,.103f,.20f),Vector3.right,.05f,upper);
+   var latchD=ViewTask(c,"D",new Vector3(.30f,.103f,.20f),Vector3.right,.05f,upper);latchD.OneWay=true;
    var gate=ViewGate(c,"D climb gate",new Vector3(.138f,.112f,.22f),Vector3.up,.08f,new Vector3(.012f,.06f,.09f));
    foreach(var f in gate.GetComponentsInChildren<VenomSurfacePatch>(true))f.Slippery=true;
    ViewLink(c,latchD.Rail,gate,false,null);
@@ -755,7 +773,7 @@ namespace GravityBox.Editor
    // Everything stands at least 8 cm behind Q's climbable casing, so Q is never a shortcut onto the road, span or winch deck.
    var landing=Top(NextPlinth(c,"Start landing",new Vector3(-.331f,-.24f,.13f),new Vector3(.098f,.12f,.18f)));
    // 11 cm wide so a whole body climbs it without spilling onto the bay beside it.
-   NextRamp(c,"Start ramp",new Vector3(-.34f,-.30f,-.14f),new Vector3(-.34f,-.18f,.04f),.11f);
+   NextStairs(c,"Start stairs",new Vector3(-.34f,0,.04f),Vector3.back,-.18f,.11f,3,.06f);
    // The winch platform runs 10 cm deeper than the road so a whole body can brace behind the span, off its deck.
    var winchDeck=Top(NextPlinth(c,"Winch platform",new Vector3(.013f,-.24f,.185f),new Vector3(.174f,.12f,.19f)));
    NextPlinth(c,"Exit platform",new Vector3(.33f,-.24f,.11f),new Vector3(.14f,.12f,.14f));
@@ -811,8 +829,9 @@ namespace GravityBox.Editor
    // the tube climbs in front of the ledge and ends at its far-left, well inside its top.
    ChapterTube(c,"Left tube",new Vector3(-.27f,-.255f,.07f),new Vector3(-.31f,-.25f,.07f),new Vector3(-.362f,-.18f,.075f),new Vector3(-.362f,-.06f,.08f),new Vector3(-.362f,0f,.10f),new Vector3(-.362f,.015f,.16f));
    // Latch A at the ledge's right end: taps on it pass well clear of the tube mouth's pick radius.
-   var latchA=ViewTask(c,"A",new Vector3(-.22f,.003f,.27f),Vector3.left,.04f,ledgeA);
-   var boltA=ViewGate(c,"A bolt",new Vector3(-.06f,-.285f,.02f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
+   var latchA=ViewTask(c,"A",new Vector3(-.22f,.003f,.27f),Vector3.left,.04f,ledgeA);latchA.OneWay=true;
+   // Both bolts live inside the hollow centre deck: pure interlocks nobody can stand on (a waiting part once pinned A).
+   var boltA=ViewGate(c,"A bolt",new Vector3(-.10f,-.285f,.10f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
    var holdA=new GameObject("Pad A holds, latch A catches bolt A",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();holdA.transform.SetParent(c.Root,false);
    holdA.Inputs=new[]{padA};holdA.Rails=new[]{latchA.Rail};holdA.Any=true;holdA.Retain=false;holdA.Output=boltA;latchA.RequiredRail=boltA;
    // Right bay: rope B runs front to back (+z), 30 cm clear of the ramps; the dock ledge's ramp home is gated by latch B.
@@ -827,8 +846,8 @@ namespace GravityBox.Editor
    // Pad B sits off the camera ray through the parked ring (a tap over a part selects that part).
    var padB=ExpansionPad(c,"B",new Vector3(.285f,-.298f,.045f),.009f,.09f);
    NextSwing(c,"B",new Vector3(.30f,.14f,-.02f),.28f,40f,new Vector3(.30f,-.18f,-.25f),bank,new[]{dock},new[]{new Vector3(.30f,-.168f,.17f)},floor,Vector3.forward);
-   var latchB=ViewTask(c,"B",new Vector3(.30f,-.165f,.235f),Vector3.right,.05f,dock);
-   var boltB=ViewGate(c,"B bolt",new Vector3(-.06f,-.285f,-.10f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
+   var latchB=ViewTask(c,"B",new Vector3(.30f,-.165f,.235f),Vector3.right,.05f,dock);latchB.OneWay=true;
+   var boltB=ViewGate(c,"B bolt",new Vector3(.06f,-.285f,.10f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
    var holdB=new GameObject("Pad B holds, latch B catches bolt B",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();holdB.transform.SetParent(c.Root,false);
    holdB.Inputs=new[]{padB};holdB.Rails=new[]{latchB.Rail};holdB.Any=true;holdB.Retain=false;holdB.Output=boltB;latchB.RequiredRail=boltB;
    var gate=ViewGate(c,"B return gate",new Vector3(.20f,-.158f,.121f),Vector3.up,.07f,new Vector3(.08f,.06f,.012f));
@@ -843,9 +862,10 @@ namespace GravityBox.Editor
    foreach(var (z,d) in new[]{(.10f,.12f),(.26f,.08f)}){Slick(new Vector3(x0,-.255f,z),Vector3.left,new Vector2(d,.09f));Slick(new Vector3(x1,-.255f,z),Vector3.right,new Vector2(d,.09f));}
    Slick(new Vector3(xm,-.257f,.16f),Vector3.forward,new Vector2(w,.086f));Slick(new Vector3(xm,-.257f,.22f),Vector3.back,new Vector2(w,.086f));
    // Steps: floor → D (3 cm) → C (6 cm) → deck (9 cm). C starts in D's socket; both handles face +x (stand on the floor).
-   var far=NextCrate(c,"C",new Vector3(.02f,-.27f,-.078f),Vector3.forward,.08f,new Vector3(.116f,.06f,.076f),floor,new Vector3(.066f,0,0),new Vector3(.052f,0,0),.04f,.01f,0,true);
+   // Ivory sides: the seated blocks are the climb to the deck (unseated they stand too far from its slick 9 cm face).
+   var far=NextCrate(c,"C",new Vector3(.02f,-.27f,-.078f),Vector3.forward,.08f,new Vector3(.116f,.06f,.076f),floor,new Vector3(.066f,0,0),new Vector3(.052f,0,0),.04f,.01f,0,false);
    far.Handle.localRotation=Quaternion.Euler(0,90,0);far.RequiredRail=boltA;
-   var near=NextCrate(c,"D",new Vector3(.02f,-.285f,-.162f),Vector3.forward,.084f,new Vector3(.116f,.03f,.076f),floor,new Vector3(.066f,0,0),new Vector3(.052f,0,0),.04f,.01f,0,true);
+   var near=NextCrate(c,"D",new Vector3(.02f,-.285f,-.162f),Vector3.forward,.084f,new Vector3(.116f,.03f,.076f),floor,new Vector3(.066f,0,0),new Vector3(.052f,0,0),.04f,.01f,0,false);
    near.Handle.localRotation=Quaternion.Euler(0,90,0);near.RequiredRail=boltB;
    // Winch E: whole-body load (two spans, 0.49 N through the cables); half a body cannot wind it.
    // Handle stroke = span travel + cable stretch at its load (0.245 N / 45 N/m): the handle ends as the spans dock.
@@ -861,9 +881,9 @@ namespace GravityBox.Editor
     cable.Guides=guides.ToArray();
    }
    NextOutline(c,"C socket",new Vector3(.02f,-.2995f,.002f),new Vector2(.12f,.08f));NextOutline(c,"D socket",new Vector3(.02f,-.2995f,-.078f),new Vector2(.12f,.08f));
-   NextTrace("A",new Vector3(-.305f,-.2992f,-.02f),new Vector3(-.17f,-.2992f,-.02f),new Vector3(-.17f,-.2992f,.02f),new Vector3(-.07f,-.2992f,.02f));
+   NextTrace("A",new Vector3(-.305f,-.2992f,-.02f),new Vector3(-.17f,-.2992f,-.02f),new Vector3(-.17f,-.2992f,.02f),new Vector3(-.10f,-.2992f,.02f),new Vector3(-.10f,-.2992f,.035f));
    NextTrace("A",new Vector3(-.235f,-.0192f,.25f),new Vector3(-.215f,-.0192f,.25f),new Vector3(-.215f,-.0192f,.16f));
-   NextTrace("B",new Vector3(.285f,-.2992f,.0f),new Vector3(.285f,-.2992f,-.02f),new Vector3(.25f,-.2992f,-.10f),new Vector3(-.05f,-.2992f,-.10f));
+   NextTrace("B",new Vector3(.285f,-.2992f,.0f),new Vector3(.285f,-.2992f,-.02f),new Vector3(.14f,-.2992f,-.02f),new Vector3(.14f,-.2992f,.02f),new Vector3(.06f,-.2992f,.02f),new Vector3(.06f,-.2992f,.035f));
    NextTrace("B",new Vector3(.37f,-.1872f,.235f),new Vector3(.37f,-.1872f,.13f),new Vector3(.25f,-.1872f,.13f));
   }
   // 11 · A crate pushed along its rail into the socket beside a slick plinth becomes the step.

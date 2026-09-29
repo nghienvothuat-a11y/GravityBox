@@ -278,7 +278,7 @@ namespace GravityBox.Venom.ChapterProof
    {
     var swing=Find<COgheSwingTransfer>();var tray=Array.Find(game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>(),r=>r.name=="B landing tray");
     yield return Operate("B");yield return until(10,()=>tray.AtEnd,"B brings the landing tray into the arc");
-    yield return Go(W(-.30f,-.23f,-.195f),"Climb the fixed ramp");
+    yield return Go(W(-.28f,-.16f,.05f),"Climb the stairs onto the start bank");
     yield return Grip(swing);
     yield return Swing(swing,1);
    }

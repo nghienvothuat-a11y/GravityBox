@@ -98,3 +98,7 @@ Chưa có APK/binary hoặc log cho màn này. Khi dựng, ghi hash/build/commit
 29/09/2026: tạo hồ sơ và concept v0.1 theo yêu cầu 20 màn tiếp. Kết luận: **đề xuất thiết kế, chưa nghiệm thu khả giải hoặc performance**. Tiếp theo: prototype cơ quan mới, dựng greybox, kiểm chứng theo các mốc; không lấy hình làm bằng chứng physics.
 
 29/09/2026 — **bản dựng**: Q trên bờ trái; A giữ nắp ống; nửa kia qua ống sau lên bệ giữa, kéo B: khay đáp **cất trong bệ** trượt ra qua khe vào cung đu, chốt cả nắp; nửa giữ A đu sang, hai nửa tụ trên bệ. Khác hồ sơ: Ống lên thẳng bệ giữa, B đặt trên bệ (hồ sơ: B dưới sàn + bậc riêng). Khay nằm trong bệ để mặt bệ không bị chắn. Bằng chứng: `COgheSpatialCampaignTests.Spatial26Solve` (PlayMode 120 Hz, chạm thật, 32/32 hạt qua lỗ cuối, 1 cơ thể, Retry về đầu); replay native Mac cùng kịch bản; ảnh `Docs/Verification/COgheSpatialNext20/26-*.png`. Chưa kiểm: OPPO/FPS điện thoại, người chơi mới, từng ca phục hồi và đường thay thế ở mục 8 (mới có đường giải chính).
+
+29/09/2026 chiều — **sửa phục hồi**: dốc cứu hộ thay bằng bậc thang ngà; bờ xuất phát và vai bờ ngà (dốc cũ kẹt ở mép bờ khi leo lên từ sàn). Test `COgheSpatialFallRecoveryTests` kiểm rơi/xuống sàn rồi leo lại bằng chạm thật.
+
+29/09/2026 chiều — **cập nhật sau replay native**: B là chốt một chiều (khay đáp mở vĩnh viễn như hồ sơ); test `Spatial26LatchIsOneWay`.

@@ -15,6 +15,9 @@ namespace GravityBox.Venom
         public Vector3 TouchSize = new Vector3(.108f, .075f, .18f);
         public bool PickHandleOnly;
         public bool TwoSided;
+        // A one-way latch: once it rests at its end it is part of the scenery — it ignores taps (they fall through to
+        // the surface behind it) and cannot be pulled back.
+        public bool OneWay;
         public bool TrackStandPoint;
         public COgheTissueSensor RequiredLoad;
         // Optional spring-held inputs use the same approach, planted feet and finite muscle force.
@@ -97,6 +100,7 @@ namespace GravityBox.Venom
         }
         public override bool TryTouch(VenomCampaign game, Ray ray, float nearestSolidDistance)
         {
+            if (OneWay && Rail.AtEnd) return false;
             // Handle meshes have non-unit scale. Pick an authored metric envelope around the entire visible carriage.
             var frame = Rail.Frame;
             Quaternion inverse = Quaternion.Inverse(frame.rotation);

@@ -96,3 +96,5 @@ Chưa có APK/binary hoặc log cho màn này. Khi dựng, ghi hash/build/commit
 29/09/2026: tạo hồ sơ và concept v0.1 theo yêu cầu 20 màn tiếp. Kết luận: **đề xuất thiết kế, chưa nghiệm thu khả giải hoặc performance**. Tiếp theo: prototype cơ quan mới, dựng greybox, kiểm chứng theo các mốc; không lấy hình làm bằng chứng physics.
 
 29/09/2026 — **bản dựng**: Như 18; khay B trên ray, B trên sàn kéo khay vào cung đu. Khác hồ sơ: Như hồ sơ. Bằng chứng: `COgheSpatialCampaignTests.Spatial19Solve` (PlayMode 120 Hz, chạm thật, 32/32 hạt qua lỗ cuối, 1 cơ thể, Retry về đầu); replay native Mac cùng kịch bản; ảnh `Docs/Verification/COgheSpatialNext20/19-*.png`. Chưa kiểm: OPPO/FPS điện thoại, người chơi mới, từng ca phục hồi và đường thay thế ở mục 8 (mới có đường giải chính).
+
+29/09/2026 chiều — **sửa phục hồi**: dốc lên bờ thay bằng bậc thang ngà, bờ xuất phát ngà (dốc cũ kẹt ở mép bờ khi leo lên từ sàn). Test `COgheSpatialFallRecoveryTests` kiểm rơi/xuống sàn rồi leo lại bằng chạm thật.
