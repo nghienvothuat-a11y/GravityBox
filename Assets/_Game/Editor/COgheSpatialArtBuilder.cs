@@ -121,19 +121,22 @@ namespace GravityBox.Editor
 
    foreach(var task in owner.Apparatus.GetComponentsInChildren<COgheTapRail>())
    {
-    var color=task.Label=="B"?coral:blue;
+    // A and B are the two control circuits. Any other handle (a latch C, a winch E…) is neutral: ink badge, pearl
+    // handle, satin contacts — never a third circuit colour.
+    bool neutral=task.Label!="A"&&task.Label!="B";
+    var color=neutral?ink:task.Label=="B"?coral:blue;
     Remove(task.Rail.transform,"Circuit badge");
     var trim=Child(task.Rail.transform,SpatialCircuitRoot);
     bool wall=Mathf.Abs(task.WorkingSurface.Normal.y)<.5f;
     SpatialBadge(trim,task.Label,wall?new Vector3(0,0,-.029f):new Vector3(0,.014f,0),wall?Vector3.back:Vector3.up,color,shell);
-    foreach(var r in task.Handle.GetComponentsInChildren<MeshRenderer>())if(r.GetComponent<TextMesh>()==null)r.sharedMaterial=color;
+    foreach(var r in task.Handle.GetComponentsInChildren<MeshRenderer>())if(r.GetComponent<TextMesh>()==null)r.sharedMaterial=neutral?shell:color;
     // Small fixed contact pads at each end. The travel itself stays quiet satin metal.
     foreach(float end in new[]{0f,task.Rail.Travel})
     {
      Vector3 p=task.Rail.Start+task.Rail.Axis*end;
      p+=wall?new Vector3(0,0,.024f):new Vector3(0,-.020f,0);
      Box(art,"Terminal base",p,wall?new Vector3(.028f,.033f,.002f):new Vector3(.030f,.002f,.040f),.0008f,shell);
-     Disk(art,"Terminal contact",p+(wall?Vector3.back:Vector3.up)*.0013f,wall?Vector3.back:Vector3.up,.0035f,.0005f,task.Label=="B"?traceB:traceA);
+     Disk(art,"Terminal contact",p+(wall?Vector3.back:Vector3.up)*.0013f,wall?Vector3.back:Vector3.up,.0035f,.0005f,neutral?railMat:task.Label=="B"?traceB:traceA);
     }
     CombineByMaterial(trim);
    }
@@ -181,13 +184,14 @@ namespace GravityBox.Editor
    }
    foreach(var lift in owner.Apparatus.GetComponentsInChildren<COghePassengerLift>())
    {
-    bool b=game.Definition.Boss;
+    // Pilot: the boss lift is B's. Spatial 11–30: a lift powered through an enabling rail belongs to B's circuit.
+    bool pilot=game.Definition.Order<=10,b=game.Definition.Boss&&pilot||!pilot&&lift.RequiredRail!=null;
     lift.Panel.GetComponent<Renderer>().sharedMaterial=b?coral:blue;
     var trim=lift.Rail.transform.Find(SpatialCircuitRoot)??Child(lift.Rail.transform,SpatialCircuitRoot);
     // The panel itself keeps its depression motion; no overlay obstructs the tap area.
     SpatialBadge(trim,b?"B":"A",new Vector3(-.05f,.020f,-.06f),Vector3.up,b?coral:blue,shell);
     CombineByMaterial(trim);
-    if(lift.RequiredRail!=null)
+    if(lift.RequiredRail!=null&&pilot)
     {
      var start=lift.RequiredRail.Start+lift.RequiredRail.Axis*lift.RequiredRail.Travel;start.y=-.0988f;
      SpatialTrace(art,new[]{start,new Vector3(start.x,-.0988f,.278f),new Vector3(.385f,-.0988f,.278f)},traceB);

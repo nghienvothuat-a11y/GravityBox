@@ -31,6 +31,13 @@ namespace GravityBox.Venom.ChapterProof
     if(!t.Busy&&attempt==0){yield return tap(t.StandPoint);yield return until(20,()=>Vector3.Distance(game.Motion.Centre(Selected),t.StandPoint)<.06f,"Step beside handle "+label);}
    }
    if(!t.Busy)throw new InvalidOperationException("Handle "+label+" rejected: "+t.LastFailure);
+   // The game asks for a fresh tap when a pull loses its footing; a player taps the handle again.
+   for(int retry=0;retry<2;retry++)
+   {
+    yield return until(seconds,()=>t.CompletedJourneys>before||!t.Busy,"Operate "+label);
+    if(t.CompletedJourneys>before||t.LastFailure==null||!t.LastFailure.StartsWith("Mất điểm bám"))break;
+    yield return tap(t.HandPoint+Vector3.up*.004f);
+   }
    yield return until(seconds,()=>t.CompletedJourneys>before,"Operate "+label);
   }
   public IEnumerator Until(float seconds,Func<bool> done,string why){yield return until(seconds,done,why);}
@@ -104,17 +111,58 @@ namespace GravityBox.Venom.ChapterProof
    }
    throw new InvalidOperationException($"No visible floor command for part {actor} at {Root.InverseTransformPoint(world):F3}; activity={game.Activity}");
   }
+  // Like Command, but tries several destinations and never throws (used for re-taps).
+  public bool CommandOk;
+  public IEnumerator CommandAny(int actor,System.Collections.Generic.List<Vector3> worlds)
+  {
+   CommandOk=false;
+   foreach(var world in worlds)
+   {
+    game.SelectFragment(actor);yield return tap(world);
+    var o=game.Motion.Get(actor);
+    // A tap a handle claims is not a floor command; the next candidate's tap cancels that approach before it pulls.
+    bool claimed=Array.Exists(game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>(),t=>t.Owns(actor));
+    if(!claimed&&o!=null&&Vector3.Distance(Root.TransformPoint(o.Target),world)<.06f){CommandOk=true;yield break;}
+   }
+  }
   public IEnumerator Merge(Vector3 world)
   {
    var anchors=new System.Collections.Generic.List<int>();var seen=new System.Collections.Generic.HashSet<int>();
    for(int i=0;i<32;i++)if(!game.Matter.Escaped[i]&&seen.Add(game.Matter.Groups[i]))anchors.Add(i);
+   yield return MergeParts(anchors,world,1);
+  }
+  // Tap points around a spot (the spot itself may sit behind a part or scenery at another screen framing).
+  System.Collections.Generic.List<Vector3> Around(Vector3 world)
+  {
+   var local=Root.InverseTransformPoint(world);var list=new System.Collections.Generic.List<Vector3>();
+   foreach(var o in new[]{Vector3.zero,new Vector3(0,0,-.04f),new Vector3(.04f,0,0),new Vector3(-.04f,0,0),new Vector3(0,0,.04f),new Vector3(.04f,0,-.04f),new Vector3(-.04f,0,-.04f),new Vector3(0,0,-.08f)})list.Add(Root.TransformPoint(local+o));
+   return list;
+  }
+  // Brings the given parts together until only `remaining` bodies exist in the box.
+  public IEnumerator MergeParts(System.Collections.Generic.List<int> anchors,Vector3 world,int remaining)
+  {
+   var groups=new System.Collections.Generic.HashSet<int>();
    foreach(int a in anchors)
    {
-    if(game.Matter.TotalFragmentCount==1)break;
-    yield return Command(a,world);
+    if(game.Matter.TotalFragmentCount<=remaining)break;
+    if(!groups.Add(game.Matter.Groups[a]))continue;
+    yield return CommandAny(a,Around(world));
    }
-   yield return until(45,()=>game.Matter.TotalFragmentCount==1,"All parts meet and fuse");
+   // Parts that stall a hand's width apart are called together again, as a player would re-tap between them.
+   for(int round=0;round<3&&game.Matter.TotalFragmentCount>remaining;round++)
+   {
+    float start=game.Matter.SimulationTime;
+    yield return until(45,()=>game.Matter.TotalFragmentCount<=remaining||game.Matter.SimulationTime-start>15&&Stalled(),"All parts meet and fuse");
+    if(game.Matter.TotalFragmentCount<=remaining)break;
+    Vector3 middle=Vector3.zero;int count=0;groups.Clear();
+    foreach(int a in anchors)if(!game.Matter.Escaped[a]&&groups.Add(game.Matter.Groups[a])){middle+=game.Motion.Centre(a);count++;}
+    var local=Root.InverseTransformPoint(middle/count);local.y=Root.InverseTransformPoint(world).y;
+    var candidates=Around(Root.TransformPoint(local));groups.Clear();
+    foreach(int a in anchors)if(!game.Matter.Escaped[a]&&groups.Add(game.Matter.Groups[a]))yield return CommandAny(a,candidates);
+   }
+   yield return until(45,()=>game.Matter.TotalFragmentCount<=remaining,"All parts meet and fuse");
   }
+  bool Stalled(){for(int i=0;i<32;i++)if(!game.Matter.Escaped[i]&&game.Matter.Bodies[i].linearVelocity.magnitude>.01f)return false;return true;}
   // Rope swing: tap the ring (grip), then tap the chosen landing; gravity swings the body across.
   public IEnumerator Grip(COgheSwingTransfer swing)
   {
@@ -159,10 +207,12 @@ namespace GravityBox.Venom.ChapterProof
    else if(n==13)
    {
     var lift=Find<COghePassengerLift>();var crate=Array.Find(game.Props,p=>p.name=="A crate");
-    yield return Push(crate,W(.07f,-.2545f,.16f));
+    yield return Push(crate,W(.07f,-.2545f,.16f),.03f); // anywhere well on the tray deck; the socket push below stays exact
     yield return tap(lift.Panel.position);yield return until(45,()=>lift.Trips==1&&lift.Rail.AtEnd,"Ride up with the crate");
-    yield return Push(crate,W(.214f,-.0565f,.16f));
-    var socket=Find<COghePropSocket>();yield return until(6,()=>socket.Seated,"Socket pawl catches the resting crate");
+    var socket=Find<COghePropSocket>();
+    // If the crate settles off its seat after letting go, push it home again (the pawl only catches a resting crate).
+    for(int attempt=0;attempt<3&&!socket.Seated;attempt++){yield return Push(crate,W(.214f,-.0565f,.16f));float t0=game.Matter.SimulationTime;yield return until(8,()=>socket.Seated||game.Matter.SimulationTime-t0>3,"Crate rests on the socket");}
+    yield return until(6,()=>socket.Seated,"Socket pawl catches the resting crate");
     yield return Go(W(.33f,-.01f,.18f),"Climb the seated crate to the exit bench");
    }
    else if(n==14)
@@ -198,7 +248,8 @@ namespace GravityBox.Venom.ChapterProof
     game.SelectFragment(worker);yield return EnterTube(tube,0);yield return LeaveTube(tube);
     yield return Operate("B");yield return until(10,()=>door.AtEnd,"B latches the return door open");
     yield return Walk(holder,W(.20f,-.30f,-.20f),"Holder leaves A and walks through the return door");
-    yield return Merge(W(.21f,-.30f,-.22f));
+    // Meet in the open middle of the right room, so the halves converge from two sides instead of queueing in a corner.
+    yield return Merge(W(.24f,-.30f,.02f));
    }
    else if(n==18)
    {
@@ -319,10 +370,9 @@ namespace GravityBox.Venom.ChapterProof
     game.SelectFragment(rider);yield return tap(lift.Panel.position);
     yield return until(45,()=>lift.Trips>=1&&lift.Rail.AtEnd,"B's power lifts the fourth part to the high platform");
     game.SelectFragment(rider);yield return Operate("C");yield return until(5,()=>latch.Rail.AtEnd,"C latches the lift power");
-    yield return Walk(holder,W(-.08f,-.30f,0f),"Holder lets go of B");
+    // The holder lets go of B; with the rider's latch C the lift stays powered. The three on the floor merge.
+    yield return MergeParts(new System.Collections.Generic.List<int>{holder,a1,a2},W(-.08f,-.30f,0f),2);
     yield return until(5,()=>pin.AtEnd&&lift.Rail.AtEnd,"Lift stays powered at the top");
-    yield return Command(a1,W(-.08f,-.30f,0f));yield return Command(a2,W(-.08f,-.30f,0f));
-    yield return until(45,()=>game.Matter.TotalFragmentCount==2,"Three holders merge on the floor");
     int group=holder;
     yield return tap(lift.CallPanels[0].position);yield return until(45,()=>lift.Rail.Position<=lift.Rail.CatchTolerance*2&&!lift.Moving,"Call the lift down");
     game.SelectFragment(group);yield return tap(lift.Panel.position);
@@ -341,7 +391,9 @@ namespace GravityBox.Venom.ChapterProof
     game.SelectFragment(outer);yield return Operate("B");yield return until(5,()=>tube.Edges[5].Open,"B turns J3 onto the upper balcony");
     game.SelectFragment(inner);yield return EnterTube(tube,4);yield return Choose(tube,3,4);yield return Choose(tube,5,5);yield return LeaveTube(tube);
     yield return Operate("D");yield return until(8,()=>gate.AtEnd,"D lifts the gate at the head of the outer bridge");
-    yield return Merge(W(.28f,.08f,.10f));
+    // Meet at the head of the outer bridge (back-left of the upper balcony): far from its front edge, and a tap there
+    // stays clear of the tube mouth's and handle D's pick zones. The merged body then walks along the back to the exit.
+    yield return Merge(W(.18f,.08f,.24f));
    }
    else if(n==29)
    {
@@ -355,8 +407,10 @@ namespace GravityBox.Venom.ChapterProof
     game.SelectFragment(worker);yield return Operate("C");yield return until(5,()=>Task("C").Rail.AtEnd,"Far piece C slides through the near socket into the far one");
     game.SelectFragment(worker);yield return Operate("D");yield return until(5,()=>Task("D").Rail.AtEnd,"Near piece D slides in from its bay");
     yield return Merge(W(-.30f,-.30f,-.25f));
+    // The assembled road is the only way up: ramp → landing → D → C → winch platform.
+    yield return Go(W(-.34f,-.18f,.13f),"Up the ramp onto the landing");yield return Go(W(-.10f,-.18f,.20f),"Across piece D onto piece C"); // the only link from the landing to C is D; this spot is clear of both handles' pick boxes
     yield return Operate("B",60);yield return until(15,()=>span.Caught,"Whole body winds B; the span's far end rises level and its pawl catches");
-    yield return Go(W(.33f,-.18f,.05f),"Across the span to the exit platform");
+    yield return Go(W(.33f,-.18f,.11f),"Across the span to the exit platform");
    }
    else if(n==30)
    {

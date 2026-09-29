@@ -31,7 +31,7 @@ namespace GravityBox.Tests
   [UnityTest] public IEnumerator Spatial13PushTrace()
   {
    yield return Load(13);var s=new COgheSpatialNextScenario(game,Tap,Until);var lift=s.Find<COghePassengerLift>();var crate=System.Array.Find(game.Props,p=>p.name=="A crate");
-   yield return s.Push(crate,game.Root.TransformPoint(new Vector3(.07f,-.2545f,.16f)));
+   yield return s.Push(crate,game.Root.TransformPoint(new Vector3(.07f,-.2545f,.16f)),.03f);
    yield return Tap(lift.Panel.position);yield return Until(45,()=>lift.Trips==1&&lift.Rail.AtEnd,"ride");
    Capture(13,"top");
    string probe="";

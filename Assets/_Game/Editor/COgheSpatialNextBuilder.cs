@@ -543,16 +543,18 @@ namespace GravityBox.Editor
    var nodes=new[]{new COgheTubeNetwork.Node("Vào",new Vector3(-.28f,-.255f,-.12f),COgheTubeNetwork.TerminalKind.Entry),
     new COgheTubeNetwork.Node("J",new Vector3(-.02f,-.10f,-.02f)),
     new COgheTubeNetwork.Node("Bệ bảo trì",new Vector3(.165f,-.115f,-.10f),COgheTubeNetwork.TerminalKind.Entry),
-    new COgheTubeNetwork.Node("Khay cao",new Vector3(.165f,.025f,.20f),COgheTubeNetwork.TerminalKind.Entry)};
+    // The high mouth reaches 6 cm over the tray, so the last particles drop onto it instead of catching on its edge.
+    new COgheTubeNetwork.Node("Khay cao",new Vector3(.20f,.015f,.20f),COgheTubeNetwork.TerminalKind.Entry)};
    var edges=new[]{Edge("Vào–J",0,1,nodes,new Vector3(-.20f,-.25f,-.12f),new Vector3(-.11f,-.17f,-.07f)),
     Edge("J–Bệ",1,2,nodes,new Vector3(.05f,-.13f,-.05f),new Vector3(.12f,-.115f,-.10f)),
     Edge("J–Khay cao",1,3,nodes,new Vector3(.02f,-.03f,-.10f),new Vector3(.09f,.02f,.04f),new Vector3(.13f,.025f,.20f))};
    var tube=TubeNetwork(c.Root,"Wall route network",nodes,edges,.038f,glass);tube.CaptureSurfaceCommandsWhileInside=true;
-   var a=ViewTask(c,"A",new Vector3(.23f,-.137f,-.19f),Vector3.right,.08f,ledge);
+   // Valve A sits well inside the ledge (its stance 3.5 cm from the front edge) and 12 cm from the tube mouth's tap pick.
+   var a=ViewTask(c,"A",new Vector3(.27f,-.137f,-.12f),Vector3.right,.08f,ledge);
    edges[2].AccessGate=a.Rail;
    var safe=new GameObject("Valve safety",typeof(COgheTissueClearance)).GetComponent<COgheTissueClearance>();safe.transform.SetParent(c.Root,false);safe.Network=tube;safe.Size=Vector3.zero;a.Clearance=safe;
    MechanismVisual(c.Root,"J valve selector",new Vector3(-.02f,-.10f,-.075f),new Vector3(.03f,.03f,.012f),metal);
-   NextTrace("A",new Vector3(.23f,-.1592f,-.23f),new Vector3(.155f,-.1592f,-.23f));
+   NextTrace("A",new Vector3(.27f,-.1592f,-.19f),new Vector3(.155f,-.1592f,-.19f));
   }
   // The exit platform with a drawer step (shared by 16 and 24): 6 cm slick platform, slot at floor level,
   // the step slides out toward the player when its latch drives it; a static replica carries the body when caught.
@@ -663,16 +665,17 @@ namespace GravityBox.Editor
    pads.Inputs=new[]{a1,a2};pads.Output=bolt;pads.Retain=false;
    var b=ViewTask(c,"B",new Vector3(-.25f,-.277f,.14f),Vector3.right,.07f,floor);b.HoldAtEnd=true;b.RequiredRail=bolt;
    // Lift tray: 2 cm deck on the floor landing; its upper stop sits 2 mm above the high platform top, 2 mm from its face.
-   var rail=ExpansionRail(c,"Lift tray",new Vector3(-.012f,-.288f,.16f),Vector3.up,.22f,0,new Vector3(.18f,.02f,.18f),.03f,.004f,true,false);
+   // 20 cm square, so three merged quarters (75 %) stand wholly on it.
+   var rail=ExpansionRail(c,"Lift tray",new Vector3(-.022f,-.288f,.16f),Vector3.up,.22f,0,new Vector3(.20f,.02f,.20f),.03f,.004f,true,false);
    rail.GetComponent<VenomMovableProp>().Manipulable=false;TrimSideSlabs(rail);
    foreach(var face in rail.GetComponentsInChildren<VenomSurfacePatch>()){face.MotionFrame=rail.Body;if(face.Normal.y<.9f)face.Slippery=true;}
-   var lift=rail.gameObject.AddComponent<COghePassengerLift>();lift.Rail=rail;lift.DeckSize=new Vector2(.18f,.18f);lift.DeckHeight=.01f;
+   var lift=rail.gameObject.AddComponent<COghePassengerLift>();lift.Rail=rail;lift.DeckSize=new Vector2(.20f,.20f);lift.DeckHeight=.01f;
    lift.Deck=rail.GetComponentsInChildren<VenomSurfacePatch>().First(p=>p.Normal.y>.9f);lift.ReturnWhenDisabled=true;
    lift.BoardPoint=new GameObject("Rider stance").transform;lift.BoardPoint.SetParent(rail.transform,false);lift.BoardPoint.localPosition=new Vector3(0,.028f,0);
    lift.Panel=MechanismVisual(rail.transform,"Lift panel",new Vector3(.06f,.012f,-.06f),new Vector3(.03f,.008f,.03f),metal,PrimitiveType.Cylinder);
-   lift.CallPanels=new[]{MechanismVisual(c.Root,"Lower call panel",new Vector3(-.125f,-.296f,.215f),new Vector3(.03f,.008f,.03f),metal,PrimitiveType.Cylinder),
+   lift.CallPanels=new[]{MechanismVisual(c.Root,"Lower call panel",new Vector3(-.15f,-.296f,.215f),new Vector3(.03f,.008f,.03f),metal,PrimitiveType.Cylinder),
     MechanismVisual(c.Root,"Upper call panel",new Vector3(.13f,-.058f,.27f),new Vector3(.03f,.008f,.03f),metal,PrimitiveType.Cylinder)};
-   foreach(float x in new[]{-.11f,.086f})MechanismVisual(c.Root,"Lift upright",new Vector3(x,-.02f,.262f),new Vector3(.012f,.56f,.012f),metal);
+   foreach(float x in new[]{-.13f,.086f})MechanismVisual(c.Root,"Lift upright",new Vector3(x,-.02f,.275f),new Vector3(.012f,.56f,.012f),metal);
    var pin=ViewGate(c,"Lift enable pin",new Vector3(-.16f,-.27f,.28f),Vector3.up,.03f,new Vector3(.012f,.012f,.012f));
    lift.RequiredRail=pin;
    var latch=ViewTask(c,"C",new Vector3(.22f,-.037f,.14f),Vector3.right,.07f,high);
@@ -746,31 +749,32 @@ namespace GravityBox.Editor
   // span's far end level with the exit platform, where a pawl catches it (half a body cannot lift it).
   static void Next29(ExpansionContext c)
   {
-   c.Exit=new Vector3(.40f,-.152f,.05f);c.Outward=Vector3.right;c.Spawn=new Vector3(.10f,-.25f,-.262f);c.Definition.CameraEuler=new Vector3(42,20,0);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   c.Exit=new Vector3(.40f,-.152f,.11f);c.Outward=Vector3.right;c.Spawn=new Vector3(.10f,-.25f,-.262f);c.Definition.CameraEuler=new Vector3(42,20,0);NextShell(c,.10f,true);var floor=c.Surfaces[0];
    NextQuantum(c,new Vector3(.10f,-.30f,-.20f),.025f,.13f);
-   // Road at 12 cm along x (z -.02….16, deep enough for a whole body): start landing | near socket | far socket | winch platform | span | exit platform.
-   var landing=Top(NextPlinth(c,"Start landing",new Vector3(-.331f,-.24f,.07f),new Vector3(.098f,.12f,.18f)));
+   // Road at 12 cm along x (z .04….22, deep enough for a whole body): start landing | near socket | far socket | winch platform | span | exit platform.
+   // Everything stands at least 8 cm behind Q's climbable casing, so Q is never a shortcut onto the road, span or winch deck.
+   var landing=Top(NextPlinth(c,"Start landing",new Vector3(-.331f,-.24f,.13f),new Vector3(.098f,.12f,.18f)));
    // 11 cm wide so a whole body climbs it without spilling onto the bay beside it.
-   NextRamp(c,"Start ramp",new Vector3(-.34f,-.30f,-.20f),new Vector3(-.34f,-.18f,-.02f),.11f);
+   NextRamp(c,"Start ramp",new Vector3(-.34f,-.30f,-.14f),new Vector3(-.34f,-.18f,.04f),.11f);
    // The winch platform runs 10 cm deeper than the road so a whole body can brace behind the span, off its deck.
-   var winchDeck=Top(NextPlinth(c,"Winch platform",new Vector3(.013f,-.24f,.10f),new Vector3(.174f,.12f,.24f)));
-   NextPlinth(c,"Exit platform",new Vector3(.33f,-.24f,.05f),new Vector3(.14f,.12f,.14f));
-   NextPlinth(c,"D waiting shelf",new Vector3(-.23f,-.256f,-.12f),new Vector3(.10f,.088f,.18f),false); // ivory: brushing it never peels a climber
+   var winchDeck=Top(NextPlinth(c,"Winch platform",new Vector3(.013f,-.24f,.185f),new Vector3(.174f,.12f,.19f)));
+   NextPlinth(c,"Exit platform",new Vector3(.33f,-.24f,.11f),new Vector3(.14f,.12f,.14f));
+   NextPlinth(c,"D waiting shelf",new Vector3(-.23f,-.256f,-.06f),new Vector3(.10f,.088f,.18f),false); // ivory: brushing it never peels a climber
    var a1=ExpansionPad(c,"A1",new Vector3(.34f,-.298f,-.20f),.009f,.09f);var a2=ExpansionPad(c,"A2",new Vector3(.34f,-.298f,-.065f),.009f,.09f);
-   var bolt=ViewGate(c,"A piece bolt",new Vector3(-.23f,-.285f,.19f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
+   var bolt=ViewGate(c,"A piece bolt",new Vector3(-.23f,-.285f,.25f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
    var pads=new GameObject("A1 A2 draw the piece bolt",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();pads.transform.SetParent(c.Root,false);
    pads.Inputs=new[]{a1,a2};pads.Output=bolt;pads.Retain=false;
    // Far piece C: pushed from the landing (handle on its top-left edge, so the hand is in plain sight).
-   var far=NextCrate(c,"C",new Vector3(-.23f,-.195f,.07f),Vector3.right,.104f,new Vector3(.10f,.03f,.18f),landing,new Vector3(-.04f,.02f,0),new Vector3(-.07f,0,0),.03f,.01f,0,true);
+   var far=NextCrate(c,"C",new Vector3(-.23f,-.195f,.13f),Vector3.right,.104f,new Vector3(.10f,.03f,.18f),landing,new Vector3(-.04f,.02f,0),new Vector3(-.07f,0,0),.03f,.01f,0,true);
    far.Handle.localRotation=Quaternion.Euler(0,90,0);far.RequiredRail=bolt;
    // Near piece D: drawn from its front bay across the path C has just left, by a part on the landing beside it.
-   var near=NextCrate(c,"D",new Vector3(-.23f,-.195f,-.12f),Vector3.forward,.19f,new Vector3(.10f,.03f,.18f),landing,new Vector3(-.04f,.02f,0),new Vector3(-.07f,0,0),.03f,.01f,0,true);
+   var near=NextCrate(c,"D",new Vector3(-.23f,-.195f,-.06f),Vector3.forward,.19f,new Vector3(.10f,.03f,.18f),landing,new Vector3(-.04f,.02f,0),new Vector3(-.07f,0,0),.03f,.01f,0,true);
    near.Handle.localRotation=Quaternion.Euler(0,90,0);near.RequiredRail=bolt;
    // B winds leftward: the bracing body tracks the handle away from the span, never loading its deck.
-   var winch=ViewTask(c,"B",new Vector3(.04f,-.157f,.17f),Vector3.left,.08f,winchDeck);winch.CompensateLoad=true;winch.StallSeconds=6;
+   var winch=ViewTask(c,"B",new Vector3(.04f,-.157f,.23f),Vector3.left,.08f,winchDeck);winch.CompensateLoad=true;winch.StallSeconds=6;
    // Span: hinged at the winch platform's edge, authored level then tilted 22 degrees far end down onto its rest.
    // The hinge sits 7 mm clear of the platform face so the tilted span's lower corner never enters it.
-   const float tilt=22f,half=.073f;var hingePoint=new Vector3(.107f,-.19f,.05f);var centre=hingePoint+new Vector3(half,0,0);
+   const float tilt=22f,half=.073f;var hingePoint=new Vector3(.107f,-.19f,.11f);var centre=hingePoint+new Vector3(half,0,0);
    var span=Prop(c.Root,"Lift span",centre,new Vector3(half*2,.02f,.12f),false,plastic,c.Surfaces);c.Props.Add(span);span.Body.mass=.045f;span.Body.centerOfMass=Vector3.zero; // measured: rope needs ≈0.46 N; a whole body gives 0.67 N, half 0.34 N
    foreach(var f in span.GetComponentsInChildren<VenomSurfacePatch>())if(f.Normal.y<.9f)f.Slippery=true;
    int first=c.Surfaces.Count;ViewBlock(c,"Lift span level",centre,new Vector3(half*2,.02f,.12f));var docked=c.Surfaces.GetRange(first,c.Surfaces.Count-first).ToArray();foreach(var d in docked){d.gameObject.SetActive(false);if(d.Normal.y<.9f)d.Slippery=true;}
@@ -778,18 +782,18 @@ namespace GravityBox.Editor
    var hinge=span.gameObject.AddComponent<HingeJoint>();hinge.connectedBody=c.Root.GetComponent<Rigidbody>();hinge.autoConfigureConnectedAnchor=false;hinge.anchor=new Vector3(-half,0,0);hinge.connectedAnchor=hingePoint;hinge.axis=Vector3.forward;
    // The axle stop is exactly level: the rope pins the span there instead of lifting it past the exit edge.
    hinge.useLimits=true;hinge.limits=new JointLimits{min=-3,max=tilt};hinge.enableCollision=true;
-   ViewBlock(c,"Lift span rest",new Vector3(.232f,-.278f,.05f),new Vector3(.02f,.044f,.10f));
+   ViewBlock(c,"Lift span rest",new Vector3(.232f,-.278f,.11f),new Vector3(.02f,.044f,.10f));
    var anchor=new GameObject("Lift span rope anchor").transform;anchor.SetParent(span.transform,false);anchor.localPosition=new Vector3(half-.005f,.01f,0);
    var bridge=new GameObject("B winch rope",typeof(COgheSeesawBridge)).GetComponent<COgheSeesawBridge>();bridge.transform.SetParent(c.Root,false);
    bridge.Plank=span.Body;bridge.Hinge=hinge;bridge.Anchor=anchor;bridge.Tray=winch.Rail;bridge.LevelLocalRotation=Quaternion.identity;
    bridge.MovingSurfaces=span.GetComponentsInChildren<VenomSurfacePatch>(true);bridge.DockedSurfaces=docked;
-   bridge.Guides=new[]{NextMarker(c,"Rope pulley over the winch",new Vector3(.02f,.06f,.17f)),NextMarker(c,"Rope pulley over the span",new Vector3(.17f,.06f,.05f))};
+   bridge.Guides=new[]{NextMarker(c,"Rope pulley over the winch",new Vector3(.02f,.06f,.23f)),NextMarker(c,"Rope pulley over the span",new Vector3(.17f,.06f,.11f))};
    foreach(var g in bridge.Guides){var wheel=MechanismVisual(c.Root,"B pulley wheel",g.localPosition,new Vector3(.05f,.014f,.05f),metal,PrimitiveType.Cylinder);wheel.localRotation=Quaternion.Euler(90,0,0);}
    bridge.Rope=bridge.gameObject.AddComponent<LineRenderer>();bridge.Rope.useWorldSpace=true;bridge.Rope.startWidth=bridge.Rope.endWidth=.0028f;bridge.Rope.sharedMaterial=metal;
-   bridge.Pawl=MechanismVisual(c.Root,"Lift span pawl",new Vector3(.262f,-.172f,.12f),new Vector3(.01f,.012f,.01f),metal);
-   NextOutline(c,"C far socket",new Vector3(-.126f,-.2995f,.07f),new Vector2(.104f,.18f));
-   NextTrace("A",new Vector3(.34f,-.2992f,-.155f),new Vector3(.34f,-.2992f,-.07f),new Vector3(-.16f,-.2992f,-.07f),new Vector3(-.16f,-.2992f,.17f),new Vector3(-.22f,-.2992f,.17f)); // under the road to the bolt
-   NextTrace("A",new Vector3(.295f,-.2992f,-.065f),new Vector3(.24f,-.2992f,-.065f),new Vector3(.24f,-.2992f,-.07f));
+   bridge.Pawl=MechanismVisual(c.Root,"Lift span pawl",new Vector3(.262f,-.172f,.18f),new Vector3(.01f,.012f,.01f),metal);
+   NextOutline(c,"C far socket",new Vector3(-.126f,-.2995f,.13f),new Vector2(.104f,.18f));
+   NextTrace("A",new Vector3(.34f,-.2992f,-.155f),new Vector3(.34f,-.2992f,.0f),new Vector3(-.16f,-.2992f,.0f),new Vector3(-.16f,-.2992f,.25f),new Vector3(-.22f,-.2992f,.25f)); // behind Q, under the road to the bolt
+   NextTrace("A",new Vector3(.295f,-.2992f,-.065f),new Vector3(.25f,-.2992f,-.065f),new Vector3(.25f,-.2992f,.0f));
   }
   // 30 · BOSS. Three bays in a U open to the camera. Left: Q, pad A and the tube up to latch A on the high ledge.
   // Right: pad B and rope B from the front bank to the back dock with latch B, whose gate opens the ramp home.

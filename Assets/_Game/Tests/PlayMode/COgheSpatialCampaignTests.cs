@@ -46,6 +46,8 @@ namespace GravityBox.Tests
             foreach(var q in game.Owner.Apparatus.GetComponentsInChildren<COgheQuantumSplitter>())tasks+=$"; Q {q.Phase} splits={q.Splits} msg={q.LastMessage} requested={q.Requested} armedInside={q.ArmedInside} order={(q.Requested>=0&&game.Motion.Get(q.Requested)!=null)}";
             {var seen=new System.Collections.Generic.HashSet<int>();for(int i=0;i<32;i++)if(!game.Matter.Escaped[i]&&seen.Add(game.Matter.Groups[i])){int n=0;for(int j=0;j<32;j++)if(game.Matter.Groups[j]==game.Matter.Groups[i])n++;tasks+=$"; part p{i}×{n}@{game.Root.InverseTransformPoint(game.Motion.Centre(i)):F2}";}}
             Capture(game.Definition.Order,"result");
+            // The merged body at the unlocked exit: the evidence frame for a solved level.
+            if(reason=="Exit physically unlocked"&&done())Capture(game.Definition.Order,"ready");
             Assert.IsTrue(done(),reason+$"; level={game.Definition.Order} centre={game.Motion.Centre(0)} activity={game.Activity} failure={game.Failure}"+tasks);
         }
         private IEnumerator Tap(Vector3 point)
