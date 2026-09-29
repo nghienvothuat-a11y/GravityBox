@@ -1,0 +1,19 @@
+using System.Collections;
+using UnityEngine.TestTools;
+namespace GravityBox.Tests
+{
+ // Spatial 11–30 full solutions through the shared Spatial harness (real taps, 120 Hz script physics).
+ public sealed partial class COgheSpatialCampaignTests
+ {
+  [UnityTest] public IEnumerator Spatial11Solve(){yield return Solve(11);}
+  [UnityTest] public IEnumerator Spatial12Solve(){yield return Solve(12);}
+  [UnityTest] public IEnumerator Spatial13Solve(){yield return Solve(13);}
+  [UnityTest] public IEnumerator Spatial14Solve(){yield return Solve(14);}
+  [UnityTest] public IEnumerator Spatial15Solve(){yield return Solve(15);}
+  [UnityTest] public IEnumerator Spatial16Solve(){yield return Solve(16);}
+  [UnityTest] public IEnumerator Spatial17Solve(){yield return Solve(17);}
+  [UnityTest] public IEnumerator Spatial18Solve(){yield return Solve(18);}
+  [UnityTest] public IEnumerator Spatial19Solve(){yield return Solve(19);}
+  [UnityTest] public IEnumerator Spatial20Solve(){yield return Solve(20);}
+ }
+}

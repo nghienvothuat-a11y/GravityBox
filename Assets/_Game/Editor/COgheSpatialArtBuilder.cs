@@ -19,7 +19,7 @@ namespace GravityBox.Editor
   {
    const string report="Artifacts/COgheSpatialCircuits";
    Directory.CreateDirectory(report);
-   var paths=VenomCampaignBuilder.SpatialScenePaths();
+   var paths=VenomCampaignBuilder.SpatialScenePaths().Where(File.Exists).ToArray();
    string before=COgheViewArtVerification.CapturePhysics(paths);
    File.WriteAllText(report+"/physics-before.txt",before);
    var definitions=Directory.GetFiles(VenomCampaignBuilder.SpatialFolder+"/Definitions","*.asset").OrderBy(p=>p).ToArray();
@@ -37,7 +37,7 @@ namespace GravityBox.Editor
    File.WriteAllText(report+"/physics-after.txt",after);
    if(before!=after||!definitionText.SequenceEqual(definitions.Select(File.ReadAllText)))
     throw new InvalidOperationException("Spatial circuit art changed physical/input data or definitions.");
-   Debug.Log("SPATIAL CIRCUIT ART VERIFIED: 10 scenes; identical physics, input, mechanisms and definitions.");
+   Debug.Log($"SPATIAL CIRCUIT ART VERIFIED: {paths.Length} scenes; identical physics, input, mechanisms and definitions.");
   }
 
   public static void RebuildSpatialCircuitsAndBuildMac()

@@ -13,6 +13,7 @@ namespace GravityBox.Venom.ChapterProof
   public IEnumerator Solve()
   {
    int n=game.Definition.Order;
+   if(n>=11){yield return new COgheSpatialNextScenario(game,tap,until,orbit).Solve();yield break;}
    if(n==2){yield return Go(new Vector3(-.12f,-.22f,.10f),"First block");yield return Go(new Vector3(.15f,-.14f,.18f),"Second block");}
    if(n==3){yield return Go(new Vector3(-.23f,-.30f,.23f),"Around observation wall");if(orbit!=null)yield return orbit(-72);else game.CameraRig.Orbit(216,720);yield return Go(new Vector3(.20f,-.30f,.25f),"Behind observation wall");}
    if(n==4||n==5||n==6||n==9||n==10)yield return Operate("A");

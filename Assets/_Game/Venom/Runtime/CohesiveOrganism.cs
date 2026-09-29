@@ -221,6 +221,31 @@ namespace GravityBox.Venom
             return removed;
         }
 
+        // Exact topology change for a machine that has already drawn one fragment into two
+        // physically separated lobes. Only bonds between the chosen sides are removed; mass,
+        // particles and identities are conserved. Isolated same-side neighbours are rejoined
+        // unless an obstruction lies between them, so each side remains one body.
+        public int Partition(int group, bool[] first)
+        {
+            int removed = 0, before = FragmentCount;
+            for (int k = bonds.Count - 1; k >= 0; k--)
+            {
+                Bond bond = bonds[k];
+                if (Groups[bond.A] != group || Groups[bond.B] != group || first[bond.A] == first[bond.B]) continue;
+                connected[bond.A,bond.B] = connected[bond.B,bond.A] = false;
+                bonds.RemoveAt(k); removed++;
+            }
+            for (int a = 0; a < ParticleCount; a++) for (int b = a + 1; b < ParticleCount; b++)
+            {
+                if (connected[a,b] || Escaped[a] || Escaped[b] || Groups[a] != group || Groups[b] != group || first[a] != first[b]) continue;
+                if (Vector3.Distance(Bodies[a].position, Bodies[b].position) > Profile.BondReach) continue;
+                if (level == null || !level.SegmentBlocked(Bodies[a].position, Bodies[b].position)) Link(a, b, .3f);
+            }
+            RefreshGroups();
+            if (FragmentCount > before) { CutCount++; Split?.Invoke(); }
+            return removed;
+        }
+
         public void RecordEscape(int index)
         {
             if (Escaped[index]) return;

@@ -15,19 +15,20 @@ namespace GravityBox.Editor
   public const string SpatialFolder="Assets/_Game/Venom/SpatialCampaign";
   static readonly string[] SpatialNames={"Chạm để đi","Leo từng bậc","Nhìn quanh vách","Kéo là mở","Tay kéo trên vách","Một sợi dây","Ghép một nhịp","Đi thang nâng","Nâng rồi kéo","Cỗ máy thân quen"};
   static readonly string[] SpatialLessons={"Chạm vòng xanh để chỉ đường.","Chạm từng bậc rộng để leo lên.","Kéo ngang để nhìn quanh vách.","Tay xanh A nối với cửa xanh A.","Leo lên vách để kéo tay xanh A.","Kéo dây A để nâng nhịp cầu.","Chạm tay B để đưa nhịp cầu vào chỗ trống.","Chạm nút trên khay để lên thang.","Nâng nhịp A, rồi tìm tay B.",""};
-  public static string[] SpatialScenePaths()=>Enumerable.Range(1,10).Select(n=>$"{SpatialFolder}/COgheSpatial{n:00}.unity").ToArray();
+  // The Spatial catalog: pilot 01–10 plus Spatial 11–30 (COgheSpatialNextBuilder).
+  public static string[] SpatialScenePaths()=>Enumerable.Range(1,30).Select(n=>$"{SpatialFolder}/COgheSpatial{n:00}.unity").ToArray();
   [MenuItem("Gravity Box/COghe/Spatial pilot/Generate 10 levels")]
   public static void GenerateSpatialCampaign()
   {
    PrepareCampaign30Assets();Directory.CreateDirectory(SpatialFolder+"/Definitions");Directory.CreateDirectory(SpatialFolder+"/Meshes");AssetDatabase.Refresh();
    string old=authoredMeshFolder;try{authoredMeshFolder=SpatialFolder+"/Meshes";for(int n=1;n<=10;n++)BuildSpatial(n);}finally{authoredMeshFolder=old;}
-   var scenes=EditorBuildSettings.scenes.ToList();foreach(var p in SpatialScenePaths())if(!scenes.Any(s=>s.path==p))scenes.Add(new EditorBuildSettingsScene(p,true));EditorBuildSettings.scenes=scenes.ToArray();AssetDatabase.SaveAssets();
+   var scenes=EditorBuildSettings.scenes.ToList();foreach(var p in SpatialScenePaths())if(File.Exists(p)&&!scenes.Any(s=>s.path==p))scenes.Add(new EditorBuildSettingsScene(p,true));EditorBuildSettings.scenes=scenes.ToArray();AssetDatabase.SaveAssets();
    Debug.Log("SPATIAL GENERATED 10 isolated levels");
   }
   [MenuItem("Gravity Box/COghe/Spatial pilot/Build Mac test")]
   public static void BuildSpatialMac()
   {
-   var r=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=SpatialScenePaths(),target=BuildTarget.StandaloneOSX,locationPathName="Builds/SpatialLab/macOS/COghe.app",options=BuildOptions.None,extraScriptingDefines=new[]{"COGHE_MOBILE_BENCHMARK"}});
+   var r=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=SpatialScenePaths().Where(File.Exists).ToArray(),target=BuildTarget.StandaloneOSX,locationPathName="Builds/SpatialLab/macOS/COghe.app",options=BuildOptions.None,extraScriptingDefines=new[]{"COGHE_MOBILE_BENCHMARK"}});
    if(r.summary.result!=UnityEditor.Build.Reporting.BuildResult.Succeeded)throw new Exception("Spatial Mac failed");
   }
   static Material SpatialMaterial(string name,Color color)

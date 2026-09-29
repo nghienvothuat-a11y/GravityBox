@@ -39,6 +39,8 @@ namespace GravityBox.Tests
             for(int i=0;i<seconds/Dt&&!done()&&!game.Owner.Lost;i++){Tick();if(i%240==0)yield return null;}
             string tasks="";foreach(var t in game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())tasks+=$"; {t.Label} pos={t.Rail.Position} phase={t.Phase} last={t.LastFailure} stand={t.StandPoint} hand={t.HandPoint}";
             foreach(var r in game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())tasks+=$"; rail {r.name} pos={r.Position:F4} velocity={r.Body.linearVelocity:F4} effort={r.Effort:F3} locked={r.Locked} latch={r.Latched}";
+            foreach(var t in game.Owner.Apparatus.GetComponentsInChildren<COgheTubeNetwork>())tasks+="; tube "+t.DebugState(game.Motion.Selected)+" chosen="+t.LastChosenEdge+" reached="+t.LastReachedNode;
+            foreach(var p in game.Props)if(p.GetComponent<COgheRailSlider>()==null)tasks+=$"; loose {p.name} at {game.Root.InverseTransformPoint(p.Body.position):F3} held={game.Attached}";
             Capture(game.Definition.Order,"result");
             Assert.IsTrue(done(),reason+$"; level={game.Definition.Order} centre={game.Motion.Centre(0)} activity={game.Activity} failure={game.Failure}"+tasks);
         }
