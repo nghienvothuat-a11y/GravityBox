@@ -61,7 +61,7 @@ Các mốc trên là điều kiện chất lượng; tiếp tục công việc t
 - Tình huống phục hồi: vật sát kính/góc, rơi hụt, cắt lệch, tụ quá sớm, cửa đóng, phần bị bỏ lại: `<đường về hoặc thất bại có chủ đích>`.
 - Softlock cần loại bỏ và đường thử lại tại chỗ / retry: `<…>`.
 - Khi đổi lệnh, pause, retry hoặc tải lại: lực/joint/lệnh/callback nào phải hủy; dữ liệu nào được giữ: `<…>`.
-- Tách chỉ qua dao; đủ gần và không vật cản thì tự tụ, kể cả khác đích/giữ nút; không cooldown sau cắt. Cách bố trí đáp ứng luật: `<…>`.
+- Tách chỉ qua cơ quan của RuleSet (dao lịch sử hoặc máy Q 50/50); đủ gần và không vật cản thì tự tụ, kể cả khác đích/giữ nút; không cooldown sau cắt. Cách bố trí đáp ứng luật: `<…>`.
 
 ## 5. Cơ quan, trạng thái và kiến trúc dùng lại
 
@@ -72,12 +72,12 @@ Các mốc trên là điều kiện chất lượng; tiếp tục công việc t
 - Sơ đồ liên kết cơ quan, kể cả chu kỳ hoặc điều kiện cần nhiều phần: `<link hoặc sơ đồ>`.
 - Phần mở rộng dùng lại được / dữ liệu authoring mới / lý do chưa thể tái sử dụng: `<…>`.
 - Geometry động nào làm đổi route; vùng cần cập nhật và sự kiện kích hoạt: `<…>`.
-- Cách giữ ID vật chất, khối lượng, lực hữu hạn và nhiệm vụ khi cắt/tụ: `<…>`.
+- Cách giữ ID vật chất, khối lượng, lực hữu hạn và nhiệm vụ khi phân tách/tụ: `<…>`.
 - Kiểm tra không thêm nhánh theo số màn để đổi lực/luật thắng; runtime không đọc lời giải mẫu: `<…>`.
 
 ## 6. Hình ảnh, animation và phản hồi
 
-- Tham chiếu Day Lab Unity màn 07, vật liệu và biến thể đã dùng: `<…>`.
+- Tham chiếu theo catalog: Spatial dùng Glass C / printed circuits hiện hành trong STYLE_RULES; Origin lịch sử dùng Day Lab Unity màn 07. Vật liệu và biến thể đã dùng: `<…>`.
 - Mỗi hành động: nhận ý định → tiếp cận → tác động → kết quả thật; tín hiệu khi không thể thực hiện: `<…>`.
 - Animation/VFX đọc tiếp xúc và trạng thái thật; chỗ có thể che cơ quan hoặc sai lệch hình học: `<…>`.
 - Dấu chọn phần, trạng thái nút/cửa, quan hệ nguyên nhân–kết quả và âm thanh: `<…>`.

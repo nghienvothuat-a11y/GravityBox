@@ -25,10 +25,10 @@ namespace GravityBox.Editor
             if(before!=after)throw new Exception("Glass preview changed physics");
             Debug.Log("COGHE GLASS: level 01 restored; all 30 scene physics snapshots identical.");
         }
-        public static void ApplyGlassPreview(VenomCampaign game)
+        public static void ApplyGlassPreview(VenomCampaign game, bool spatial=false)
         {
-            if(game.Definition.Order!=1||!game.Definition.ViewOnly)throw new InvalidOperationException("Glass pilot is V2 01 only");
-            meshDirectory="Meshes/GlassPreview01";serial=0;
+            if(!spatial&&(game.Definition.Order!=1||!game.Definition.ViewOnly))throw new InvalidOperationException("Glass pilot is V2 01 only");
+            meshDirectory=spatial?$"Meshes/SpatialGlass/Level{game.Definition.Order:00}":"Meshes/GlassPreview01";serial=0;
             Directory.CreateDirectory(Folder+"/"+meshDirectory);AssetDatabase.Refresh();
             var owner=game.GetComponent<VenomLevelController>();var root=owner.Rotation.transform;
             var profile=game.GetComponent<COgheGraphicProfile>();
@@ -45,6 +45,7 @@ namespace GravityBox.Editor
                 view.Panes=Array.Empty<VenomSurfacePatch>();view.PaneVisuals=Array.Empty<Transform>();
                 view.FadeSources=Array.Empty<Material>();view.FadeVariants=Array.Empty<Material>();
             }
+            if(spatial)Remove(root,ArtRoot);
             Remove(root,"V2 porcelain platform");Remove(root,"Glass preview frame");
             ivory=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Warm porcelain.mat");
             alloy=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Brushed aluminium.mat");
@@ -52,11 +53,14 @@ namespace GravityBox.Editor
             var clear=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Clear optical glass.mat");
             var tray=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Expansion inspection floor.mat");
             var floors=new System.Collections.Generic.List<Renderer>();
+            var shell=new System.Collections.Generic.List<VenomSurfacePatch>();
             Bounds bounds=new Bounds();bool first=true;
             foreach(var p in game.Surfaces)
             {
+                if(spatial&&!p.ExteriorGlass&&p.name!="Laboratory floor"&&p.name!="Recovery basin"&&p.name!="Departure bank"&&p.name!="Receiving bank")continue;
+                shell.Add(p);
                 var r=p.GetComponent<MeshRenderer>();r.enabled=true;
-                bool isFloor=p.Normal.y>.98f;r.sharedMaterial=isFloor?tray:clear;
+                bool isFloor=p.Normal.y>.98f;if(!p.Slippery)r.sharedMaterial=isFloor?tray:clear;
                 r.shadowCastingMode=ShadowCastingMode.Off;r.receiveShadows=isFloor;
                 if(isFloor)floors.Add(r);
                 foreach(float x in new[]{-.5f,.5f})foreach(float y in new[]{-.5f,.5f})
@@ -75,10 +79,10 @@ namespace GravityBox.Editor
                 Box(art,"Slim aluminium Z",new Vector3(x,y,bounds.center.z),new Vector3(.007f,.007f,max.z-min.z),.002f,alloy);
             foreach(float x in new[]{min.x,max.x})foreach(float y in new[]{min.y,max.y})foreach(float z in new[]{min.z,max.z})
                 Box(art,"Porcelain corner",new Vector3(x,y,z),Vector3.one*.024f,.005f,ivory);
-            Box(art,"Thin porcelain tray",new Vector3(bounds.center.x,min.y-.014f,bounds.center.z),new Vector3(bounds.size.x+.032f,.022f,bounds.size.z+.032f),.006f,ivory);
+            if(!spatial||!System.Array.Exists(game.Surfaces,p=>p.Hole&&p.Normal.y>.9f))Box(art,"Thin porcelain tray",new Vector3(bounds.center.x,min.y-.014f,bounds.center.z),new Vector3(bounds.size.x+.032f,.022f,bounds.size.z+.032f),.006f,ivory);
             CombineByMaterial(art);
             var presentation=game.GetComponent<COgheDayLabPresentation>();
-            presentation.GlassSurfaces=game.Surfaces;presentation.FadingFloors=floors.ToArray();presentation.FocusOccluders=Array.Empty<Renderer>();
+            presentation.GlassSurfaces=shell.ToArray();presentation.FadingFloors=floors.ToArray();presentation.FocusOccluders=Array.Empty<Renderer>();
             COgheDayLabPresentation.ConfigureExitOutline(owner);
             var studio=owner.transform.Find("Day Lab studio");
             foreach(var light in studio.GetComponentsInChildren<Light>())
@@ -86,8 +90,9 @@ namespace GravityBox.Editor
                 if(light.shadows!=LightShadows.None){light.color=new Color(1,.97f,.91f);light.intensity=1.1f;light.shadowStrength=.20f;light.shadowBias=.015f;light.shadowNormalBias=.10f;}
                 else{light.color=new Color(.81f,.90f,1);light.intensity=.45f;}
             }
-            ConfigureGlassDepthStudy(game);
-            ApplySpecimenPlate(game);
+            ConfigureGlassDepthStudy(game,spatial?shell.FindAll(p=>!p.Slippery).ToArray():null);
+            ApplySpecimenPlate(game,spatial?"Spatial":null);
+            if(spatial)game.GetComponent<COgheGlassDepthStudy>().ShowComparison=false;
             EditorUtility.SetDirty(presentation);EditorUtility.SetDirty(owner);
         }
         public static void BuildGlassPreviewMac()

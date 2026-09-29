@@ -11,7 +11,7 @@ namespace GravityBox.Editor
     public static partial class COgheDayLabBuilder
     {
         private const string SpecimenRoot="COghe specimen number";
-        public static void ApplySpecimenPlate(VenomCampaign game)
+        public static void ApplySpecimenPlate(VenomCampaign game,string catalog=null)
         {
             if(!game.Definition.ViewOnly)return;
             var owner=game.GetComponent<VenomLevelController>();var root=owner.Rotation.transform;
@@ -30,7 +30,7 @@ namespace GravityBox.Editor
             string previousDirectory=meshDirectory;int previousSerial=serial;
             try
             {
-                meshDirectory=$"Meshes/SpecimenPlates/Level{game.Definition.Order:00}";serial=0;
+                meshDirectory=$"Meshes/SpecimenPlates/{(catalog==null?"":catalog+"/")}Level{game.Definition.Order:00}";serial=0;
                 Directory.CreateDirectory(Folder+"/"+meshDirectory);AssetDatabase.Refresh();
                 var plastic=DepthMaterial("Specimen ivory resin",AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Warm porcelain.mat"));
                 plastic.SetFloat("_Metallic",0);plastic.SetFloat("_Smoothness",.30f);

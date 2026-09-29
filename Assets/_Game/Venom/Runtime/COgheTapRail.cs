@@ -34,7 +34,10 @@ namespace GravityBox.Venom
         public string Label = "Cơ quan";
         public float Speed = .09f;
         public float StallSeconds = 3;
+        public bool CompensateLoad;
+        private float accumulatedEffort;
         public TaskPhase Phase { get; private set; }
+        public float RequestedPosition=>target;
         public bool Busy => Phase != TaskPhase.Idle;
         public bool AtEnd => Rail.AtEnd;
         public int Actor { get; private set; } = -1;
@@ -76,7 +79,7 @@ namespace GravityBox.Venom
         {
             owner = game; Phase = TaskPhase.Idle; Actor = -1; order = null;
             Holding = false; AppliedEffort = 0;
-            CompletedJourneys = 0; LastFailure = null; messageUntil = 0; stableTime = 0;
+            accumulatedEffort=0;CompletedJourneys = 0; LastFailure = null; messageUntil = 0; stableTime = 0;
             targetStop = 0; target = 0;
             stance=StandOffset;
             backSide=false;
@@ -158,7 +161,7 @@ namespace GravityBox.Venom
         {
             if (Actor >= 0 && ReferenceEquals(owner.Motion.Get(Actor), order)) owner.Motion.Cancel(Actor);
             Phase = TaskPhase.Idle; Actor = -1; order = null;
-            Holding = false; AppliedEffort = 0;
+            Holding = false; AppliedEffort = 0; accumulatedEffort=0;
             if (reason != null) Message(reason);
         }
         private void OnDisable()
@@ -210,7 +213,8 @@ namespace GravityBox.Venom
             float mass = actorCount * game.Matter.Profile.ParticleMass;
             // Finite hand effort, equal/opposite tissue reaction and actual planted-foot support.
             float gain = HoldAtEnd ? Rail.Body.mass * 20 : Mathf.Max(Rail.Body.mass, .18f) * 25;
-            float effort = Mathf.Clamp((desired - velocity) * gain + (HoldAtEnd ? ReturnForce + Rail.Resistance : 0),
+            if(CompensateLoad)accumulatedEffort=Mathf.Clamp(accumulatedEffort+(desired-velocity)*gain*dt*3,-mass*7,mass*7);
+            float effort = Mathf.Clamp((desired - velocity) * gain + accumulatedEffort + (HoldAtEnd ? ReturnForce + Rail.Resistance : 0),
                 -mass * 7, mass * 7);
             if (reached && !HoldAtEnd) effort = 0;
             AppliedEffort = Mathf.Max(0, effort);

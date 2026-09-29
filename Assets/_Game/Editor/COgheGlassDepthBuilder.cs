@@ -19,7 +19,7 @@ namespace GravityBox.Editor
             else if(source!=null)m.CopyPropertiesFromMaterial(source);
             if(shader!=null)m.shader=shader; m.name=name;EditorUtility.SetDirty(m);return m;
         }
-        private static void ConfigureGlassDepthStudy(VenomCampaign game)
+        private static void ConfigureGlassDepthStudy(VenomCampaign game,VenomSurfacePatch[] surfaces=null)
         {
             Directory.CreateDirectory(DepthFolder);AssetDatabase.Refresh();
             var study=game.GetComponent<COgheGlassDepthStudy>();if(study==null)study=game.gameObject.AddComponent<COgheGlassDepthStudy>();
@@ -33,7 +33,7 @@ namespace GravityBox.Editor
             foreach(var m in new[]{study.ClearLit,study.FloorLit,study.ClearReflected,study.FloorReflected})
             {m.SetTexture("_StudioCube",cube);m.SetFloat("_ContactAlpha",0);m.SetFloat("_ReflectionStrength",m==study.ClearReflected?.45f:m==study.FloorReflected?.12f:0);m.SetFloat("_Floor",m==study.FloorLit||m==study.FloorReflected?1:0);}
             var owner=game.GetComponent<VenomLevelController>();
-            study.Surfaces=game.Surfaces.Select(p=>p.GetComponent<Renderer>()).ToArray();
+            study.Surfaces=(surfaces??game.Surfaces).Select(p=>p.GetComponent<Renderer>()).ToArray();
             study.Frame=owner.Rotation.transform.Find("Glass preview frame").GetComponentsInChildren<Renderer>();
             study.RefinedFrame=new Material[study.Frame.Length];
             for(int i=0;i<study.Frame.Length;i++)

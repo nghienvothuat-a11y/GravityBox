@@ -14,9 +14,16 @@ không áp các luật của chúng vào Origin hoặc thay đổi chúng ngoài
 - Yêu cầu mới nhất của người dùng và thiết kế riêng đã chốt được ưu tiên. Ghi lại
   thay đổi trong hồ sơ màn; không coi đề xuất cũ là tính năng đã triển khai.
 - Phần nào đã được người dùng xác nhận thì tiếp tục thực hiện trong phạm vi đó.
-  Các bước kiểm tra dưới đây không tạo thêm yêu cầu xin phép cho công việc đã được giao.
+Các bước kiểm tra dưới đây không tạo thêm yêu cầu xin phép cho công việc đã được giao.
 
 ## 1. Luật sản phẩm phải giữ
+
+**Phạm vi hiện hành, 29/09/2026:** Spatial Pilot 01–10 và kế hoạch Spatial 11–30
+dùng hộp cố định, kéo đổi góc camera, pinch zoom; không lấy điều khiển nghiêng trọng
+lực của Origin làm mặc định. Đồ hoạ dùng Glass C / circuit theo phần hiện hành của
+STYLE_RULES. [Bàn giao và ràng buộc Spatial](LevelDesign/COghe/SpatialNext20/IMPLEMENTATION_HANDOFF.md)
+phân biệt phần đã có, phần phải triển khai và tiêu chí nghiệm thu. Catalog lịch sử
+giữ nguyên; luật tách Q mới không tự biến các scene dao cũ thành scene Q.
 
 1. **Giải đố thuần, cảm giác chill.** Không phân điểm chỉ số, không dùng đồ mua ở
    Nhà để tăng lực, tốc độ, sức bám hoặc mở khả năng giải màn. Khối lượng phân chia
@@ -30,8 +37,13 @@ không áp các luật của chúng vào Origin hoặc thay đổi chúng ngoài
    màn 15, điểm chạm trên vỏ hộp không được thay lệnh đi trong ống.
    Ngoại lệ theo yêu cầu 18/09/2026: màn hiển thị 24 (content 17) tắt chọn
    nắp trên để dễ chạm tay nắm bánh răng; nắp vẫn va chạm và bám được.
-4. **Chỉ tách qua cơ quan cắt.** Dao cắt theo vị trí mô thực, không ép hai phần bằng
-   nhau. Xung lực tách giúp các phần rời nhau; không đổi khối lượng hoặc sinh thêm mô.
+4. **Chỉ tách qua cơ quan phân tách đã khai báo trong bộ luật.** Cập nhật của người dùng
+   ngày 29/09/2026 cho Spatial tiếp theo: thay cưa/dao bằng **máy lượng tử Q**, mỗi lượt
+   nhận một phần và chia khối lượng phần đó **50/50**; vào lại thì chia đôi tiếp.
+   Không sinh thêm mô, không có nút tự tách ngoài cơ quan. [Hợp đồng mới, còn ở giai đoạn thiết kế](LevelDesign/COghe/SpatialNext20/MECHANICS.md).
+   Các scene Origin/campaign lịch sử đang dùng dao vẫn giữ bản đã kiểm chứng cho tới
+   đợt chuyển đổi được triển khai: dao cắt theo vị trí mô, không ép hai phần bằng nhau.
+   Không dùng luật dao lịch sử để phủ nhận yêu cầu Q mới hoặc tuyên bố Q đã có trong build.
 5. **Đủ gần và không bị vật cản ngăn thì tự hợp thể.** Áp dụng cả khi đứng yên, đi
    khác đích hoặc giữ nút. Không cooldown sau chém, không bảo vệ nhiệm vụ để ngăn tụ.
    Khi nhập, giữ lệnh còn hiệu lực mới nhất theo hành vi hiện có; không nối xuyên vách.

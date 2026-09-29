@@ -24,15 +24,15 @@ namespace GravityBox.Editor
             VenomCampaignBuilder.BuildMac();
         }
 
-        internal static string CapturePhysics()
+        internal static string CapturePhysics(IEnumerable<string> scenePaths=null)
         {
             var lines=new List<string>();
-            foreach(string path in VenomCampaignBuilder.ViewCampaignScenePaths())
+            foreach(string path in scenePaths??VenomCampaignBuilder.ViewCampaignScenePaths())
             {
                 var scene=EditorSceneManager.OpenScene(path);
                 foreach(var root in scene.GetRootGameObjects())foreach(var component in root.GetComponentsInChildren<Component>(true))
                 {
-                    bool include=component is Collider||component is Rigidbody||component is Joint||component is VenomSurfacePatch||component is COgheRailSlider||component is COgheTapRail;
+                    bool include=component is Collider||component is Rigidbody||component is Joint||component is VenomSurfacePatch||component is COgheRailSlider||component is COgheTapRail||component is COgheViewMechanism||component is COghePassengerLift||component is COghePulleyDrive;
                     if(!include)continue;
                     var key=path+"|"+Hierarchy(component.transform)+"|"+component.GetType().Name;
                     lines.Add(key+"|localPosition="+component.transform.localPosition.ToString("R")+"|localRotation="+component.transform.localRotation.ToString("R")+"|localScale="+component.transform.localScale.ToString("R"));
@@ -45,6 +45,9 @@ namespace GravityBox.Editor
                             // parent reference is already compared by asset/hierarchy.
                             if(p.propertyPath.EndsWith(".m_FileID")||p.propertyPath.EndsWith(".m_PathID"))continue;
                             if(p.propertyType==SerializedPropertyType.Generic)continue;
+                            // These fields are presentation references; all simulation parameters are compared.
+                            if(component is COghePulleyDrive&&(p.propertyPath=="Drum"||p.propertyPath=="DrumAnchor"||p.propertyPath.StartsWith("Wheels")||p.propertyPath=="Cable"))continue;
+                            if(component is COgheViewMechanism&&(p.propertyPath=="Lamp"||p.propertyPath=="Waiting"||p.propertyPath=="Ready"))continue;
                             string value;
                             if(p.propertyType==SerializedPropertyType.ObjectReference)
                             {

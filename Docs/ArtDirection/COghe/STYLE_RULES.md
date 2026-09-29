@@ -1,8 +1,41 @@
 # COghe — Day Lab design rules
 
-Status: **approved by the user, 16/09/2026**. Version 1.4 (flush mint exit outline, 18/09/2026).
+Status: **approved direction, consolidated 29/09/2026**. Version 2.0 — Glass C / Spatial.
 
-The visual reference is the Unity level 07 shipped at commit `8718849`, with
+## Current authority and scope
+
+For **Spatial Pilot 01–10 and the planned Spatial 11–30**, the approved baseline is
+**Glass C with printed circuits and quiet satin guides**. Use the actual Unity/Mac
+[ten-level circuit review](../../Verification/COgheSpatialCircuits/README.md)
+and its [before/after gallery](../../Verification/COgheSpatialCircuits/review.html)
+as the presentation reference. The later Glass C and Spatial sections below take
+precedence over the original Day Lab palette and the opaque V2/Blender proposals.
+The 20 new illustrations describe layouts; they do not replace the material,
+lighting or physical rules with whatever an image generator happened to draw.
+
+| Element | Binding direction for Spatial |
+| --- | --- |
+| Scene and creature | Clear glass enclosure, thin aluminium frame, calm warm lab background; glossy dark liquid COghe with its existing silhouette and tendrils. No Blender dependency. |
+| Number plate | Small ivory plastic plaque adhered directly to the glass, below the upper front-left rail; two-digit level number. No floating sign or bracket on the frame. |
+| Controls and outputs | Muted blue A and muted coral B on handles, labels and narrow receiving bands; matching letter/glyph plus matching colour show the relationship. At most two circuit colours per visible work area; A1/A2 reuse A. |
+| Bodies and supports | Warm pearl/ivory equipment casings; low-contrast satin blue-grey rails and supports. Do not colour an entire door or mechanical frame as a signal. |
+| Connections | Thin printed traces with chamfered corners and small terminals, flush to a real floor, work surface or glass pane. These are presentation only. Actual load-bearing pulley cables remain visible mechanical cables. |
+| Surface semantics | Lavender satin means no active grip; muted cyan distinguishes transfer tubes; a thin flush mint ring identifies the final exit. Keep these separate from A/B circuit colours. |
+| Light and depth | Glass C lighting/background and baked reflection assets; one shadow-casting key, restrained fill. No per-mechanism realtime lights, realtime reflection capture or heavy screen-space effects. |
+| Animation | Read real contact, force and mechanism state. Keep control targets legible during movement; decorative motion never opens a gate or changes the navigation graph. |
+
+Material assets and the Spatial art builder are the source for exact tuning;
+do not guess colours from screenshots. Presentation changes must pass the physics
+snapshot comparison and portrait visual checks described in the circuit review.
+This approval fixes the visual direction, not a claim that the next 20 levels have
+been built or that their mobile performance has passed.
+
+The original sections below remain the baseline for archived Origin scenes unless
+that catalog is explicitly included in a migration. In new Spatial scenes, the
+quantum machine Q replaces the historical blade design; see the
+[design handoff and constraints](../../LevelDesign/COghe/SpatialNext20/IMPLEMENTATION_HANDOFF.md).
+
+The original Day Lab visual reference is the Unity level 07 shipped at commit `8718849`, with
 [runtime images](Runtime/README.md). The Day Lab concept is supporting inspiration;
 its photographic lighting and proportions are not a requirement to change gameplay.
 
@@ -240,3 +273,24 @@ The user selected **C**. C is the approved glass direction, replacing the pendin
 User correction: the first rail-clip prototype was rejected. Match the original `Concepts/01-day-lab.png`: a small ivory-plastic plaque adhered directly to the outside of the front glass, just below its upper-left rail. Rounded corners, dark blue-grey two-digit number (01–30) and a short printed underline. No clips, raised sign above the rim or billboard. Use depth-tested world-space text, no collider or click target; keep clear of the exit. The plaque follows the chamber and is hidden during victory.
 
 `COgheSpecimenPlateBuilder` owns the repeatable tag build; the V2 art generator and glass pilot rebuild call it. Shared plastic material and font atlas, batched plaque/underline geometry; three renderers per enclosure. Preserve existing campaign numbering, camera framing and gameplay. [Verification](../../Verification/COgheSpecimenPlates/README.md).
+
+### Spatial pilot — printed circuits and quieter guides (29 September 2026)
+
+User requested more refined mechanism connections and less prominent sliders across
+all ten Spatial Pilot scenes. Replace decorative diagonal linkage rods with thin
+printed circuit paths on the floor, raised work surface and rear glass. Use chamfered
+planar elbows and small terminal pads. These identify a control relationship; they
+are not walkable bridges, physics cables or additional touch targets.
+
+Keep blue A and muted coral B on the actual handles, identity badges and narrow
+shutter bands. Large machine panels are pearl/ivory; guide rails are slender satin
+blue-grey. Lavender still identifies slippery surfaces and mint still identifies
+the exit. Pulley cables remain visible physical ropes, with quiet grey bearings and
+small blue hubs, because they explain the real lifting mechanism.
+
+`COgheSpatialArtBuilder` is the shared, repeatable presentation pass called by the
+Spatial campaign generator. **Spatial pilot → Refine circuits and verify physics**
+updates saved scenes without rebuilding gameplay. Static decoration is combined
+by shared material; moving badges stay on their actual bodies. No new runtime
+behaviours, lights, colliders, input targets or navigation patches. Preserve Glass C,
+the specimen tag, camera, puzzles and all other campaign catalogs.

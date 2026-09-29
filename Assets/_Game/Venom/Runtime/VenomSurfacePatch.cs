@@ -6,6 +6,9 @@ namespace GravityBox.Venom
 {
     public sealed class VenomSurfacePatch : MonoBehaviour
     {
+        [Tooltip("Optional physical carrier. Locomotion velocity is relative to this moving support.")]
+        public Rigidbody MotionFrame;
+
         public Vector2 Size=Vector2.one*.6f;
         public bool Hole, Slippery, Selectable=true, RingGrip;
         public bool InterceptExterior;

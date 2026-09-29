@@ -73,7 +73,7 @@ namespace GravityBox.Venom.ChapterProof
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"-coghe-depth-record")>=0)report.execution="Visual recording with synchronous frame capture. FPS is not performance evidence.";
             if(fast)report.execution="Accelerated author diagnosis: normal touch events; 120Hz scripted simulation. Not realtime performance evidence.";
             touchscreen=InputSystem.AddDevice<Touchscreen>();
-            int first=1,last=30;var args=Environment.GetCommandLineArgs();
+            var args=Environment.GetCommandLineArgs();bool spatial=Array.IndexOf(args,"-coghe-spatial")>=0;string prefix=spatial?"COgheSpatial":"COgheView";int first=1,last=spatial?10:30;
             for(int i=0;i<args.Length-1;i++){if(args[i]=="-coghe-view-first")first=int.Parse(args[i+1]);if(args[i]=="-coghe-view-last")last=int.Parse(args[i+1]);}
 #if UNITY_ANDROID
             using(var player=new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
@@ -90,14 +90,14 @@ namespace GravityBox.Venom.ChapterProof
             for(int n=first;n<=last;n++)
             {
                 result=new Result{level=n};report.levels.Add(result);
-                yield return SceneManager.LoadSceneAsync($"COgheView{n:00}");yield return null;
+                yield return SceneManager.LoadSceneAsync($"{prefix}{n:00}");yield return null;
                 game=FindFirstObjectByType<VenomCampaign>();game.AutoAdvance=false;
                 cooperativeDrives=game.Owner.Apparatus.GetComponentsInChildren<COgheCooperativeDrive>();capturedCooperation.Clear();
                 if(fast){game.Owner.enabled=false;game.Owner.Rotation.enabled=false;Physics.simulationMode=SimulationMode.Script;for(int t=0;t<120;t++)Tick();}
                 yield return new WaitForSeconds(2);yield return Capture("start");
                 if(Array.IndexOf(args,"-coghe-view-fade-proof")>=0)yield return Guarded(FadeProof());
                 float started=Time.realtimeSinceStartup;int gc=GC.CollectionCount(0);COgheMobileMetrics.Enabled=!fast;Array.Clear(COgheMobileMetrics.Milliseconds,0,4);measuring=!fast;
-                yield return Guarded(new COgheViewScenario(game,Tap,Until,Orbit,Pinch).Solve());
+                yield return Guarded(spatial?new COgheSpatialScenario(game,Tap,Until,Orbit).Solve():new COgheViewScenario(game,Tap,Until,Orbit,Pinch).Solve());
                 measuring=false;COgheMobileMetrics.Enabled=false;result.gcCollections=GC.CollectionCount(0)-gc;result.seconds=Time.realtimeSinceStartup-started;
                 result.escaped=game.Matter.EscapedCount;result.fragments=game.Matter.TotalFragmentCount;
                 result.passed=result.error==null&&game.Owner.Completed&&!game.Owner.Lost&&result.escaped==32&&result.fragments==1;
@@ -115,7 +115,7 @@ namespace GravityBox.Venom.ChapterProof
             else
             {
                 VenomCampaignSave.PersistenceEnabled=previousPersistence;
-                yield return SceneManager.LoadSceneAsync("COgheView01");
+                yield return SceneManager.LoadSceneAsync(prefix+"01");
                 Destroy(gameObject);
             }
         }

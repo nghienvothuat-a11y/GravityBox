@@ -1,11 +1,64 @@
 # COghe — Day Lab Puzzle Prototype
 
-**Hướng đồ hoạ hiện tại — hộp kính:** ngày 29/09, người dùng dừng phương án Blender. Màn 1 V2 đã được dựng lại thành hộp kính Day Lab để đánh giá; các màn khác mặc định dùng art trước Blender. [Ảnh thực tế và bản Mac](Docs/Verification/COgheGlassPreview/README.md). Thử nghiệm Blender và [báo cáo A/B](Docs/Verification/COgheNewGraphic/README.md) được giữ làm lịch sử, không phải hướng đang triển khai.
+## Bắt đầu trên máy khác — nhánh `NewGraphic`
+
+**Chốt ngày 29/09/2026:** đồ hoạ **Glass C** — sinh vật đen bóng trong hộp kính,
+bảng số nhựa ngà dán trực tiếp lên kính, cơ quan xanh A / san hô B, nét mạch điện
+mảnh và ray satin xám dịu. Dừng hướng Blender; không lấy concept làm lý do thay đổi
+vật lý. [Quy chuẩn đồ hoạ hiện hành](Docs/ArtDirection/COghe/STYLE_RULES.md) ·
+[Ràng buộc, kiến trúc và hướng dẫn bàn giao](Docs/LevelDesign/COghe/SpatialNext20/IMPLEMENTATION_HANDOFF.md).
+
+```sh
+git clone --branch NewGraphic git@github.com:nghienvothuat-a11y/GravityBox.git
+cd GravityBox
+```
+
+Mở thư mục repo bằng **Unity 6000.3.19f1** qua Unity Hub; để Unity khôi phục package
+từ `Packages/packages-lock.json`. Scene, mesh, material và `.meta` đã có trong Git;
+không cần thư mục Downloads, Library hoặc ảnh ở máy tác giả. Tên nhánh chính xác là
+`NewGraphic`, phân biệt hoa/thường. Với checkout đã có, lưu công việc cục bộ trước
+rồi `git fetch origin`, `git switch NewGraphic`, `git pull --ff-only origin NewGraphic`.
+
+| Bộ nội dung | Trạng thái / cách mở |
+| --- | --- |
+| **Spatial 01–10** | Đã dựng, có test và ảnh thực. Mở `Assets/_Game/Venom/SpatialCampaign/COgheSpatial01.unity`; menu **Spatial pilot → Build Mac test** build đúng bộ này. |
+| **Spatial 11–30** | **Bàn giao thiết kế, chưa có scene chơi được.** Đủ 20 hồ sơ, 20 PNG, 20 sơ đồ, trạng thái cơ quan, lời giải và ca kiểm chứng. Q và đu dây cần prototype trước. |
+| V2 / Origin / Journey | Catalog cũ để đối chiếu và hồi quy. Menu Android/Mac V2 thông thường vẫn build V2, không tự thêm Spatial 11–30. |
+
+**20 màn tiếp theo:** [Danh mục và từng hồ sơ](Docs/LevelDesign/COghe/SpatialNext20/README.md) ·
+[Kế hoạch chi tiết](Docs/LevelDesign/COghe/SpatialNext20/PLAN.md) ·
+[Gallery minh hoạ](Docs/LevelDesign/COghe/SpatialNext20/review.html) ·
+[Hợp đồng cơ quan](Docs/LevelDesign/COghe/SpatialNext20/MECHANICS.md).
+Mở `review.html` từ checkout bằng trình duyệt; trên GitHub xem ảnh qua danh mục Markdown.
+
+Luật cần giữ: giải đố thuần, xen sàn và chiều cao, chạm để giao việc, kéo để quan sát;
+Q tự chia **khối lượng phần đi vào** 50/50, đi ra rồi vào lại mới chia tiếp. Gần nhau
+và không bị vách ngăn thì tự tụ; phải hợp đủ bên trong trước lỗ thoát cuối. Không
+cooldown hợp thể, không ép thao tác căn từng frame. Boss 20/30 không hướng dẫn lời giải.
+
+Kiểm tra bộ tài liệu: `python3 Docs/LevelDesign/COghe/SpatialNext20/validate_design.py`.
+Kiểm tra này xác nhận cấu trúc, ảnh, liên kết và chuỗi khối lượng; không thay test Unity.
+
+## Spatial Pilot 01–10 — nền triển khai hiện có
 
 
-## Bản mặc định hiện tại — COghe V2, 28/09/2026
+**Bộ test mới — Spatial Pilot (29/09/2026):** 10 màn xen kẽ sàn, bậc leo, cơ quan trên vách, ròng rọc, ghép cầu và thang nâng. Dùng đồ hoạ hộp kính **C** và bảng số nhựa dán kính; circuit A xanh / B san hô. [Minh hoạ trước dựng](Docs/LevelDesign/COghe/SpatialPilot/review.html) · [Hồ sơ 10 màn](Docs/LevelDesign/COghe/SpatialPilot/README.md).
 
-Build thông thường mở **10 màn mới `COgheView01`–`COgheView10`**: chạm để đi/giao việc, kéo ngang chỉ đổi góc nhìn, hai ngón zoom, nút **Toàn cảnh**. Hộp không xoay vật lý. Bốn bài đầu học điều khiển; bài 5–9 học cơ quan; Boss 10 kết hợp nắp, cầu và cửa bằng một cơ thể.
+- Scene riêng: `Assets/_Game/Venom/SpatialCampaign/COgheSpatial01.unity` … `10`.
+- Unity: **Gravity Box → COghe → Spatial pilot → Generate 10 levels** / **Build Mac test**.
+- Mac: `Builds/SpatialLab/macOS/COghe.app`. Save riêng `coghe.spatial.pilot`; catalog V2 cũ được giữ để đối chiếu. Menu build V2 thông thường vẫn dùng catalog V2.
+- [Kiến trúc cơ quan mới](Docs/LevelDesign/COghe/SpatialPilot/ARCHITECTURE.md). [Kiểm chứng và ảnh Mac](Docs/Verification/COgheSpatialPilot/review.html): 41/41 PlayMode, 10/10 native Mac; chưa đo OPPO.
+- **Cập nhật đồ hoạ cơ quan:** nét mạch điện sát sàn/kính, ray satin xám dịu và vỏ ngà; tay điều khiển / dấu cửa giữ xanh A, san hô B. [So sánh trước–sau 10 màn](Docs/Verification/COgheSpatialCircuits/review.html). Menu **Spatial pilot → Refine circuits and verify physics** dùng cho các scene đã có.
+
+
+**Lịch sử chọn style:** thử hộp kính ở V2 màn 1, sau đó chọn C và áp vào 10 Spatial phía trên. [Bản thử hộp kính](Docs/Verification/COgheGlassPreview/README.md). Thử nghiệm Blender và [báo cáo A/B](Docs/Verification/COgheNewGraphic/README.md) được giữ làm lịch sử, không phải hướng đang triển khai.
+
+
+## Catalog V2 — menu build thông thường, lịch sử từ 28/09/2026
+
+V2 dùng các scene `COgheView…`: chạm để đi/giao việc, kéo ngang chỉ đổi góc nhìn,
+hai ngón zoom, nút **Toàn cảnh**. Hộp không xoay vật lý. Bản đầu ngày 28/09 có 10
+màn; catalog V2 được mở rộng riêng sau đó. Đây không phải bộ Spatial đang bàn giao.
 
 - Android: `bash Tools/build-venom-android.sh` hoặc **Gravity Box → COghe → Build Android test APK** → `Builds/Venom/Android/COghe.apk` (app **COghe**, `com.gravityboxlab.venom`). Không chọn `--onboarding` cho V2.
 - macOS: `bash Tools/build-venom.sh` → `Builds/Venom/macOS/Venom.app`.

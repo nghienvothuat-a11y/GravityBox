@@ -493,7 +493,7 @@ namespace GravityBox.Venom
                     // Distribute the finite force transmitted by planted feet
                     // through the connected body. Gravity keeps acting on all
                     // tissue, including the unsupported head over a slick patch.
-                    Vector3 relative=body.linearVelocity-chamberBody.GetPointVelocity(body.position);
+                    Vector3 relative=body.linearVelocity-(patch!=null&&patch.MotionFrame!=null?patch.MotionFrame:chamberBody).GetPointVelocity(body.position);
                     Vector3 acceleration=Vector3.up*9.81f;
                     bool manipulating=game.Attached&&game.Matter.Groups[a]==game.Matter.Groups[Selected];
                     if(!manipulating)acceleration+=Vector3.ClampMagnitude((desired-relative)*(caught!=null?35:26),caught!=null?18:5);
