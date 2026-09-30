@@ -10,7 +10,7 @@ namespace GravityBox.Venom
     /// leads the performance; transient filaments follow actual surface contacts.
     /// Presentation only: never writes particles, colliders, bonds or puzzle state.
     /// </summary>
-    public sealed class VenomLifeAnimation : MonoBehaviour
+    public sealed partial class VenomLifeAnimation : MonoBehaviour
     {
         private const int Arms = 5, Gestures = 4, Segments = 12, Sides = 7;
         private sealed class Gesture
@@ -208,6 +208,14 @@ namespace GravityBox.Venom
             state.Head = Mathf.MoveTowards(state.Head,targetHead,dt*3.5f);
             if (!grounded) foreach (var foot in state.Feet) foot.Surface = null;
 
+            // COghe's character: a whole body at rest may perform an act (VenomLifeAnimation.Acts.cs).
+            var personality = level.Campaign != null ? level.Campaign.Personality : null;
+            if (personality != null && count == CohesiveOrganism.ParticleCount)
+            {
+                Vector3 ground = grounded ? floorPoint : centre - up*.03f;
+                personality.ObserveBody(this, centre, up, ground, grounded, state.Speed);
+                if (personality.Act != COgheAct.None) return PerformAct(personality, points, supports, weights, count, centre, up, ground);
+            }
             Vector3 localCentre = transform.InverseTransformPoint(centre), localUp = transform.InverseTransformDirection(up);
             float top = 0, bottom = 0;
             for (int i = 0; i < count; i++)

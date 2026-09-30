@@ -6,7 +6,8 @@ composed one with the same name (see Docs/Audio/COghe/README.md). Mood: chill, d
 the creature is small, curious, playful and friendly.
 
 Usage: python3 Tools/audio/synth_coghe_audio.py [out_dir] [--music] [--intro]   (needs numpy, scipy, soundfile)
---music also rebuilds the background loop, --intro the 20 s intro score (otherwise the committed ones are kept).
+--music also rebuilds the background loop, --intro the 20 s intro score, --personality the sounds of COghe's acts
+(otherwise the committed ones are kept).
 Default out_dir: Assets/_Game/Venom/Resources/COgheAudio
 """
 import os, sys
@@ -574,11 +575,68 @@ def intro_score():
     return out
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+# COghe's character (COghePersonality acts): its own random stream, so the approved effects above never change.
+def personality_sfx():
+    global RNG
+    RNG = np.random.default_rng(5151)
+    out = {}
+    # tantrum: grumble, whoosh, splat on the glass, a squeaky slide, "hmph"
+    n = int(.55 * SR); t = np.arange(n) / SR
+    growl = voice(np.array([330, 300, 290, 310, 270]), .55, (M, U), breath=.06, vib=.06, nasal=True)
+    growl *= 1 + .35 * np.sin(2 * np.pi * 24 * t[:len(growl)])
+    out["creature_grumble"] = save("creature_grumble", small_room(growl, .15), -6)
+    n = int(.32 * SR)
+    out["creature_whoosh"] = save("creature_whoosh", swept_bandpass(noise(n), glide(n, 700, 2600, 1.4), q=2.2) * env(n, .08, .14), -9)
+    n = int(.4 * SR); t = np.arange(n) / SR
+    slap = bandpass(noise(n), 500, 2800) * np.exp(-t / .025)
+    thump = np.sin(2 * np.pi * np.cumsum(glide(n, 520, 280, .5)) / SR) * np.exp(-t / .07) * .8
+    squelch = swept_bandpass(noise(n), glide(n, 1800, 600), q=6) * np.exp(-((t - .09) / .05) ** 2) * .6
+    out["creature_splat"] = save("creature_splat", small_room(slap + thump + squelch, .12), -4)
+    n = int(.7 * SR); t = np.arange(n) / SR
+    squeak = np.sin(2 * np.pi * np.cumsum(glide(n, 980, 720) * (1 + .03 * np.sin(2 * np.pi * 9 * t))) / SR) * env(n, .05, .2) * .5
+    squeak += bandpass(noise(n), 1500, 4000) * env(n, .05, .2) * .12
+    out["creature_slide"] = save("creature_slide", squeak, -12)
+    hmph = voice(np.array([440, 400, 330]), .22, (M, M), breath=.12, nasal=True)
+    puff = bandpass(noise(int(.12 * SR)), 900, 3000) * env(int(.12 * SR), .01, .08) * .5
+    out["creature_hmph"] = save("creature_hmph", small_room(np.concatenate([hmph, puff]), .12), -7)
+    # wave: a cheerful "hi-i!"
+    out["creature_hi"] = save("creature_hi", small_room(np.concatenate([
+        voice(np.array([620, 760]), .12, (A, I)), np.zeros(int(.03 * SR)), voice(np.array([760, 980, 1040]), .2, (I, I))]), .18), -6)
+    # a shape appears: two sparkly notes and a pleased "o!"
+    x = np.zeros(int(1.0 * SR)); a = celesta(midi(86), .9, .45); b = celesta(midi(93), .9, .45)
+    x[:len(a)] += a; s0 = int(.09 * SR); x[s0:s0 + len(b)] += b[:len(x) - s0]
+    o = voice(np.array([700, 900, 880]), .16, (O, O)); s1 = int(.05 * SR); x[s1:s1 + len(o)] += o * .6
+    out["creature_tada"] = save("creature_tada", reverb(x, 1.2, .25)[:, 0], -7)
+    # melt: a sinking "uuuh" with a gloop; the pop back up
+    melt = voice(np.array([520, 480, 400, 330, 300]), .75, (U, U), breath=.05)
+    m = int(.2 * SR); tt = np.arange(m) / SR
+    gloop = np.sin(2 * np.pi * np.cumsum(glide(m, 600, 300)) / SR) * np.exp(-tt / .06) * .5
+    mx = np.zeros(len(melt) + m); mx[:len(melt)] += melt; mx[int(.5 * SR):int(.5 * SR) + m] += gloop
+    out["creature_melt"] = save("creature_melt", small_room(mx, .18), -7)
+    m = int(.25 * SR); tt = np.arange(m) / SR
+    pop = np.sin(2 * np.pi * np.cumsum(glide(m, 380, 900, .6)) / SR) * np.exp(-tt / .06) + bandpass(noise(m), 1200, 3500) * np.exp(-tt / .006) * .4
+    out["creature_pop"] = save("creature_pop", small_room(pop, .12), -6)
+    # a knock on the glass pane
+    m = int(.14 * SR); tt = np.arange(m) / SR
+    tok = sum(a_ * np.sin(2 * np.pi * f * tt) * np.exp(-tt / d) for f, a_, d in [(620, .8, .03), (2350, .5, .02), (3900, .25, .012)])
+    tok += bandpass(noise(m), 1500, 5000) * np.exp(-tt / .003) * .4
+    out["glass_tok"] = save("glass_tok", reverb(tok, .8, .18)[:, 0], -8)
+    # a soft snore: a breath in, a small hum out
+    m = int(1.3 * SR); tt = np.arange(m) / SR
+    inhale = bandpass(noise(m), 600, 2500) * np.exp(-((tt - .3) / .18) ** 2) * .35
+    hum = voice(np.linspace(300, 270, 8), .55, (M, M), breath=.1, nasal=True)
+    sn = inhale.copy(); s2 = int(.62 * SR); sn[s2:s2 + len(hum)] += hum[:len(sn) - s2] * .8
+    out["creature_snore"] = save("creature_snore", small_room(sn, .15), -10)
+    return out
+
+
 if __name__ == "__main__":
     sfx()
     # The music is only rebuilt on request: the committed loop is the one that was approved by ear.
     if "--music" in sys.argv: music()
     if "--intro" in sys.argv: intro_score()
+    if "--personality" in sys.argv: personality_sfx()
     print("written to", os.path.abspath(OUT))
     for f in sorted(os.listdir(OUT)):
         if f.endswith(".ogg"):

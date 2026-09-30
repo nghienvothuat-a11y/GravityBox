@@ -64,6 +64,9 @@ namespace GravityBox.Venom
         private Vector2 pointerStart,pointerPrevious;
         private int touchFinger=-1;
         public COgheControlFeedback Feedback {get;private set;}
+        /// <summary>COghe's character (idle acts, the tantrum); presentation only, except that a tantrum holds the controls.</summary>
+        public COghePersonality Personality {get;private set;}
+        public bool InputLocked=>Personality!=null&&Personality.LocksInput;
         public COgheOnboarding Onboarding {get;private set;}
         private GUIStyle title,body,button,small;
         private VenomHabitat habitat;
@@ -84,6 +87,7 @@ namespace GravityBox.Venom
             Feedback=GetComponent<COgheControlFeedback>();
             if(Feedback==null)Feedback=gameObject.AddComponent<COgheControlFeedback>();
             Feedback.Initialize(this);
+            if(COghePersonality.Applies(this)){Personality=gameObject.AddComponent<COghePersonality>();Personality.Initialize(this);}
             InitializeMechanisms();CameraRig=new VenomCampaignCamera(this);EnhancedTouchSupport.Enable();ResetLevel();
             if(COgheProductMode.Applies(this)){ProductUI=gameObject.AddComponent<COgheProductUI>();ProductUI.Initialize(this);}
         }
@@ -104,7 +108,7 @@ namespace GravityBox.Venom
             if(GateOpen)Owner.LatchGuidedGate();
             for(int i=0;i<32;i++){previous[i]=Owner.Outlet.InverseTransformPoint(Matter.Bodies[i].position);inBore[i]=false;}
             ResetMechanisms();Physics.SyncTransforms();Motion.Reset();Feedback.ResetFeedback();
-            Onboarding?.ResetObservation();
+            Onboarding?.ResetObservation();Personality?.ResetState();
         }
         private void ResetBody(Rigidbody body,Vector3 position)
         {if(body==null)return;body.position=Root.TransformPoint(position);body.rotation=Root.rotation;if(!body.isKinematic)body.linearVelocity=body.angularVelocity=Vector3.zero;}
@@ -539,7 +543,8 @@ namespace GravityBox.Venom
         }
         private bool PlayArea(Vector2 p)
         {return ProductUI!=null?ProductUI.AllowsWorldPointer(p):CameraRig.AllowsPointer(p,Screen.width,Screen.height);}
-        public void BeginPointer(Vector2 p){if(!Owner.CanControl||!PlayArea(p))return;pointerDown=true;pointerMoved=false;pointerStart=pointerPrevious=p;}
+        public void CancelPointer()=>ResetPointerInput();
+        public void BeginPointer(Vector2 p){if(!Owner.CanControl||InputLocked||!PlayArea(p))return;pointerDown=true;pointerMoved=false;pointerStart=pointerPrevious=p;}
         public void MovePointer(Vector2 p)
         {
             if(!pointerDown)return;
@@ -548,7 +553,7 @@ namespace GravityBox.Venom
             else if(pointerMoved&&Definition.CanRotate&&!Cutting)Owner.Rotation.Drag((p-pointerPrevious)/Mathf.Min(Screen.width,Screen.height),Owner.View.transform.up,Owner.View.transform.right);
             pointerPrevious=p;
         }
-        public void EndPointer(Vector2 p){MovePointer(p);if(pointerDown&&!pointerMoved)TouchPoint(p);pointerDown=false;Owner.Rotation.EndDrag();}
+        public void EndPointer(Vector2 p){MovePointer(p);if(pointerDown&&!pointerMoved){Personality?.NoteTap();TouchPoint(p);}pointerDown=false;Owner.Rotation.EndDrag();}
         private void Update()
         {
             if(Owner==null)return;
@@ -563,7 +568,7 @@ namespace GravityBox.Venom
                 if(k.zKey.wasPressedThisFrame)CameraRig.ToggleFollow();
             }
             if(ProductUI==null&&AutoAdvance&&Owner.Completed&&Matter.SimulationTime>=advanceAt&&!Definition.Boss&&Definition.Order<PlayableLevelCount){Load(Definition.Order+1);return;}
-            if(!Owner.CanControl){ResetPointerInput();return;}
+            if(!Owner.CanControl||InputLocked){ResetPointerInput();return;}
             if(Definition.ViewOnly)
             {
                 if(ConsumeViewTouches())return;
@@ -588,7 +593,7 @@ namespace GravityBox.Venom
         }
         public void TouchPoint(Vector2 screen)
         {
-            if(!Owner.CanControl||ProductUI!=null&&ProductUI.BlockWorldInput)return;
+            if(!Owner.CanControl||InputLocked||ProductUI!=null&&ProductUI.BlockWorldInput)return;
             climbingStep=null;tubeIntent=false;
             Ray ray=Owner.View.ScreenPointToRay(screen);
             int chosen=-1;float selection=.042f;
