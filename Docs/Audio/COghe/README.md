@@ -12,13 +12,15 @@ Sửa theo Mrk (30/09/2026, lần 2): bỏ room tone (thông gió, rè điện);
 thoại phát được (≥ 250 Hz là chính): bản đầu có tiếng máy ở 98 Hz, tiếng bò/đáp/chốt quá trầm nên trên điện thoại gần
 như không nghe thấy.
 
+Sửa theo Mrk (lần 3): bỏ tiếng sinh vật bò; tiếng "tới đích" nhỏ còn một nửa (0,7 → 0,35).
+
 ## Nghe nhanh (không cần mở Unity)
 
 - Nhạc nền: `Assets/_Game/Venom/Resources/COgheAudio/music_lab_loop.ogg`.
-- Tất cả SFX nối liền: [`preview-sfx-reel.ogg`](preview-sfx-reel.ogg) (79 s, mỗi tiếng cách 0,7 s), theo thứ tự:
+- Tất cả SFX nối liền: [`preview-sfx-reel.ogg`](preview-sfx-reel.ogg) (74 s, mỗi tiếng cách 0,7 s), theo thứ tự:
   ack 1–3, grab, hm, curious 1–2, happy, land, split, merge, merge_full, tube_in, tube_out, swing, exit, latch,
   arrive, pad_on, pad_off, gear_mesh, lift_ding, ui_tap, level_start, retry, win, fail, far beep/clink/thud, rồi 4 s
-  tiếng bò, 4 s tiếng mô-tơ, 4 s tiếng khối trượt.
+  tiếng mô-tơ, 4 s tiếng khối trượt. (Reel phát file ở mức gốc; trong game mỗi tiếng có âm lượng riêng.)
 
 ## Thay một âm thanh
 
@@ -34,10 +36,9 @@ sự kiện.
 | File | Khi nào | Ghi chú |
 | --- | --- | --- |
 | `music_lab_loop` | Suốt game, liền mạch giữa các màn | 160 s, 72 BPM, piano nỉ + pad ấm + celesta; motif sinh vật D–F#–A–G# ở vòng giữa; vòng cuối thưa hơn (cô đơn). Nhỏ lại khi tạm dừng và khi thắng. |
-| `creature_crawl_loop` | Khi sinh vật bò/leo | Âm lượng và cao độ theo tốc độ thật của cơ thể đang chọn. |
 | `mech_motor_loop` | Cơ quan đang vận hành: cửa, cổng, sàn nâng, thang, bàn xoay, bộ bánh răng có điện | Mô-tơ bánh răng nhỏ. To nhỏ theo tốc độ thật; bộ bánh răng có điện mà đầu ra đã tới thì chỉ rì nhỏ. Pan theo vị trí vật đang chạy. |
 | `block_slide_loop` | Khối trượt trên sàn: thùng, xe, khối trên ray, xe bánh răng, bậc ngăn kéo, thùng rời bị đẩy | Tiếng ma sát mềm, to nhỏ theo tốc độ thật. |
-| `mech_arrive` | Cơ quan chạy tới một đầu (cuối hoặc về đầu) sau khi đi ≥ 1 cm | "Cộp + tinh" — biết cơ quan đã tới đích. Thang dùng tiếng ding riêng. |
+| `mech_arrive` | Cơ quan chạy tới một đầu (cuối hoặc về đầu) sau khi đi ≥ 1 cm | "Cộp + tinh" — biết cơ quan đã tới đích, âm lượng 0,35. Thang dùng tiếng ding riêng. |
 | `creature_ack_1..3` | Mỗi lệnh được nhận (chạm đi, chạm cơ quan) | "ư?" — sinh vật trả lời. |
 | `creature_grab` | Bắt đầu kéo/đẩy tay nắm, nắm vật | |
 | `creature_hm` | Tay nắm không tới được / bị chặn | "hm?" — phản hồi, không trách. |

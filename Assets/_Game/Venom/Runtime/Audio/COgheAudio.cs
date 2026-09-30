@@ -19,7 +19,7 @@ namespace GravityBox.Venom
         private const string CatalogKey = "coghe.spatial.pilot";
 
         // Mix (0–1). First pass; tune by ear on the phone.
-        public const float MusicVolume = .65f, CrawlVolume = .30f, MotorVolume = .40f, SlideVolume = .45f;
+        public const float MusicVolume = .65f, MotorVolume = .40f, SlideVolume = .45f, ArriveVolume = .35f;
 
         public static bool MusicOn
         {
@@ -35,7 +35,6 @@ namespace GravityBox.Venom
         /// <summary>How many times each sound played (tests and tuning).</summary>
         public readonly Dictionary<string, int> Played = new Dictionary<string, int>();
         public AudioSource Music { get; private set; }
-        public AudioSource Crawl { get; private set; }
         public AudioSource Motor { get; private set; }
         public AudioSource Slide { get; private set; }
         /// <summary>0–1: how much of the motor / floor-slide loop is playing (smoothed).</summary>
@@ -86,7 +85,6 @@ namespace GravityBox.Venom
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
             Music = Loop("music_lab_loop");
-            Crawl = Loop("creature_crawl_loop");
             Motor = Loop("mech_motor_loop");
             Slide = Loop("block_slide_loop");
             for (int i = 0; i < voices.Length; i++) { voices[i] = gameObject.AddComponent<AudioSource>(); voices[i].playOnAwake = false; }
@@ -230,7 +228,7 @@ namespace GravityBox.Venom
                 bool end = r.AtEnd, start = p <= r.CatchTolerance;
                 if (((end && !atEnd[i]) || (start && !atStart[i])) && railTravel[i] >= .01f && !liftRails.Contains(r))
                 {
-                    if (!quiet) Play("mech_arrive", .7f, Pan(r.Body.position), .12f);
+                    if (!quiet) Play("mech_arrive", ArriveVolume, Pan(r.Body.position), .12f);
                     railTravel[i] = 0;
                 }
                 atEnd[i] = end; atStart[i] = start;
@@ -322,8 +320,6 @@ namespace GravityBox.Venom
             float music = MusicOn && (ours || Music.isPlaying) ? MusicVolume * (paused ? .45f : 1) * (Time.unscaledTime < duckUntil ? .35f : 1) : 0;
             Drive(Music, music, fade);
             bool moving = ours && EffectsOn && !paused && !game.Owner.Completed;
-            Drive(Crawl, moving ? CrawlVolume * crawlLevel : 0, Mathf.Clamp01(Time.unscaledDeltaTime * 10));
-            Crawl.pitch = .92f + crawlLevel * .18f;
             Drive(Motor, moving ? MotorVolume * motorLevel : 0, Mathf.Clamp01(Time.unscaledDeltaTime * 8));
             Motor.pitch = .9f + motorLevel * .2f; Motor.panStereo = Mathf.Clamp(motorPan, -.6f, .6f);
             Drive(Slide, moving ? SlideVolume * slideLevel : 0, Mathf.Clamp01(Time.unscaledDeltaTime * 10));

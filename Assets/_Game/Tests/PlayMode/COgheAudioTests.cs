@@ -11,7 +11,7 @@ namespace GravityBox.Tests
  // harness calls COgheAudio.Observe after every physics tick, so each transition is seen.
  public sealed partial class COgheSpatialCampaignTests
  {
-  static readonly string[] AudioClips={"music_lab_loop","creature_crawl_loop","mech_motor_loop","block_slide_loop","mech_arrive","ui_tap",
+  static readonly string[] AudioClips={"music_lab_loop","mech_motor_loop","block_slide_loop","mech_arrive","ui_tap",
    "creature_ack_1","creature_ack_2","creature_ack_3","creature_happy","creature_curious_1","creature_curious_2","creature_hm",
    "creature_land","creature_grab","creature_split","creature_merge","creature_merge_full","tube_in","tube_out","creature_swing",
    "creature_exit","mech_latch","mech_gear_mesh","mech_pad_on","mech_pad_off","mech_lift_ding","game_win","game_fail","game_retry",

@@ -322,7 +322,8 @@ def sfx():
         voice(np.array([700, 760]), 0.09, (U, I)), np.zeros(int(0.06 * SR)), voice(np.array([760, 820]), 0.08, (U, I))]), 0.2), -8)
     out["creature_hm"] = save("creature_hm", small_room(voice(np.array([470, 420, 400, 450]), 0.32, (M, M), nasal=True), 0.15), -8)
 
-    # Crawl: squishy steps, 2 s seamless loop at ~7 per second
+    # Crawl: squishy steps, 2 s loop. Not used since 30/09/2026 (Mrk: no crawling sound); still computed so the random
+    # stream, and with it every effect generated after it, stays exactly as approved.
     n = 2 * SR; buf = np.zeros(n)
     for k in range(14):
         m = int(0.11 * SR); tt = np.arange(m) / SR
@@ -330,7 +331,7 @@ def sfx():
         squish = swept_bandpass(noise(m), glide(m, c * 1.5, c * 0.6), q=5.0) * np.exp(-tt / 0.04) * (1 - np.exp(-tt / 0.008))
         blub = np.sin(2 * np.pi * np.cumsum(glide(m, 440, 260)) / SR) * np.exp(-tt / 0.03) * (1 - np.exp(-tt / 0.006)) * 0.5
         place(buf, (squish * 0.8 + blub) * RNG.uniform(0.6, 1.0), int((k / 14 + RNG.normal(0, 0.008)) * n))
-    out["creature_crawl_loop"] = save_loop("creature_crawl_loop", circular(lambda v: highpass(lowpass(v, 3000), 200), buf), -6)
+    circular(lambda v: highpass(lowpass(v, 3000), 200), buf)
 
     # Land: a soft plop
     n = int(0.3 * SR); t = np.arange(n) / SR
