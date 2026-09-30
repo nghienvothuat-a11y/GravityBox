@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace GravityBox.Editor
 {
-    /// <summary>Builds all current Origin scenes as a locally signed ARM64 APK.</summary>
+    /// <summary>Builds the selected COghe catalog as a locally signed ARM64 APK.</summary>
     public static class COgheAndroidBuilder
     {
         public const string Output="Builds/Venom/Android/COghe.apk";
@@ -15,6 +15,10 @@ namespace GravityBox.Editor
 
         [MenuItem("Gravity Box/COghe/Build Android test APK")]
         public static void Build() => BuildScenes(VenomCampaignBuilder.CampaignScenePaths(), Output);
+
+        [MenuItem("Gravity Box/COghe/Spatial pilot/Build Android test APK · 50 levels")]
+        public static void BuildSpatial() => BuildScenes(VenomCampaignBuilder.SpatialScenePaths(),
+            "Builds/SpatialLab/Android/COghe-Spatial.apk");
 
         [MenuItem("Gravity Box/COghe/NewGraphic/Build Android A-B test APK")]
         public static void BuildNewGraphic() => BuildScenes(VenomCampaignBuilder.ViewCampaignScenePaths(), "Builds/NewGraphic/Android/COghe-NewGraphic.apk");

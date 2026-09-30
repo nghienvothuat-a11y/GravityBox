@@ -294,3 +294,28 @@ updates saved scenes without rebuilding gameplay. Static decoration is combined
 by shared material; moving badges stay on their actual bodies. No new runtime
 behaviours, lights, colliders, input targets or navigation patches. Preserve Glass C,
 the specimen tag, camera, puzzles and all other campaign catalogs.
+
+### Spatial mobile surfaces and tube mouths (30 September 2026)
+
+Closed mechanism bodies assembled from thick contact panels must not render a
+panel's narrow closing face on top of an adjacent panel's front face. This creates
+ivory/lavender depth fighting, especially visible while orbiting on OPPO. Keep the
+physics slabs intact; remove only fully covered closing triangles from separate
+render meshes. Do not hide the problem with depth bias, enlarged colliders or
+changes to slippery materials. Fixed surfaces, moving bodies and parked replicas
+must all be checked. Share identical repaired meshes between levels.
+
+Spatial tubes use a restrained transparent cyan bore, two thin teal longitudinal
+seams, and porcelain mouth collars with a narrow teal gasket. Preserve a clearly
+open centre: collar inner radii remain outside the physical bore. Mark actual entry
+nodes, not closed ends or nonexistent connections. Mint remains the final exit;
+blue A/coral B remain control circuits. Two batched opaque art meshes per static
+network, shared materials, no new lights, runtime behaviours, colliders or pick
+targets. Flexible tubes need deformation-aware decoration and are excluded from
+static collars/seams.
+
+The Spatial generator calls `RefineSpatialReadability`; for existing scenes use
+**Spatial pilot → Repair surface rendering and clarify tubes**. It compares all
+50 scenes' physics and definitions before/after and writes an affected-level audit.
+Run visual tests with a graphics device (not `-nographics` when the test captures
+`Camera.Render`). [Verification](../../Verification/COgheSurfaceReadability/README.md).

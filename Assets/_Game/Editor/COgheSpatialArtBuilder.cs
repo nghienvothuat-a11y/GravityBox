@@ -200,6 +200,7 @@ namespace GravityBox.Editor
    CombineByMaterial(art);
    foreach(var r in art.GetComponentsInChildren<Renderer>())r.shadowCastingMode=ShadowCastingMode.Off;
    owner.IndicatorMaterial=mint;COgheDayLabPresentation.ConfigureExitOutline(owner);
+   RefineSpatialReadability(game);
   }
 
   private static void SpatialBadge(Transform parent,string text,Vector3 point,Vector3 normal,Material color,Material backing)

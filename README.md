@@ -21,9 +21,9 @@ rồi `git fetch origin`, `git switch NewGraphic`, `git pull --ff-only origin Ne
 
 | Bộ nội dung | Trạng thái / cách mở |
 | --- | --- |
-| **Spatial 01–10** | Đã dựng, có test và ảnh thực. Mở `Assets/_Game/Venom/SpatialCampaign/COgheSpatial01.unity`; menu **Spatial pilot → Build Mac test** build đúng bộ này. |
-| **Spatial 11–30** | **Bàn giao thiết kế, chưa có scene chơi được.** Đủ 20 hồ sơ, 20 PNG, 20 sơ đồ, trạng thái cơ quan, lời giải và ca kiểm chứng. Q và đu dây cần prototype trước. |
-| V2 / Origin / Journey | Catalog cũ để đối chiếu và hồi quy. Menu Android/Mac V2 thông thường vẫn build V2, không tự thêm Spatial 11–30. |
+| **Spatial 50 màn** | 30 màn cũ xen 20 Spatial Plus theo `SpatialOrder`. Mở `Assets/_Game/Venom/SpatialCampaign/COgheSpatial01.unity`; **Spatial pilot → Build Mac test** hoặc **Build Android test APK · 50 levels** build đúng catalog. [Thứ tự 50 màn](Docs/LevelDesign/COghe/SpatialPlus20/PLACEMENT.md). |
+| **Spatial 11–30** | Đã triển khai sau đợt bàn giao thiết kế; xem [bản dựng và khác biệt](Docs/LevelDesign/COghe/SpatialNext20/AS_BUILT_2026_09_29.md), [kiểm chứng Mac](Docs/Verification/COgheSpatialNext20/README.md). Số đo Mac không chứng minh hiệu năng OPPO. |
+| V2 / Origin / Journey | Catalog cũ để đối chiếu và hồi quy. Menu Android/Mac V2 thông thường vẫn build V2; dùng lựa chọn Spatial ở trên cho 50 màn hiện hành. |
 
 **20 màn tiếp theo:** [Danh mục và từng hồ sơ](Docs/LevelDesign/COghe/SpatialNext20/README.md) ·
 [Kế hoạch chi tiết](Docs/LevelDesign/COghe/SpatialNext20/PLAN.md) ·
@@ -38,6 +38,15 @@ cooldown hợp thể, không ép thao tác căn từng frame. Boss 20/30 không 
 
 Kiểm tra bộ tài liệu: `python3 Docs/LevelDesign/COghe/SpatialNext20/validate_design.py`.
 Kiểm tra này xác nhận cấu trúc, ảnh, liên kết và chuỗi khối lượng; không thay test Unity.
+
+**Android Spatial 50:** `bash Tools/build-venom-android.sh --spatial` →
+`Builds/SpatialLab/Android/COghe-Spatial.apk`. App **COghe**, package
+`com.gravityboxlab.venom`, ARM64/IL2CPP Release. Builder yêu cầu đủ cả 50 scene trong `SpatialOrder`,
+không tự sinh lại màn hoặc bỏ qua scene bị thiếu. [Cài lên thiết bị](Docs/COGHE_ANDROID_PLAYTEST.md).
+
+**Sửa hiển thị OPPO (30/09):** loại mặt chồng gây nhiễu khi xoay cơ quan, làm rõ
+miệng và thân ống trong catalog Spatial 50. Giữ nguyên vật lý và lời giải.
+[Phạm vi, ảnh và kiểm chứng](Docs/Verification/COgheSurfaceReadability/README.md).
 
 ## Spatial Pilot 01–10 — nền triển khai hiện có
 

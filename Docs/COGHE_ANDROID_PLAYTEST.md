@@ -1,5 +1,25 @@
 # COghe — bản Android trên thiết bị thật
 
+## NewGraphic — Spatial 50 màn (30/09/2026)
+
+```sh
+bash Tools/build-venom-android.sh --spatial
+```
+
+Unity: **Gravity Box → COghe → Spatial pilot → Build Android test APK · 50 levels**.
+Đóng gói theo `SpatialOrder`: 30 scene `COgheSpatial01`…`30` xen 20 Spatial Plus,
+đủ 50 vị trí chơi; thiếu scene thì dừng build. [Thứ tự](LevelDesign/COghe/SpatialPlus20/PLACEMENT.md).
+APK: `Builds/SpatialLab/Android/COghe-Spatial.apk`. App **COghe**, package
+`com.gravityboxlab.venom`; ARM64, IL2CPP Release, portrait, ký debug local để test.
+Hộp đứng yên, chạm giao việc, kéo đổi góc camera; chọn nhóm 01–10 / 11–20 / 21–30 / 31–40 / 41–50.
+Menu/script không có `--spatial` vẫn dùng catalog cũ, không phải bộ Spatial.
+
+Cài bằng `adb install -r Builds/SpatialLab/Android/COghe-Spatial.apk`, rồi mở app
+như lệnh bên dưới. Không cần gỡ app hay xoá dữ liệu. Build thành công chỉ chứng minh
+APK được tạo; cần kiểm tra trên thiết bị để kết luận input, gameplay hoặc FPS.
+
+## Hướng dẫn và lịch sử catalog cũ
+
 Build đúng hai mươi scene `VenomOrigin01`…`VenomOrigin20` bằng Unity 6000.3.19f1:
 
 ```sh
