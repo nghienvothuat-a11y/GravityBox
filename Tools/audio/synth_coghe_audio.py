@@ -5,8 +5,8 @@ Everything is synthesized here so it can be tuned and regenerated; any file can 
 composed one with the same name (see Docs/Audio/COghe/README.md). Mood: chill, deep, a little lonely in a quiet lab;
 the creature is small, curious, playful and friendly.
 
-Usage: python3 Tools/audio/synth_coghe_audio.py [out_dir] [--music]   (needs numpy, scipy, soundfile)
---music also rebuilds the background loop (otherwise the committed one is kept).
+Usage: python3 Tools/audio/synth_coghe_audio.py [out_dir] [--music] [--intro]   (needs numpy, scipy, soundfile)
+--music also rebuilds the background loop, --intro the 20 s intro score (otherwise the committed ones are kept).
 Default out_dir: Assets/_Game/Venom/Resources/COgheAudio
 """
 import os, sys
@@ -457,10 +457,128 @@ def sfx():
     return out
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+# Intro score: 20 s under the opening comic, hit points synced to COgheIntro's shots (seconds):
+# 0 fall (whistle, rising air) · 1.8 impact · 3.0 arrival (rotor, drum pulse) · 5.6 the sphere (heartbeat) · 7.0 it
+# opens (steam, chime) · 7.62 COghe's first "u?" · 7.8 soldiers flinch · 9.6 the warm turn (D major) · 10.6 it lands on
+# her palm · 11.4 close-up (the creature motif, glints 12.0/12.55/13.2) · 14.6 the lab · 16.3 it hops into the box ·
+# 18.0-19.6 the dissolve resolves on Dmaj9, the chord the game's music starts on.
+def intro_score():
+    global RNG
+    RNG = np.random.default_rng(3131)   # its own stream, like the music
+    total = 20.0; n = int(total * SR)
+    L = np.zeros((n + int(4 * SR), 2))
+
+    def add(x, at_s, pan=0.0, gain=1.0):
+        s = int(at_s * SR); x = x * gain
+        if s < 0: x = x[-s:]; s = 0
+        l = x * np.cos((pan + 1) * np.pi / 4); r = x * np.sin((pan + 1) * np.pi / 4)
+        e = min(len(L), s + len(x)); L[s:e, 0] += l[: e - s]; L[s:e, 1] += r[: e - s]
+
+    # 0-1.8 the fall: a dark pad swelling, air rising, the object's whistle bending down (doppler)
+    for m in (38, 45, 50, 53):
+        add(pad_note(midi(m), 2.6, vel=0.2, attack=1.4, release=0.6, bright=900), 0, pan=RNG.uniform(-.4, .4))
+    m = int(1.8 * SR); tt = np.arange(m) / SR
+    air = swept_bandpass(noise(m), glide(m, 400, 3200, 2.0), q=1.6) * (tt / 1.8) ** 2 * 0.9
+    add(air, 0, 0.2)
+    whistle = np.sin(2 * np.pi * np.cumsum(glide(m, 2100, 700, 0.7)) / SR) * np.clip((tt - 0.4) / 0.6, 0, 1) * 0.12
+    add(lowpass(whistle, 3000), 0, 0.5)
+
+    # 1.8 impact: a deep boom that phones can still hear (a mid crunch on top), then debris
+    m = int(2.6 * SR); tt = np.arange(m) / SR
+    boom = np.sin(2 * np.pi * np.cumsum(glide(m, 95, 38, 0.4)) / SR) * np.exp(-tt / 0.55)
+    crunch = bandpass(noise(m), 250, 2400) * np.exp(-tt / 0.16) * 0.9
+    body = bandpass(brown(m), 150, 700) * np.exp(-tt / 0.7) * 2.5
+    hit = soft_clip((boom * 1.2 + crunch + body) * 1.4, 1.6)
+    add(reverb(hit, 2.4, 0.35)[:, 0], 1.8, -0.1); add(reverb(hit, 2.4, 0.35)[:, 1], 1.8, 0.1)
+    for k in range(18):
+        at = 2.0 + RNG.uniform(0, 0.9); q = int(0.05 * SR)
+        add(bandpass(noise(q), 800, 3500) * np.exp(-np.arange(q) / SR / 0.01) * RNG.uniform(0.05, 0.15), at, RNG.uniform(-.7, .7))
+
+    # 3.0-5.6 arrival: rotor chop, a low drum pulse and a pulsing string bed (heroic, tense)
+    m = int(2.8 * SR); tt = np.arange(m) / SR
+    chop = bandpass(noise(m), 180, 1200) * (0.5 + 0.5 * np.sign(np.sin(2 * np.pi * 17 * tt))) * env(m, 0.6, 0.6) * 0.22
+    add(lowpass(chop, 1400), 3.0, 0.6)
+    beat = 60 / 104
+    for k in range(6):
+        q = int(0.5 * SR); tq = np.arange(q) / SR
+        drum = np.sin(2 * np.pi * np.cumsum(glide(q, 180, 70, 0.5)) / SR) * np.exp(-tq / 0.16) + bandpass(noise(q), 200, 900) * np.exp(-tq / 0.03) * 0.5
+        add(drum, 3.0 + k * beat, 0, 0.55 + 0.08 * k)
+    for k in range(12):
+        f = midi(50 if k % 4 != 3 else 53); q = int(beat / 2 * SR); tq = np.arange(q) / SR
+        saw = sum(np.sin(2 * np.pi * f * h * tq) / h for h in range(1, 9))
+        add(lowpass(saw, 1400) * env(q, 0.01, 0.12) * 0.09, 3.0 + k * beat / 2, -0.3)
+
+    # 5.6-7.0 the sphere: heartbeat and a thin rising glass tone
+    for k, at in enumerate([5.7, 5.98, 6.5, 6.78]):
+        q = int(0.3 * SR); tq = np.arange(q) / SR
+        add(np.sin(2 * np.pi * np.cumsum(glide(q, 150, 90)) / SR) * np.exp(-tq / 0.09) + bandpass(noise(q), 250, 700) * np.exp(-tq / 0.02) * 0.3, at, 0, 0.5 if k % 2 == 0 else 0.35)
+    m = int(1.5 * SR); tt = np.arange(m) / SR
+    add(np.sin(2 * np.pi * np.cumsum(glide(m, 880, 1320, 1.5)) / SR) * env(m, 1.0, 0.2) * 0.05, 5.6, 0.3)
+    for mm in (38, 44, 51):
+        add(pad_note(midi(mm), 1.8, vel=0.12, attack=0.8, release=0.4), 5.4, RNG.uniform(-.4, .4))
+
+    # 7.0 it opens: steam and a bright chime; 7.62 COghe's first sound; 7.8 the soldiers flinch
+    m = int(1.2 * SR); tt = np.arange(m) / SR
+    add(highpass(noise(m), 2500) * np.exp(-tt / 0.35) * 0.18, 7.0, -0.2)
+    for f, d in ((midi(86), 0), (midi(93), 0.04)):
+        add(glass(f, 1.6, 0.18), 7.0 + d, 0.3)
+    add(small_room(voice(np.array([520, 560, 780]), 0.22, (U, I)), 0.2), 7.62, 0.0, 1.4)
+    for mm in (50, 52, 57, 59, 64):   # held breath while it looks around: a suspended, curious chord
+        add(pad_note(midi(mm), 3.0, vel=0.13, attack=0.5, release=0.8, bright=1100), 7.0, RNG.uniform(-.5, .5))
+    q = int(0.7 * SR); tq = np.arange(q) / SR
+    stab = sum(np.sin(2 * np.pi * midi(mm) * h * tq) / h for mm in (38, 45, 51) for h in range(1, 6))
+    add(lowpass(stab, 1500) * np.exp(-tq / 0.2) * (1 - np.exp(-tq / 0.005)) * 0.08, 7.8, 0)
+
+    # 9.6 the warm turn: D major pad, felt piano; 10.6 the creature lands on her palm, happy
+    for mm in (50, 57, 61, 64, 66):
+        add(pad_note(midi(mm), 8.5, vel=0.15, attack=1.2, release=2.4), 9.6, -0.5 + (mm - 50) / 16)
+    add(np.sin(2 * np.pi * midi(38) * t_axis(8.0)) * env(int(8.0 * SR), 1.0, 2.0) * 0.1, 9.6, 0)
+    for at, mm in ((9.65, 62), (10.1, 66), (11.4, 69), (12.4, 66), (13.4, 64)):
+        add(felt_piano(midi(mm), 3.0, vel=0.5), at, RNG.uniform(-.3, .3), 0.6)
+    q = int(0.3 * SR); tq = np.arange(q) / SR
+    add(np.sin(2 * np.pi * np.cumsum(glide(q, 420, 200, 0.5)) / SR) * np.exp(-tq / 0.06) * 0.5, 10.6, 0.2)
+    add(small_room(np.concatenate([voice(np.array([600, 880, 900]), 0.13, (A, I)), np.zeros(int(0.035 * SR)),
+        voice(np.array([760, 1100, 1180]), 0.19, (O, I))]), 0.18), 10.75, 0.2, 0.8)
+
+    # 11.4 close-up: the creature motif on celesta (as in the game's music), glints
+    for k, mm in enumerate([74, 78, 81, 80]):
+        add(celesta(midi(mm), 2.4, vel=0.3), 11.9 + k * 0.42, 0.25)
+    for at, mm in ((12.0, 98), (12.55, 102), (13.2, 105)):
+        add(glass(midi(mm), 0.9, 0.05), at, RNG.uniform(-.5, .5))
+
+    # 14.6 the lab: quieter, a single piano phrase; 16.3 it hops into the box; 16.7 a small "hm?"
+    for mm in (50, 54, 57, 61):
+        add(pad_note(midi(mm + 12), 5.8, vel=0.08, attack=0.6, release=1.6, bright=1400), 14.6, RNG.uniform(-.5, .5))
+    for at, mm in ((14.7, 69), (15.4, 66), (16.1, 62)):
+        add(felt_piano(midi(mm), 2.6, vel=0.4), at, 0, 0.55)
+    q = int(0.3 * SR); tq = np.arange(q) / SR
+    add(np.sin(2 * np.pi * np.cumsum(glide(q, 460, 210, 0.5)) / SR) * np.exp(-tq / 0.05) * 0.45 + bandpass(noise(q), 400, 1600) * np.exp(-tq / 0.03) * 0.2, 16.46, -0.3)
+    add(small_room(voice(np.array([430, 400, 390, 470, 580]), 0.42, (M, U), nasal=True), 0.2), 16.8, -0.3, 0.7)
+
+    # 18.0-19.6 the dissolve: a glass shimmer rising into Dmaj9, fading to leave the game's music its first chord
+    m = int(1.8 * SR); tt = np.arange(m) / SR
+    add(swept_bandpass(noise(m), glide(m, 1500, 6000, 1.2), q=6.0) * env(m, 1.2, 0.5) * 0.25, 17.9, 0.3)
+    for k, mm in enumerate([74, 78, 81, 85, 88]):
+        add(celesta(midi(mm), 2.6, vel=0.22), 18.0 + k * 0.12, -0.4 + k * 0.2)
+    for mm in (38, 50, 57, 61, 64, 66):
+        add(pad_note(midi(mm), 3.2, vel=0.14 if mm > 40 else 0.2, attack=0.5, release=1.6), 18.0, RNG.uniform(-.4, .4))
+
+    wet = lowpass(reverb(L, 2.6, 0.28, damp=4200), 11000)[:n]
+    fade = np.ones(n); f = int(0.6 * SR); fade[-f:] = np.linspace(1, 0, f) ** 2
+    out = soft_clip(wet * fade[:, None] * 1.1, 1.2)
+    rms = np.sqrt(np.mean(out ** 2)); out *= 10 ** (-17 / 20) / rms
+    peak = np.max(np.abs(out))
+    if peak > 10 ** (-1 / 20): out *= 10 ** (-1 / 20) / peak
+    write_ogg("intro_score", out)
+    return out
+
+
 if __name__ == "__main__":
     sfx()
     # The music is only rebuilt on request: the committed loop is the one that was approved by ear.
     if "--music" in sys.argv: music()
+    if "--intro" in sys.argv: intro_score()
     print("written to", os.path.abspath(OUT))
     for f in sorted(os.listdir(OUT)):
         if f.endswith(".ogg"):

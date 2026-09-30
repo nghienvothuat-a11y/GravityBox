@@ -109,6 +109,7 @@ namespace GravityBox.Venom
         private void OnGUI()
         {
             if(game==null||game.Owner==null)return;
+            if(COgheIntro.Playing)return;   // the opening comic owns the screen; the level waits paused under it
             if(brand==null)Styles();
             var oldEnabled=GUI.enabled;
 #if (DEVELOPMENT_BUILD || COGHE_MOBILE_BENCHMARK) && !UNITY_EDITOR
@@ -193,6 +194,7 @@ namespace GravityBox.Venom
                 // Sound settings live on the pause screen: music and effects, remembered between sessions.
                 if(Button(new Rect(26,h-215,240,30),COgheAudio.MusicOn?"Nhạc nền: bật":"Nhạc nền: tắt",chip))COgheAudio.MusicOn=!COgheAudio.MusicOn;
                 if(Button(new Rect(274,h-215,240,30),COgheAudio.EffectsOn?"Âm thanh: bật":"Âm thanh: tắt",chip))COgheAudio.EffectsOn=!COgheAudio.EffectsOn;
+                if(COgheIntro.Fits(game)&&Button(new Rect(26,h-251,488,30),"Xem lại phần mở đầu",chip))COgheIntro.Play(game);
             }
             else if(game.Definition.ViewOnly&&!game.Home&&!game.Owner.Completed&&!game.Owner.Lost)GUI.Label(new Rect(26,h-213,488,24),"Chạm chọn  ·  Kéo để nhìn  ·  Hai ngón để zoom",body);
             bool homeAvailable=game.Progress.HomeUnlocked;float width=homeAvailable?112:152,gap=homeAvailable?125:168;

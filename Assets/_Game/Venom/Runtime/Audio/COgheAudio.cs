@@ -116,7 +116,7 @@ namespace GravityBox.Venom
             if (game == null) { game = FindFirstObjectByType<VenomCampaign>(); bound = false; }
             bool ours = Ours();
             if (ours && !bound) Bind();      // a level found before its definition is ready binds on a later frame
-            if (ours) Observe();
+            if (ours && !COgheIntro.Playing) Observe();   // the intro has its own score; the level waits under it
             Mix(ours);
         }
 
@@ -145,7 +145,7 @@ namespace GravityBox.Venom
             Snapshot(); bound = true;
             idleSince = Now; nextIdle = Now + Random.Range(14f, 24f); nextFar = Now + Random.Range(20f, 45f);
             quietUntil = Now + .6f;
-            Play("game_level_start", .45f);
+            if (!COgheIntro.Playing) Play("game_level_start", .45f);
         }
 
         private float Now => game != null && game.Matter != null ? game.Matter.SimulationTime : Time.time;
@@ -317,7 +317,7 @@ namespace GravityBox.Venom
         {
             float fade = Mathf.Clamp01(Time.unscaledDeltaTime * 2f);
             bool paused = ours && game.Owner.Paused;
-            float music = MusicOn && (ours || Music.isPlaying) ? MusicVolume * (paused ? .45f : 1) * (Time.unscaledTime < duckUntil ? .35f : 1) : 0;
+            float music = MusicOn && !COgheIntro.Playing && (ours || Music.isPlaying) ? MusicVolume * (paused ? .45f : 1) * (Time.unscaledTime < duckUntil ? .35f : 1) : 0;
             Drive(Music, music, fade);
             bool moving = ours && EffectsOn && !paused && !game.Owner.Completed;
             Drive(Motor, moving ? MotorVolume * motorLevel : 0, Mathf.Clamp01(Time.unscaledDeltaTime * 8));
