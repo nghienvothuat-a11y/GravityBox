@@ -4,16 +4,21 @@
 test rồi thay sau. Game hybrid casual, không cần phức tạp.
 
 Cảm giác: chill, sâu, hơi cô đơn trong phòng lab yên; sinh vật nhỏ, tò mò, thích chơi, thân thiện.
-Cách làm: **lab lạnh + sinh vật ấm**. Lab là room tone thấp, tiếng máy chính xác và khoảng lặng; sinh vật có tiếng
-nhầy mềm và một "giọng" phi ngôn ngữ nhỏ (ư?, líu lo). Không tiếng gắt; tiếng lấp lánh cao chỉ dành cho phần thưởng.
+Cách làm: **lab lạnh + sinh vật ấm**. Lab là tiếng máy chính xác và khoảng lặng; sinh vật có tiếng nhầy mềm và một
+"giọng" phi ngôn ngữ nhỏ (ư?, líu lo). Không tiếng gắt; tiếng lấp lánh cao chỉ dành cho phần thưởng.
+
+Sửa theo Mrk (30/09/2026, lần 2): bỏ room tone (thông gió, rè điện); nhạc nền to hơn (0,50 → 0,65); thêm tiếng cơ quan
+đang chạy, tiếng "tới đích" khi cơ quan chạy tới đầu, và tiếng khối trượt trên sàn. Mọi tiếng nằm trong dải loa điện
+thoại phát được (≥ 250 Hz là chính): bản đầu có tiếng máy ở 98 Hz, tiếng bò/đáp/chốt quá trầm nên trên điện thoại gần
+như không nghe thấy.
 
 ## Nghe nhanh (không cần mở Unity)
 
 - Nhạc nền: `Assets/_Game/Venom/Resources/COgheAudio/music_lab_loop.ogg`.
-- Tất cả SFX nối liền: [`preview-sfx-reel.ogg`](preview-sfx-reel.ogg) (73 s, mỗi tiếng cách 0,7 s), theo thứ tự:
-  ack 1–3, grab, hm, curious 1–2, happy, land, split, merge, merge_full, tube_in, tube_out, swing, exit, latch, pad_on,
-  pad_off, gear_mesh, lift_ding, ui_tap, level_start, retry, win, fail, far beep/clink/thud, rồi 4 s tiếng bò và 4 s
-  tiếng máy.
+- Tất cả SFX nối liền: [`preview-sfx-reel.ogg`](preview-sfx-reel.ogg) (79 s, mỗi tiếng cách 0,7 s), theo thứ tự:
+  ack 1–3, grab, hm, curious 1–2, happy, land, split, merge, merge_full, tube_in, tube_out, swing, exit, latch,
+  arrive, pad_on, pad_off, gear_mesh, lift_ding, ui_tap, level_start, retry, win, fail, far beep/clink/thud, rồi 4 s
+  tiếng bò, 4 s tiếng mô-tơ, 4 s tiếng khối trượt.
 
 ## Thay một âm thanh
 
@@ -29,9 +34,10 @@ sự kiện.
 | File | Khi nào | Ghi chú |
 | --- | --- | --- |
 | `music_lab_loop` | Suốt game, liền mạch giữa các màn | 160 s, 72 BPM, piano nỉ + pad ấm + celesta; motif sinh vật D–F#–A–G# ở vòng giữa; vòng cuối thưa hơn (cô đơn). Nhỏ lại khi tạm dừng và khi thắng. |
-| `ambience_lab_loop` | Suốt màn | Room tone lab (thông gió, rè điện nhẹ), 30 s. |
 | `creature_crawl_loop` | Khi sinh vật bò/leo | Âm lượng và cao độ theo tốc độ thật của cơ thể đang chọn. |
-| `mech_machine_loop` | Khi cơ quan đang chạy | Theo tổng tốc độ các ray, thang đang chạy, bánh răng có điện. |
+| `mech_motor_loop` | Cơ quan đang vận hành: cửa, cổng, sàn nâng, thang, bàn xoay, bộ bánh răng có điện | Mô-tơ bánh răng nhỏ. To nhỏ theo tốc độ thật; bộ bánh răng có điện mà đầu ra đã tới thì chỉ rì nhỏ. Pan theo vị trí vật đang chạy. |
+| `block_slide_loop` | Khối trượt trên sàn: thùng, xe, khối trên ray, xe bánh răng, bậc ngăn kéo, thùng rời bị đẩy | Tiếng ma sát mềm, to nhỏ theo tốc độ thật. |
+| `mech_arrive` | Cơ quan chạy tới một đầu (cuối hoặc về đầu) sau khi đi ≥ 1 cm | "Cộp + tinh" — biết cơ quan đã tới đích. Thang dùng tiếng ding riêng. |
 | `creature_ack_1..3` | Mỗi lệnh được nhận (chạm đi, chạm cơ quan) | "ư?" — sinh vật trả lời. |
 | `creature_grab` | Bắt đầu kéo/đẩy tay nắm, nắm vật | |
 | `creature_hm` | Tay nắm không tới được / bị chặn | "hm?" — phản hồi, không trách. |
@@ -43,7 +49,7 @@ sự kiện.
 | `creature_exit` | Phần đầu tiên chui ra lỗ thoát | |
 | `creature_curious_1..2` | Đứng yên lâu (16–28 s một lần) | Ngó quanh, ngân nga. |
 | `creature_happy` | Nhà của COghe: Cho ăn, Chơi cùng | |
-| `mech_latch` | Ray chốt, bàn xoay khoá nấc | |
+| `mech_latch` | Bàn xoay khoá nấc | |
 | `mech_gear_mesh` | Bộ bánh răng vừa khớp | |
 | `mech_pad_on` / `mech_pad_off` | Nút có tải / hết tải | |
 | `mech_lift_ding` | Thang tới nơi | |
@@ -51,7 +57,7 @@ sự kiện.
 | `game_win` / `game_fail` | Thắng / thua | |
 | `game_retry` | Làm lại / Thử lại | |
 | `ui_tap` | Mọi nút HUD | |
-| `lab_far_beep/clink/thud` | Ngẫu nhiên 25–55 s một lần, rất nhỏ | Tiếng xa trong lab. |
+| `lab_far_beep/clink/thud` | Ngẫu nhiên 25–55 s một lần, rất nhỏ | Tiếng xa trong lab (bíp, lọ thuỷ tinh, cửa). |
 
 ## Cài đặt
 
@@ -64,9 +70,10 @@ Màn hình **Tạm dừng** có hai nút: *Nhạc nền: bật/tắt* và *Âm t
   phần cơ thể, ray/chốt, nút tải, bánh răng, thang, bàn xoay, dây đu, ống, thắng/thua. Không đổi vật lý, input, đường đi
   hay cơ quan.
 - Giới hạn lặp theo từng tiếng và pool 10 nguồn phát: 32 hạt hay 4 phần cùng bò không làm loạn tiếng.
-- Mobile: nhạc Vorbis stream; room tone nén trong RAM; SFX ngắn giải nén khi nạp. Tổng file ≈ 3 MB.
-- Test: `COgheAudioTests` (PlayMode) — nạp đủ clip, một nguồn nhạc xuyên màn, sự kiện đúng khi giải thật màn 23
-  (dây), 42 (Q, ống, nhập), 44 (nút, bánh răng, chốt), Retry là một tiếng tua chứ không phải "nhập", tắt âm thanh thì
+- Mobile: nhạc Vorbis stream; SFX ngắn giải nén khi nạp. Tổng file ≈ 3 MB.
+- Test: `COgheAudioTests` (PlayMode) — nạp đủ clip, một nguồn nhạc xuyên màn, sự kiện đúng khi giải thật màn 13
+  (thang, thùng rời trượt), 21 (xe và thùng trượt, tới đích, không có mô-tơ), 23 (dây), 42 (Q, ống, nhập), 44 (nút,
+  bánh răng, cửa và cầu chạy mô-tơ, xe trượt, tới đích), Retry là một tiếng tua chứ không phải "nhập", tắt âm thanh thì
   không phát.
 
 ## Tạo lại
@@ -78,8 +85,9 @@ python3 -m venv .venv && .venv/bin/pip install numpy scipy soundfile
 .venv/bin/python Tools/audio/synth_coghe_audio.py
 ```
 
-Script ghi đè các file trong `Resources/COgheAudio/`; seed cố định nên chạy lại cho kết quả như cũ. Đổi nhạc cụ, hợp
-âm, nhịp hay mix ngay trong script.
+Script ghi đè các SFX trong `Resources/COgheAudio/`. Nhạc nền chỉ tạo lại khi thêm `--music` (bản trong repo là bản đã
+nghe duyệt; nhạc dùng dòng ngẫu nhiên riêng nên sửa SFX không làm đổi nhạc). Đổi nhạc cụ, hợp âm, nhịp hay mix ngay
+trong script.
 
 ## Chưa làm / nên làm tiếp
 

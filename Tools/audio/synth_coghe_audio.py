@@ -5,7 +5,8 @@ Everything is synthesized here so it can be tuned and regenerated; any file can 
 composed one with the same name (see Docs/Audio/COghe/README.md). Mood: chill, deep, a little lonely in a quiet lab;
 the creature is small, curious, playful and friendly.
 
-Usage: python3 Tools/audio/synth_coghe_audio.py [out_dir]   (needs numpy, scipy, soundfile)
+Usage: python3 Tools/audio/synth_coghe_audio.py [out_dir] [--music]   (needs numpy, scipy, soundfile)
+--music also rebuilds the background loop (otherwise the committed one is kept).
 Default out_dir: Assets/_Game/Venom/Resources/COgheAudio
 """
 import os, sys
@@ -15,7 +16,8 @@ from scipy import signal
 
 SR = 44100
 RNG = np.random.default_rng(20260930)
-OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "../../Assets/_Game/Venom/Resources/COgheAudio")
+ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
+OUT = ARGS[0] if ARGS else os.path.join(os.path.dirname(__file__), "../../Assets/_Game/Venom/Resources/COgheAudio")
 os.makedirs(OUT, exist_ok=True)
 
 
@@ -230,6 +232,8 @@ O = [(520, 4, 1.0), (900, 6, 0.5)]            # "o"
 # ---------------------------------------------------------------------------------------------------------------------
 # Background music: one ambient loop (72 BPM, D major / B minor with a Lydian colour)
 def music():
+    global RNG
+    RNG = np.random.default_rng(7272)   # its own stream: changing the effects never changes the music
     bpm = 72; beat = 60 / bpm; chord_len = 8 * beat
     chords = [  # (bass, upper voices) MIDI
         (38, [50, 57, 61, 64, 66]),   # Dmaj9
@@ -248,6 +252,7 @@ def music():
 
     def add(x, at_s, pan=0.0, gain=1.0):
         s = int(at_s * SR); x = x * gain
+        if s < 0: x = x[-s:]; s = 0
         l = x * np.cos((pan + 1) * np.pi / 4); r = x * np.sin((pan + 1) * np.pi / 4)
         e = min(len(L), s + len(x)); L[s:e, 0] += l[: e - s]; L[s:e, 1] += r[: e - s]
 
@@ -294,20 +299,6 @@ def music():
     return out
 
 
-def ambience():
-    """Lab room tone: air handling, a faint mains hum, very quiet; 30 s seamless loop."""
-    seconds = 30; n = seconds * SR; t = np.arange(n) / SR
-    # air handling: soft noise in the band a phone speaker plays (120 Hz – 1.5 kHz), a breath of hiss above
-    hvac = circular(lambda v: lowpass(highpass(v, 120, 2), 1500, 2), noise(n)) * 0.5
-    hvac += circular(lambda v: lowpass(highpass(v, 1500, 2), 5000, 2), noise(n)) * 0.03
-    # a faint electrical hum, only its audible harmonics
-    hum = sum(a * np.sin(2 * np.pi * f * t) for f, a in [(200, 0.018), (300, 0.010), (400, 0.004)])
-    swell = 1 + 0.18 * np.sin(2 * np.pi * t / seconds * 2) + 0.08 * np.sin(2 * np.pi * t / seconds * 5)
-    mono = (hvac + hum) * swell
-    st = np.stack([mono, np.roll(mono, 2011) * 0.97], axis=1)
-    return save_loop("ambience_lab_loop", st, peak_db=-6)
-
-
 # ---------------------------------------------------------------------------------------------------------------------
 # Sound effects (mono unless stated)
 def small_room(x, wet=0.14):
@@ -335,17 +326,17 @@ def sfx():
     n = 2 * SR; buf = np.zeros(n)
     for k in range(14):
         m = int(0.11 * SR); tt = np.arange(m) / SR
-        c = RNG.uniform(350, 750)
-        squish = swept_bandpass(noise(m), glide(m, c * 1.5, c * 0.6), q=6.0) * np.exp(-tt / 0.04) * (1 - np.exp(-tt / 0.008))
-        blub = np.sin(2 * np.pi * np.cumsum(glide(m, 210, 110)) / SR) * np.exp(-tt / 0.03) * (1 - np.exp(-tt / 0.006)) * 0.8
+        c = RNG.uniform(500, 1050)       # phone speakers start around 250 Hz: keep the squish above it
+        squish = swept_bandpass(noise(m), glide(m, c * 1.5, c * 0.6), q=5.0) * np.exp(-tt / 0.04) * (1 - np.exp(-tt / 0.008))
+        blub = np.sin(2 * np.pi * np.cumsum(glide(m, 440, 260)) / SR) * np.exp(-tt / 0.03) * (1 - np.exp(-tt / 0.006)) * 0.5
         place(buf, (squish * 0.8 + blub) * RNG.uniform(0.6, 1.0), int((k / 14 + RNG.normal(0, 0.008)) * n))
-    out["creature_crawl_loop"] = save_loop("creature_crawl_loop", circular(lambda v: lowpass(v, 2600), buf), -6)
+    out["creature_crawl_loop"] = save_loop("creature_crawl_loop", circular(lambda v: highpass(lowpass(v, 3000), 200), buf), -6)
 
     # Land: a soft plop
     n = int(0.3 * SR); t = np.arange(n) / SR
-    thump = np.sin(2 * np.pi * np.cumsum(glide(n, 150, 55, 0.5)) / SR) * np.exp(-t / 0.07)
-    splash = lowpass(noise(n), 900) * np.exp(-t / 0.035) * 0.35
-    blub = np.sin(2 * np.pi * np.cumsum(glide(n, 320, 170)) / SR) * np.exp(-t / 0.04) * 0.3
+    thump = np.sin(2 * np.pi * np.cumsum(glide(n, 420, 190, 0.5)) / SR) * np.exp(-t / 0.06)
+    splash = bandpass(noise(n), 400, 1600) * np.exp(-t / 0.035) * 0.45
+    blub = np.sin(2 * np.pi * np.cumsum(glide(n, 560, 320)) / SR) * np.exp(-t / 0.04) * 0.3
     out["creature_land"] = save("creature_land", small_room(thump + splash + blub), -5)
 
     # Grab: a small squeeze and a closed-mouth "mm"
@@ -396,13 +387,13 @@ def sfx():
     # Mechanisms
     n = int(0.12 * SR); t = np.arange(n) / SR
     tick = bandpass(noise(n), 2200, 5000) * np.exp(-t / 0.0025)
-    body = np.sin(2 * np.pi * 180 * t) * np.exp(-t / 0.018) * 0.6
+    body = np.sin(2 * np.pi * 460 * t) * np.exp(-t / 0.02) * 0.5
     metal = (np.sin(2 * np.pi * 2960 * t) + 0.5 * np.sin(2 * np.pi * 4440 * t)) * np.exp(-t / 0.035) * 0.12
     out["mech_latch"] = save("mech_latch", small_room(tick + body + metal, 0.1), -6)
     n = int(0.16 * SR); t = np.arange(n) / SR
     click = lambda at: np.concatenate([np.zeros(int(at * SR)), bandpass(noise(int(0.006 * SR)), 1800, 4500)])
     x = np.zeros(n); c1 = click(0); c2 = click(0.035) * 0.8; x[: len(c1)] += c1; x[: len(c2)] += c2
-    x += (np.sin(2 * np.pi * 1800 * t) + 0.6 * np.sin(2 * np.pi * 2700 * t)) * np.exp(-t / 0.05) * 0.1 + np.sin(2 * np.pi * 140 * t) * np.exp(-t / 0.02) * 0.4
+    x += (np.sin(2 * np.pi * 1800 * t) + 0.6 * np.sin(2 * np.pi * 2700 * t)) * np.exp(-t / 0.05) * 0.1 + np.sin(2 * np.pi * 390 * t) * np.exp(-t / 0.02) * 0.35
     out["mech_gear_mesh"] = save("mech_gear_mesh", small_room(x, 0.1), -6)
     n = int(0.45 * SR); t = np.arange(n) / SR
     x = (np.sin(2 * np.pi * 523.25 * t) + 0.3 * np.sin(2 * np.pi * 1046.5 * t)) * np.exp(-t / 0.12) * (1 - np.exp(-t / 0.004))
@@ -410,16 +401,30 @@ def sfx():
     out["mech_pad_on"] = save("mech_pad_on", small_room(x, 0.12), -7)
     n = int(0.3 * SR); t = np.arange(n) / SR
     out["mech_pad_off"] = save("mech_pad_off", small_room(np.sin(2 * np.pi * 392 * t) * np.exp(-t / 0.08) * (1 - np.exp(-t / 0.004)), 0.12), -10)
-    # machine loop: hum + gear ticks + a soft whirr; 2 s with whole cycles so it loops cleanly
+    # Motor: a small gear motor, in the band a phone speaker plays (150 Hz – 2 kHz; the first machine loop sat at
+    # 98 Hz and was inaudible on phones). 2 s, whole cycles of every component, so it loops cleanly.
     n = 2 * SR; t = np.arange(n) / SR
-    hum = sum(a * np.sin(2 * np.pi * f * t) for f, a in [(98, 1.0), (196, 0.35), (294, 0.15)])
-    whirr = bandpass(noise(n), 450, 900) * (0.6 + 0.4 * np.sin(2 * np.pi * 4 * t)) * 0.35
+    buzz = sum(np.sin(2 * np.pi * 150 * k * t) / k for k in range(1, 15)) * (1 + .12 * np.sin(2 * np.pi * 4 * t))
+    whine = (np.sin(2 * np.pi * 900 * t) + .4 * np.sin(2 * np.pi * 1350 * t)) * (0.8 + .2 * np.sin(2 * np.pi * .5 * t))
     ticks = np.zeros(n)
-    for k in range(24):
-        m = int(0.004 * SR); place(ticks, bandpass(noise(m), 1800, 3600) * np.hanning(m) * 0.5, int(k * n / 24))
-    whirr = circular(lambda v: bandpass(v, 450, 900), noise(n)) * (0.6 + 0.4 * np.sin(2 * np.pi * 4 * t)) * 0.35
-    loop = circular(lambda v: lowpass(v, 3000), hum * 0.5 + whirr + ticks)
-    out["mech_machine_loop"] = save_loop("mech_machine_loop", loop, -8)
+    for k in range(40):
+        m = int(0.005 * SR); place(ticks, bandpass(noise(m), 1500, 3500) * np.hanning(m), int(k * n / 40))
+    grit = circular(lambda v: bandpass(v, 600, 1600), noise(n))
+    motor = circular(lambda v: highpass(lowpass(v, 1900), 140), buzz * .30 + whine * .10 + ticks * .35 + grit * .10)
+    out["mech_motor_loop"] = save_loop("mech_motor_loop", motor, -8)
+    # Slide: a block dragged over the lab bench — soft friction with a fine grain. 2 s loop.
+    n = 2 * SR; grains = np.zeros(n)
+    for k in range(70):
+        m = int(RNG.uniform(.012, .03) * SR); place(grains, np.hanning(m) * RNG.uniform(.4, 1.0), int(RNG.uniform(0, n)))
+    body = circular(lambda v: bandpass(v, 220, 1000), noise(n)) * (0.55 + 0.45 * grains / (grains.max() + 1e-9))
+    hiss = circular(lambda v: bandpass(v, 1500, 3200), noise(n)) * .08
+    out["block_slide_loop"] = save_loop("block_slide_loop", body + hiss, -8)
+    # Arrived: a soft thunk and a small "tink" — a mechanism reached the end of its travel.
+    n = int(0.45 * SR); t = np.arange(n) / SR
+    thunk = np.sin(2 * np.pi * np.cumsum(glide(n, 260, 140, 0.5)) / SR) * np.exp(-t / 0.05)
+    click = bandpass(noise(n), 1000, 3000) * np.exp(-t / 0.004) * 0.5
+    tink = glass(1318.5, 0.45, 0.35)[:n]; tink = np.concatenate([np.zeros(int(0.03 * SR)), tink])[:n]
+    out["mech_arrive"] = save("mech_arrive", small_room(thunk + click + tink, 0.12), -5)
     x = glass(1046.5, 1.2, 0.8)
     out["mech_lift_ding"] = save("mech_lift_ding", reverb(x, 1.0, 0.25), -8)
 
@@ -446,15 +451,15 @@ def sfx():
     out["lab_far_beep"] = save("lab_far_beep", reverb(lowpass(fade_edges(beep, 0.005, 0.005), 2000), 2.0, 0.6), -12)
     out["lab_far_clink"] = save("lab_far_clink", reverb(lowpass(glass(2637, 0.8, 0.8), 3500), 2.0, 0.6), -12)
     n = int(0.4 * SR); t = np.arange(n) / SR
-    thud = lowpass(noise(n), 160) * np.exp(-t / 0.05) + np.sin(2 * np.pi * 70 * t) * np.exp(-t / 0.08)
+    thud = bandpass(noise(n), 280, 900) * np.exp(-t / 0.05) + np.sin(2 * np.pi * 300 * t) * np.exp(-t / 0.06) * 0.6
     out["lab_far_thud"] = save("lab_far_thud", reverb(thud, 2.2, 0.55), -12)
     return out
 
 
 if __name__ == "__main__":
-    ambience()
     sfx()
-    music()
+    # The music is only rebuilt on request: the committed loop is the one that was approved by ear.
+    if "--music" in sys.argv: music()
     print("written to", os.path.abspath(OUT))
     for f in sorted(os.listdir(OUT)):
         if f.endswith(".ogg"):
