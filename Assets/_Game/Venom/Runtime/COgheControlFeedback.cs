@@ -10,6 +10,8 @@ namespace GravityBox.Venom
     {
         public Material MarkerMaterial;
         public bool HasCommand {get;private set;}
+        /// <summary>Accepted commands so far (sound and other presentation read this; nothing else changes).</summary>
+        public int CommandCount {get;private set;}
         public Vector3 CommandPoint=>anchor!=null?anchor.TransformPoint(localPoint):localPoint;
         public Vector3 CommandNormal=>anchor!=null?anchor.TransformDirection(localNormal).normalized:localNormal;
         public VenomSurfacePatch CommandSurface {get;private set;}
@@ -70,7 +72,7 @@ namespace GravityBox.Venom
             anchor=follows;localPoint=anchor!=null?anchor.InverseTransformPoint(point):point;
             localNormal=anchor!=null?anchor.InverseTransformDirection(normal):normal;
             CommandSurface=surface;commandAt=Time.unscaledTime;
-            commandGroup=game.Matter.Groups[game.Motion.Selected];HasCommand=true;
+            commandGroup=game.Matter.Groups[game.Motion.Selected];HasCommand=true;CommandCount++;
             Refresh();
         }
         private static void ColorAlpha(LineRenderer line,Color color,float alpha)

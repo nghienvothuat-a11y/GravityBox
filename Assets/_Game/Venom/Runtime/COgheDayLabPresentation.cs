@@ -129,13 +129,13 @@ namespace GravityBox.Venom
             for(int page=0;page<pageCount;page++)
             {
                 int first=page*LevelPageSize+1,last=Mathf.Min(levelCount,first+LevelPageSize-1);
-                if(GUI.Button(new Rect(26+page*pageWidth,61,pageWidth-6,25),$"{first:00}–{last:00}",game.LevelPage==page?selected:chip))game.LevelPage=page;
+                if(Button(new Rect(26+page*pageWidth,61,pageWidth-6,25),$"{first:00}–{last:00}",game.LevelPage==page?selected:chip))game.LevelPage=page;
             }
             for(int slot=0;slot<LevelPageSize;slot++)
             {
                 int i=game.LevelPage*LevelPageSize+slot+1;
                 if(i>levelCount)break;
-                if(GUI.Button(new Rect(26+slot*49,91,43,27),i%10==0?"B"+i:i.ToString("00"),i==game.Definition.Order?selected:chip))game.Load(i);
+                if(Button(new Rect(26+slot*49,91,43,27),i%10==0?"B"+i:i.ToString("00"),i==game.Definition.Order?selected:chip))game.Load(i);
             }
             if(!game.Owner.Completed)
             {
@@ -144,29 +144,29 @@ namespace GravityBox.Venom
                 {
                     var lesson=game.Onboarding;
                     GUI.Label(new Rect(34,158,lesson!=null?366:472,40),lesson!=null?lesson.Hint:tapLesson!=null?tapLesson.Hint:cooperation!=null?cooperation.Hint:game.Definition.Lesson,body);
-                    if(lesson!=null&&GUI.Button(new Rect(409,160,105,32),lesson.Showing?"Ẩn gợi ý":"Xem gợi ý",chip))lesson.Toggle();
+                    if(lesson!=null&&Button(new Rect(409,160,105,32),lesson.Showing?"Ẩn gợi ý":"Xem gợi ý",chip))lesson.Toggle();
                 }
             }
             if(game.CameraRig.ShowZones)
             {
                 float cell=488f/(game.CameraRig.ZoneCount+1);
                 for(int i=-1;i<game.CameraRig.ZoneCount;i++)
-                    if(GUI.Button(new Rect(26+(i+1)*cell,201,cell-6,37),i<0?"Toàn cảnh":game.Definition.CameraZones[i].Label,
+                    if(Button(new Rect(26+(i+1)*cell,201,cell-6,37),i<0?"Toàn cảnh":game.Definition.CameraZones[i].Label,
                         !game.Zoom&&game.CameraRig.Zone==i?selected:chip))game.CameraRig.SelectZone(i);
             }
             if(game.Owner.Lost)
             {
                 GUI.Box(new Rect(25,h*.40f,490,140),GUIContent.none,chip);
                 GUI.Label(new Rect(43,h*.40f+12,454,70),game.Failure,body);
-                if(GUI.Button(new Rect(155,h*.40f+88,230,38),"Thử lại",action))game.ResetLevel();
+                if(Button(new Rect(155,h*.40f+88,230,38),"Thử lại",action))game.ResetLevel();
             }
             else if(game.Owner.Completed)
             {
                 GUI.Label(new Rect(25,h-195,490,45),"Chúng mình làm được rồi!",title);
                 if(game.Definition.Boss&&game.Owner.Celebration.ReadyForNext)
                 {
-                    if(GUI.Button(new Rect(26,h-137,235,40),"Nhà của COghe",action))game.EnterHome();
-                    if(game.Definition.Order<levelCount&&GUI.Button(new Rect(276,h-137,235,40),"Tiếp tục",action))game.Load(game.Definition.Order+1);
+                    if(Button(new Rect(26,h-137,235,40),"Nhà của COghe",action))game.EnterHome();
+                    if(game.Definition.Order<levelCount&&Button(new Rect(276,h-137,235,40),"Tiếp tục",action))game.Load(game.Definition.Order+1);
                 }
             }
             else
@@ -174,7 +174,7 @@ namespace GravityBox.Venom
                 string activity=game.Owner.Paused?"Đang nghỉ một chút":game.Attached?(game.IsPulling?"COghe đang kéo vật":"COghe đang giữ vật"):(game.Activity=="Idle"?"COghe đang chờ được chỉ đường":game.Activity);
                 if(game.Activity=="Idle"&&!game.Owner.Paused&&tapLesson!=null&&!string.IsNullOrEmpty(tapLesson.StopStatus))activity=tapLesson.StopStatus;
                 GUI.Label(new Rect(26,h-154,game.Attached?316:488,30),activity,status);
-                if(game.Attached&&GUI.Button(new Rect(350,h-154,164,29),"Buông vật",chip))game.ReleaseProp();
+                if(game.Attached&&Button(new Rect(350,h-154,164,29),"Buông vật",chip))game.ReleaseProp();
                 if(game.Matter.TotalFragmentCount>1)
                 {
                     System.Array.Clear(seenGroups,0,seenGroups.Length);int slot=0;
@@ -183,28 +183,37 @@ namespace GravityBox.Venom
                     for(int i=0;i<32;i++)
                     {
                         int group=game.Matter.Groups[i];if(seenGroups[group]||game.Matter.Escaped[i])continue;seenGroups[group]=true;
-                        if(GUI.Button(new Rect(26+(slot%columns)*cell,h-119-(slot/columns)*32,cell-6,29),cooperation!=null?cooperation.FragmentLabel(i,slot+1):PartLabel(group,slot+1),game.Matter.Groups[game.Motion.Selected]==group?selected:chip))game.SelectFragment(i);
+                        if(Button(new Rect(26+(slot%columns)*cell,h-119-(slot/columns)*32,cell-6,29),cooperation!=null?cooperation.FragmentLabel(i,slot+1):PartLabel(group,slot+1),game.Matter.Groups[game.Motion.Selected]==group?selected:chip))game.SelectFragment(i);
                         slot++;
                     }
                 }
             }
-            if(game.Definition.ViewOnly&&!game.Home&&!game.Owner.Completed&&!game.Owner.Lost)GUI.Label(new Rect(26,h-213,488,24),"Chạm chọn  ·  Kéo để nhìn  ·  Hai ngón để zoom",body);
+            if(game.Owner.Paused&&!game.Owner.Completed&&!game.Owner.Lost)
+            {
+                // Sound settings live on the pause screen: music and effects, remembered between sessions.
+                if(Button(new Rect(26,h-215,240,30),COgheAudio.MusicOn?"Nhạc nền: bật":"Nhạc nền: tắt",chip))COgheAudio.MusicOn=!COgheAudio.MusicOn;
+                if(Button(new Rect(274,h-215,240,30),COgheAudio.EffectsOn?"Âm thanh: bật":"Âm thanh: tắt",chip))COgheAudio.EffectsOn=!COgheAudio.EffectsOn;
+            }
+            else if(game.Definition.ViewOnly&&!game.Home&&!game.Owner.Completed&&!game.Owner.Lost)GUI.Label(new Rect(26,h-213,488,24),"Chạm chọn  ·  Kéo để nhìn  ·  Hai ngón để zoom",body);
             bool homeAvailable=game.Progress.HomeUnlocked;float width=homeAvailable?112:152,gap=homeAvailable?125:168;
-            if(GUI.Button(new Rect(26,h-77,width,42),"Làm lại",action))game.ResetLevel();
-            if(GUI.Button(new Rect(26+gap,h-77,width,42),game.Owner.Paused?"Tiếp tục":"Tạm dừng",action))game.Owner.TogglePause();
-            if(GUI.Button(new Rect(26+gap*2,h-77,width,42),game.Definition.ViewOnly&&!game.Home||game.Zoom?"Toàn cảnh":"Theo COghe",action))game.CameraRig.ToggleFollow();
-            if(homeAvailable&&GUI.Button(new Rect(26+gap*3,h-77,width,42),game.Home?"Chào bạn":"Nhà",action)){if(game.Home)game.GreetHome();else game.EnterHome();}
+            if(Button(new Rect(26,h-77,width,42),"Làm lại",action))game.ResetLevel();
+            if(Button(new Rect(26+gap,h-77,width,42),game.Owner.Paused?"Tiếp tục":"Tạm dừng",action))game.Owner.TogglePause();
+            if(Button(new Rect(26+gap*2,h-77,width,42),game.Definition.ViewOnly&&!game.Home||game.Zoom?"Toàn cảnh":"Theo COghe",action))game.CameraRig.ToggleFollow();
+            if(homeAvailable&&Button(new Rect(26+gap*3,h-77,width,42),game.Home?"Chào bạn":"Nhà",action)){if(game.Home)game.GreetHome();else game.EnterHome();}
             if(game.Home)
             {
-                if(GUI.Button(new Rect(100,h-119,160,29),"Cho ăn",chip))game.FeedHome();
-                if(GUI.Button(new Rect(280,h-119,160,29),"Chơi cùng",chip))game.GreetHome();
+                if(Button(new Rect(100,h-119,160,29),"Cho ăn",chip)){game.FeedHome();COgheAudio.Happy();}
+                if(Button(new Rect(280,h-119,160,29),"Chơi cùng",chip)){game.GreetHome();COgheAudio.Happy();}
             }
             if(graphicProfile!=null&&graphicProfile.ShowComparison&&!game.Home&&!game.Owner.Completed&&game.Matter.TotalFragmentCount==1)
-                if(GUI.Button(new Rect(65,h-119,410,29),graphicProfile.ActiveNew?"Đồ hoạ Blender · đổi sang bản cũ ↻":"Đồ hoạ cũ · đổi sang Blender ↻",chip))graphicProfile.Toggle();
+                if(Button(new Rect(65,h-119,410,29),graphicProfile.ActiveNew?"Đồ hoạ Blender · đổi sang bản cũ ↻":"Đồ hoạ cũ · đổi sang Blender ↻",chip))graphicProfile.Toggle();
             GUI.Label(new Rect(26,h-29,488,20),game.Onboarding!=null?"COghe  /  BẢN THỬ HỌC CÁCH CHƠI":"COghe  /  PHÒNG NGHIÊN CỨU",footer);
             GUI.enabled=oldEnabled;GUI.matrix=old;GUI.color=oldColor;GUI.backgroundColor=oldBackground;GUI.contentColor=oldContent;
         }
-        // "Phần N · 25%": the share of the body's tissue this part holds (Q splits by particle count, so shares are exact).
+        // Every HUD button ticks softly (COgheAudio); the button itself behaves exactly as GUI.Button.
+        private static bool Button(Rect rect,string text,GUIStyle style)
+        {bool pressed=GUI.Button(rect,text,style);if(pressed)COgheAudio.UiTap();return pressed;}
+                // "Phần N · 25%": the share of the body's tissue this part holds (Q splits by particle count, so shares are exact).
         private string PartLabel(int group,int number)
         {
             int count=0,total=0;

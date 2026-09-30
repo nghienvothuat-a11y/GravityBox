@@ -33,7 +33,7 @@ namespace GravityBox.Tests
             try{yield return SceneManager.LoadSceneAsync(sceneName);}finally{SceneManager.sceneLoaded-=Loaded;}
             yield return Wait(1);game.CameraRig.Frame(720,1280,0,true);
         }
-        private void Tick(){game.Owner.Step(Dt);game.Owner.Rotation.Step(Dt);if(!game.Owner.Paused)Physics.Simulate(Dt);trace?.Invoke();}
+        private void Tick(){game.Owner.Step(Dt);game.Owner.Rotation.Step(Dt);if(!game.Owner.Paused)Physics.Simulate(Dt);COgheAudio.Instance?.Observe();trace?.Invoke();}
         private IEnumerator Wait(float seconds){for(int i=0;i<seconds/Dt;i++){Tick();if(i%240==0)yield return null;}}
         private IEnumerator Until(float seconds,Func<bool> done,string reason)
         {
