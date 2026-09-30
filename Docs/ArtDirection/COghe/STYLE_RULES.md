@@ -39,6 +39,33 @@ The original Day Lab visual reference is the Unity level 07 shipped at commit `8
 [runtime images](Runtime/README.md). The Day Lab concept is supporting inspiration;
 its photographic lighting and proportions are not a requirement to change gameplay.
 
+## Product interface — approved 30/09/2026
+
+Applies to the Spatial 50 product flow. See the [approved mockups](ProductUI/review.html)
+and [native Unity verification](../../Verification/COgheProductUI/README.md).
+
+- Main Menu features the existing **live 3D COghe**, using its normal surface and
+  life animation. No portrait sprite substitute or redesigned character.
+- English is the default. Gameplay uses short icons; labels remain where they
+  help explain pause settings or the three main-menu destinations.
+- Warm ivory panels, dark blue-grey Manrope type and restrained teal actions.
+  Use one shared Lucide outline icon atlas; touch targets at least 48 logical px.
+  Respect device safe areas and the actual occupied control rectangles.
+- No level selection in Product. Play resumes the first incomplete stable level
+  ID. Keep existing saves and Home unlock; do not unlock Home to render the menu.
+- Restart/Home/Menu/Help/Music/Sound belong to Pause. Confirm before discarding
+  the current puzzle attempt. Pause blocks all world input and physics. Music
+  and effects are separate persisted preferences.
+- Contextual fragment/zone/release controls appear only when needed. UI controls
+  must not also issue a command to the glass underneath them.
+- Victory uses the existing close-up and dance, then proceeds automatically;
+  the last level ends on the completion screen. No forced Next tap.
+- Main Menu/Home presentation reuses the creature, background and lighting.
+  Keep menu room colliders separate from the authored puzzle; restore the puzzle
+  on Play. Never use decorative movement to alter puzzle state.
+- Full furniture shopping is a later Home feature; current Home retains Feed and
+  Play. It must not show a working purchase flow without the corresponding system.
+
 ## 1. Identity and hierarchy
 
 - A bright, warm, calm space research laboratory. The player guides a curious

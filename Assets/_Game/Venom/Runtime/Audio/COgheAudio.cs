@@ -126,6 +126,7 @@ namespace GravityBox.Venom
         private void Bind()
         {
             if (!Ours()) return;
+            lastPlayed.Clear(); // Cooldowns belong to this level's simulation clock.
             var root = game.Owner.Apparatus;
             var allRails = root.GetComponentsInChildren<COgheRailSlider>();
             var list = new List<COgheRailSlider>();
@@ -176,7 +177,7 @@ namespace GravityBox.Venom
         {
             if (!bound || !Ours()) return;
             float now = Now, dt = now - lastSim;
-            if (dt < -.05f) { Snapshot(); quietUntil = now + .5f; Play("game_retry", .5f); return; } // Retry
+            if (dt < -.05f) { lastPlayed.Clear(); Snapshot(); quietUntil = now + .5f; Play("game_retry", .5f); return; } // Retry
             if (dt <= 0) return;
             lastSim = now;
             bool quiet = now < quietUntil;
@@ -317,6 +318,7 @@ namespace GravityBox.Venom
         {
             float fade = Mathf.Clamp01(Time.unscaledDeltaTime * 2f);
             bool paused = ours && game.Owner.Paused;
+            foreach(var voice in voices)voice.mute=!EffectsOn;
             float music = MusicOn && !COgheIntro.Playing && (ours || Music.isPlaying) ? MusicVolume * (paused ? .45f : 1) * (Time.unscaledTime < duckUntil ? .35f : 1) : 0;
             Drive(Music, music, fade);
             bool moving = ours && EffectsOn && !paused && !game.Owner.Completed;

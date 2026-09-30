@@ -20,6 +20,7 @@ namespace GravityBox.Venom
             try{result=PersistenceEnabled?JsonUtility.FromJson<VenomCampaignSave>(PlayerPrefs.GetString(key,"")):null;}
             catch(ArgumentException){result=null;}
             result??=new VenomCampaignSave();
+            result.Completed??=new List<string>();
             result.storageKey=key;
             return result;
         }

@@ -108,7 +108,7 @@ namespace GravityBox.Venom
         }
         private void OnGUI()
         {
-            if(game==null||game.Owner==null)return;
+            if(game==null||game.Owner==null||game.ProductUI!=null)return;
             if(COgheIntro.Playing)return;   // the opening comic owns the screen; the level waits paused under it
             if(brand==null)Styles();
             var oldEnabled=GUI.enabled;

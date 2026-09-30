@@ -1,0 +1,654 @@
+{
+  "runs": [
+    {
+      "file": "regression.xml",
+      "total": "122",
+      "passed": "121",
+      "failed": "1",
+      "start-time": "2026-09-30 14:43:52Z",
+      "duration": "262.6845169"
+    },
+    {
+      "file": "ui-audio-final.xml",
+      "total": "22",
+      "passed": "22",
+      "failed": "0",
+      "start-time": "2026-09-30 14:49:32Z",
+      "duration": "60.992897"
+    },
+    {
+      "file": "ui-final.xml",
+      "total": "9",
+      "passed": "9",
+      "failed": "0",
+      "start-time": "2026-09-30 14:54:32Z",
+      "duration": "39.5651205"
+    },
+    {
+      "file": "touch.xml",
+      "total": "1",
+      "passed": "1",
+      "failed": "0",
+      "start-time": "2026-09-30 14:56:40Z",
+      "duration": "0.9159013"
+    }
+  ],
+  "uniqueCases": 123,
+  "latestResults": {
+    "GravityBox.Tests.COgheProductUITests.AllFiftyScenesExposeProductControlsInsideTheSafeArea": {
+      "result": "Passed",
+      "duration": "19.557248",
+      "run": "ui-final.xml"
+    },
+    "GravityBox.Tests.COgheProductUITests.AudioSwitchesIndependentAndRestartNeedsConfirmation": {
+      "result": "Passed",
+      "duration": "0.942476",
+      "run": "ui-final.xml"
+    },
+    "GravityBox.Tests.COgheProductUITests.FragmentButtonsSelectPartsWithoutIssuingAMove": {
+      "result": "Passed",
+      "duration": "0.833467",
+      "run": "ui-final.xml"
+    },
+    "GravityBox.Tests.COgheProductUITests.GuidingThroughExitCelebratesAndAutomaticallyLoadsNextPuzzle": {
+      "result": "Passed",
+      "duration": "10.509840",
+      "run": "ui-final.xml"
+    },
+    "GravityBox.Tests.COgheProductUITests.HomeLockAndMenuRoundTripLeavePuzzlePhysicsIntact": {
+      "result": "Passed",
+      "duration": "1.023021",
+      "run": "ui-final.xml"
+    },
+    "GravityBox.Tests.COgheProductUITests.IntroReplayReturnsToMenuAndFirstRunHandsOverToPuzzle": {
+      "result": "Passed",
+      "duration": "1.016345",
+      "run": "ui-final.xml"
+    },
+    "GravityBox.Tests.COgheProductUITests.PixelPauseStopsSimulationAndNeverIssuesWorldCommand": {
+      "result": "Passed",
+      "duration": "1.112803",
+      "run": "ui-final.xml"
+    },
+    "GravityBox.Tests.COgheProductUITests.ProgressUsesStableIdsAndNeverSkipsAnUnfinishedLevel": {
+      "result": "Passed",
+      "duration": "0.591788",
+      "run": "ui-final.xml"
+    },
+    "GravityBox.Tests.COgheProductUITests.RealMenuCreatureDoesNotUnlockOrCompletePuzzles": {
+      "result": "Passed",
+      "duration": "3.947463",
+      "run": "ui-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.AudioBootsOnceWithOneMusicLoop": {
+      "result": "Passed",
+      "duration": "1.083508",
+      "run": "ui-audio-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.AudioEffectsSwitchOff": {
+      "result": "Passed",
+      "duration": "1.788868",
+      "run": "ui-audio-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.AudioHearsALooseCratePushed": {
+      "result": "Passed",
+      "duration": "2.327328",
+      "run": "ui-audio-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.AudioHearsBlocksSlidingOnTheFloor": {
+      "result": "Passed",
+      "duration": "1.678626",
+      "run": "ui-audio-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.AudioHearsPadsGearsAndLatches": {
+      "result": "Passed",
+      "duration": "3.863416",
+      "run": "ui-audio-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.AudioHearsRopeSwings": {
+      "result": "Passed",
+      "duration": "1.009353",
+      "run": "ui-audio-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.AudioHearsSplitTubesAndMerge": {
+      "result": "Passed",
+      "duration": "5.095918",
+      "run": "ui-audio-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.AudioRetryIsOneRewindNotAMerge": {
+      "result": "Passed",
+      "duration": "0.775501",
+      "run": "ui-audio-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.IntroHasEveryLayer": {
+      "result": "Passed",
+      "duration": "0.092188",
+      "run": "ui-audio-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.IntroNeverStartsByItselfInTests": {
+      "result": "Passed",
+      "duration": "0.447146",
+      "run": "ui-audio-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.IntroOnlyFitsLevelOne": {
+      "result": "Passed",
+      "duration": "0.279254",
+      "run": "ui-audio-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.IntroPlaysOverLevelOneThenHandsOver": {
+      "result": "Passed",
+      "duration": "2.853177",
+      "run": "ui-audio-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.IntroSkipLandsOnTheDissolveAndReplaysFromPause": {
+      "result": "Passed",
+      "duration": "1.032638",
+      "run": "ui-audio-final.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial01Solve": {
+      "result": "Passed",
+      "duration": "0.632362",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial02Solve": {
+      "result": "Passed",
+      "duration": "0.864067",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial03Solve": {
+      "result": "Passed",
+      "duration": "0.821161",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial04Solve": {
+      "result": "Passed",
+      "duration": "0.858286",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial05Solve": {
+      "result": "Passed",
+      "duration": "0.958748",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial06Solve": {
+      "result": "Passed",
+      "duration": "1.377432",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial07Solve": {
+      "result": "Passed",
+      "duration": "1.037443",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial08Solve": {
+      "result": "Passed",
+      "duration": "0.999663",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial09Solve": {
+      "result": "Passed",
+      "duration": "1.731251",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial10Solve": {
+      "result": "Passed",
+      "duration": "2.275376",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial11Solve": {
+      "result": "Passed",
+      "duration": "1.251424",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial12Solve": {
+      "result": "Passed",
+      "duration": "2.594033",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial13Solve": {
+      "result": "Passed",
+      "duration": "4.403949",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial14Solve": {
+      "result": "Passed",
+      "duration": "1.888024",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial15Solve": {
+      "result": "Passed",
+      "duration": "2.980009",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial16Solve": {
+      "result": "Passed",
+      "duration": "2.024427",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial17Solve": {
+      "result": "Passed",
+      "duration": "3.611016",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial18Solve": {
+      "result": "Passed",
+      "duration": "0.857035",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial19Solve": {
+      "result": "Passed",
+      "duration": "1.564063",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial20Solve": {
+      "result": "Passed",
+      "duration": "5.396361",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial21Solve": {
+      "result": "Passed",
+      "duration": "1.977349",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial22Solve": {
+      "result": "Passed",
+      "duration": "3.795885",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial23Solve": {
+      "result": "Passed",
+      "duration": "2.249368",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial24Solve": {
+      "result": "Passed",
+      "duration": "3.383983",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial25Solve": {
+      "result": "Passed",
+      "duration": "3.439416",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial26Solve": {
+      "result": "Passed",
+      "duration": "4.205644",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial27Solve": {
+      "result": "Passed",
+      "duration": "6.535411",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial28Solve": {
+      "result": "Passed",
+      "duration": "5.610457",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial29Solve": {
+      "result": "Passed",
+      "duration": "6.699918",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.Spatial30Solve": {
+      "result": "Passed",
+      "duration": "10.025933",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusB1Solve": {
+      "result": "Passed",
+      "duration": "5.481488",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusB2Solve": {
+      "result": "Passed",
+      "duration": "7.670361",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE01Solve": {
+      "result": "Passed",
+      "duration": "2.214495",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE02Solve": {
+      "result": "Passed",
+      "duration": "3.411783",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE03Solve": {
+      "result": "Passed",
+      "duration": "2.549365",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE04Solve": {
+      "result": "Passed",
+      "duration": "1.793563",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE05Solve": {
+      "result": "Passed",
+      "duration": "1.103346",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE06Solve": {
+      "result": "Passed",
+      "duration": "1.749116",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE07Solve": {
+      "result": "Passed",
+      "duration": "1.830210",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE08Solve": {
+      "result": "Passed",
+      "duration": "1.502631",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE09Solve": {
+      "result": "Passed",
+      "duration": "2.814177",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE10Solve": {
+      "result": "Passed",
+      "duration": "1.391203",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE11Solve": {
+      "result": "Passed",
+      "duration": "4.696464",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE12Solve": {
+      "result": "Passed",
+      "duration": "1.755501",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE13Solve": {
+      "result": "Passed",
+      "duration": "5.207336",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE14Solve": {
+      "result": "Passed",
+      "duration": "3.944708",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE15Solve": {
+      "result": "Passed",
+      "duration": "3.712025",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE16Solve": {
+      "result": "Passed",
+      "duration": "1.598541",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE17Solve": {
+      "result": "Passed",
+      "duration": "1.606106",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusE18Solve": {
+      "result": "Passed",
+      "duration": "6.826562",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.AllTenScenesLoadAndKeepMaterialInside": {
+      "result": "Passed",
+      "duration": "3.844290",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.BossCanMissCreatureThatLeavesDuringWarning": {
+      "result": "Passed",
+      "duration": "0.483330",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.BossCutImpulseKeepsIdlePartsSeparatedUntilGuidedTogether": {
+      "result": "Passed",
+      "duration": "0.755801",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.BossCutsAtPlayersChosenOffset": {
+      "result": "Passed",
+      "duration": "0.528878",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.BossMovingPartMergesWithHeldButtonAndKeepsNewestCommand": {
+      "result": "Passed",
+      "duration": "1.208392",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.BossMovingPartMergesWithIdlePart": {
+      "result": "Passed",
+      "duration": "0.784208",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.BossPartsWithDifferentDestinationsMergeWhenTheyMeet": {
+      "result": "Passed",
+      "duration": "0.756559",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.BossRequiresCutHoldReuniteAndEscape": {
+      "result": "Passed",
+      "duration": "1.906610",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.BossSecondCutPreservesUnrelatedPadHolderOrderAndImpulse": {
+      "result": "Passed",
+      "duration": "0.580620",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.BossSeparatedPartsCanClimbAndHoldCeiling": {
+      "result": "Passed",
+      "duration": "1.706941",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.BossUnmergedExitShowsFailureInsteadOfFallingRepeatedly": {
+      "result": "Passed",
+      "duration": "1.067431",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.BossWarnsOneSecondThenDropsAndResets": {
+      "result": "Passed",
+      "duration": "0.620831",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.BossWinUnlocksCollectionOnceAndOnlyBoss": {
+      "result": "Passed",
+      "duration": "0.032243",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.CampaignQueuedMouseDragHonoursRotationLockAndPreservesRealTaps": {
+      "result": "Passed",
+      "duration": "0.660222",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.CampaignQueuedMouseDragRotatesBeforeCursorRestorationAndNeverBecomesATap": {
+      "result": "Passed",
+      "duration": "0.433923",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.CampaignQueuedMouseInputIsDiscardedAcrossPauseResetAndDisable": {
+      "result": "Passed",
+      "duration": "0.455405",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.EarlyLessonsAcceptCeilingTapsAfterBoxRotation": {
+      "result": "Passed",
+      "duration": "0.882889",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.EighthCloserCameraKeepsBothRoomsAndTubeInPortraitFrame": {
+      "result": "Passed",
+      "duration": "0.385914",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.EighthLessonAutomaticallyEntersTubeAfterCatchingRing": {
+      "result": "Passed",
+      "duration": "2.412248",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.EighthLessonCeilingAcceptsScreenTap": {
+      "result": "Passed",
+      "duration": "0.356771",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.EighthLessonFallsCatchesAndFlowsThroughTube": {
+      "result": "Passed",
+      "duration": "0.991535",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.EighthLessonMissedRingKeepsFalling": {
+      "result": "Passed",
+      "duration": "0.583460",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.EighthRoofHintGuidesClimbThenFallOntoCatchRing": {
+      "result": "Passed",
+      "duration": "0.636681",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.FifthLessonFlipsSlipperyCeilingDown": {
+      "result": "Passed",
+      "duration": "0.978301",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.FirstLessonAcceptsVisibleHoleTapAndExits": {
+      "result": "Passed",
+      "duration": "0.443444",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.FirstLessonCrawlsToFarFloorExit": {
+      "result": "Passed",
+      "duration": "0.437038",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.FirstTwoLessonsShowANonBlockingBobbingArrowAtTheExit": {
+      "result": "Passed",
+      "duration": "1.275261",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.FourthLessonFirstHoleTapTakesTheShortSlipperyRouteAndFalls": {
+      "result": "Passed",
+      "duration": "0.597454",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.FourthLessonPeelsAndFallsWhenClimbingIntoSlipperyBand": {
+      "result": "Passed",
+      "duration": "0.882575",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.FourthLessonRoutesAroundSlipperyPatch": {
+      "result": "Passed",
+      "duration": "0.609292",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.NinthLessonCoverFallsAwayUnderGravity": {
+      "result": "Passed",
+      "duration": "0.923123",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.NinthLidWithstandsClimbingAndRepeatedFastRotation": {
+      "result": "Passed",
+      "duration": "2.845707",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.ProximityFusionHasNoTimerAndRespectsSolidDivider": {
+      "result": "Passed",
+      "duration": "0.318961",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.SecondLessonCanReverseWhileStraddlingDivider": {
+      "result": "Passed",
+      "duration": "0.838337",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.SecondLessonCrossesDividerAndReturns": {
+      "result": "Passed",
+      "duration": "1.241074",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.SecondLessonCrossesLowWallAndClimbs": {
+      "result": "Passed",
+      "duration": "0.527144",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.SeventhLessonBoxAcceptsScreenTap": {
+      "result": "Passed",
+      "duration": "0.478848",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.SeventhLessonCanClimbACratePlacedAtAnAngle": {
+      "result": "Passed",
+      "duration": "2.889289",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.SeventhLessonCanPullBoxAwayFromGlass": {
+      "result": "Passed",
+      "duration": "1.042554",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.SeventhLessonNeedsStepAndClimbsAfterPlacement": {
+      "result": "Passed",
+      "duration": "1.478015",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.SeventhLessonPushesPullsAndReleasesAfterThreeSeconds": {
+      "result": "Passed",
+      "duration": "0.741790",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.SixthLessonRotatesHoleToPassiveBody": {
+      "result": "Passed",
+      "duration": "0.483971",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.SixthLessonTapsAnimateSkiddingWithoutChangingPassivePhysics": {
+      "result": "Passed",
+      "duration": "3.163823",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.SlickPlanarContactAcceptsCommandsAndAnimatesWithoutTraction": {
+      "result": "Passed",
+      "duration": "2.130184",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.SlickPlanarEffortFacesTheCommandAcrossBothDirectionsWithoutDrivingTissue": {
+      "result": "Passed",
+      "duration": "0.525339",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.SlickPlanarEffortKeepsFacingTheGoalAfterLateralDrift": {
+      "result": "Passed",
+      "duration": "0.370099",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.ThirdLessonCanReachRearExit": {
+      "result": "Passed",
+      "duration": "0.498989",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.ThirdLessonFrontGlassInterceptsUntilRotated": {
+      "result": "Passed",
+      "duration": "0.439313",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.TouchFeedbackUsesThePickedSurfaceAndFollowsRotation": {
+      "result": "Passed",
+      "duration": "0.416508",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.VenomOriginTests.UnmergedDepartureFailsBeforeOtherPieceCanFollow": {
+      "result": "Passed",
+      "duration": "0.305097",
+      "run": "regression.xml"
+    },
+    "GravityBox.Tests.COgheProductUITests.TouchscreenPauseAndResumeConsumeTheEntireTouch": {
+      "result": "Passed",
+      "duration": "0.887772",
+      "run": "touch.xml"
+    }
+  }
+}

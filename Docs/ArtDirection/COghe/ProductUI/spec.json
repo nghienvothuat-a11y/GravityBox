@@ -1,0 +1,103 @@
+{
+  "status": "proposed_for_review_not_implemented_in_Unity",
+  "date": "2026-09-30",
+  "base_branch": "NewGraphic",
+  "base_commit": "33c515ccdb2587c350ab00b896e11c3c4919c37d",
+  "default_language": "en",
+  "scope": "Product UI mockup, existing Spatial/V2 control contract, approved Glass C / Day Lab presentation.",
+  "tokens": {
+    "paper": "#faf9ee",
+    "ink": "#304e56",
+    "secondary": "#62777b",
+    "primary": "#356d6d",
+    "selected": "#d8e7dd",
+    "line": "#d4dfd8",
+    "font": "Manrope variable 400-800",
+    "icons": "Lucide outline 24px, approximately 1.8px stroke",
+    "min_touch_target_logical_px": 48,
+    "primary_button_height": 64,
+    "panel_radius": 30,
+    "safe_area": "top and bottom insets; validate in Unity Canvas on real devices"
+  },
+  "main_menu": {
+    "items": [
+      "Play",
+      "Home",
+      "Intro"
+    ],
+    "level_picker": false,
+    "level_number": "read-only",
+    "play": "resume current unlocked level; first run: introduction then level 1",
+    "home": "unlock after Boss 10; locked entry explains requirement",
+    "intro": "replay existing intro; exit or completion returns to Main Menu"
+  },
+  "gameplay": {
+    "always_visible": [
+      "read-only level number",
+      "Pause",
+      "Overview icon"
+    ],
+    "contextual": [
+      "body fragment selectors with mass shares and one selected-body arrow",
+      "Release object icon"
+    ],
+    "gestures": [
+      "tap surface or handle to guide",
+      "drag camera orbit",
+      "pinch to zoom"
+    ],
+    "configuration": "respect per-level control exceptions and existing raycast/picking rules"
+  },
+  "pause": {
+    "items": [
+      "Restart",
+      "Home",
+      "Menu",
+      "How to play",
+      "Music",
+      "Sound"
+    ],
+    "audio": "independent booleans, persist when implemented",
+    "resume": "resume simulation and input; preserve exact puzzle state",
+    "pause_contract": "stop physics, AI/gameplay timers and input; UI remains interactive",
+    "help": "generic controls only; no puzzle hints on Boss",
+    "restart": "confirm then reset current level",
+    "leave": "confirm; preserve completed progression, current attempt restarts on return"
+  },
+  "success": {
+    "existing_creature_celebration_variants": 3,
+    "auto_advance_seconds_proposed": 3.5,
+    "next_button": false,
+    "boss_10": "Home unlock presentation, then continue",
+    "campaign_end": "campaign completion state; never load an absent next level"
+  },
+  "home_preview": "Layout only. Feed/Play/Collection entry placement; furnishing/shop is outside this approval.",
+  "review_limitations": [
+    "Scene and creature imagery are static crops of existing Unity screenshots, composed by CSS.",
+    "Controls demonstrate UI state only, not Unity physics, picking, saves or audio playback.",
+    "Success auto-next demo advances a mock level number over the same illustrative scene.",
+    "Font and wordmark treatment is proposed, not replacement of an official logo asset.",
+    "No device performance claim from browser layout checks."
+  ],
+  "implementation_after_approval": [
+    "Remove product access to debug level selection while retaining internal developer tooling behind development configuration.",
+    "Use stable campaign save IDs; do not reset or renumber progress from UI.",
+    "Use localized string keys, English as default.",
+    "Use UI icon atlas and 9-slice panels; avoid fullscreen blur and additional realtime lights.",
+    "Separate static/dynamic Canvas changes; profile real OPPO interactions, text rebuilds and popup transitions.",
+    "Verify safe areas, pause timer behavior, independent saved audio toggles, fragment selection, end-of-campaign and Home unlock on device."
+  ],
+  "assets": {
+    "gameplay-source.png": "Docs/Verification/COgheSurfaceReadability/oppo-12-after-orbit.png",
+    "fragments-source.png": "Artifacts/COgheSurfaceReadability/Mac/20260930T063105Z/42-403-tap6.png",
+    "level01-source.png": "Docs/Verification/COgheSpatialCircuits/01-start.png",
+    "intro_video": "Docs/Intro/COghe/preview.mp4",
+    "asset_treatment": "source rasters copied unchanged, framed with CSS; no Unity content changes"
+  },
+  "references": [
+    "Docs/ArtDirection/COghe/STYLE_RULES.md",
+    "Docs/COGHE_LEVEL_DESIGN_RULES.md",
+    "https://support.google.com/accessibility/android/answer/7101858?hl=en",
+    "https://developer.apple.com/design/human-interface-guidelines/buttons"
+  ]
+}

@@ -18,6 +18,7 @@ namespace GravityBox.Venom
         public Rigidbody Knife, ExitCover, ButtonCover;
         public Transform PadA,PadB;
         public bool AutoAdvance=true;
+        public COgheProductUI ProductUI {get;private set;}
         public VenomLevelController Owner {get;private set;}
         public CohesiveOrganism Matter=>Owner.Organism;
         public Transform Root=>Owner.Rotation.transform;
@@ -84,6 +85,7 @@ namespace GravityBox.Venom
             if(Feedback==null)Feedback=gameObject.AddComponent<COgheControlFeedback>();
             Feedback.Initialize(this);
             InitializeMechanisms();CameraRig=new VenomCampaignCamera(this);EnhancedTouchSupport.Enable();ResetLevel();
+            if(COgheProductMode.Applies(this)){ProductUI=gameObject.AddComponent<COgheProductUI>();ProductUI.Initialize(this);}
         }
         public void ResetLevel()
         {
@@ -536,7 +538,7 @@ namespace GravityBox.Venom
             SceneManager.LoadScene(prefix+number.ToString("00"));
         }
         private bool PlayArea(Vector2 p)
-        {return CameraRig.AllowsPointer(p,Screen.width,Screen.height);}
+        {return ProductUI!=null?ProductUI.AllowsWorldPointer(p):CameraRig.AllowsPointer(p,Screen.width,Screen.height);}
         public void BeginPointer(Vector2 p){if(!Owner.CanControl||!PlayArea(p))return;pointerDown=true;pointerMoved=false;pointerStart=pointerPrevious=p;}
         public void MovePointer(Vector2 p)
         {
@@ -550,8 +552,9 @@ namespace GravityBox.Venom
         private void Update()
         {
             if(Owner==null)return;
+            if(ProductUI!=null&&ProductUI.HandleInput()){ResetPointerInput();return;}
             var k=Keyboard.current;
-            if(k!=null)
+            if(k!=null&&ProductUI==null)
             {
                 var ks=new[]{k.digit1Key,k.digit2Key,k.digit3Key,k.digit4Key,k.digit5Key,k.digit6Key,k.digit7Key,k.digit8Key,k.digit9Key,k.digit0Key};
                 int page=k.leftCtrlKey.isPressed||k.rightCtrlKey.isPressed?20:k.leftShiftKey.isPressed||k.rightShiftKey.isPressed?10:0;
@@ -559,7 +562,7 @@ namespace GravityBox.Venom
                 if(k.rKey.wasPressedThisFrame)ResetLevel();if(k.pKey.wasPressedThisFrame||k.escapeKey.wasPressedThisFrame)Owner.TogglePause();
                 if(k.zKey.wasPressedThisFrame)CameraRig.ToggleFollow();
             }
-            if(AutoAdvance&&Owner.Completed&&Matter.SimulationTime>=advanceAt&&!Definition.Boss&&Definition.Order<PlayableLevelCount){Load(Definition.Order+1);return;}
+            if(ProductUI==null&&AutoAdvance&&Owner.Completed&&Matter.SimulationTime>=advanceAt&&!Definition.Boss&&Definition.Order<PlayableLevelCount){Load(Definition.Order+1);return;}
             if(!Owner.CanControl){ResetPointerInput();return;}
             if(Definition.ViewOnly)
             {
@@ -585,7 +588,7 @@ namespace GravityBox.Venom
         }
         public void TouchPoint(Vector2 screen)
         {
-            if(!Owner.CanControl)return;
+            if(!Owner.CanControl||ProductUI!=null&&ProductUI.BlockWorldInput)return;
             climbingStep=null;tubeIntent=false;
             Ray ray=Owner.View.ScreenPointToRay(screen);
             int chosen=-1;float selection=.042f;
@@ -703,12 +706,13 @@ namespace GravityBox.Venom
         private void LateUpdate()
         {
             if(Owner==null)return;
+            if(ProductUI!=null&&ProductUI.Showcase){ProductUI.FrameShowcase();return;}
             if(Owner.Completed){Owner.Celebration.Frame(Screen.width,Screen.height);return;}
             CameraRig.Frame(Screen.width,Screen.height,Time.unscaledDeltaTime,false,Screen.safeArea);
         }
         private void OnGUI()
         {
-            if(Owner==null)return;
+            if(Owner==null||ProductUI!=null)return;
             if(dayLab!=null&&dayLab.enabled)return;
             float s=Mathf.Min(Screen.width/540f,Screen.height/960f),h=Screen.height/s;
             GUI.matrix=Matrix4x4.TRS(new Vector3((Screen.width-540*s)*.5f,0,0),Quaternion.identity,Vector3.one*s);
@@ -758,6 +762,14 @@ namespace GravityBox.Venom
             ResetLevel();Home=true;Progress.RevealHome=false;Progress.Write();Owner.Rotation.InputEnabled=false;
             habitat=habitat??new VenomHabitat(this);habitat.Enter();Zoom=true;
         }
+        // Main Menu uses the same real tissue and life animation, without unlocking Collection or writing progress.
+        internal void EnterShowcase()
+        {
+            ResetLevel();Home=true;Owner.Rotation.InputEnabled=false;
+            habitat=habitat??new VenomHabitat(this);habitat.Enter();Zoom=true;
+        }
+        internal void SetHabitatPresentation(bool menu)=>habitat?.SetMenuPresentation(menu);
+        internal void CancelProductPointer()=>ResetPointerInput();
         private void OnDestroy(){habitat?.Dispose();if(Owner!=null&&Owner.Rotation!=null)Owner.Rotation.EndDrag();EnhancedTouchSupport.Disable();}
     }
 }

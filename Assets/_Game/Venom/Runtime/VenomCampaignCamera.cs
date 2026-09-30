@@ -87,6 +87,11 @@ namespace GravityBox.Venom
         // selectors and above the rotation legend/fragment/action controls.
         public Rect UsableRect(int width,int height,Rect safeArea)
         {
+            if(game.ProductUI!=null)
+            {
+                float unit=Mathf.Min(safeArea.width/360f,safeArea.height/640f);
+                return Rect.MinMaxRect(safeArea.xMin+14*unit,safeArea.yMin+112*unit,safeArea.xMax-14*unit,safeArea.yMax-(ShowZones?149:105)*unit);
+            }
             float scale=game.Definition.ViewOnly?Mathf.Min(safeArea.width/540f,safeArea.height/960f):Mathf.Min(width/540f,height/960f);
             if(game.Definition.ViewOnly)return Rect.MinMaxRect(safeArea.xMin+width*.035f,safeArea.yMin+236*scale,safeArea.xMax-width*.035f,safeArea.yMax-207*scale);
             float left=Mathf.Max(width*.035f,safeArea.xMin+8*scale);

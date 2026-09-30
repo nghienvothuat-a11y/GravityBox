@@ -19,13 +19,13 @@ namespace GravityBox.Venom
             game.Owner.Apparatus.gameObject.SetActive(false);
             room=new GameObject("Creature's home");room.transform.SetParent(game.transform,false);
             furnishing=new Material(game.Matter.Profile.Skin);furnishing.name="Habitat ceramic";
-            furnishing.SetColor("_BaseColor",new Color(.32f,.45f,.44f));furnishing.SetFloat("_Metallic",0);furnishing.SetFloat("_Smoothness",.35f);
+            furnishing.SetColor("_BaseColor",(game.ProductUI!=null?new Color(.91f,.90f,.83f):new Color(.32f,.45f,.44f)));furnishing.SetFloat("_Metallic",0);furnishing.SetFloat("_Smoothness",.35f);
             var floor=Surface("Home floor",new Vector3(0,-.3f,0),Vector3.up,new Vector2(.7f,.7f));
             var back=Surface("Home back wall",new Vector3(0,0,.35f),Vector3.back,new Vector2(.7f,.6f));
             game.Surfaces=new[]{floor,back};game.Props=new VenomMovableProp[0];
             Decor(PrimitiveType.Cylinder,"Soft resting mat",new Vector3(-.1f,-.294f,-.1f),new Vector3(.20f,.004f,.15f),game.Owner.IndicatorMaterial);
-            Decor(PrimitiveType.Sphere,"Round lamp",new Vector3(.19f,-.25f,.17f),Vector3.one*.065f,game.Owner.IndicatorMaterial);
-            Decor(PrimitiveType.Cylinder,"Lamp stand",new Vector3(.19f,-.28f,.17f),new Vector3(.025f,.022f,.025f),furnishing);
+            Decor(PrimitiveType.Sphere,"Round lamp",game.ProductUI!=null?new Vector3(.006f,-.25f,-.075f):new Vector3(.19f,-.25f,.17f),Vector3.one*.065f,game.Owner.IndicatorMaterial);
+            Decor(PrimitiveType.Cylinder,"Lamp stand",game.ProductUI!=null?new Vector3(.006f,-.28f,-.075f):new Vector3(.19f,-.28f,.17f),new Vector3(.025f,.022f,.025f),furnishing);
             Vector3 shift=new Vector3(-.1f,-.274f,-.1f)-game.Motion.Centre(0);
             foreach(var b in game.Matter.Bodies){b.position+=shift;b.linearVelocity=b.angularVelocity=Vector3.zero;}
             Physics.SyncTransforms();game.Motion.Reset();Greet();
@@ -43,6 +43,8 @@ namespace GravityBox.Venom
         {
             var o=GameObject.CreatePrimitive(type);o.name=name;o.transform.SetParent(room.transform,false);o.transform.localPosition=p;o.transform.localScale=scale;o.GetComponent<Renderer>().sharedMaterial=material;Object.Destroy(o.GetComponent<Collider>());return o;
         }
+        public void SetMenuPresentation(bool menu)
+        {if(room!=null)foreach(var r in room.GetComponentsInChildren<Renderer>())r.forceRenderingOff=menu||r.transform.parent.GetComponent<VenomSurfacePatch>()!=null;}
         public void Greet(){greeting=game.Matter.SimulationTime+3;}
         public void Feed()
         {

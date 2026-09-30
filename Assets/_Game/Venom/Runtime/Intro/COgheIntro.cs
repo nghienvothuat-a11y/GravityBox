@@ -71,6 +71,8 @@ namespace GravityBox.Venom
         public bool Finished { get; private set; }
         public bool Started => mat != null;
         private bool running;
+        private Action completed;
+        public bool Replay {get;private set;}
 
         private VenomCampaign game;
         private Material mat;
@@ -80,6 +82,7 @@ namespace GravityBox.Venom
         private Dictionary<string, string[]> layout;
         private AudioSource score;
         private GUIStyle skipStyle;
+        private COgheUIArt productArt;
         private float W, H, s0; private Vector2 o0;   // target size and the cover-fit of the panel on it
 
         private sealed class Art { public Texture Tex; public Rect Trim = new Rect(0, 0, 1, 1); public Vector2 Canvas = Panel; public Vector4 Coghe; }
@@ -101,15 +104,15 @@ namespace GravityBox.Venom
             if (current != null || Seen || !VenomCampaignSave.PersistenceEnabled || Application.isBatchMode) return;
             if (Array.IndexOf(Environment.GetCommandLineArgs(), "-coghe-view-proof") >= 0) return;
             var g = FindFirstObjectByType<VenomCampaign>();
-            if (Fits(g)) Play(g);
+            if (Fits(g)&&!COgheProductMode.Applies(g)) Play(g);
         }
 
         /// <summary>Plays the intro over this level (level 1: the last panel matches its glass box).</summary>
-        public static COgheIntro Play(VenomCampaign g)
+        public static COgheIntro Play(VenomCampaign g, Action onComplete=null, bool replay=false)
         {
             if (current != null) return current;
             var intro = new GameObject("COghe intro").AddComponent<COgheIntro>();
-            intro.game = g; current = intro;
+            intro.game = g; intro.completed=onComplete;intro.Replay=replay;current = intro;
             return intro;
         }
 
@@ -128,11 +131,12 @@ namespace GravityBox.Venom
                 LoadLayout();
                 foreach (var name in LayerNames) Get(name);
                 mat = material;
+                if(game.ProductUI!=null)productArt=new COgheUIArt();
             }
             catch (Exception e) { Debug.LogException(e); Finish(); yield break; }
             if (!game.Owner.Paused) game.Owner.TogglePause();
             var clip = Resources.Load<AudioClip>("COgheAudio/intro_score");
-            if (clip != null && (COgheAudio.MusicOn || COgheAudio.EffectsOn))
+            if (clip != null && COgheAudio.MusicOn)
             {
                 score = gameObject.AddComponent<AudioSource>();
                 score.clip = clip; score.volume = .9f; score.ignoreListenerPause = true; score.playOnAwake = false;
@@ -171,6 +175,7 @@ namespace GravityBox.Venom
             if (game != null && game.Owner != null && game.Owner.Paused && !game.Owner.Completed && !game.Owner.Lost) game.Owner.TogglePause();
             if (VenomCampaignSave.PersistenceEnabled) Seen = true;
             if (current == this) current = null;
+            var callback=completed;completed=null;callback?.Invoke();
             Destroy(gameObject);
         }
 
@@ -182,6 +187,7 @@ namespace GravityBox.Venom
             foreach (var t in generated) if (t != null) Destroy(t);
             foreach (var a in art.Values) if (a.Tex != null) Resources.UnloadAsset(a.Tex);   // the art only lives while it plays
             if (mat != null) Destroy(mat);
+            productArt?.Dispose();
         }
 
         // ---- drawing ----------------------------------------------------------------------------------------------------
@@ -190,6 +196,13 @@ namespace GravityBox.Venom
             if (!Started || Finished) return;
             GUI.depth = -1000; GUI.matrix = Matrix4x4.identity;
             if (Event.current.type == EventType.Repaint) Draw(Screen.width, Screen.height);
+            if(productArt!=null)
+            {
+                float unit=Mathf.Min(Screen.safeArea.width/360f,Screen.safeArea.height/640f);var safe=Screen.safeArea;
+                if(Replay&&productArt.GuiButton(new Rect(safe.xMin+24*unit,Screen.height-safe.yMax+25*unit,52*unit,52*unit),COgheIcon.Back)){COgheAudio.UiTap();Finish();return;}
+                if(Clock>1f&&Clock<SkipTo-.3f&&productArt.GuiButton(new Rect(safe.xMax-76*unit,Screen.height-safe.yMax+25*unit,52*unit,52*unit),COgheIcon.Skip)){COgheAudio.UiTap();Skip();}
+                return;
+            }
             if (Clock > 1f && Clock < SkipTo - .3f)
             {
                 float u = Mathf.Min(Screen.width / 540f, Screen.height / 960f);

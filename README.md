@@ -48,6 +48,22 @@ không tự sinh lại màn hoặc bỏ qua scene bị thiếu. [Cài lên thi�
 miệng và thân ống trong catalog Spatial 50. Giữ nguyên vật lý và lời giải.
 [Phạm vi, ảnh và kiểm chứng](Docs/Verification/COgheSurfaceReadability/README.md).
 
+## Product UI — 30/09/2026
+
+Catalog **Spatial 50** dùng giao diện Product: tiếng Anh, chơi tuần tự, không chọn màn.
+Main Menu có COghe **3D đang chạy trong Unity** với Play / Home / Intro; chạm sinh vật
+để nó phản ứng. Nút Pause mở Restart, Home, Menu, Help và hai công tắc Music/Sound
+độc lập. Gameplay giữ icon xem toàn cảnh, chọn khoang và chọn từng phần khi cần.
+Sau ăn mừng tự sang màn tiếp; Home mở sau Boss 10. Giữ nguyên ID và dữ liệu tiến độ.
+
+- **Mac:** Unity → **Gravity Box → COghe → Product UI → Build Mac** →
+  `Builds/COgheProduct/macOS/COghe.app`.
+- APK Spatial hiện có cũng nhận UI mới khi build lại bằng `--spatial`.
+- Dành cho kiểm thử hồi quy: tham số `-coghe-developer-ui` giữ HUD và chọn màn cũ.
+  Các runner proof/benchmark tự giữ giao diện kiểm thử; V2/Origin vẫn giữ UI cũ.
+- [Mockup được duyệt](Docs/ArtDirection/COghe/ProductUI/review.html) ·
+  [Kiến trúc, ảnh Unity và kiểm chứng](Docs/Verification/COgheProductUI/README.md).
+
 ## Spatial Pilot 01–10 — nền triển khai hiện có
 
 

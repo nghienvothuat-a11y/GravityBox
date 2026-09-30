@@ -1,0 +1,67 @@
+{
+  "date": "2026-09-30",
+  "scope": "Browser UI mockup only; not Unity, real device performance or actual game progression",
+  "engine": "Installed Google Chrome via Playwright",
+  "checks": [
+    {
+      "name": "All 10 screen states render with valid local image assets and variable font",
+      "result": "pass"
+    },
+    {
+      "name": "Music and Sound toggles are independent within preview state",
+      "result": "pass"
+    },
+    {
+      "name": "Menu → Play → Pause → Help → Pause → Resume",
+      "result": "pass"
+    },
+    {
+      "name": "Restart confirmation cancel and confirm",
+      "result": "pass"
+    },
+    {
+      "name": "Home entry/exit, feedback, Intro metadata/playback/exit",
+      "result": "pass"
+    },
+    {
+      "name": "Home locked entry explains Boss 10 without navigating",
+      "result": "pass"
+    },
+    {
+      "name": "Fragment selection UI, Release hidden unless holding",
+      "result": "pass"
+    },
+    {
+      "name": "Contextual Release UI",
+      "result": "pass"
+    },
+    {
+      "name": "Dialog keyboard focus wraps within popup",
+      "result": "pass"
+    },
+    {
+      "name": "Illustrative victory auto advances after 3.5 seconds without Next",
+      "result": "pass"
+    },
+    {
+      "name": "48px minimum buttons and no offscreen controls at 320x568",
+      "result": "pass"
+    },
+    {
+      "name": "48px minimum buttons and no offscreen controls at 360x640",
+      "result": "pass"
+    },
+    {
+      "name": "48px minimum buttons and no offscreen controls at 390x844",
+      "result": "pass"
+    },
+    {
+      "name": "Review gallery opens and closes interactive phone preview",
+      "result": "pass"
+    },
+    {
+      "name": "No browser JavaScript exceptions",
+      "result": "pass"
+    }
+  ]
+}

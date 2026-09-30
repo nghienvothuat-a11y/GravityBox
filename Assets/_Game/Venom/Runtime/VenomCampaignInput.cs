@@ -41,7 +41,7 @@ namespace GravityBox.Venom
             if(!(device is Mouse mouse)||(!inputEvent.IsA<StateEvent>()&&!inputEvent.IsA<DeltaStateEvent>()))return;
             Vector2 p=mouse.position.ReadValueFromEvent(inputEvent,out var position)?position:mouse.position.ReadValue();
             bool down=mouse.leftButton.ReadValueFromEvent(inputEvent,out var value)?value>.5f:eventMouseDown;
-            if(Owner==null||!Owner.CanControl||Touch.activeTouches.Count>0||touchFinger>=0)
+            if(Owner==null||!Owner.CanControl||ProductUI!=null&&ProductUI.BlockWorldInput||Touch.activeTouches.Count>0||touchFinger>=0)
             {mouseSamples.Clear();eventMouseDown=down;mouseNeedsRelease=down;return;}
             if(mouseNeedsRelease){eventMouseDown=down;if(!down)mouseNeedsRelease=false;return;}
             if(down&&!eventMouseDown)mouseSamples.Enqueue(new MouseSample{Position=p,Phase=0});

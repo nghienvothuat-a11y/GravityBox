@@ -195,7 +195,7 @@ namespace GravityBox.Venom
         }
         private void OnGUI()
         {
-            if(game==null||game.Owner==null||game.Home||game.Owner.Completed||game.Owner.Lost)return;
+            if(game==null||game.Owner==null||game.ProductUI!=null||game.Home||game.Owner.Completed||game.Owner.Lost)return;
             if(game.Definition.SceneSequence!=null&&game.Definition.SceneSequence.Length>0&&!game.Definition.CanRotate)return;
             if((game.Definition.Id=="venom.origin.01"||game.Definition.Id=="venom.origin.02")&&game.Definition.CanRotate)return;
             if(rotateIcon==null){rotateIcon=RotationIcon(false);lockedIcon=RotationIcon(true);}
