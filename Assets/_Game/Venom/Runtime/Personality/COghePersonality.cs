@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace GravityBox.Venom
 {
-    public enum COgheAct { None, Tantrum, Wave, Shape, Melt, GlassTap, Doze }
+    public enum COgheAct { None, Tantrum, Wave, Shape, Melt, GlassTap, Doze, Home }
     /// <summary>Shapes COghe can make of itself, in the order they unlock (see <see cref="COghePersonality.ShapeUnlocks"/>).</summary>
     public enum COgheShape { Heart, Star, Question, Mushroom, Snowman, ThumbsUp, Rocket, Umbrella }
 
@@ -15,7 +15,7 @@ namespace GravityBox.Venom
     /// only once the body is at rest and gives the controls back where the body still is.
     /// Acts only play when the body is whole, at rest on a floor, outside mechanisms, and there is room for them.
     /// </summary>
-    public sealed class COghePersonality : MonoBehaviour
+    public sealed partial class COghePersonality : MonoBehaviour
     {
         /// <summary>Tests and proof runs can switch the character off entirely.</summary>
         public static bool Enabled = true;
@@ -84,11 +84,13 @@ namespace GravityBox.Venom
         private void Update()
         {
             if (game == null || game.Owner == null || game.Matter == null) return;
-            if (!Enabled || game.Home) { if (Act != COgheAct.None || tantrumPending) EndAct(); return; }
+            if (!Enabled || (game.Home && room == null)) { if (Act != COgheAct.None || tantrumPending) EndAct(); return; }
             float now = game.Matter.SimulationTime, dt = lastSim < 0 ? 0 : now - lastSim;
             if (dt < -.05f) { ResetState(); lastSim = now; return; }   // Retry rewinds the simulation clock
             lastSim = now;
             if (dt <= 0) return;                                         // paused
+            lastDt = dt;
+            if (game.Home) { UpdateHome(dt); return; }
 
             bool commanded = game.Feedback != null && game.Feedback.CommandCount != lastCommands;
             if (game.Feedback != null) lastCommands = game.Feedback.CommandCount;

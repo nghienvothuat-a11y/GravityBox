@@ -602,7 +602,8 @@ namespace GravityBox.Venom
                 Vector3 p=Matter.Bodies[i].position;float d=Vector3.Cross(p-ray.origin,ray.direction).magnitude;
                 if(d<selection){chosen=i;selection=d;}
             }
-            if(Home&&chosen>=0){habitat?.Greet();return;}
+            if(Home&&chosen>=0){habitat?.Greet();if(Personality!=null&&habitat?.Room!=null)Personality.TouchedInHome(Matter.Bodies[chosen].position);return;}
+            if(Home&&Personality!=null&&habitat?.Room!=null){var item=habitat.Room.Pick(ray);if(item!=null){Personality.PlayWith(item);return;}}
             bool selectedTissueHit=chosen>=0&&Matter.TotalFragmentCount>1;
             // Switching bodies still takes priority. Re-selecting the active
             // body must not hide its nearby handle after the idle release, or
@@ -759,8 +760,16 @@ namespace GravityBox.Venom
             {if(GUI.Button(new Rect(60,h-124,200,36),"CHO ĂN",button))habitat?.Feed();if(GUI.Button(new Rect(280,h-124,200,36),"CHƠI CÙNG",button))habitat?.Greet();}
         }
         public float Greeting=>Home?(habitat?.Greeting??0):0;
+        public COgheHomeRoom HomeRoom=>Home?habitat?.Room:null;
         public void FeedHome(){if(Home)habitat?.Feed();}
-        public void GreetHome(){if(Home)habitat?.Greet();}
+        public void GreetHome()
+        {
+            if(!Home)return;
+            // with the furnished room, "Play" and a tap on the menu creature get one of its touch reactions
+            habitat?.Greet();
+            if(Personality!=null&&habitat?.Room!=null)Personality.TouchedInHome(Motion.Centre(0)+Owner.View.transform.right*.02f);
+        }
+        public bool HomeFeeding=>Home&&habitat!=null&&habitat.Feeding;
         public void EnterHome()
         {
             if(!Progress.HomeUnlocked)return;

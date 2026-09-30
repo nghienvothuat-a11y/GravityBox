@@ -156,7 +156,7 @@ namespace GravityBox.Venom
             if(Page==COgheProductPage.Game&&!Game.Owner.Completed){ShowPopup(COgheProductPopup.LeaveHome);return;}
             EnterHome();
         }
-        private void EnterHome(){MenuShadows(false);Game.EnterHome();Game.SetHabitatPresentation(false);Page=COgheProductPage.Home;Popup=COgheProductPopup.None;Rebuild();}
+        private void EnterHome(){MenuShadows(false);Game.EnterHome();Game.SetHabitatPresentation(false);Page=COgheProductPage.Home;Popup=COgheProductPopup.None;homeSize=-1;Rebuild();}
         public void Confirm()
         {
             var action=Popup;Popup=COgheProductPopup.None;
@@ -195,7 +195,9 @@ namespace GravityBox.Venom
         {for(int i=0;i<tissueRenderers.Length;i++)if(tissueRenderers[i]!=null)tissueRenderers[i].shadowCastingMode=menu?UnityEngine.Rendering.ShadowCastingMode.Off:tissueShadows[i];}
         public void FrameShowcase()
         {
-            var camera=Game.Owner.View;camera.orthographic=true;camera.aspect=(float)Screen.width/Screen.height;
+            var camera=Game.Owner.View;
+            if(Page==COgheProductPage.Home&&FrameHome(camera))return;
+            camera.orthographic=true;camera.aspect=(float)Screen.width/Screen.height;
             bool menu=Page==COgheProductPage.MainMenu;
             camera.transform.rotation=Quaternion.Euler(menu?17:24,-12,0);
             var focus=Game.Motion.Centre(0)+Vector3.up*.025f;
@@ -207,6 +209,6 @@ namespace GravityBox.Venom
             camera.transform.position=focus-camera.transform.forward*.8f-camera.transform.up*((centre-.5f)*2*camera.orthographicSize);
             camera.nearClipPlane=.01f;camera.farClipPlane=30;
         }
-        private void OnDestroy(){art?.Dispose();if(ownEvents!=null)Destroy(ownEvents.gameObject);}
+        private void OnDestroy(){art?.Dispose();DisposeItemIcons();if(ownEvents!=null)Destroy(ownEvents.gameObject);}
     }
 }

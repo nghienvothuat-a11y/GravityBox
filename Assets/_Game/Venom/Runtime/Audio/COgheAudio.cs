@@ -337,12 +337,15 @@ namespace GravityBox.Venom
         }
 
         // ---- one-shots --------------------------------------------------------------------------------------------------
+        /// <summary>Every one-shot that passes the repeat guard (previews mix a reel's sound from this).</summary>
+        public static System.Action<string, float> Heard;
         public void Play(string name, float volume, float pan = 0, float minGap = .06f)
         {
             float now = Now;
             if (lastPlayed.TryGetValue(name, out float last) && now - last < minGap && now >= last) return;
             lastPlayed[name] = now;
             Played[name] = Played.TryGetValue(name, out int n) ? n + 1 : 1;
+            Heard?.Invoke(name, volume);
             if (!EffectsOn) return;
             var clip = Clip(name); if (clip == null) return;
             var voice = voices[nextVoice]; nextVoice = (nextVoice + 1) % voices.Length;

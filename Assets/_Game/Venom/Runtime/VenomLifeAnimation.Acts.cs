@@ -12,6 +12,7 @@ namespace GravityBox.Venom
     public sealed partial class VenomLifeAnimation
     {
         private const int MaxSources = CohesiveOrganism.ParticleCount + 6, MaxLimbs = 8;
+        private static readonly float[] FingerX = { -.44f, -.15f, .15f, .44f }, FingerLength = { .72f, .88f, .9f, .74f }, FingerSpread = { -9, -3, 3, 9 };
         private const float BodyRadius = .036f;
         private int actSerial = -1, shapeCount, limbCount;
         private readonly Vector3[] shapePoint = new Vector3[MaxSources];
@@ -49,6 +50,7 @@ namespace GravityBox.Venom
                 case COgheAct.Melt: return Melt(points, supports, count, centre, ground, t, p.Fade);
                 case COgheAct.Doze: return Doze(points, supports, weights, count, centre, ground, t, p.Fade);
                 case COgheAct.GlassTap: return GlassTap(p, points, count, centre, ground, t);
+                case COgheAct.Home: return HomePose(p, points, supports, weights, count, centre, ground, up, floor);
             }
             // Wave and Shape: morph into the template and back
             float e = Smooth(0, .5f, t) * (1 - Smooth(length - .5f, length, t)) * p.Fade;
@@ -173,7 +175,7 @@ namespace GravityBox.Venom
                     var q = Spin(new Vector3(c * .4f, 1.6f + r * .32f, 0), wrist, wave);
                     Src(q.x, q.y, q.z, .6f);
                 }
-                float[] fx = { -.44f, -.15f, .15f, .44f }, fl = { .72f, .88f, .9f, .74f }, fs = { -9, -3, 3, 9 };
+                float[] fx = FingerX, fl = FingerLength, fs = FingerSpread;
                 for (int f = 0; f < 4; f++)
                 {
                     var root = new Vector3(fx[f], 2.2f, 0);
@@ -373,6 +375,94 @@ namespace GravityBox.Venom
             }
             DanceAmount = 1;
             return count;
+        }
+
+        // Home: the skin is posed by COghePersonality (on the bed, the swing, the trampoline…), the body stays where it walked.
+        private int homeShapeKey = -1;
+        private int HomePose(COghePersonality p, Vector3[] points, float[] supports, float[] weights, int count, Vector3 centre, Vector3 ground, Vector3 up, Vector3 floor)
+        {
+            var pose = p.Pose; float b = Mathf.Clamp01(pose.Blend), s = BodyRadius;
+            Vector3 axis = pose.Axis.sqrMagnitude > .5f ? pose.Axis.normalized : up; float squash = pose.Squash <= 0 ? 1 : pose.Squash;
+            Quaternion turn = pose.Turn.w == 0 && pose.Turn.x == 0 && pose.Turn.y == 0 && pose.Turn.z == 0 ? Quaternion.identity : pose.Turn;
+            Vector3 top = pose.Centre; float height = 0;
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 w = transform.TransformPoint(points[i]), d = w - centre;
+                float along = Vector3.Dot(d, axis);
+                Vector3 shaped = turn * ((d - axis * along) / Mathf.Sqrt(squash) + axis * (along * squash));
+                height = Mathf.Max(height, Vector3.Dot(shaped, up));
+                points[i] = transform.InverseTransformPoint(Vector3.Lerp(w, pose.Centre + shaped, b));
+            }
+            top = pose.Centre + up * height * .8f;
+            int n = count;
+            if (pose.Morph > .01f)
+            {
+                // a shape at the posed spot (mirror, shadow lamp, a heart when touched)
+                Vector3 posedGround = pose.Centre - up * (s * .75f);
+                int key = (int)pose.Shape + 100;
+                if (key != homeShapeKey)
+                {
+                    homeShapeKey = key; actRest = posedGround;
+                    var view = level.View; Vector3 right = Vector3.ProjectOnPlane(view != null ? view.transform.right : Vector3.right, up);
+                    actRight = right.sqrMagnitude > 1e-6f ? right.normalized : Vector3.right; actUp = up; actToCamera = Vector3.Cross(up, actRight);
+                    float pitch = view != null ? Mathf.Asin(Mathf.Clamp(-Vector3.Dot(view.transform.forward, up), -1, 1)) : 0; actTilt = Mathf.Clamp(pitch * .6f, 0, 35 * Mathf.Deg2Rad);
+                    AssignShape(COgheAct.Shape, pose.Shape, points, count, posedGround);
+                }
+                float e = pose.Morph;
+                BuildShape(COgheAct.Shape, pose.Shape, 1.4f, 2.9f);
+                for (int i = 0; i < count; i++)
+                {
+                    int k = slotOf[i]; bool absorbed = k < 0; if (absorbed) k = -k - 1;
+                    Vector3 w = transform.TransformPoint(points[i]);
+                    points[i] = transform.InverseTransformPoint(Vector3.Lerp(w, ToWorld(shapePoint[k], posedGround, s), e));
+                    supports[i] = Mathf.Lerp(supports[i], shapeSupport[k] * s, e); weights[i] = Mathf.Lerp(1, absorbed ? 0 : shapeWeight[k], e);
+                }
+                for (int k = 0; k < shapeCount && n < MaxSources; k++)
+                { if (slotUsed[k]) continue; points[n] = transform.InverseTransformPoint(ToWorld(shapePoint[k], posedGround, s)); supports[n] = shapeSupport[k] * s; weights[n++] = shapeWeight[k] * e; }
+                float grow = Smooth(.5f, 1, e);
+                for (int l = 0; l < limbCount; l++)
+                {
+                    Vector3 root = limbPoint[l * 4];
+                    Vector3 Q(int j) => ToWorld(root + (limbPoint[l * 4 + j] - root) * grow, posedGround, s);
+                    Limb(Q(0), Q(1), Q(2), Q(3), limbRadius[l * 2] * s * grow, limbRadius[l * 2 + 1] * s * grow, floor, up, limbCapped[l]);
+                }
+            }
+            else homeShapeKey = -1;
+            for (int t = 0; t < pose.Tendrils; t++)
+            {
+                Vector3 tip = t == 0 ? pose.TipA : pose.TipB, root = top + (tip - top).normalized * .01f;
+                Vector3 mid = Vector3.Lerp(root, tip, .5f) + up * .012f;
+                Limb(root, Vector3.Lerp(root, mid, .6f), Vector3.Lerp(mid, tip, .4f), tip, .0065f * b, .005f * b, floor, up);
+                TendrilCount++;
+            }
+            if (pose.Bubble >= 0 && pose.Bubble < 1 && n < MaxSources)
+            {
+                float swell = Smooth(0, .55f, pose.Bubble), lift = Smooth(.5f, 1, pose.Bubble), size = (.35f + .4f * swell) * (pose.Bubble < .92f ? 1 : 0);
+                points[n] = transform.InverseTransformPoint(top + up * (.006f + lift * .03f) + actRight * .01f);
+                supports[n] = s * size; weights[n++] = size > .05f ? 1.6f : 0;
+            }
+            DanceAmount = Mathf.Max(DanceAmount, b);
+            return n;
+        }
+
+        private void AssignShape(COgheAct act, COgheShape shape, Vector3[] points, int count, Vector3 ground)
+        {
+            BuildShape(act, shape, 1.4f, 2.9f);
+            int pairs = 0;
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 world = transform.TransformPoint(points[i]);
+                for (int k = 0; k < shapeCount; k++) { pairDistance[pairs] = (world - ToWorld(shapePoint[k], ground, BodyRadius)).sqrMagnitude; pairIndex[pairs++] = i * MaxSources + k; }
+            }
+            Array.Sort(pairDistance, pairIndex, 0, pairs);
+            Array.Clear(slotUsed, 0, slotUsed.Length); Array.Clear(pointUsed, 0, pointUsed.Length);
+            for (int q = 0; q < pairs; q++) { int i = pairIndex[q] / MaxSources, k = pairIndex[q] % MaxSources; if (pointUsed[i] || slotUsed[k]) continue; pointUsed[i] = slotUsed[k] = true; slotOf[i] = k; }
+            for (int i = 0; i < count; i++)
+            {
+                if (pointUsed[i]) continue;
+                Vector3 world = transform.TransformPoint(points[i]); float best = float.MaxValue;
+                for (int k = 0; k < shapeCount; k++) { float d = (world - ToWorld(shapePoint[k], ground, BodyRadius)).sqrMagnitude; if (d < best) { best = d; slotOf[i] = -k - 1; } }
+            }
         }
 
         /// <summary>A round-tipped tube (finger, star point, hook): radius <paramref name="r0"/> at the root to

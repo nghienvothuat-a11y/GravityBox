@@ -47,8 +47,18 @@ namespace GravityBox.Venom
             game=FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;
             if(game.Definition.Order!=2){Fail("Auto advance did not load level 2");yield break;}
             yield return Capture("08-next-puzzle");
-            ui.ShowMenu();game.Progress.HomeUnlocked=true;ui.OpenHome();yield return Capture("09-home");
-            ui.ShowPopup(COgheProductPopup.Collection);yield return Capture("10-collection");ui.Resume();ui.ShowMenu();
+            // Home with the furniture earned up to level 26 (a fixture: no progress is written)
+            COgheHomeRoom.UnlockedLevelOverride=26;
+            ui.ShowMenu();game.Progress.HomeUnlocked=true;ui.OpenHome();yield return new WaitForSecondsRealtime(5);yield return Capture("09-home");
+            ui.ShowPopup(COgheProductPopup.Collection);yield return Capture("10-collection");ui.Resume();
+            var room=game.HomeRoom;
+            if(room!=null)
+            {
+                room.ShowGhost(room.Find("TRAMPOLINE"),8);ui.Notify("Trampoline unlocks at level 30");yield return new WaitForSecondsRealtime(1.5f);yield return Capture("16-home-ghost");room.HideGhost();
+                game.Personality.PlayNow(room.Find("SWING"));yield return new WaitForSecondsRealtime(2.5f);yield return Capture("17-home-swing");
+                game.Personality.PlayNow(room.Find("DUMBBELL"));yield return new WaitForSecondsRealtime(2.2f);yield return Capture("18-home-dumbbell");
+            }
+            COgheHomeRoom.UnlockedLevelOverride=null;ui.ShowMenu();
             ui.ReplayIntro();yield return new WaitForSecondsRealtime(4);
             game=FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;
             yield return Capture("11-intro-replay");var replay=FindFirstObjectByType<COgheIntro>();replay.Speed=30;replay.Skip();while(COgheIntro.Playing)yield return null;
@@ -58,7 +68,7 @@ namespace GravityBox.Venom
             Screen.SetResolution(720,1612,FullScreenMode.Windowed);yield return new WaitForSecondsRealtime(1);
             yield return Capture("13-tall-menu");ui.Play();if(COgheIntro.Playing){replay=FindFirstObjectByType<COgheIntro>();while(!replay.Started)yield return null;replay.Speed=30;replay.Skip();while(COgheIntro.Playing)yield return null;}
             yield return Capture("14-tall-game");ui.ShowPopup(COgheProductPopup.Pause);yield return Capture("15-tall-pause");
-            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"autoAdvancedToLevel\":2,\"savedProgressWritten\":false,\"captures\":15}");
+            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"autoAdvancedToLevel\":2,\"savedProgressWritten\":false,\"captures\":18}");
             Debug.Log("COGHE PRODUCT NATIVE PROOF PASSED");Application.Quit(0);
         }
         private IEnumerator Capture(string name)

@@ -106,7 +106,7 @@ namespace GravityBox.Venom
             Top(true);float x=width*.5f-130,y=height-152;
             MenuEntry(x,y,"Feed",COgheIcon.Food,()=>{Game.FeedHome();COgheAudio.Happy();});
             MenuEntry(x+104,y,"Play",COgheIcon.Heart,()=>{Game.GreetHome();COgheAudio.Happy();});
-            MenuEntry(x+208,y,"Collection",COgheIcon.Menu,()=>ShowPopup(COgheProductPopup.Collection));
+            MenuEntry(x+208,y,"Items",COgheIcon.Menu,()=>ShowPopup(COgheProductPopup.Collection));
         }
         private void VictoryView()
         {
@@ -126,7 +126,7 @@ namespace GravityBox.Venom
         {
             popupRoot=art.Rect(safe,"Popup "+Popup,new Rect(0,0,width,height));
             var veil=art.Box(popupRoot,"Input shield",new Rect(-width,-height,width*3,height*3),new Color(.13f,.23f,.21f,.36f),true);veil.sprite=null;
-            float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?430:Popup==COgheProductPopup.Help?450:260;
+            float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?430:Popup==COgheProductPopup.Help?450:Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null?Mathf.Min(560,height-90):260;
             var panel=art.Box(popupRoot,"Panel",new Rect((width-w)*.5f,(height-h)*.5f,w,h),COgheUIArt.Paper,true).rectTransform;
             if(Popup==COgheProductPopup.Pause)
             {
@@ -140,6 +140,7 @@ namespace GravityBox.Venom
                 Tile(panel,18+2*cell,214,cell,COgheAudio.EffectsOn?COgheIcon.Sound:COgheIcon.Muted,"Sound",ToggleSound,true,COgheAudio.EffectsOn);
                 art.Button(panel,"Resume",new Rect(24,h-82,w-48,58),COgheIcon.Play,Resume,"Resume",true);ClosePopup(panel,w,Resume);
             }
+            else if(Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null)ItemsPopup(panel,w,h);
             else if(Popup==COgheProductPopup.Help)
             {
                 PopupTitle(panel,w,"How to play");ClosePopup(panel,w,()=>ShowPopup(COgheProductPopup.Pause));

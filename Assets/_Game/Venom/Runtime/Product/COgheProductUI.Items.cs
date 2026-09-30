@@ -1,0 +1,103 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace GravityBox.Venom
+{
+    /// <summary>
+    /// Home: the item menu (every piece of furniture, earned or "Level N" with a lock; choosing a locked one shows its
+    /// ghost in its place, choosing an earned one sends COghe to play with it) and the room camera, which frames the whole
+    /// room and leans in on whatever COghe is playing with or the item being previewed.
+    /// </summary>
+    public sealed partial class COgheProductUI
+    {
+        private readonly Dictionary<string, Sprite> itemIcons = new Dictionary<string, Sprite>();
+        private Vector3 homeFocus; private float homeSize = -1;
+
+        private Sprite ItemIcon(string id)
+        {
+            if (itemIcons.TryGetValue(id, out var s)) return s;
+            var tex = Resources.Load<Texture2D>("COgheHome/Icons/" + id);
+            s = tex != null ? Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * .5f, 100) : null;
+            itemIcons[id] = s; return s;
+        }
+
+        private void ItemsPopup(RectTransform panel, float w, float h)
+        {
+            PopupTitle(panel, w, "Home items"); ClosePopup(panel, w, Resume);
+            var room = Game.HomeRoom;
+            const int columns = 3;
+            float cell = (w - 28) / columns, cellHeight = cell + 30;
+            int rows = (COgheHomeItems.Catalog.Length + columns - 1) / columns;
+            var viewport = art.Rect(panel, "Viewport", new Rect(14, 74, w - 28, h - 88)); viewport.gameObject.AddComponent<RectMask2D>();
+            var content = art.Rect(viewport, "Content", new Rect(0, 0, w - 28, rows * cellHeight + 8));
+            var scroll = panel.gameObject.AddComponent<ScrollRect>(); scroll.viewport = viewport; scroll.content = content;
+            scroll.horizontal = false; scroll.vertical = true; scroll.movementType = ScrollRect.MovementType.Clamped;
+            for (int i = 0; i < COgheHomeItems.Catalog.Length; i++)
+            {
+                var entry = COgheHomeItems.Catalog[i];
+                var item = room?.Find(entry.id);
+                bool open = room != null && item != null && room.Unlocked(item);
+                float x = (i % columns) * cell, y = (i / columns) * cellHeight;
+                var box = art.Box(content, "Item " + entry.id, new Rect(x + 4, y + 4, cell - 8, cellHeight - 8), open ? new Color(.995f, .995f, .972f) : new Color(.93f, .94f, .91f), true);
+                box.pixelsPerUnitMultiplier = 2f;
+                var button = box.gameObject.AddComponent<Button>(); button.targetGraphic = box;
+                string id = entry.id; button.onClick.AddListener(() => { COgheAudio.UiTap(); ChooseItem(id); });
+                var icon = new GameObject("Icon", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+                var ir = icon.rectTransform; ir.SetParent(box.transform, false); ir.anchorMin = ir.anchorMax = new Vector2(0, 1); ir.pivot = new Vector2(0, 1);
+                float size = cell - 30; ir.anchoredPosition = new Vector2((cell - 8 - size) * .5f, -4); ir.sizeDelta = new Vector2(size, size);
+                icon.sprite = ItemIcon(entry.id); icon.preserveAspect = true; icon.raycastTarget = false;
+                icon.color = open ? Color.white : new Color(1, 1, 1, .45f);
+                art.Label(box.transform, "Name", entry.name, new Rect(2, size - 2, cell - 12, 18), 11);
+                if (open) art.Label(box.transform, "State", "Play", new Rect(2, size + 13, cell - 12, 16), 10, COgheUIArt.Teal);
+                else
+                {
+                    art.Icon(box.transform, COgheIcon.Lock, new Rect(cell - 34, 8, 18, 18), COgheUIArt.Muted);
+                    art.Label(box.transform, "State", "Level " + entry.level, new Rect(2, size + 13, cell - 12, 16), 10, COgheUIArt.Muted);
+                }
+            }
+        }
+
+        private void ChooseItem(string id)
+        {
+            var room = Game.HomeRoom; var item = room?.Find(id);
+            Resume();
+            if (item == null) return;
+            if (room.Unlocked(item)) Game.Personality?.PlayWith(item);
+            else { room.ShowGhost(item); Notify(item.Name + " unlocks at level " + item.UnlockLevel); }
+        }
+
+        /// <summary>The Home camera: the whole room, leaning in on the item in play or the one being previewed.</summary>
+        private bool FrameHome(Camera camera)
+        {
+            var room = Game.HomeRoom; if (room == null) return false;
+            camera.orthographic = true; camera.aspect = (float)Screen.width / Screen.height;
+            camera.transform.rotation = Quaternion.Euler(42, -6, 0);
+            Vector3 overview = room.Root.position + Vector3.up * .05f + Vector3.forward * .02f;
+            // phones are narrow: the width decides; on wider screens the room's depth (1.36 m on screen) plus the UI bars does
+            float fitWidth = (COgheHomeRoom.HalfWidth * 2 + .22f) * .5f / camera.aspect, fitDepth = 1.08f;
+            float size = Mathf.Max(fitWidth, fitDepth), targetSize = size; Vector3 target = overview;
+            var focus = room.Ghost ?? Game.Personality?.Playing;
+            if (focus != null)
+            {
+                var b = room.BoundsOf(focus);
+                target = Vector3.Lerp(b.center, Game.Motion.Centre(0), .35f); targetSize = Mathf.Max(.3f, size * .45f);
+            }
+            float blend = homeSize < 0 ? 1 : 1 - Mathf.Exp(-Time.unscaledDeltaTime * 2.2f);
+            homeFocus = Vector3.Lerp(homeSize < 0 ? target : homeFocus, target, blend);
+            homeSize = Mathf.Lerp(homeSize < 0 ? targetSize : homeSize, targetSize, blend);
+            camera.orthographicSize = homeSize;
+            float logicalY = height * .49f;
+            float pixelY = Screen.safeArea.yMax - logicalY * canvas.scaleFactor, centre = pixelY / Screen.height;
+            camera.transform.position = homeFocus - camera.transform.forward * 1.2f - camera.transform.up * ((centre - .5f) * 2 * camera.orthographicSize);
+            camera.nearClipPlane = .01f; camera.farClipPlane = 30;
+            return true;
+        }
+
+        private void DisposeItemIcons()
+        {
+            foreach (var s in itemIcons.Values) if (s != null) Destroy(s);
+            itemIcons.Clear();
+        }
+    }
+}

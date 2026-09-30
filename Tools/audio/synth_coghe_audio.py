@@ -6,8 +6,8 @@ composed one with the same name (see Docs/Audio/COghe/README.md). Mood: chill, d
 the creature is small, curious, playful and friendly.
 
 Usage: python3 Tools/audio/synth_coghe_audio.py [out_dir] [--music] [--intro]   (needs numpy, scipy, soundfile)
---music also rebuilds the background loop, --intro the 20 s intro score, --personality the sounds of COghe's acts
-(otherwise the committed ones are kept).
+--music also rebuilds the background loop, --intro the 20 s intro score, --personality the sounds of COghe's acts,
+--home the Home furniture sounds (otherwise the committed ones are kept).
 Default out_dir: Assets/_Game/Venom/Resources/COgheAudio
 """
 import os, sys
@@ -631,12 +631,28 @@ def personality_sfx():
     return out
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+# Home furniture: the xylophone's six bars (C major pentatonic), soft mallet on warm wood/metal.
+def home_sfx():
+    global RNG
+    RNG = np.random.default_rng(6161)
+    out = {}
+    for i, m in enumerate([72, 74, 76, 79, 81, 84]):
+        n = int(1.1 * SR); t = np.arange(n) / SR; f = midi(m)
+        bar = (np.sin(2 * np.pi * f * t) * np.exp(-t / .45) + .35 * np.sin(2 * np.pi * f * 3.93 * t) * np.exp(-t / .08)
+               + .12 * np.sin(2 * np.pi * f * 9.2 * t) * np.exp(-t / .03))
+        knock = bandpass(noise(n), 1500, 4500) * np.exp(-t / .004) * .25
+        out[f"xylo_{i}"] = save(f"xylo_{i}", small_room((bar + knock) * (1 - np.exp(-t / .002)), .15), -8)
+    return out
+
+
 if __name__ == "__main__":
     sfx()
     # The music is only rebuilt on request: the committed loop is the one that was approved by ear.
     if "--music" in sys.argv: music()
     if "--intro" in sys.argv: intro_score()
     if "--personality" in sys.argv: personality_sfx()
+    if "--home" in sys.argv: home_sfx()
     print("written to", os.path.abspath(OUT))
     for f in sorted(os.listdir(OUT)):
         if f.endswith(".ogg"):
