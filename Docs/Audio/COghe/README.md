@@ -7,6 +7,14 @@ Cảm giác: chill, sâu, hơi cô đơn trong phòng lab yên; sinh vật nhỏ
 Cách làm: **lab lạnh + sinh vật ấm**. Lab là room tone thấp, tiếng máy chính xác và khoảng lặng; sinh vật có tiếng
 nhầy mềm và một "giọng" phi ngôn ngữ nhỏ (ư?, líu lo). Không tiếng gắt; tiếng lấp lánh cao chỉ dành cho phần thưởng.
 
+## Nghe nhanh (không cần mở Unity)
+
+- Nhạc nền: `Assets/_Game/Venom/Resources/COgheAudio/music_lab_loop.ogg`.
+- Tất cả SFX nối liền: [`preview-sfx-reel.ogg`](preview-sfx-reel.ogg) (73 s, mỗi tiếng cách 0,7 s), theo thứ tự:
+  ack 1–3, grab, hm, curious 1–2, happy, land, split, merge, merge_full, tube_in, tube_out, swing, exit, latch, pad_on,
+  pad_off, gear_mesh, lift_ding, ui_tap, level_start, retry, win, fail, far beep/clink/thud, rồi 4 s tiếng bò và 4 s
+  tiếng máy.
+
 ## Thay một âm thanh
 
 Mọi file nằm ở `Assets/_Game/Venom/Resources/COgheAudio/`, game gọi theo **tên file**. Muốn thay: bỏ file mới (`.ogg`,
