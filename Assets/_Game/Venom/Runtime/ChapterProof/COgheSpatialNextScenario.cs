@@ -18,8 +18,16 @@ namespace GravityBox.Venom.ChapterProof
   // Tap a surface point for the selected fragment and wait until its centre arrives.
   public IEnumerator Go(Vector3 world,string why,float tolerance=.05f)
   {
-   int actor=Selected;yield return tap(world);
-   yield return until(40,()=>Vector3.Distance(game.Motion.Centre(actor),world+Vector3.up*.02f)<tolerance,why);
+   int actor=Selected;bool Arrived()=>Vector3.Distance(game.Motion.Centre(actor),world+Vector3.up*.02f)<tolerance;
+   yield return tap(world);
+   // As in Walk: a body that stops short (a climb that gave up) is sent again, as a player taps the spot a second time.
+   for(int retry=0;retry<2&&!Arrived();retry++)
+   {
+    float start=game.Matter.SimulationTime;
+    yield return until(40,()=>Arrived()||game.Motion.Get(actor)==null||game.Matter.SimulationTime-start>20,why);
+    if(!Arrived()){game.SelectFragment(actor);yield return tap(world);}
+   }
+   yield return until(40,Arrived,why);
   }
   public IEnumerator Operate(string label,float seconds=40)
   {
@@ -73,8 +81,8 @@ namespace GravityBox.Venom.ChapterProof
   // Loose props use the shared push/pull: tap the prop, then tap where it should slide.
   public IEnumerator Push(VenomMovableProp prop,Vector3 target,float tolerance=.012f)
   {
-   yield return tap(prop.Body.position+Vector3.up*.012f);
-   yield return until(20,()=>game.Attached,"Grasp "+prop.name);
+   // Already held (a caller grasped it at a visible spot): go straight to sliding.
+   if(!game.Attached){yield return tap(prop.Body.position+Vector3.up*.012f);yield return until(20,()=>game.Attached,"Grasp "+prop.name);}
    Vector3 direction=Vector3.ProjectOnPlane(target-prop.Body.position,Vector3.up).normalized;
    for(int attempt=0;attempt<6&&Flat(prop.Body.position-target)>tolerance;attempt++)
    {
@@ -201,9 +209,12 @@ namespace GravityBox.Venom.ChapterProof
    yield return tap(game.Owner.Outlet.position);
    yield return until(45,()=>game.Owner.Completed,"All tissue through the final exit");
   }
+  // The level's content, from its ID ("coghe.spatial.next.29" → 29; "coghe.spatial.plus.e04" → "E04"): the campaign
+  // order (Definition.Order) moves levels around, their author routes stay with the content.
+  public static string ContentKey(VenomCampaign g){string id=g.Definition.Id??string.Empty,tail=id.Substring(id.LastIndexOf('.')+1);return id.Contains(".plus.")?tail.ToUpperInvariant():tail;}
   public IEnumerator Solve()
   {
-   int n=game.Definition.Order;
+   int n=int.Parse(ContentKey(game));
    if(n==11)
    {
     yield return Operate("A");

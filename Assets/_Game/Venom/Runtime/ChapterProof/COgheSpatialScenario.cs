@@ -12,7 +12,9 @@ namespace GravityBox.Venom.ChapterProof
   IEnumerator Operate(string label){var t=Array.Find(game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>(),x=>x.Label==label);int before=t.CompletedJourneys;yield return tap(t.HandPoint+Vector3.up*.004f);yield return until(35,()=>t.CompletedJourneys>before,"Operate "+label);}
   public IEnumerator Solve()
   {
-   int n=game.Definition.Order;
+   string key=COgheSpatialNextScenario.ContentKey(game);
+   if(!char.IsDigit(key[0])){yield return new COgheSpatialPlusScenario(game,tap,until,orbit).Solve();yield break;}
+   int n=int.Parse(key);
    if(n>=11){yield return new COgheSpatialNextScenario(game,tap,until,orbit).Solve();yield break;}
    if(n==2){yield return Go(new Vector3(-.12f,-.22f,.10f),"First block");yield return Go(new Vector3(.15f,-.14f,.18f),"Second block");}
    if(n==3){yield return Go(new Vector3(-.23f,-.30f,.23f),"Around observation wall");if(orbit!=null)yield return orbit(-72);else game.CameraRig.Orbit(216,720);yield return Go(new Vector3(.20f,-.30f,.25f),"Behind observation wall");}

@@ -50,7 +50,7 @@ namespace GravityBox.Editor
   {
    var owner=game.Owner!=null?game.Owner:game.GetComponent<VenomLevelController>();
    var root=owner.Rotation.transform;
-   meshDirectory=$"Meshes/SpatialCircuit/Level{game.Definition.Order:00}";serial=0;
+   meshDirectory=$"Meshes/SpatialCircuit/{SpatialArtKey(game)}";serial=0;
    Directory.CreateDirectory(Folder+"/"+meshDirectory);AssetDatabase.Refresh();
    // Load approved shared assets without reinitializing unrelated materials.
    ink=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Blue grey lettering.mat");
@@ -185,7 +185,7 @@ namespace GravityBox.Editor
    foreach(var lift in owner.Apparatus.GetComponentsInChildren<COghePassengerLift>())
    {
     // Pilot: the boss lift is B's. Spatial 11–30: a lift powered through an enabling rail belongs to B's circuit.
-    bool pilot=game.Definition.Order<=10,b=game.Definition.Boss&&pilot||!pilot&&lift.RequiredRail!=null;
+    bool pilot=(game.Definition.Id??"").Contains(".pilot."),b=game.Definition.Boss&&pilot||!pilot&&lift.RequiredRail!=null;
     lift.Panel.GetComponent<Renderer>().sharedMaterial=b?coral:blue;
     var trim=lift.Rail.transform.Find(SpatialCircuitRoot)??Child(lift.Rail.transform,SpatialCircuitRoot);
     // The panel itself keeps its depression motion; no overlay obstructs the tap area.

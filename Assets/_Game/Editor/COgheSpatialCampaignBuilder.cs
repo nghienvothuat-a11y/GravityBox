@@ -15,8 +15,38 @@ namespace GravityBox.Editor
   public const string SpatialFolder="Assets/_Game/Venom/SpatialCampaign";
   static readonly string[] SpatialNames={"Chạm để đi","Leo từng bậc","Nhìn quanh vách","Kéo là mở","Tay kéo trên vách","Một sợi dây","Ghép một nhịp","Đi thang nâng","Nâng rồi kéo","Cỗ máy thân quen"};
   static readonly string[] SpatialLessons={"Chạm vòng xanh để chỉ đường.","Chạm từng bậc rộng để leo lên.","Kéo ngang để nhìn quanh vách.","Tay xanh A nối với cửa xanh A.","Leo lên vách để kéo tay xanh A.","Kéo dây A để nâng nhịp cầu.","Chạm tay B để đưa nhịp cầu vào chỗ trống.","Chạm nút trên khay để lên thang.","Nâng nhịp A, rồi tìm tay B.",""};
-  // The Spatial catalog: pilot 01–10 plus Spatial 11–30 (COgheSpatialNextBuilder).
-  public static string[] SpatialScenePaths()=>Enumerable.Range(1,30).Select(n=>$"{SpatialFolder}/COgheSpatial{n:00}.unity").ToArray();
+  // The Spatial campaign in play order: 50 levels in five chapters, a boss every ten (proposal 29/09/2026, approved
+  // 30/09/2026). A key names the content: "01"…"30" are the scenes COgheSpatialNN (pilot 01–10, Spatial 11–30),
+  // "E01"…"E18", "B1", "B2" the Spatial Plus scenes COgheSpatialPlusKEY. Position = index + 1 = Definition.Order;
+  // IDs, scene files and art folders follow the content, so reordering never touches saves or assets.
+  public static readonly string[] SpatialOrder={
+   "01","02","03","04","05","06","07","08","09","10",
+   "11","12","E01","14","E02","15","16","E03","17","20",
+   "E04","18","E05","19","21","E06","22","13","E07","B1",
+   "E08","23","E09","24","25","E10","E11","26","27","30",
+   "E12","E13","28","E14","29","E15","E16","E17","E18","B2"};
+  public static string SpatialContentPath(string key)=>char.IsDigit(key[0])?$"{SpatialFolder}/COgheSpatial{key}.unity":$"{SpatialFolder}/COgheSpatialPlus{key}.unity";
+  public static string SpatialContentPath(int n)=>SpatialContentPath(n.ToString("00"));
+  public static int SpatialPosition(string key){int i=Array.IndexOf(SpatialOrder,key);if(i<0)throw new ArgumentException("Not in the Spatial order: "+key);return i+1;}
+  public static int SpatialPosition(int n)=>SpatialPosition(n.ToString("00"));
+  public static string[] SpatialScenePaths()=>SpatialOrder.Select(SpatialContentPath).ToArray();
+  public static string[] SpatialSceneNames()=>SpatialScenePaths().Select(Path.GetFileNameWithoutExtension).ToArray();
+  // Every existing Spatial definition gets the play order (scene sequence), its position and its numbered title.
+  public static void ApplySpatialOrder()
+  {
+   var names=SpatialSceneNames();
+   foreach(var path in Directory.GetFiles(SpatialFolder+"/Definitions","*.asset"))
+   {
+    var def=AssetDatabase.LoadAssetAtPath<VenomCampaignDefinition>(path);if(def==null||string.IsNullOrEmpty(def.Id))continue;
+    string tail=def.Id.Substring(def.Id.LastIndexOf('.')+1),key=def.Id.Contains(".plus.")?tail.ToUpperInvariant():tail;
+    if(Array.IndexOf(SpatialOrder,key)<0)continue;
+    int position=SpatialPosition(key);string name=def.Title.Contains(" · ")?def.Title.Substring(def.Title.IndexOf(" · ")+3):def.Title;
+    if(def.Order!=position||!def.SceneSequence.SequenceEqual(names)||def.Title!=$"{position:00} · {name}")
+    {def.Order=position;def.Title=$"{position:00} · {name}";def.SceneSequence=names;EditorUtility.SetDirty(def);}
+   }
+   var scenes=EditorBuildSettings.scenes.ToList();foreach(var p in SpatialScenePaths())if(File.Exists(p)&&!scenes.Any(s=>s.path==p))scenes.Add(new EditorBuildSettingsScene(p,true));
+   EditorBuildSettings.scenes=scenes.ToArray();AssetDatabase.SaveAssets();
+  }
   [MenuItem("Gravity Box/COghe/Spatial pilot/Generate 10 levels")]
   public static void GenerateSpatialCampaign()
   {
@@ -44,7 +74,7 @@ namespace GravityBox.Editor
    owner.RotationProfile=AssetDatabase.LoadAssetAtPath<RotationSettings>("Assets/_Game/PhysicsLab/Profiles/Hand rotation.asset");owner.IndicatorMaterial=mint;owner.ApertureRadius=.046f;
    var game=owner.gameObject.AddComponent<VenomCampaign>();string path=$"{SpatialFolder}/Definitions/Spatial{n:00}.asset";var def=AssetDatabase.LoadAssetAtPath<VenomCampaignDefinition>(path);
    if(def==null){def=ScriptableObject.CreateInstance<VenomCampaignDefinition>();AssetDatabase.CreateAsset(def,path);}
-   def.Id=$"coghe.spatial.pilot.{n:00}";def.Order=n;def.Title=$"{n:00} · {SpatialNames[n-1]}";def.Lesson=SpatialLessons[n-1];def.ViewOnly=true;def.CanRotate=false;def.Passive=false;def.Boss=n==10;def.ProgressKey="coghe.spatial.pilot";def.CameraEuler=new Vector3(36,20,0);def.CameraZones=Array.Empty<VenomCameraZone>();def.InitialCameraZone=-1;def.SceneSequence=Array.ConvertAll(SpatialScenePaths(),Path.GetFileNameWithoutExtension);game.Definition=def;
+   def.Id=$"coghe.spatial.pilot.{n:00}";def.Order=SpatialPosition(n);def.Title=$"{SpatialPosition(n):00} · {SpatialNames[n-1]}";def.Lesson=SpatialLessons[n-1];def.ViewOnly=true;def.CanRotate=false;def.Passive=false;def.Boss=n==10;def.ProgressKey="coghe.spatial.pilot";def.CameraEuler=new Vector3(36,20,0);def.CameraZones=Array.Empty<VenomCameraZone>();def.InitialCameraZone=-1;def.SceneSequence=Array.ConvertAll(SpatialScenePaths(),Path.GetFileNameWithoutExtension);game.Definition=def;
    owner.Apparatus=new GameObject("Apparatus").transform;owner.Apparatus.SetParent(owner.transform,false);
    var pivot=new GameObject("Fixed chamber",typeof(Rigidbody),typeof(BoxRotationController));pivot.transform.SetParent(owner.Apparatus,false);pivot.GetComponent<Rigidbody>().isKinematic=true;pivot.GetComponent<Rigidbody>().useGravity=false;owner.Rotation=pivot.GetComponent<BoxRotationController>();
    var c=new ExpansionContext{Number=n,Owner=owner,Game=game,Definition=def,Root=pivot.transform,Spawn=new Vector3(-.26f,-.25f,-.19f),Exit=new Vector3(.23f,-.225f,.30f),Outward=Vector3.forward};
@@ -83,7 +113,7 @@ namespace GravityBox.Editor
    foreach(var rail in owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())if(rail.name.Contains("shutter"))foreach(var r in rail.GetComponentsInChildren<Renderer>())r.sharedMaterial=rail.name.StartsWith("B")?coral:blue;
    foreach(var lift in owner.Apparatus.GetComponentsInChildren<COghePassengerLift>())lift.Panel.GetComponent<Renderer>().sharedMaterial=n==10?coral:blue;
    COgheDayLabBuilder.DecorateSpatialMechanisms(game,blue,coral,ivory);
-   EditorUtility.SetDirty(def);EditorSceneManager.SaveScene(scene,SpatialScenePaths()[n-1]);
+   EditorUtility.SetDirty(def);EditorSceneManager.SaveScene(scene,SpatialContentPath(n));
   }
   static void SpatialShell(ExpansionContext c,bool slippery)
   {

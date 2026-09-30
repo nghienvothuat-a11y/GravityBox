@@ -1,9 +1,11 @@
 # Spatial Plus — 18 màn dễ + 2 Boss, đề xuất bản đầu 50 màn
 
-30/09/2026 · **Đề xuất thiết kế, chưa dựng màn chơi được.** Theo yêu cầu của Mrk (29/09/2026): thêm 18 màn dễ xen giữa 30 màn có sẵn để độ khó mượt hơn, thêm 2 Boss rất khó bằng khối / bánh răng xếp nhiều lớp phải giải từng bước, có hình mô tả từng màn và đề xuất thứ tự để bản đầu có 50 màn.
+30/09/2026 · **Đã dựng, chơi được, đã xếp vào catalog 50 màn.** Theo yêu cầu của Mrk (29/09/2026): thêm 18 màn dễ xen giữa 30 màn có sẵn để độ khó mượt hơn, thêm 2 Boss rất khó bằng khối / bánh răng xếp nhiều lớp phải giải từng bước, có hình mô tả từng màn và thứ tự để bản đầu có 50 màn. Mrk duyệt phương án 30/09/2026 (“triển khai theo phương án này”).
+
+- **[Báo cáo kiểm thử](../../../Verification/COgheSpatialPlus/README.md)** — lời giải chạm thật, test đi lang thang tìm chỗ kẹt, các ca làm sai/huỷ/Retry, native Mac 50 màn.
 
 - **[Thứ tự 50 màn và lý do](PLACEMENT.md)** — bảng đầy đủ, đường cong độ khó trước/sau.
-- **[Cơ quan mới và mở rộng](MECHANICS.md)** — phần nào đã có runtime, phần nào phải prototype.
+- **[Cơ quan mới và mở rộng](MECHANICS.md)** — component dùng cho từng cơ quan.
 - Dữ liệu: [`levels.json`](levels.json). Hình: `Illustrations/NN-KEY.png` (một tấm mỗi màn) và `Illustrations/placement-50.png`.
 
 ![Đề xuất 50 màn](Illustrations/placement-50.png)
@@ -31,20 +33,22 @@
 | 47 | [Bàn xoay](LevelE16/README.md) | [Hình](Illustrations/47-E16.png) | Giới thiệu biến thể mới (dễ) | 1 | Bánh răng xoay bàn; mặt bàn quay ngang mới nối hai bờ. |
 | 48 | [Hai máy nối nhau](LevelE17/README.md) | [Hình](Illustrations/48-E17.png) | Luyện tập (dễ) | 1 | Máy 1 không nâng gì cả — nó đưa bánh G vào máy 2. |
 | 49 | [Ba lớp răng](LevelE18/README.md) | [Hình](Illustrations/49-E18.png) | Chuẩn bị Boss (vừa) | 2 | Khớp tầng nào thì đường lên tầng sau mới mở; người giữ máy không cần đi lại. |
-| 50 | [BOSS · Tháp bánh răng](LevelB2/README.md) | [Hình](Illustrations/50-B2.png) | Boss cuối (rất khó) | 4 | Mỗi tầng mở đường lên tầng sau; cửa cuối cần cả hai động cơ cùng lúc nên bốn phần phải chia vai đúng. |
+| 50 | [BOSS · Tháp bánh răng](LevelB2/README.md) | [Hình](Illustrations/50-B2.png) | Boss cuối (rất khó) | 3 | Mỗi tầng mở đường lên tầng sau; cửa cuối cần cả hai động cơ cùng lúc nên bốn phần phải chia vai đúng. |
 
 ## Hình minh hoạ được làm thế nào
 
-Khác bộ 11–30 (ảnh concept AI), mỗi tấm ở đây là **greybox dựng trong Unity** bằng chính các helper, kích thước và art Glass C của Spatial 11–30, rồi chụp:
+Mỗi tấm chụp từ **scene thật** của màn (cùng helper, kích thước và art Glass C của Spatial 11–30):
 
 - trái: góc camera trong game lúc bắt đầu (có sinh vật thật ở điểm xuất phát);
 - giữa: mặt bằng nhìn thẳng từ trên, với đường đi và số bước chiếu từ toạ độ trong scene;
-- phải/dưới: ý chính, cơ quan, số liệu dự kiến, lời giải và lý do đặt ở vị trí đó.
+- phải/dưới: ý chính, cơ quan, lời giải mẫu và lý do đặt ở vị trí đó.
 
-Greybox **không phải màn chơi được**: không vào build/catalog, cơ quan mới chưa có runtime chỉ được đặt đúng chỗ. Kích thước là điểm bắt đầu để prototype, phải đo lại khi dựng.
+Tạo lại: `Tools/render-spatial-plus-designs.sh` (dựng lại các màn → chụp PlayMode). Code: `Assets/_Game/Editor/COgheSpatialPlusBuilder.cs` (catalog, dựng scene), `COgheSpatialPlusLevels.cs` (hình học từng màn), lời giải mẫu `Assets/_Game/Venom/Runtime/ChapterProof/COgheSpatialPlusScenario.cs`, test chụp `Assets/_Game/Tests/PlayMode/COgheSpatialPlusDesignRender.cs` (Explicit, không chạy trong suite).
 
-Tạo lại: `Tools/render-spatial-plus-designs.sh` (dựng greybox → chụp PlayMode → xoá asset tạm). Code: `Assets/_Game/Editor/COgheSpatialPlusDesignBuilder.cs`, `COgheSpatialPlusDesignLevels.cs`, test chụp `Assets/_Game/Tests/PlayMode/COgheSpatialPlusDesignRender.cs` (Explicit, không chạy trong suite).
+## Catalog 50 màn
+
+`VenomCampaignBuilder.SpatialOrder` là thứ tự 50 màn; `ApplySpatialOrder` ghi vị trí (`Order`), tiêu đề có số và `SceneSequence` cho mọi definition. Save theo ID nên tiến trình cũ giữ nguyên; màn cũ đổi số hiển thị (13→28, 15→16, …, 30→40), scene và ID không đổi. Boss ở 10, 20, 30, 40, 50.
 
 ## Chưa làm
 
-Dựng scene chơi được, chạy lời giải bằng chạm thật, prototype ván bập bênh / bàn xoay / đầu ra hai động cơ, art Glass C cho bánh răng, đo OPPO, người chơi mới.
+Đo hiệu năng trên OPPO, người chơi mới chơi thử, âm thanh/phản hồi riêng cho bập bênh và bàn xoay.

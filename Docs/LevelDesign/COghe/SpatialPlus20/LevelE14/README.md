@@ -7,16 +7,22 @@
 ## 1. Định danh, phạm vi và trạng thái
 
 - ID `coghe.spatial.plus.e14` · vị trí đề xuất **44/50** · chương 5 (Bánh răng) · màn dễ mới · hồ sơ v0.1, 30/09/2026.
-- Trạng thái: **Nháp — thiết kế + greybox minh hoạ**. Chưa có scene trong catalog/build, chưa chơi thử; mọi số liệu là ước lượng.
-- Hình minh hoạ: greybox Unity dựng bằng `PlusDesign E14` trong [builder](../../../../../Assets/_Game/Editor/COgheSpatialPlusDesignLevels.cs) với cùng helper, kích thước và art Glass C của Spatial 11–30, chụp bằng `COgheSpatialPlusDesignRender` (góc camera trong game + mặt bằng). Đường màu và số là lời giải dự kiến, không phải hướng dẫn trong game.
+- Trạng thái: **Đã dựng — chơi được** (30/09/2026). Scene `COgheSpatialPlusE14.unity`, vị trí 44/50 trong catalog Spatial (save theo ID). Mục 4 là lời giải như đã dựng; thay đổi so với thiết kế ở cuối mục 1.
+- Hình: chụp từ scene thật (dựng bằng `E14` trong [COgheSpatialPlusLevels.cs](../../../../../Assets/_Game/Editor/COgheSpatialPlusLevels.cs)) bằng `COgheSpatialPlusDesignRender` (góc camera trong game + mặt bằng). Đường màu và số là lời giải mẫu, không phải hướng dẫn trong game.
 - Được yêu cầu (Mrk, 29/09/2026): 18 màn dễ xen giữa 30 màn có sẵn để độ khó mượt hơn, 2 Boss rất khó bằng khối/bánh răng xếp nhiều lớp; có hình mô tả; đề xuất thứ tự tổng 50 màn.
 
 | Mốc | Điều kiện chuyển bước | Trạng thái |
 | --- | --- | --- |
-| Thiết kế | Mục tiêu, bố cục, lời giải, phục hồi đủ rõ để dựng | Nháp, chờ Mrk duyệt |
-| Prototype | Chơi trọn bằng chạm thật; các lỗi dự kiến có đường sửa | Chưa làm |
-| Hoàn thiện | Cơ quan dùng chung, Glass C, camera, phản hồi | Chưa làm |
-| Nghiệm thu | PlayMode + native, OPPO, người chơi mới | Chưa làm |
+| Thiết kế | Mục tiêu, bố cục, lời giải, phục hồi đủ rõ để dựng | Mrk duyệt 30/09/2026 |
+| Prototype | Chơi trọn bằng chạm thật; các lỗi dự kiến có đường sửa | Xong: lời giải chạm thật + test đi lang thang tìm chỗ kẹt |
+| Hoàn thiện | Cơ quan dùng chung, Glass C, camera, phản hồi | Glass C/mạch in như 11–30; bánh răng dùng art bánh răng hiện có |
+| Nghiệm thu | PlayMode + native, OPPO, người chơi mới | PlayMode + native Mac xong; OPPO và người chơi mới: chưa |
+
+### Đã dựng: thay đổi so với thiết kế
+
+- Cửa bậc thang nâng 17 cm (hở 11 cm trên bậc đầu): nâng 12 cm, sinh vật trên bậc đầu kẹt dưới cửa.
+- Mặt trước sàn giữa phía trên bậc 1–2 ngà: đi chéo từ bậc 3 vào sàn giữa dễ hụt xuống bậc 2; nay leo lại được (cửa vẫn chặn lối lên).
+- Bàn răng và xe bánh răng trơn: đường đi vòng quanh máy thay vì trèo qua bánh răng.
 
 ## 2. Mục tiêu trải nghiệm và vị trí trong tiến trình
 
@@ -29,7 +35,7 @@
 
 ## 3. Phác thảo, hình học, camera và thao tác
 
-Bàn răng sàn trước (tầng 1) với xe A; sàn giữa 18 cm bên trái có bánh tầng 2 và xe B; trục đứng nối hai tầng. Tầng 1 nâng bậc lên sàn giữa, tầng 2 nâng bệ ra bờ thoát.
+Bàn răng sàn trước (tầng 1) với xe A; sàn giữa 18 cm bên trái có bậc thang 6/12/18 cm dọc mặt trước (lên từ đầu thấp), cửa trơn chắn trước bậc đầu; bánh tầng 2 và xe B trên sàn giữa; trục đứng nối hai tầng. Tầng 1 nâng cửa bậc thang, tầng 2 nâng cầu giữa sàn giữa và bờ thoát. Mặt trước sàn giữa phía trên bậc 1–2 ngà (rơi xuống bậc dưới thì leo lại được).
 
 - Hộp cố định 0,8 × 0,6 m như Spatial 11–30; kéo đổi góc nhìn, pinch zoom; không nghiêng trọng lực. Camera đầu 3/4 như hình.
 - Mặt ngà leo được, mặt tím trơn (bậc trơn ≤3,5 cm vượt được, ≥5 cm chặn); mint chỉ ở lỗ thoát. Mọi đường tắt phải bị chặn bằng hình học công khai (mặt trơn, khe), không bằng số màn.
@@ -40,11 +46,11 @@ Bàn răng sàn trước (tầng 1) với xe A; sàn giữa 18 cm bên trái có
 | Bước | Lệnh / ý định | Trạng thái trước → sau | Tín hiệu thật | Bỏ dở / làm ngược |
 | --- | --- | --- | --- | --- |
 | 1 | Kéo A: tầng 1 khớp | Mốc 0 → mốc 1; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
-| 2 | Đứng P: bậc nâng lên sàn giữa | Mốc 1 → mốc 2; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
-| 3 | Leo bậc lên sàn giữa | Mốc 2 → mốc 3; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
-| 4 | Đẩy B: tầng 2 khớp | Mốc 3 → mốc 4; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
-| 5 | Xuống lại P đứng: trục kéo tầng 2 quay, bệ giữa nâng | Mốc 4 → mốc 5; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
-| 6 | Đi qua bệ sang bờ thoát | Mốc 5 → mốc 6; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
+| 2 | Đứng P: cửa bậc thang nâng lên | Mốc 1 → mốc 2; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
+| 3 | Leo bậc thang lên sàn giữa | Mốc 2 → mốc 3; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
+| 4 | Kéo B: tầng 2 khớp | Mốc 3 → mốc 4; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
+| 5 | Xuống lại P đứng: trục kéo tầng 2 quay, cầu nâng | Mốc 4 → mốc 5; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
+| 6 | Leo lại bậc thang, qua sàn giữa và cầu sang bờ thoát | Mốc 5 → mốc 6; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
 | 7 | Chui ra lỗ | Mốc 6 → mốc 7; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
 
 - **Phục hồi riêng:** Khớp B trước A: tầng 2 không quay vì trục chưa có lực — thấy ngay. Mọi xe kéo ngược được.
@@ -67,22 +73,26 @@ Glass C / mạch in / ray satin theo STYLE_RULES như Spatial 11–30: A xanh tr
 
 | Trục | Dự kiến | Thực đo |
 | --- | --- | --- |
-| Phần cơ thể tối đa | 1 | Chưa chơi thử |
-| Số chạm lời giải mẫu | khoảng 8 | Chưa đo |
-| Thời gian lần đầu | 70–110 giây | Chưa đo |
-| Độ chính xác | Thấp: đích rộng, không canh thời điểm | Chưa đo |
+| Phần cơ thể tối đa | 1 | 1 (lời giải mẫu) |
+| Số chạm lời giải mẫu | khoảng 8 | 11 (native Mac, tác giả) |
+| Thời gian lần đầu | 70–110 giây | Tác giả 29 s; người mới: chưa đo |
+| Độ chính xác | Thấp: đích rộng, không canh thời điểm | Không cần canh thời điểm |
 
 Không gộp thành điểm khó tổng. So sánh vị trí dùng số chạm đo được của các màn cũ (xem [PLACEMENT](../PLACEMENT.md)).
 
 ## 8. Chơi thử và hồi quy
 
-Chưa dựng. Khi dựng: đường giải chính bằng chạm thật (PlayMode + native Mac), các ca ở mục 4, Retry/pause, phần nhỏ/lớn, đường tắt qua kính/mặt trơn; người chơi mới chưa biết lời giải.
+- `SpatialPlusE14Solve`: lời giải mẫu bằng chạm thật từ đầu tới lỗ thoát, rồi Retry về đầu (PlayMode, 120 Hz).
+- `SpatialPlusE14Wander`: đi lang thang — chạm mọi góc và giữa mọi mặt cố định đi được (sàn, bệ, sàn cao), rồi về điểm xuất phát; kẹt ở đâu là trượt tại đó. Sau đó Retry và giải trọn.
+
+- Native Mac (build 50 màn, chạy theo thứ tự catalog): qua, 11 chạm, 29 s, p95 16.7 ms.
+- Bằng chứng: [báo cáo kiểm thử Spatial Plus](../../../../Verification/COgheSpatialPlus/README.md).
 
 ## 9. Bằng chứng hiệu năng trên thiết bị
 
-Chưa có. Đo trên OPPO như PLAN của Spatial 11–30 khi có build.
+Mac (M4, author replay): p95 16.7 ms/khung. OPPO: chưa đo — đo như PLAN của Spatial 11–30.
 
 ## 10. Tích hợp, tương thích và nghiệm thu
 
 - ID mới, không đụng save của 30 màn đã có; thứ tự hiển thị đổi theo [PLACEMENT](../PLACEMENT.md), ID màn cũ giữ nguyên.
-- Kết luận: **đề xuất thiết kế**, chờ Mrk duyệt trước khi dựng.
+- Kết luận: **đã dựng và kiểm thử tự động**; chờ Mrk chơi thử, đo OPPO và người chơi mới.

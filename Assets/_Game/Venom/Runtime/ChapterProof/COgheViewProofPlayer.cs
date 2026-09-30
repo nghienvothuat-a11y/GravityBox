@@ -84,13 +84,17 @@ namespace GravityBox.Venom.ChapterProof
                 last=intent.Call<int>("getIntExtra","coghe_view_last",last);
             }
 #endif
-            first=Mathf.Clamp(first,1,30);last=Mathf.Clamp(last,first,30);
+            // Spatial plays in campaign order: the scene for position n is SceneSequence[n-1] (read from level 1).
+            string[] sequence=null;
+            if(spatial){yield return SceneManager.LoadSceneAsync(prefix+"01");yield return null;sequence=FindFirstObjectByType<VenomCampaign>().Definition.SceneSequence;}
+            int count=sequence!=null&&sequence.Length>0?sequence.Length:30;
+            first=Mathf.Clamp(first,1,count);last=Mathf.Clamp(last,first,count);
             report.graphicProfile=COgheGraphicProfile.UseNew?"BlenderMobile":"Current";
             if(Array.IndexOf(args,"-coghe-depth")>=0)report.graphicProfile="GlassDepth-"+COgheGlassDepthStudy.Selection;
             for(int n=first;n<=last;n++)
             {
                 result=new Result{level=n};report.levels.Add(result);
-                yield return SceneManager.LoadSceneAsync($"{prefix}{n:00}");yield return null;
+                yield return SceneManager.LoadSceneAsync(sequence!=null&&sequence.Length>0?sequence[n-1]:$"{prefix}{n:00}");yield return null;
                 game=FindFirstObjectByType<VenomCampaign>();game.AutoAdvance=false;
                 cooperativeDrives=game.Owner.Apparatus.GetComponentsInChildren<COgheCooperativeDrive>();capturedCooperation.Clear();
                 if(fast){game.Owner.enabled=false;game.Owner.Rotation.enabled=false;Physics.simulationMode=SimulationMode.Script;for(int t=0;t<120;t++)Tick();}

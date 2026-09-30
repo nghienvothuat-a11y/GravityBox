@@ -1,6 +1,6 @@
-# Đề xuất thứ tự 50 màn (bản đầu)
+# Thứ tự 50 màn (bản đầu)
 
-30/09/2026 · **Đề xuất, chờ Mrk duyệt.** 30 màn đã dựng (Pilot 01–10, Spatial 11–30) + 18 màn dễ mới + 2 Boss mới. Mỗi 10 màn một Boss (luật thiết kế mục 1.8). Màn cũ **giữ nguyên ID và save**, chỉ đổi vị trí hiển thị trong catalog.
+30/09/2026 · **Đã áp dụng** (Mrk duyệt 30/09/2026; catalog trong game theo đúng bảng này). 30 màn đã dựng (Pilot 01–10, Spatial 11–30) + 18 màn dễ mới + 2 Boss mới. Mỗi 10 màn một Boss (luật thiết kế mục 1.8). Màn cũ **giữ nguyên ID và save**, chỉ đổi vị trí hiển thị trong catalog.
 
 ![Đề xuất 50 màn](Illustrations/placement-50.png)
 
@@ -13,13 +13,13 @@ Số chạm của lời giải mẫu (đo trên build Mac, bản đang có) cho 
 
 Cách sửa: sau mỗi cơ quan mới có một màn dễ tập riêng ý đó; trước mỗi màn nặng có một màn “mở khoá” ý khó nhất của nó với ít bước hơn; sau mỗi Boss là màn nghỉ. Hai Boss mới đứng ở 30 và 50 và chỉ phối hợp kỹ năng đã dạy (khối chồng dạy ở 21, 29; bánh răng dạy ở 31, 41–49).
 
-| Chỉ số (số chạm lời giải mẫu) | 30 màn hiện tại | 50 màn đề xuất |
-| --- | --- | --- |
-| Chuỗi màn nặng (≥14 chạm) dài nhất | 4 | 2 |
-| Nhiều màn nặng nhất trong 5 màn liền | 4 | 3 |
-| Đỉnh trung bình 3 màn liền nhau | 22,5 | 20,5 |
+| Chỉ số (số chạm lời giải mẫu) | 30 màn hiện tại | 50 màn — ước lượng thiết kế | 50 màn — đo native Mac |
+| --- | --- | --- | --- |
+| Chuỗi màn nặng (≥14 chạm) dài nhất | 4 | 2 | 2 |
+| Nhiều màn nặng nhất trong 5 màn liền | 4 | 3 | 4 (39–43 và 42–46) |
+| Đỉnh trung bình 3 màn liền nhau | 22,5 | 20,5 | 19,3 |
 
-Số chạm là chỉ báo thô (có cả thao tác chọn phần và chạm lại), không phải điểm khó; số của màn mới là ước lượng thiết kế. Cần chơi thử người mới để chốt.
+Số chạm là chỉ báo thô (có cả thao tác chọn phần và chạm lại của tác giả), không phải điểm khó. Đo trên build Mac: hai màn “dễ” nặng hơn dự tính — **42 · Hai ống, hai nửa (23 chạm)** và **46 · Người chạy máy (27 chạm)**: ý đơn giản nhưng nhiều thao tác tách/chọn phần/ống. Nên chơi thử người mới rồi cân nhắc rút bước hoặc đổi chỗ hai màn này.
 
 Màn cũ đổi vị trí: 15→16, 16→17, 17→19, 18→22, 19→24, 21→25, 22→27, 13→28, 23→32, 24→34, 25→35, 26→38, 27→39, 30→40, 28→43, 29→45. Giữ nguyên số: 01–10, 11, 12, 14, 20.
 
@@ -98,7 +98,7 @@ Màn cũ đổi vị trí: 15→16, 16→17, 17→19, 18→22, 19→24, 21→25,
 | 47 | [**Bàn xoay**](LevelE16/README.md) | **mới** | Giới thiệu biến thể mới (dễ) | 1 | ~4 |
 | 48 | [**Hai máy nối nhau**](LevelE17/README.md) | **mới** | Luyện tập (dễ) | 1 | ~4 |
 | 49 | [**Ba lớp răng**](LevelE18/README.md) | **mới** | Chuẩn bị Boss (vừa) | 2 | ~11 |
-| 50 | [**BOSS · Tháp bánh răng**](LevelB2/README.md) | **mới** | Boss cuối (rất khó) | 4 | ~30 |
+| 50 | [**BOSS · Tháp bánh răng**](LevelB2/README.md) | **mới** | Boss cuối (rất khó) | 3 | ~26 |
 
 ## Ghi chú
 

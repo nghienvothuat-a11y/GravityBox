@@ -31,8 +31,8 @@ namespace GravityBox.Tests
    for(int n=1;n<=10;n++)
    {
     yield return Load(n);yield return Wait(5);Assert.IsFalse(game.Owner.Completed);Assert.IsFalse(game.Owner.Lost);
-    // Spatial 11–30 continue the pilot sequence (one catalog of 30); V2/Origin stay separate.
-    Assert.AreEqual(30,game.PlayableLevelCount);Assert.AreEqual("coghe.spatial.pilot",game.Definition.ProgressKey);
+    // Spatial 11–30 and Spatial Plus continue the pilot sequence (one catalog of 50); V2/Origin stay separate.
+    Assert.AreEqual(50,game.PlayableLevelCount);Assert.AreEqual("coghe.spatial.pilot",game.Definition.ProgressKey);
     Assert.IsTrue(game.Definition.ViewOnly);Assert.IsFalse(game.Definition.CanRotate);
     foreach(var r in game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())Assert.Less(r.Position,.009f,"No spontaneous motion: "+r.name);
     if(n==10){Assert.IsTrue(game.Definition.Boss);Assert.IsEmpty(game.Definition.Lesson);}

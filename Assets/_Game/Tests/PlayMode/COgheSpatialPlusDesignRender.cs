@@ -12,21 +12,21 @@ using Object=UnityEngine.Object;
 
 namespace GravityBox.Tests
 {
- // Renders the Spatial Plus design greyboxes (proposals, not playable levels): the in-game view at spawn and a plan
- // view, with the design notes projected into both so the plate can draw steps and routes. Explicit: run it by name.
+ // Renders the Spatial Plus levels for their design plates: the in-game view at spawn and a plan view, with the
+ // builder's notes (steps, routes) projected into both. Explicit: run it by name; it is not part of the suites.
  [Explicit("Design plates for Spatial Plus; run by name")]
  public sealed class COgheSpatialPlusDesignRender
  {
-  const string Scenes="Assets/_Game/Venom/SpatialPlusDesign",Out="Artifacts/SpatialPlusDesign";
+  const string Scenes="Assets/_Game/Venom/SpatialCampaign",Out="Artifacts/SpatialPlusDesign";
   [UnityTest] public IEnumerator RenderPlusDesigns()
   {
    var mode=Physics.simulationMode;var persistence=VenomCampaignSave.PersistenceEnabled;
    Physics.simulationMode=SimulationMode.Script;VenomCampaignSave.PersistenceEnabled=false;
    try
    {
-    foreach(var path in Directory.GetFiles(Scenes,"Plus*.unity").OrderBy(p=>p))
+    foreach(var path in Directory.GetFiles(Scenes,"COgheSpatialPlus*.unity").OrderBy(p=>p))
     {
-     string key=Path.GetFileNameWithoutExtension(path).Substring(4);
+     string key=Path.GetFileNameWithoutExtension(path).Substring("COgheSpatialPlus".Length);
      yield return UnityEditor.SceneManagement.EditorSceneManager.LoadSceneAsyncInPlayMode(path,new LoadSceneParameters(LoadSceneMode.Single));
      yield return null;
      var game=Object.FindFirstObjectByType<VenomCampaign>();game.AutoAdvance=false;game.Owner.enabled=false;game.Owner.Rotation.enabled=false;

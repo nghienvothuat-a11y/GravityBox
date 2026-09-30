@@ -25,10 +25,18 @@ namespace GravityBox.Editor
             if(before!=after)throw new Exception("Glass preview changed physics");
             Debug.Log("COGHE GLASS: level 01 restored; all 30 scene physics snapshots identical.");
         }
+        // Spatial art folders follow a level's content (its ID), not its position: reordering the campaign never moves or
+        // overwrites them. Pilot and Spatial 11–30 keep their original "LevelNN" names; Spatial Plus levels use "PlusKEY".
+        public static string SpatialArtKey(VenomCampaign game)
+        {
+            string id=game.Definition.Id??string.Empty,tail=id.Substring(id.LastIndexOf('.')+1);
+            if(id.Contains(".plus."))return "Plus"+tail.ToUpperInvariant();
+            return int.TryParse(tail,out int n)?$"Level{n:00}":$"Level{game.Definition.Order:00}";
+        }
         public static void ApplyGlassPreview(VenomCampaign game, bool spatial=false)
         {
             if(!spatial&&(game.Definition.Order!=1||!game.Definition.ViewOnly))throw new InvalidOperationException("Glass pilot is V2 01 only");
-            meshDirectory=spatial?$"Meshes/SpatialGlass/Level{game.Definition.Order:00}":"Meshes/GlassPreview01";serial=0;
+            meshDirectory=spatial?$"Meshes/SpatialGlass/{SpatialArtKey(game)}":"Meshes/GlassPreview01";serial=0;
             Directory.CreateDirectory(Folder+"/"+meshDirectory);AssetDatabase.Refresh();
             var owner=game.GetComponent<VenomLevelController>();var root=owner.Rotation.transform;
             var profile=game.GetComponent<COgheGraphicProfile>();

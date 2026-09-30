@@ -22,17 +22,18 @@ namespace GravityBox.Tests
         private InputSettings.EditorInputBehaviorInPlayMode editorInput;
         private const float Dt=1f/120;
         [UnitySetUp] public IEnumerator Before()
-        {simulation=Physics.simulationMode;persistence=VenomCampaignSave.PersistenceEnabled;background=InputSystem.settings.backgroundBehavior;editorInput=InputSystem.settings.editorInputBehaviorInPlayMode;InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;InputSystem.settings.editorInputBehaviorInPlayMode=InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;Physics.simulationMode=SimulationMode.Script;VenomCampaignSave.PersistenceEnabled=false;yield return null;}
+        {trace=null;simulation=Physics.simulationMode;persistence=VenomCampaignSave.PersistenceEnabled;background=InputSystem.settings.backgroundBehavior;editorInput=InputSystem.settings.editorInputBehaviorInPlayMode;InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;InputSystem.settings.editorInputBehaviorInPlayMode=InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;Physics.simulationMode=SimulationMode.Script;VenomCampaignSave.PersistenceEnabled=false;yield return null;}
         [UnityTearDown] public IEnumerator After()
         {Time.timeScale=1;Physics.simulationMode=simulation;VenomCampaignSave.PersistenceEnabled=persistence;InputSystem.settings.backgroundBehavior=background;InputSystem.settings.editorInputBehaviorInPlayMode=editorInput;yield return null;}
-        private IEnumerator Load(int n)
+        private IEnumerator Load(int n){yield return LoadScene($"COgheSpatial{n:00}");}
+        private IEnumerator LoadScene(string sceneName)
         {
             void Loaded(Scene s,LoadSceneMode m){game=Object.FindFirstObjectByType<VenomCampaign>();game.AutoAdvance=false;game.Owner.enabled=false;game.Owner.Rotation.enabled=false;foreach(var body in game.Matter.Bodies)Assert.Greater(body.position.y-game.Matter.Profile.ParticleRadius,-.299f,"Every spawn particle must start above the slab, not merely the body centre");for(int a=0;a<game.Props.Length;a++)for(int b=a+1;b<game.Props.Length;b++)foreach(var first in game.Props[a].CollisionShapes)foreach(var second in game.Props[b].CollisionShapes)if(Physics.ComputePenetration(first,first.transform.position,first.transform.rotation,second,second.transform.position,second.transform.rotation,out _,out float overlap))Assert.Less(overlap,.0005f,$"Initial props overlap: {game.Props[a].name} / {game.Props[b].name}");}
             SceneManager.sceneLoaded+=Loaded;
-            try{yield return SceneManager.LoadSceneAsync($"COgheSpatial{n:00}");}finally{SceneManager.sceneLoaded-=Loaded;}
+            try{yield return SceneManager.LoadSceneAsync(sceneName);}finally{SceneManager.sceneLoaded-=Loaded;}
             yield return Wait(1);game.CameraRig.Frame(720,1280,0,true);
         }
-        private void Tick(){game.Owner.Step(Dt);game.Owner.Rotation.Step(Dt);if(!game.Owner.Paused)Physics.Simulate(Dt);}
+        private void Tick(){game.Owner.Step(Dt);game.Owner.Rotation.Step(Dt);if(!game.Owner.Paused)Physics.Simulate(Dt);trace?.Invoke();}
         private IEnumerator Wait(float seconds){for(int i=0;i<seconds/Dt;i++){Tick();if(i%240==0)yield return null;}}
         private IEnumerator Until(float seconds,Func<bool> done,string reason)
         {
@@ -55,7 +56,7 @@ namespace GravityBox.Tests
         private IEnumerator Solve(int n)
         {
             yield return Load(n);var rotation=game.Root.rotation;
-            Capture(n,"start");
+            Capture(game.Definition.Order,"start"); // frames are named by campaign position, as the result frames
             yield return new COgheSpatialScenario(game,Tap,Until).Solve();
             Assert.AreEqual(32,game.Matter.EscapedCount);Assert.AreEqual(1,game.Matter.TotalFragmentCount);Assert.IsFalse(game.Owner.Lost);
             Assert.Less(Quaternion.Angle(rotation,game.Root.rotation),.001f);Assert.IsTrue(game.Progress.Completed.Contains(game.Definition.Id));

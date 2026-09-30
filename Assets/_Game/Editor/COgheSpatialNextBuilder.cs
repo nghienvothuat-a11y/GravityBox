@@ -29,15 +29,8 @@ namespace GravityBox.Editor
   {
    PrepareCampaign30Assets();Directory.CreateDirectory(SpatialFolder+"/Definitions");Directory.CreateDirectory(SpatialFolder+"/Meshes");AssetDatabase.Refresh();
    string old=authoredMeshFolder;try{authoredMeshFolder=SpatialFolder+"/Meshes";foreach(int n in SpatialNextSelection())BuildSpatialNext(n);}finally{authoredMeshFolder=old;}
-   // Extend the pilot's scene sequence data only; its scenes and physics are untouched.
-   var names=Array.ConvertAll(SpatialScenePaths(),Path.GetFileNameWithoutExtension);
-   for(int n=1;n<=10;n++)
-   {
-    var def=AssetDatabase.LoadAssetAtPath<VenomCampaignDefinition>($"{SpatialFolder}/Definitions/Spatial{n:00}.asset");
-    if(def!=null&&!def.SceneSequence.SequenceEqual(names)){def.SceneSequence=names;EditorUtility.SetDirty(def);}
-   }
-   var scenes=EditorBuildSettings.scenes.ToList();foreach(var p in SpatialScenePaths())if(File.Exists(p)&&!scenes.Any(s=>s.path==p))scenes.Add(new EditorBuildSettingsScene(p,true));
-   EditorBuildSettings.scenes=scenes.ToArray();AssetDatabase.SaveAssets();
+   // Every definition (pilot, next, plus) gets the play order; the pilot's scenes and physics are untouched.
+   ApplySpatialOrder();
    Debug.Log("SPATIAL NEXT GENERATED "+string.Join(",",SpatialNextSelection()));
   }
   public static void GenerateSpatialNextAndBuildMac(){GenerateSpatialNext();BuildSpatialMac();}
@@ -50,9 +43,9 @@ namespace GravityBox.Editor
    owner.RotationProfile=AssetDatabase.LoadAssetAtPath<RotationSettings>("Assets/_Game/PhysicsLab/Profiles/Hand rotation.asset");owner.IndicatorMaterial=mint;owner.ApertureRadius=.046f;
    var game=owner.gameObject.AddComponent<VenomCampaign>();string path=$"{SpatialFolder}/Definitions/Spatial{n:00}.asset";var def=AssetDatabase.LoadAssetAtPath<VenomCampaignDefinition>(path);
    if(def==null){def=ScriptableObject.CreateInstance<VenomCampaignDefinition>();AssetDatabase.CreateAsset(def,path);}
-   def.Id=$"coghe.spatial.next.{n:00}";def.Order=n;def.Title=$"{n:00} · {SpatialNextNames[n-11]}";def.Lesson=SpatialNextLessons[n-11];def.ViewOnly=true;def.CanRotate=false;def.Passive=false;def.Boss=n==20||n==30;
+   def.Id=$"coghe.spatial.next.{n:00}";def.Order=SpatialPosition(n);def.Title=$"{SpatialPosition(n):00} · {SpatialNextNames[n-11]}";def.Lesson=SpatialNextLessons[n-11];def.ViewOnly=true;def.CanRotate=false;def.Passive=false;def.Boss=n==20||n==30;
    def.ProgressKey="coghe.spatial.pilot";def.CameraEuler=new Vector3(36,20,0);def.CameraZones=Array.Empty<VenomCameraZone>();def.InitialCameraZone=-1;
-   def.SceneSequence=Array.ConvertAll(SpatialScenePaths(),Path.GetFileNameWithoutExtension);game.Definition=def;
+   def.SceneSequence=SpatialSceneNames();game.Definition=def;
    owner.Apparatus=new GameObject("Apparatus").transform;owner.Apparatus.SetParent(owner.transform,false);
    var pivot=new GameObject("Fixed chamber",typeof(Rigidbody),typeof(BoxRotationController));pivot.transform.SetParent(owner.Apparatus,false);pivot.GetComponent<Rigidbody>().isKinematic=true;pivot.GetComponent<Rigidbody>().useGravity=false;owner.Rotation=pivot.GetComponent<BoxRotationController>();
    // Number is offset so shared helpers keyed to older catalogs never branch for these scenes.
@@ -97,7 +90,7 @@ namespace GravityBox.Editor
    foreach(var rail in owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())if(rail.name.Contains("shutter"))foreach(var r in rail.GetComponentsInChildren<Renderer>())r.sharedMaterial=rail.name.StartsWith("B")?coral:blue;
    COgheDayLabBuilder.DecorateSpatialMechanisms(game,blue,coral,ivory);
    NextSpatialArt(c,blue,coral,ivory);
-   EditorUtility.SetDirty(def);EditorSceneManager.SaveScene(scene,SpatialScenePaths()[n-1]);
+   EditorUtility.SetDirty(def);EditorSceneManager.SaveScene(scene,SpatialContentPath(n));
   }
 
   // Presentation for Spatial 11–30 mechanisms the pilot art pass does not know: pad caps, printed control traces,

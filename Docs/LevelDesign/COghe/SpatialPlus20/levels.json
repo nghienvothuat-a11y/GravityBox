@@ -604,9 +604,9 @@
    "old_number": null,
    "title": "BOSS · Tháp bánh răng",
    "boss": true,
-   "taps": 30,
+   "taps": 26,
    "taps_source": "estimate",
-   "parts": 4
+   "parts": 3
   }
  ],
  "levels": [
@@ -643,8 +643,21 @@
    "time_estimate": "40–70 giây",
    "risk": "Thùng trượt trên khay khi khay chạy: đã có ở màn 13 (CarriesProps).",
    "plate": "Illustrations/13-E01.png",
-   "greybox": "PlusDesign E01",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE01.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Hốc đặt thùng nhận thùng ở bất kỳ đâu dọc mặt bệ (dung sai 3,5 cm theo mặt bệ): đẩy thùng xuống từ khay, chỗ nào dọc bệ cũng là bậc."
+   ],
+   "tests": [
+    "SpatialPlusE01Solve",
+    "SpatialPlusE01Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 7,
+    "seconds": 14.368057250976562,
+    "p95Ms": 16.69049835205078
+   }
   },
   {
    "key": "E02",
@@ -662,8 +675,8 @@
     "Chạm miệng ống 1: chảy lên ban công",
     "Kéo A: nắp ống 2 mở và giữ",
     "Chạm miệng ống 1 trên ban công để về (ống đi hai chiều)",
-    "Chạm miệng ống 2: sang phòng thoát",
-    "Chui ra lỗ"
+    "Chạm miệng ống 2 (sát vách ngăn): sang phòng thoát",
+    "Đi sàn tới dưới lỗ thoát rồi chui ra (vách lỗ thoát trơn: đi thẳng dọc kính từ miệng ống thì trượt xuống)"
    ],
    "recovery": "Ống đi hai chiều; ban công có đường về bằng chính ống 1. A tự chốt ở cuối.",
    "mechanisms": [
@@ -680,8 +693,23 @@
    "time_estimate": "45–75 giây",
    "risk": "Không đáng kể.",
    "plate": "Illustrations/15-E02.png",
-   "greybox": "PlusDesign E02",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE02.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Ống ra dời sát vách ngăn (miệng ở x −4, z −20 cm), dựng lên ngay sau miệng, dốc ≤ 68° như các ống khác: bản cũ chạy sát sàn băng ngang phòng 1, sinh vật đi dưới ống bị kẹt (test đi lang thang).",
+    "Nắp A trơn và cách miệng ống 5 mm: nắp ngà là cái thang — sinh vật leo lên nắp rồi rơi vào khe sau nắp, không ra được.",
+    "Lời giải mẫu đi sàn tới dưới lỗ thoát rồi mới chạm lỗ: vách lỗ thoát trơn, đi thẳng dọc kính từ miệng ống thì trượt xuống (hành vi có sẵn, không kẹt)."
+   ],
+   "tests": [
+    "SpatialPlusE02Solve",
+    "SpatialPlusE02Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 6,
+    "seconds": 30.374130249023438,
+    "p95Ms": 33.33753967285156
+   }
   },
   {
    "key": "E03",
@@ -725,8 +753,21 @@
    "time_estimate": "60–100 giây",
    "risk": "Khoảng cách nút A – đường đi của nửa kia phải lớn hơn sải thân để không tự nhập giữa chừng.",
    "plate": "Illustrations/18-E03.png",
-   "greybox": "PlusDesign E03",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE03.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Cửa trơn: cửa ngà là cái thang — test đi lang thang tìm ra đường tắt leo cửa lên đỉnh vách rồi sang phòng thoát không cần giải."
+   ],
+   "tests": [
+    "SpatialPlusE03Solve",
+    "SpatialPlusE03Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 8,
+    "seconds": 15.855987548828125,
+    "p95Ms": 16.670961380004883
+   }
   },
   {
    "key": "E04",
@@ -760,8 +801,23 @@
    "time_estimate": "30–60 giây",
    "risk": "Tay đẩy thùng khi xe đang chạy: TapRail chỉ nhận khi xe đứng.",
    "plate": "Illustrations/21-E04.png",
-   "greybox": "PlusDesign E04",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE04.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Xe A rộng 20 cm và mặt ngà: bản 14 cm có mép trơn 3 cm sát góc trơn của kệ, sinh vật trượt ngược xuống.",
+    "Thùng B sát mép kệ (lúc trước hở 1,3 cm) và tay nắm lệch trái: đẩy và leo ở giữa xe, xa góc kệ."
+   ],
+   "tests": [
+    "SpatialPlusE04Solve",
+    "SpatialPlusE04Wander",
+    "SpatialPlusE04CartCancelAndRedo"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 5,
+    "seconds": 11.28826904296875,
+    "p95Ms": 16.68974494934082
+   }
   },
   {
    "key": "E05",
@@ -795,8 +851,22 @@
    "time_estimate": "45–80 giây",
    "risk": "Hai cung đu phải đo lại như màn 18 (bến nhận đặt theo cung thật).",
    "plate": "Illustrations/23-E05.png",
-   "greybox": "PlusDesign E05",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE05.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Đảo giữa ngắn lại, dừng cách trục dây B 13 cm như bờ xuất phát của dây A: đảo dài làm sinh vật cạ đảo, dây B hụt bến.",
+    "Bờ thoát sâu 14,5 cm (z 15,5–30 cm)."
+   ],
+   "tests": [
+    "SpatialPlusE05Solve",
+    "SpatialPlusE05Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 5,
+    "seconds": 4.43963623046875,
+    "p95Ms": 16.66733169555664
+   }
   },
   {
    "key": "E06",
@@ -809,10 +879,10 @@
    "insight": "Đi qua trục thì ván nghiêng về phía mình và thả mình xuống phòng bên.",
    "why": "Sau đối trọng (25): đổi vị bằng một cơ quan mới rất trực quan — sức nặng của chính mình làm ván nghiêng.",
    "new": "Mới: ván bập bênh tự do (bản lề + đối trọng, không động cơ). Cần prototype.",
-   "layout": "Hai vách thấp trơn 8 cm chia ba phòng. Trên đỉnh mỗi vách một ván dài 40 cm có trục ở giữa, đối trọng giữ đầu gần chạm sàn.",
+   "layout": "Hai vách thấp trơn 8 cm chia ba phòng. Trên đỉnh mỗi vách một ván dài 40 cm có trục ở giữa, đầu gần chạm sàn lúc nghỉ; mép ván ngà, mặt dưới trơn. Dưới hai đầu hạ của mỗi ván có bậc chêm trơn cách mặt dưới ván 2 mm, nên dưới ván không còn khe cao quá 3 cm.",
    "steps": [
-    "Chạm phòng giữa: bò lên ván A, qua trục, ván nghiêng thả xuống",
-    "Chạm phòng cuối: tương tự với ván B",
+    "Lên chân ván A (đầu thấp), đi qua trục: ván nghiêng thả xuống phòng giữa",
+    "Lên chân ván B, đi qua trục: ván nghiêng thả xuống phòng cuối",
     "Chui ra lỗ"
    ],
    "recovery": "Ván tự về vị trí nghỉ khi không có tải; lúc nào cũng leo lại được từ đầu gần.",
@@ -829,8 +899,24 @@
    "time_estimate": "30–50 giây",
    "risk": "Tìm đường trên mặt ván đang nghiêng; lực đối trọng so với 25/50/100% — đo trong prototype.",
    "plate": "Illustrations/26-E06.png",
-   "greybox": "PlusDesign E06",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE06.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Mép ván ngà (trừ mặt dưới): gần chân ván, sinh vật lên được từ cạnh.",
+    "Bậc chêm trơn dưới hai đầu hạ của mỗi ván: sinh vật chui vào khe hình nêm dưới ván đã nghiêng và kẹt (test đi lang thang).",
+    "Lời giải mẫu lên chân ván trước rồi mới đi qua trục; chạm nửa xa từ cạnh ván có thể làm sinh vật dừng cạnh ván (chạm chân ván là đi tiếp)."
+   ],
+   "tests": [
+    "SpatialPlusE06Solve",
+    "SpatialPlusE06Wander",
+    "SpatialPlusE06NearHalfDoesNotTip"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 6,
+    "seconds": 8.47247314453125,
+    "p95Ms": 16.67629051208496
+   }
   },
   {
    "key": "E07",
@@ -864,8 +950,24 @@
    "time_estimate": "45–80 giây",
    "risk": "Đứng trên nóc A khi đẩy B: chỗ đứng 14 cm.",
    "plate": "Illustrations/29-E07.png",
-   "greybox": "PlusDesign E07",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE07.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Khối B nổi 2 mm trên A (ray giữ độ cao): nằm sát mặt A, góc B vướng mép tấm cuối của A, dừng thiếu 8 mm.",
+    "B có bù tải (CompensateLoad): chân sinh vật trên B ghì B lại ở vài mm cuối.",
+    "B không có chốt cuối: phanh khoá đúng ngưỡng rồi lùi một phần mm dưới tải, lệnh kéo không bao giờ tính là xong (lộ ra khi chạy native Mac). Tới cuối thì B vào chỗ (mặt tĩnh trên A đỡ sinh vật)."
+   ],
+   "tests": [
+    "SpatialPlusE07Solve",
+    "SpatialPlusE07Wander",
+    "SpatialPlusE07BlockCancelAndRedo"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 6,
+    "seconds": 11.154052734375,
+    "p95Ms": 16.667375564575195
+   }
   },
   {
    "key": "B1",
@@ -878,13 +980,13 @@
    "insight": "Tháp khối vừa là dụng cụ vừa là đích: dùng nó để lên, rồi sắp lại nó để thoát.",
    "why": "Boss mới thay chỗ Boss 30 cũ (nay ở 40). Khối xếp chồng ba tầng; tháp vừa là bậc để lên cần gạt vừa là cầu thang cuối.",
    "new": "Không (Boss chỉ phối hợp): ray trên khối (21, 29), khối nặng cần cả thân (35), giữ + chốt (18), Q.",
-   "layout": "Tháp thoát 27 cm bên phải có mái chìa ở dải 18–27 cm phía trước. Xe C1 (9 cm, nặng: chỉ cả thân kéo nổi) chở C2 (9 cm, trượt ngang) chở C3 (9 cm, trượt trước–sau). Lúc đầu C2 sát kệ cần gạt 18 cm bên trái. Then C1 chỉ rút khi nút A có tải VÀ cần B đã kéo.",
+   "layout": "Tháp thoát 27 cm bên phải có mái chìa ở dải 18–27 cm phía trước. Xe C1 (9 cm, nặng: chỉ cả thân kéo nổi) chở C2 (9 cm, rộng 22 cm, trượt 8 cm tới đầu tháp của C1) chở C3 (9 cm, nằm nửa phải C2, trượt trước → sau). Lúc đầu C2 sát kệ cần gạt 18 cm bên trái (mặt kệ phía C1 ngà). Then C1 chỉ rút khi nút A có tải VÀ cần B đã kéo. Tay nắm C2 ở mép trên bên trái, đẩy từ kệ; khối trên nổi 2 mm trên khối mang.",
    "steps": [
     "Vào Q: 50% + 50%",
     "Nửa 1 đứng nút A (bên phải)",
-    "Nửa 2 leo C1 → C2 → kệ, kéo B: then C1 bắt chốt",
-    "Nửa 2 đứng trên kệ, đẩy C2 sang đầu phải của C1",
-    "Nửa 2 lên C2, đẩy C3 ra sau (C3 chỉ mở khi C2 đã sang)",
+    "Nửa 2 leo đầu hở của C1 → C2 → kệ, kéo B: then C1 bắt chốt",
+    "Nửa 2 đứng trên kệ, đẩy C2 (tay nắm mép trên) sang đầu tháp của C1",
+    "Nửa 2 xuống dải trống bên trái C2, đẩy C3 ra sau (C3 chỉ mở khi C2 đã sang)",
     "Hai nửa xuống sàn trước, tự nhập 100%",
     "Cả thân kéo C1 sát tháp (nửa thân kéo không nổi)",
     "Leo C1 → C2 → C3 → tháp, chui ra"
@@ -913,8 +1015,24 @@
    "time_estimate": "4–7 phút",
    "risk": "Ba tầng ray lồng nhau cần prototype: khớp nối xe–xe, chỗ đứng khi đẩy C2/C3, lực kéo C1 có cả tháp.",
    "plate": "Illustrations/30-B1.png",
-   "greybox": "PlusDesign B1",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusB1.unity",
+   "status": "built",
+   "changes_from_design": [
+    "C2 rộng 22 cm, trượt 8 cm tới đầu tháp của C1; tay nắm ở mép trên bên trái, đẩy từ lùi 12 cm trên kệ: bản cũ người đẩy bị C2 kéo ra khỏi kệ và mất điểm bám.",
+    "C3 nằm nửa phải C2, chừa dải trống bên trái để đứng đẩy C3.",
+    "C2, C3 nổi 2 mm trên khối mang (như E07).",
+    "Mái chìa nâng 6 mm: C2 lọt dưới, C3 vẫn bị chặn nếu chưa đẩy ra sau."
+   ],
+   "tests": [
+    "SpatialPlusB1Solve",
+    "SpatialPlusB1Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 16,
+    "seconds": 29.5560302734375,
+    "p95Ms": 16.694168090820312
+   }
   },
   {
    "key": "E08",
@@ -948,8 +1066,19 @@
    "time_estimate": "30–50 giây",
    "risk": "Áp art Glass C cho bánh răng (hiện dùng nhựa hổ phách của catalog cũ).",
    "plate": "Illustrations/31-E08.png",
-   "greybox": "PlusDesign E08",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE08.unity",
+   "status": "built",
+   "changes_from_design": [],
+   "tests": [
+    "SpatialPlusE08Solve",
+    "SpatialPlusE08Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 4,
+    "seconds": 10.23992919921875,
+    "p95Ms": 16.66750144958496
+   }
   },
   {
    "key": "E09",
@@ -998,8 +1127,22 @@
    "time_estimate": "70–110 giây",
    "risk": "Ngưỡng 50% phải phân biệt rõ 8 và 16 hạt khi đứng lệch mép nút.",
    "plate": "Illustrations/33-E09.png",
-   "greybox": "PlusDesign E09",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE09.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Cửa trơn (đường tắt leo cửa như màn 18)."
+   ],
+   "tests": [
+    "SpatialPlusE09Solve",
+    "SpatialPlusE09Wander",
+    "SpatialPlusE09QuarterTooLightForHeavyPad"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 9,
+    "seconds": 22.28753662109375,
+    "p95Ms": 16.672456741333008
+   }
   },
   {
    "key": "E10",
@@ -1034,8 +1177,21 @@
    "time_estimate": "40–70 giây",
    "risk": "Không đáng kể.",
    "plate": "Illustrations/36-E10.png",
-   "greybox": "PlusDesign E10",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE10.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Ống vào chuồng vòng qua trên vách chuồng (bản đầu xuyên vách)."
+   ],
+   "tests": [
+    "SpatialPlusE10Solve",
+    "SpatialPlusE10Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 4,
+    "seconds": 10.37158203125,
+    "p95Ms": 16.667665481567383
+   }
   },
   {
    "key": "E11",
@@ -1079,8 +1235,19 @@
    "time_estimate": "60–100 giây",
    "risk": "Như màn 27.",
    "plate": "Illustrations/37-E11.png",
-   "greybox": "PlusDesign E11",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE11.unity",
+   "status": "built",
+   "changes_from_design": [],
+   "tests": [
+    "SpatialPlusE11Solve",
+    "SpatialPlusE11Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 12,
+    "seconds": 29.2049560546875,
+    "p95Ms": 16.708417892456055
+   }
   },
   {
    "key": "E12",
@@ -1093,11 +1260,11 @@
    "insight": "Thiếu một bánh thì máy quay suông; đưa bánh G vào khe rồi mới bật máy.",
    "why": "Màn nghỉ sau Boss 40, bài bánh răng thứ hai: truyền động phải liền mạch mới chạy.",
    "new": "Xe bánh răng trượt vào khớp (có runtime).",
-   "layout": "Bàn bánh răng: bánh máy — khe — bánh ra; xe A trượt từ trước đưa bánh G vào khe. Bánh ra nâng bậc cạnh kệ thoát trơn.",
+   "layout": "Bệ thoát 6 cm có bậc ngăn kéo giấu bên trong. Bàn bánh răng: bánh máy — khe — bánh ra; xe A trượt từ trước đưa bánh G vào khe. Bánh ra kéo bậc ra khỏi bệ.",
    "steps": [
     "Kéo A: bánh G vào khe, khớp",
-    "Đứng nút P: bậc nâng lên ngang kệ và chốt",
-    "Leo bậc lên kệ",
+    "Đứng nút P: bậc trượt ra khỏi bệ và chốt",
+    "Leo bậc lên bệ",
     "Chui ra lỗ"
    ],
    "recovery": "Bật máy khi chưa khớp: chỉ bánh đầu quay (thấy rõ khe). Kéo A lùi được trước khi chốt.",
@@ -1114,8 +1281,21 @@
    "time_estimate": "35–60 giây",
    "risk": "Dung sai khớp 4 mm khi xe dừng (đã có ở catalog cũ).",
    "plate": "Illustrations/41-E12.png",
-   "greybox": "PlusDesign E12",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE12.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Bậc ngăn kéo trượt ra khỏi bệ thoát thay cho sàn nâng: sàn nâng từ nền là tấm lơ lửng, từ sàn không leo lên được."
+   ],
+   "tests": [
+    "SpatialPlusE12Solve",
+    "SpatialPlusE12Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 5,
+    "seconds": 11.888671875,
+    "p95Ms": 16.726877212524414
+   }
   },
   {
    "key": "E13",
@@ -1128,13 +1308,13 @@
    "insight": "Mỗi nửa một ống, hai nút cao cùng lúc mới mở đường.",
    "why": "Trước mạng ống ba chiều (43): hai nửa cùng dùng ống song song, không có van.",
    "new": "Không.",
-   "layout": "Hai hốc cao 20 cm trơn ở hai góc sau, mỗi hốc một nút; ống từ sàn trước lên mỗi hốc. Bệ thoát giữa có bậc kéo ngăn kéo.",
+   "layout": "Hai hốc cao 20 cm trơn ở hai góc sau, nút A1/A2 ở sâu trong hốc. Từ sàn gần Q, mỗi bên một ống lên hốc; miệng ống quay vào giữa phòng, thân ống dựng lên ngay sau miệng. Bệ thoát giữa có bậc ngăn kéo.",
    "steps": [
     "Vào Q: 50% + 50%",
     "Mỗi nửa chui ống của mình lên hốc",
     "Hai nửa đứng A1, A2: bậc trượt ra và chốt",
-    "Hai nửa về bằng ống, tự nhập trước bệ",
-    "Leo bậc, chui ra"
+    "Hai nửa về bằng ống, gặp nhau ở sàn trống giữa Q và bậc",
+    "Đi thẳng vào bậc, lên bệ, chui ra"
    ],
    "recovery": "Một nửa rời nút trước khi chốt: bậc tự thu; lên lại. Ống đi hai chiều.",
    "mechanisms": [
@@ -1158,8 +1338,23 @@
    "time_estimate": "60–100 giây",
    "risk": "Không đáng kể.",
    "plate": "Illustrations/42-E13.png",
-   "greybox": "PlusDesign E13",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE13.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Miệng ống quay vào giữa phòng, thân ống dựng lên sau miệng: đoạn ống thấp cạnh miệng làm phần cơ thể kẹt khi đi vòng qua.",
+    "Nút A1/A2 lùi vào sâu trong hốc; ống đổi chỗ để đầu ống không che nút.",
+    "Lời giải mẫu gặp nhau ở sàn trống giữa Q và bậc: sát cạnh bậc, sàn bị bậc quây kín; gần khay Q thì chạm trúng Q."
+   ],
+   "tests": [
+    "SpatialPlusE13Solve",
+    "SpatialPlusE13Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 23,
+    "seconds": 43.571044921875,
+    "p95Ms": 16.70987892150879
+   }
   },
   {
    "key": "E14",
@@ -1172,14 +1367,14 @@
    "insight": "Lực đi từ tầng dưới lên tầng trên qua trục; khớp từng tầng theo thứ tự.",
    "why": "Bước tiếp của bánh răng: hai tầng nối bằng một trục, tầng trên chỉ quay khi tầng dưới đã khớp.",
    "new": "Trục nối hai tầng (bánh kép) — thêm vào hợp đồng bánh răng.",
-   "layout": "Bàn răng sàn trước (tầng 1) với xe A; sàn giữa 18 cm bên trái có bánh tầng 2 và xe B; trục đứng nối hai tầng. Tầng 1 nâng bậc lên sàn giữa, tầng 2 nâng bệ ra bờ thoát.",
+   "layout": "Bàn răng sàn trước (tầng 1) với xe A; sàn giữa 18 cm bên trái có bậc thang 6/12/18 cm dọc mặt trước (lên từ đầu thấp), cửa trơn chắn trước bậc đầu; bánh tầng 2 và xe B trên sàn giữa; trục đứng nối hai tầng. Tầng 1 nâng cửa bậc thang, tầng 2 nâng cầu giữa sàn giữa và bờ thoát. Mặt trước sàn giữa phía trên bậc 1–2 ngà (rơi xuống bậc dưới thì leo lại được).",
    "steps": [
     "Kéo A: tầng 1 khớp",
-    "Đứng P: bậc nâng lên sàn giữa",
-    "Leo bậc lên sàn giữa",
-    "Đẩy B: tầng 2 khớp",
-    "Xuống lại P đứng: trục kéo tầng 2 quay, bệ giữa nâng",
-    "Đi qua bệ sang bờ thoát",
+    "Đứng P: cửa bậc thang nâng lên",
+    "Leo bậc thang lên sàn giữa",
+    "Kéo B: tầng 2 khớp",
+    "Xuống lại P đứng: trục kéo tầng 2 quay, cầu nâng",
+    "Leo lại bậc thang, qua sàn giữa và cầu sang bờ thoát",
     "Chui ra lỗ"
    ],
    "recovery": "Khớp B trước A: tầng 2 không quay vì trục chưa có lực — thấy ngay. Mọi xe kéo ngược được.",
@@ -1196,8 +1391,23 @@
    "time_estimate": "70–110 giây",
    "risk": "Hiển thị trục nối rõ ràng; một người phải đi lại nút P hai lần (chủ ý dễ).",
    "plate": "Illustrations/44-E14.png",
-   "greybox": "PlusDesign E14",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE14.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Cửa bậc thang nâng 17 cm (hở 11 cm trên bậc đầu): nâng 12 cm, sinh vật trên bậc đầu kẹt dưới cửa.",
+    "Mặt trước sàn giữa phía trên bậc 1–2 ngà: đi chéo từ bậc 3 vào sàn giữa dễ hụt xuống bậc 2; nay leo lại được (cửa vẫn chặn lối lên).",
+    "Bàn răng và xe bánh răng trơn: đường đi vòng quanh máy thay vì trèo qua bánh răng."
+   ],
+   "tests": [
+    "SpatialPlusE14Solve",
+    "SpatialPlusE14Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 11,
+    "seconds": 28.5733642578125,
+    "p95Ms": 16.672626495361328
+   }
   },
   {
    "key": "E15",
@@ -1242,8 +1452,23 @@
    "time_estimate": "60–100 giây",
    "risk": "Bệ hạ khi có người đứng dưới: dùng TissueClearance như cửa.",
    "plate": "Illustrations/46-E15.png",
-   "greybox": "PlusDesign E15",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE15.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Thang bánh răng MotorSpeed 3 (lực kẹt ≈ 1 N) để nâng nửa thân.",
+    "Bậc C cách bậc dưới và sàn cao 2 mm: sát cả hai mặt, bậc bị kẹp dừng giữa chừng."
+   ],
+   "tests": [
+    "SpatialPlusE15Solve",
+    "SpatialPlusE15Wander",
+    "SpatialPlusE15DriverLeavesMidRide"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 27,
+    "seconds": 23.0390625,
+    "p95Ms": 16.67579460144043
+   }
   },
   {
    "key": "E16",
@@ -1278,8 +1503,21 @@
    "time_estimate": "30–50 giây",
    "risk": "Mặt đi quay 90°: cập nhật graph khi quay; va chạm với mô đứng trên bàn khi quay (chỉ quay khi bàn trống).",
    "plate": "Illustrations/47-E16.png",
-   "greybox": "PlusDesign E16",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE16.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Bàn xoay: component mới COgheTurntable (quay nấc 90° khi máy chạy và mặt bàn trống)."
+   ],
+   "tests": [
+    "SpatialPlusE16Solve",
+    "SpatialPlusE16Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 4,
+    "seconds": 11.056640625,
+    "p95Ms": 16.66750144958496
+   }
   },
   {
    "key": "E17",
@@ -1292,11 +1530,11 @@
    "insight": "Máy 1 không nâng gì cả — nó đưa bánh G vào máy 2.",
    "why": "Chuẩn bị Boss: máy này đẩy bánh của máy kia (một kỹ năng Boss 50 dùng).",
    "new": "Thanh răng đẩy xe bánh của máy khác (liên kết rail → rail, có runtime).",
-   "layout": "Bàn răng dài: máy 1 (nút P1) có thanh răng ngắn đẩy xe G; máy 2 (nút P2) có khe chờ G; đầu ra máy 2 nâng bậc cạnh kệ thoát.",
+   "layout": "Bàn răng dài: máy 1 (nút P1) có thanh răng đẩy xe G; máy 2 (nút P2) có khe chờ G; đầu ra máy 2 kéo bậc ngăn kéo ra khỏi bệ thoát.",
    "steps": [
     "Đứng P1: máy 1 đẩy G vào máy 2",
-    "Đứng P2: máy 2 nâng bậc",
-    "Leo bậc lên kệ",
+    "Đứng P2: máy 2 kéo bậc ra khỏi bệ",
+    "Leo bậc lên bệ",
     "Chui ra lỗ"
    ],
    "recovery": "Đứng P2 trước: chỉ bánh đầu máy 2 quay. Không có cách làm hỏng.",
@@ -1313,8 +1551,22 @@
    "time_estimate": "40–70 giây",
    "risk": "Không đáng kể.",
    "plate": "Illustrations/48-E17.png",
-   "greybox": "PlusDesign E17",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE17.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Bậc ngăn kéo thay sàn nâng (như 41).",
+    "Xe G nâng 3 mm khỏi bàn (cạ bàn)."
+   ],
+   "tests": [
+    "SpatialPlusE17Solve",
+    "SpatialPlusE17Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 5,
+    "seconds": 8.0244140625,
+    "p95Ms": 16.668289184570312
+   }
   },
   {
    "key": "E18",
@@ -1327,14 +1579,14 @@
    "insight": "Khớp tầng nào thì đường lên tầng sau mới mở; người giữ máy không cần đi lại.",
    "why": "Bài cuối trước Boss bánh răng: ba tầng trên một hàng trục, một nửa giữ máy, nửa kia khớp từng tầng.",
    "new": "Không (tổ hợp 41, 44, 46).",
-   "layout": "Bàn răng sàn (tầng 1, xe A), sàn giữa 18 cm (tầng 2, xe B), sàn trên 36 cm (tầng 3, xe C). Trục đứng nối ba tầng. Tầng 1 nâng bậc lên sàn giữa, tầng 2 nâng bậc lên sàn trên, tầng 3 mở cửa thoát.",
+   "layout": "Tháp ba tầng: bàn răng sàn (tầng 1, xe A); sàn giữa 18 cm có bậc thang có cửa (tầng 2, xe B); sàn trên 27 cm (tầng 3, xe C). Trục đứng nối ba tầng. Tầng 1 nâng cửa bậc thang, tầng 2 đẩy bậc từ sàn giữa sang sàn trên, tầng 3 mở cửa chớp lỗ thoát. Nút P sau Q bên phải.",
    "steps": [
     "Vào Q: 50% + 50%",
-    "Nửa 1 đứng nút P (giữ máy)",
-    "Nửa 2 kéo A: tầng 1 khớp, bậc lên sàn giữa",
-    "Nửa 2 lên sàn giữa, kéo B: bậc lên sàn trên",
-    "Nửa 2 lên sàn trên, kéo C: cửa thoát mở",
-    "Nửa 1 rời P, leo các bậc; nhập trên sàn trên, chui ra"
+    "Nửa 1 đi mép phải lên nút P (giữ máy)",
+    "Nửa 2 kéo A: tầng 1 khớp, cửa bậc thang nâng",
+    "Nửa 2 leo bậc lên sàn giữa, kéo B: bậc trượt sang sàn trên",
+    "Nửa 2 lên bậc và sàn trên, kéo C: cửa chớp mở và chốt",
+    "Nửa 1 rời P đi đường trước (xe A đã chặn lối sau Q), leo bậc thang, qua sàn giữa lên bậc; nhập trên sàn trên, chui ra"
    ],
    "recovery": "Mỗi đầu ra có chốt: rời P không làm mất tầng đã mở. Xe kéo ngược được trước khi chốt.",
    "mechanisms": [
@@ -1358,8 +1610,24 @@
    "time_estimate": "2–3 phút",
    "risk": "Nhiều bánh cùng quay: kiểm hiệu năng trên OPPO.",
    "plate": "Illustrations/49-E18.png",
-   "greybox": "PlusDesign E18",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusE18.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Như 44 (cửa 17 cm, mặt ngà trên bậc, máy trơn).",
+    "Bậc sang sàn trên nổi 2 mm, mặt trên ngang sàn trên: sát mặt sàn giữa, góc bậc vướng mép tấm cuối.",
+    "Chỗ đứng kéo C lùi sau xe C (xe trơn).",
+    "Nút P sau Q bên phải; người giữ máy rời P đi đường trước: sau khi kéo A, xe A chặn lối sau Q."
+   ],
+   "tests": [
+    "SpatialPlusE18Solve",
+    "SpatialPlusE18Wander"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 18,
+    "seconds": 38.490234375,
+    "p95Ms": 16.676706314086914
+   }
   },
   {
    "key": "B2",
@@ -1372,26 +1640,25 @@
    "insight": "Mỗi tầng mở đường lên tầng sau; cửa cuối cần cả hai động cơ cùng lúc nên bốn phần phải chia vai đúng.",
    "why": "Boss cuối của bản 50 màn: bánh răng xếp ba tầng, hai động cơ, thang giữ tay, máy đẩy máy và cửa cần cả hai động cơ.",
    "new": "Không (tổ hợp 31, 41, 44, 46, 48, 49 + bốn phần 34/39).",
-   "layout": "Tháp bánh răng trên một hàng trục: tầng 1 bàn sàn (xe A, động cơ P1), tầng 2 trên sàn giữa 18 cm (xe B, động cơ P2, cần L), tầng 3 trên sàn trên 36 cm (xe C do tầng 2 đẩy vào). Thang giữa chỉ chạy khi P1 có tải; cầu lên sàn trên do tầng 2 nâng; cửa thoát cần P1 và P2 cùng có tải.",
+   "layout": "Tháp bánh răng trên một hàng trục: tầng 1 bàn sàn (xe A, động cơ P1 sau Q bên phải), tầng 2 trên sàn giữa 18 cm (xe B, động cơ P2), tầng 3 trên sàn trên 27 cm (xe C do tầng 2 đẩy vào). Thang giữ tay chỉ chạy khi P1 có tải. Kéo B vừa khớp tầng 2 vừa nâng cửa bậc thang qua thanh nối. Thanh răng tầng 2 đẩy xe C và bậc sang sàn trên. Cửa chớp lỗ thoát cần P1 và P2 cùng có tải, rồi chốt.",
    "steps": [
-    "Vào Q hai lượt: bốn phần 25%",
-    "Phần 1 kéo A: tầng 1 khớp",
-    "Phần 2 đứng P1: thang bánh răng chạy (chỉ khi có tải)",
-    "Phần 3 đứng lên thang, lên sàn giữa",
-    "Phần 3 kéo B: tầng 2 khớp",
-    "Phần 3 kéo L: thang có điện thường trực, phần 1 và 4 đi thang lên",
-    "Phần 4 đứng P2: tầng 2 đẩy xe C vào tầng 3 và nâng cầu lên sàn trên",
-    "Phần 3 qua cầu; khi P1 và P2 cùng có tải, cửa thoát mở và chốt",
-    "Hai phần đứng máy rời nút, đi lên; bốn phần nhập trên sàn trên, chui ra"
+    "Vào Q: 50% + 50%; nửa bên trái đi dọc mép trước, chờ bên phải bậc thang",
+    "Nửa kia vào Q lần nữa: 25% + 25%; phần trái dẫn ra khỏi khay, kéo A: tầng 1 khớp",
+    "Phần trái đứng lên thang; phần phải đi mép phải lên P1: thang đưa phần trái lên sàn giữa",
+    "Phần trái kéo B: tầng 2 khớp và cửa bậc thang nâng",
+    "Nửa 50% leo bậc thang lên P2: tầng 2 quay, đẩy xe C vào tầng 3 và bậc sang sàn trên",
+    "P1 và P2 cùng có tải: tầng 3 mở cửa chớp, cửa chốt",
+    "Phần trái lên bậc và sàn trên; phần P1 rời nút đi đường trước, leo bậc; ba phần nhập trên sàn trên, chui ra"
    ],
-   "recovery": "Mỗi đầu ra đã chốt giữ nguyên khi rời nút; thang có đường xuống; khớp sai tầng chỉ làm bánh quay suông. Tụ sớm: vào lại Q.",
+   "recovery": "Mỗi đầu ra đã chốt giữ nguyên khi rời nút; thang tự hạ khi P1 rời nút (người trên thang được đặt xuống an toàn); khớp sai tầng chỉ làm bánh quay suông. Tụ sớm: vào lại Q.",
    "mechanisms": [
-    "COgheGearTrain nhiều chuỗi (có)",
-    "Đầu ra cần hai động cơ (mới: hai InputClutch cho một chuỗi)",
+    "COgheGearTrain ba chuỗi, trục nối tầng (ShaftLinks)",
+    "Đầu ra cần hai động cơ (COgheGearTrain.ExtraClutches)",
     "Thang bánh răng giữ tay (như 46)",
+    "Thanh nối B → cửa bậc thang; thanh răng → xe C và bậc (COgheViewMechanism)",
     "Q (có)"
    ],
-   "parts": 4,
+   "parts": 3,
    "mass_trace": [
     [
      100
@@ -1401,8 +1668,7 @@
      50
     ],
     [
-     25,
-     25,
+     50,
      25,
      25
     ],
@@ -1410,12 +1676,29 @@
      100
     ]
    ],
-   "taps_estimate": 30,
+   "taps_estimate": 26,
    "time_estimate": "6–10 phút",
    "risk": "Đầu ra hai động cơ là mở rộng nhỏ của GearTrain; bốn phần + nhiều bánh quay: đo hiệu năng OPPO sớm.",
    "plate": "Illustrations/50-B2.png",
-   "greybox": "PlusDesign B2",
-   "status": "design-only"
+   "scene": "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusB2.unity",
+   "status": "built",
+   "changes_from_design": [
+    "Bỏ cần L: sàn giữa không còn chỗ trống cho L (đặt ở đâu cũng chắn chỗ đứng của B, bậc hoặc vách). Kéo B vừa khớp tầng 2 vừa nâng cửa bậc thang qua thanh nối — còn 3 phần (50/25/25) thay vì 4.",
+    "Thanh răng tầng 2 chạy về phía trước: chạy ra sau nó đâm vào đường của bậc.",
+    "Thang giữ tay MotorSpeed 2,5; P1 sau Q bên phải, P2 trên sàn giữa.",
+    "Lời giải mẫu: phần 25% trái dẫn ra khỏi khay Q trước khi kéo A (game đã nhắc “dẫn phần đó rời khay”); đi thẳng thì vướng vỏ Q."
+   ],
+   "tests": [
+    "SpatialPlusB2Solve",
+    "SpatialPlusB2Wander",
+    "SpatialPlusB2RetryPartway"
+   ],
+   "native": {
+    "passed": true,
+    "taps": 20,
+    "seconds": 42.4388427734375,
+    "p95Ms": 16.6827449798584
+   }
   }
  ]
 }
