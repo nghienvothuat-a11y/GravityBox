@@ -40,7 +40,7 @@ namespace GravityBox.Editor
                 PlayerSettings.defaultInterfaceOrientation=UIOrientation.Portrait;
                 Directory.CreateDirectory(Output);
                 var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{
-                    scenes=scenes,target=BuildTarget.iOS,locationPathName=Output,options=BuildOptions.None});
+                    scenes=scenes,target=BuildTarget.iOS,locationPathName=Output,options=BuildOptions.None,extraScriptingDefines=COgheAndroidBuilder.Defines()});
                 if(report.summary.result!=BuildResult.Succeeded)
                     throw new Exception("COghe iOS export failed: "+report.summary.result);
 #if UNITY_IOS

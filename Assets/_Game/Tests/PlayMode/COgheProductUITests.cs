@@ -164,6 +164,14 @@ namespace GravityBox.Tests
             {
                 yield return SceneManager.LoadSceneAsync(scenes[i]);yield return null;
                 game=Object.FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;
+                if(game.Definition.Boss)
+                {
+                    // Boss levels open with their tour and warning first, the level paused underneath
+                    var boss=COgheBossIntro.Current;Assert.IsNotNull(boss,scenes[i]+" opens with its tour");Assert.AreEqual(COgheProductPage.Intro,ui.Page,scenes[i]);
+                    boss.Speed=30;float until=Time.realtimeSinceStartup+6;
+                    while(COgheBossIntro.Current!=null&&Time.realtimeSinceStartup<until)yield return null;
+                    Assert.IsNull(COgheBossIntro.Current,scenes[i]+" tour ends");Assert.IsFalse(game.Owner.Paused,scenes[i]);
+                }
                 Assert.IsNotNull(ui,scenes[i]);Assert.AreEqual(COgheProductPage.Game,ui.Page,scenes[i]);
                 Assert.AreEqual(i+1,game.Definition.Order);Canvas.ForceUpdateCanvases();
                 foreach(var button in ui.GetComponentsInChildren<Button>())

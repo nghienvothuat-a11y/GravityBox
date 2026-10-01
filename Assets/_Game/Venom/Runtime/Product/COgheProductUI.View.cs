@@ -126,7 +126,7 @@ namespace GravityBox.Venom
         {
             popupRoot=art.Rect(safe,"Popup "+Popup,new Rect(0,0,width,height));
             var veil=art.Box(popupRoot,"Input shield",new Rect(-width,-height,width*3,height*3),new Color(.13f,.23f,.21f,.36f),true);veil.sprite=null;
-            float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?430:Popup==COgheProductPopup.Help?450:Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null?Mathf.Min(560,height-90):260;
+            float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?(COgheTestTools.LevelSelect&&Page!=COgheProductPage.Home?482:430):Popup==COgheProductPopup.Levels?Mathf.Min(560,height-90):Popup==COgheProductPopup.Help?450:Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null?Mathf.Min(560,height-90):260;
             var panel=art.Box(popupRoot,"Panel",new Rect((width-w)*.5f,(height-h)*.5f,w,h),COgheUIArt.Paper,true).rectTransform;
             if(Popup==COgheProductPopup.Pause)
             {
@@ -139,7 +139,9 @@ namespace GravityBox.Venom
                 Tile(panel,18+cell,214,cell,COgheIcon.Music,"Music",ToggleMusic,true,COgheAudio.MusicOn);
                 Tile(panel,18+2*cell,214,cell,COgheAudio.EffectsOn?COgheIcon.Sound:COgheIcon.Muted,"Sound",ToggleSound,true,COgheAudio.EffectsOn);
                 art.Button(panel,"Resume",new Rect(24,h-82,w-48,58),COgheIcon.Play,Resume,"Resume",true);ClosePopup(panel,w,Resume);
+                if(COgheTestTools.LevelSelect&&!home)art.Button(panel,"Test levels",new Rect(24,h-138,w-48,48),COgheIcon.Overview,()=>ShowPopup(COgheProductPopup.Levels),"Levels (test)");
             }
+            else if(Popup==COgheProductPopup.Levels)LevelsPopup(panel,w,h);
             else if(Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null)ItemsPopup(panel,w,h);
             else if(Popup==COgheProductPopup.Help)
             {

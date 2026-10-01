@@ -68,7 +68,17 @@ namespace GravityBox.Venom
             Screen.SetResolution(720,1612,FullScreenMode.Windowed);yield return new WaitForSecondsRealtime(1);
             yield return Capture("13-tall-menu");ui.Play();if(COgheIntro.Playing){replay=FindFirstObjectByType<COgheIntro>();while(!replay.Started)yield return null;replay.Speed=30;replay.Skip();while(COgheIntro.Playing)yield return null;}
             yield return Capture("14-tall-game");ui.ShowPopup(COgheProductPopup.Pause);yield return Capture("15-tall-pause");
-            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"autoAdvancedToLevel\":2,\"savedProgressWritten\":false,\"captures\":18}");
+            // test-build level picker, then a Boss level's opening tour and warning
+            ui.ShowPopup(COgheProductPopup.Levels);yield return Capture("19-test-levels");
+            ui.LoadForTest(10);yield return new WaitForSecondsRealtime(3f);
+            game=FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;
+            if(COgheBossIntro.Current==null){Fail("Boss level opened without its tour");yield break;}
+            yield return Capture("20-boss-tour");
+            var boss=COgheBossIntro.Current;boss.Seek(boss.TourLength+COgheBossIntro.PullBack+1.1f);yield return Capture("21-boss-warning");
+            float bossEnd=Time.realtimeSinceStartup+10;while(COgheBossIntro.Current!=null&&Time.realtimeSinceStartup<bossEnd)yield return null;
+            if(COgheBossIntro.Current!=null||game.Owner.Paused){Fail("Boss tour did not hand over");yield break;}
+            yield return Capture("22-boss-level");
+            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"autoAdvancedToLevel\":2,\"savedProgressWritten\":false,\"captures\":22}");
             Debug.Log("COGHE PRODUCT NATIVE PROOF PASSED");Application.Quit(0);
         }
         private IEnumerator Capture(string name)

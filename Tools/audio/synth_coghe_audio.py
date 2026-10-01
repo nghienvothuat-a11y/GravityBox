@@ -7,7 +7,7 @@ the creature is small, curious, playful and friendly.
 
 Usage: python3 Tools/audio/synth_coghe_audio.py [out_dir] [--music] [--intro]   (needs numpy, scipy, soundfile)
 --music also rebuilds the background loop, --intro the 20 s intro score, --personality the sounds of COghe's acts,
---home the Home furniture sounds (otherwise the committed ones are kept).
+--home the Home furniture sounds, --moments the Boss warning and win confetti (otherwise the committed ones are kept).
 Default out_dir: Assets/_Game/Venom/Resources/COgheAudio
 """
 import os, sys
@@ -646,6 +646,35 @@ def home_sfx():
     return out
 
 
+# ---------------------------------------------------------------------------------------------------------------------
+# Game moments: the Boss warning (a low hit and a three-pulse two-tone alarm) and the soft confetti poppers of a win.
+def moments_sfx():
+    global RNG
+    RNG = np.random.default_rng(7171)
+    out = {}
+    n = int(2.5 * SR); t = np.arange(n) / SR; x = np.zeros(n)
+    m = int(1.0 * SR); tt = np.arange(m) / SR
+    hit = np.sin(2 * np.pi * np.cumsum(glide(m, 180, 70, .5)) / SR) * np.exp(-tt / .35) + bandpass(noise(m), 200, 1200) * np.exp(-tt / .08) * .6
+    x[:m] += hit * .9
+    for k, start in enumerate([.25, .95, 1.65]):
+        q = int(.5 * SR); tq = np.arange(q) / SR
+        f = np.where(tq < .25, 880, 660)
+        tone = np.sign(np.sin(2 * np.pi * np.cumsum(f) / SR)) * .5 + np.sin(2 * np.pi * np.cumsum(f) / SR) * .5
+        tone = lowpass(tone, 2600) * env(q, .01, .08) * (.55 - .1 * k)
+        s0 = int(start * SR); x[s0:s0 + q] += tone[:n - s0]
+    drone = (np.sin(2 * np.pi * 110 * t) * .5 + np.sin(2 * np.pi * 220 * t) * .35 + np.sin(2 * np.pi * 330 * t) * .15) * env(n, .3, .8) * .25
+    out["boss_warning"] = save("boss_warning", reverb(x + drone, 1.4, .2)[:, 0], -3)
+    n = int(1.0 * SR); t = np.arange(n) / SR; x = np.zeros(n)
+    for start in (0, .12):
+        q = int(.12 * SR); tq = np.arange(q) / SR
+        pop = bandpass(noise(q), 700, 3000) * np.exp(-tq / .03) + np.sin(2 * np.pi * np.cumsum(glide(q, 520, 260)) / SR) * np.exp(-tq / .04) * .4
+        s0 = int(start * SR); x[s0:s0 + q] += pop
+    rustle = highpass(noise(n), 3000) * (RNG.random(n) < .004) * 1.0
+    x += lowpass(rustle, 9000) * np.exp(-t / .35) * .5
+    out["confetti_pop"] = save("confetti_pop", small_room(x, .15), -8)
+    return out
+
+
 if __name__ == "__main__":
     sfx()
     # The music is only rebuilt on request: the committed loop is the one that was approved by ear.
@@ -653,6 +682,7 @@ if __name__ == "__main__":
     if "--intro" in sys.argv: intro_score()
     if "--personality" in sys.argv: personality_sfx()
     if "--home" in sys.argv: home_sfx()
+    if "--moments" in sys.argv: moments_sfx()
     print("written to", os.path.abspath(OUT))
     for f in sorted(os.listdir(OUT)):
         if f.endswith(".ogg"):

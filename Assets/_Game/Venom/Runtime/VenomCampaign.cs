@@ -714,6 +714,7 @@ namespace GravityBox.Venom
             if(Owner==null)return;
             if(ProductUI!=null&&ProductUI.Showcase){ProductUI.FrameShowcase();return;}
             if(Owner.Completed){Owner.Celebration.Frame(Screen.width,Screen.height);return;}
+            if(COgheBossIntro.OwnsCamera)return;   // a Boss level's opening tour flies the camera itself
             CameraRig.Frame(Screen.width,Screen.height,Time.unscaledDeltaTime,false,Screen.safeArea);
         }
         private void OnGUI()

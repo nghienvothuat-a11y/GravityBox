@@ -30,6 +30,15 @@ namespace GravityBox.Editor
         public static void BuildOnboarding() => BuildScenes(COgheOnboardingBuilder.ScenePaths(),
             "Builds/COgheOnboarding/Android/COghe-Learn.apk",BundleId+".onboarding","COghe Learn");
 
+        /// <summary>Test builds carry the team's test tools (the Pause level picker); a store build is made with
+        /// COGHE_STORE=1, which leaves them out.</summary>
+        internal static string[] Defines()
+        {
+            var defines=new System.Collections.Generic.List<string>();
+            if(Environment.GetEnvironmentVariable("COGHE_BENCHMARK")=="1")defines.Add("COGHE_MOBILE_BENCHMARK");
+            if(Environment.GetEnvironmentVariable("COGHE_STORE")!="1")defines.Add("COGHE_TEST_TOOLS");
+            return defines.ToArray();
+        }
         private static void BuildScenes(string[] scenes, string output,string bundleId=BundleId,string displayName="COghe")
         {
             if(!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android,BuildTarget.Android))
@@ -58,8 +67,7 @@ namespace GravityBox.Editor
                 Directory.CreateDirectory(Path.GetDirectoryName(output));
                 var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{
                     scenes=scenes,target=BuildTarget.Android,locationPathName=output,options=BuildOptions.None,
-                    extraScriptingDefines=Environment.GetEnvironmentVariable("COGHE_BENCHMARK")=="1"?
-                        new[]{"COGHE_MOBILE_BENCHMARK"}:Array.Empty<string>()});
+                    extraScriptingDefines=Defines()});
                 if(report.summary.result!=BuildResult.Succeeded)
                     throw new Exception("COghe Android build failed: "+report.summary.result);
                 Debug.Log("COGHE ANDROID BUILD SUCCESS: "+Path.GetFullPath(output));

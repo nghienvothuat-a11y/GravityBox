@@ -9,7 +9,18 @@ using UnityEngine.UI;
 namespace GravityBox.Venom
 {
     public enum COgheProductPage { MainMenu, Game, Home, Intro, Victory }
-    public enum COgheProductPopup { None, Pause, Help, Restart, LeaveMenu, LeaveHome, Collection, Locked, Failure }
+    public enum COgheProductPopup { None, Pause, Help, Restart, LeaveMenu, LeaveHome, Collection, Locked, Failure, Levels }
+
+    /// <summary>Test-only tools (the level picker in Pause): compiled into development builds and the team's test builds
+    /// (COGHE_TEST_TOOLS, added by the build scripts unless COGHE_STORE=1); absent from a store build.</summary>
+    public static class COgheTestTools
+    {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD || COGHE_TEST_TOOLS
+        public const bool LevelSelect = true;
+#else
+        public const bool LevelSelect = false;
+#endif
+    }
 
     [DefaultExecutionOrder(150)]
     public sealed partial class COgheProductUI : MonoBehaviour
@@ -65,6 +76,7 @@ namespace GravityBox.Venom
             if(COgheProductMode.ReplayIntroOnLoad){COgheProductMode.ReplayIntroOnLoad=false;PlayIntro(true);}
             else if(!COgheProductMode.SessionStarted){COgheProductMode.SessionStarted=true;ShowMenu();}
             else if(Game.Definition.Order==1&&!COgheIntro.Seen)PlayIntro(false);
+            else if(Game.Definition.Boss)PlayBossIntro();
             else Rebuild();
         }
         private void Update()
@@ -76,7 +88,7 @@ namespace GravityBox.Venom
             if(Page==COgheProductPage.Game)
             {
                 if(Game.Owner.Lost&&Popup==COgheProductPopup.None){ShowPopup(COgheProductPopup.Failure);return;}
-                if(Game.Owner.Completed){Page=COgheProductPage.Victory;Rebuild();return;}
+                if(Game.Owner.Completed){Page=COgheProductPage.Victory;Rebuild();COgheConfetti.Burst(safe,width,height,Game.Definition.Order);return;}
                 if(Time.unscaledTime>=nextRefresh)
                 {
                     nextRefresh=Time.unscaledTime+.1f;int signature=FragmentSignature();
@@ -95,7 +107,10 @@ namespace GravityBox.Venom
             if(!started)return true;
             var k=Keyboard.current;
             if(Page==COgheProductPage.Intro)
-            {if(k!=null&&k.escapeKey.wasPressedThisFrame)FindFirstObjectByType<COgheIntro>()?.Skip();return true;}
+            {
+                if(k!=null&&k.escapeKey.wasPressedThisFrame){FindFirstObjectByType<COgheIntro>()?.Skip();var boss=COgheBossIntro.Current;if(boss!=null&&boss.Clock<boss.TourLength+COgheBossIntro.PullBack)boss.Seek(boss.TourLength+COgheBossIntro.PullBack);}
+                return true;
+            }
             if(k!=null&&(k.escapeKey.wasPressedThisFrame||k.pKey.wasPressedThisFrame))
             {
                 if(Popup==COgheProductPopup.Help)ShowPopup(COgheProductPopup.Pause);
@@ -137,7 +152,7 @@ namespace GravityBox.Venom
             if(next==0){Notify("All puzzles complete. Visit Home!");return;}
             if(Game.Definition.Order!=next){Load(next);return;}
             MenuShadows(false);Game.ResetLevel();Page=COgheProductPage.Game;Popup=COgheProductPopup.None;
-            if(next==1&&!COgheIntro.Seen)PlayIntro(false);else Rebuild();
+            if(next==1&&!COgheIntro.Seen)PlayIntro(false);else if(Game.Definition.Boss)PlayBossIntro();else Rebuild();
         }
         public void ReplayIntro()
         {
@@ -150,6 +165,14 @@ namespace GravityBox.Venom
             COgheIntro.Play(Game,()=>{if(this==null)return;canvas.gameObject.SetActive(true);if(replay)ShowMenu();else{Page=COgheProductPage.Game;Rebuild();}},replay);
         }
         private void Load(int n){leaving=true;SetPaused(false);Game.Load(n);}
+        /// <summary>Boss levels open with a tour of the box and a warning, the level paused underneath.</summary>
+        private void PlayBossIntro()
+        {
+            MenuShadows(false);Page=COgheProductPage.Intro;Popup=COgheProductPopup.None;canvas.gameObject.SetActive(false);
+            COgheBossIntro.Play(Game,()=>{if(this==null)return;canvas.gameObject.SetActive(true);Page=COgheProductPage.Game;Rebuild();});
+        }
+        /// <summary>Test builds: jump to any level from Pause.</summary>
+        public void LoadForTest(int n){Popup=COgheProductPopup.None;Load(n);}
         public void OpenHome()
         {
             if(!Game.Progress.HomeUnlocked){ShowPopup(COgheProductPopup.Locked);return;}
