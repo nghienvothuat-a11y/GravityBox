@@ -19,6 +19,7 @@ namespace GravityBox.Venom
         private void Rebuild()
         {
             if(!started)return;
+            if(Page!=COgheProductPage.Style)CloseStyle();
             Clear(ref popupRoot);Clear(ref pageRoot);dynamicRoot=null;
             if(toast!=null)Destroy(toast.transform.parent.gameObject);toast=null;
             pageRoot=art.Rect(safe,"Page "+Page,new Rect(0,0,width,height));
@@ -28,6 +29,7 @@ namespace GravityBox.Venom
                 case COgheProductPage.Home:HomeView();break;
                 case COgheProductPage.Game:GameView();break;
                 case COgheProductPage.Victory:VictoryView();break;
+                case COgheProductPage.Style:StyleView();break;
             }
             if(Popup!=COgheProductPopup.None)PopupView();
         }
@@ -107,7 +109,9 @@ namespace GravityBox.Venom
             MenuEntry(x,y,"Feed",COgheIcon.Food,()=>{Game.FeedHome();COgheAudio.Happy();});
             MenuEntry(x+80,y,"Play",COgheIcon.Heart,()=>{Game.GreetHome();COgheAudio.Happy();});
             MenuEntry(x+160,y,"Items",COgheIcon.Menu,()=>ShowPopup(COgheProductPopup.Collection));
-            MenuEntry(x+240,y,homeZoom?"Zoom out":"Zoom in",homeZoom?COgheIcon.Overview:COgheIcon.Pinch,ToggleHomeZoom);
+            MenuEntry(x+240,y,"Style",COgheIcon.Sparkles,OpenStyle);
+            // the camera's Zoom stays one tap away, floating above the row (Codex: four main actions, not five)
+            art.Button(pageRoot,homeZoom?"Zoom out":"Zoom in",new Rect(width-72,y-64,48,48),homeZoom?COgheIcon.Overview:COgheIcon.Pinch,ToggleHomeZoom);
         }
         private void VictoryView()
         {
@@ -127,12 +131,13 @@ namespace GravityBox.Venom
         {
             popupRoot=art.Rect(safe,"Popup "+Popup,new Rect(0,0,width,height));
             var veil=art.Box(popupRoot,"Input shield",new Rect(-width,-height,width*3,height*3),new Color(.13f,.23f,.21f,.36f),true);veil.sprite=null;
-            float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?(COgheTestTools.LevelSelect&&Page!=COgheProductPage.Home?482:430):Popup==COgheProductPopup.Levels?Mathf.Min(560,height-90):Popup==COgheProductPopup.Help?450:Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null?Mathf.Min(560,height-90):260;
+            if(StylePopup())return;
+            float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?(COgheTestTools.LevelSelect&&!InHome?482:430):Popup==COgheProductPopup.Levels?Mathf.Min(560,height-90):Popup==COgheProductPopup.Help?450:Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null?Mathf.Min(560,height-90):260;
             var panel=art.Box(popupRoot,"Panel",new Rect((width-w)*.5f,(height-h)*.5f,w,h),COgheUIArt.Paper,true).rectTransform;
             if(Popup==COgheProductPopup.Pause)
             {
-                PopupTitle(panel,w,"Paused");art.Label(panel,"Context",Page==COgheProductPage.Home?"Home":"Level "+Game.Definition.Order,new Rect(20,65,w-40,22),12,COgheUIArt.Muted);
-                bool home=Page==COgheProductPage.Home;float cell=(w-36)/3;
+                PopupTitle(panel,w,"Paused");art.Label(panel,"Context",InHome?"Home":"Level "+Game.Definition.Order,new Rect(20,65,w-40,22),12,COgheUIArt.Muted);
+                bool home=InHome;float cell=(w-36)/3;
                 Tile(panel,18,108,cell,COgheIcon.Restart,"Restart",()=>ShowPopup(COgheProductPopup.Restart),!home);
                 Tile(panel,18+cell,108,cell,Game.Progress.HomeUnlocked?COgheIcon.Home:COgheIcon.Lock,"Home",OpenHome,!home);
                 Tile(panel,18+2*cell,108,cell,COgheIcon.Menu,"Menu",RequestMenu);

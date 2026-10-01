@@ -26,7 +26,7 @@ namespace GravityBox.Venom
         }
         private IEnumerator Start()
         {
-            deadline=Time.realtimeSinceStartup+260;Application.runInBackground=true;
+            deadline=Time.realtimeSinceStartup+320;Application.runInBackground=true;
             var args=Environment.GetCommandLineArgs();int at=Array.IndexOf(args,"-coghe-product-proof-output");
             output=at>=0&&at+1<args.Length?Path.GetFullPath(args[at+1]):Path.Combine(Application.persistentDataPath,"ProductUIProof");Directory.CreateDirectory(output);
             Screen.SetResolution(720,1280,FullScreenMode.Windowed);yield return new WaitForSecondsRealtime(1);
@@ -100,9 +100,37 @@ namespace GravityBox.Venom
             float fed=Time.realtimeSinceStartup+30;while(game.HomeFeeding&&Time.realtimeSinceStartup<fed)yield return null;
             if(game.HomeFeeding){Fail("COghe did not eat the balls");yield break;}
             game.Personality.PlayNow(game.HomeRoom.Find("BALL"));yield return new WaitForSecondsRealtime(3.45f);yield return Capture("29-home-ball-toss");
+            // Style: inks held into COghe, the mix, a hat, things inside, a locked item, a fifth color's question, back home
+            COgheHomeRoom.UnlockedLevelOverride=30;COgheStyle.ResetForTests(new COgheStyle{Seed=4});COgheStyle.Current.ApplyTo(game);
+            ui.OpenStyle();yield return new WaitForSecondsRealtime(1.5f);
+            if(ui.Page!=COgheProductPage.Style){Fail("Style did not open");yield break;}
+            yield return Capture("30-style");
+            yield return StyleHold("INK_OCEAN",0,.4f,2.6f,"31-style-hold");if(failed)yield break;
+            yield return StyleHold("INK_CORAL",.8f,-.2f,1.2f,null);if(failed)yield break;
+            yield return new WaitForSecondsRealtime(1.8f);yield return Capture("32-style-mix");
+            ui.SetStyleTab(1,0);ui.ChooseStyleItem("HAT_STRAW");yield return new WaitForSecondsRealtime(1.2f);yield return Capture("33-style-hat");
+            ui.SetStyleTab(1,1);ui.ChooseStyleItem("FLOAT_FISH");ui.Resume();ui.ChooseStyleItem("FLOAT_STARS");ui.Resume();
+            yield return new WaitForSecondsRealtime(1.6f);yield return Capture("34-style-inside");
+            ui.SetStyleTab(1,0);ui.ChooseStyleItem("HAT_ASTRO");yield return Capture("35-style-locked");ui.Resume();
+            ui.SetStyleTab(0,0);yield return StyleHold("INK_GOLD",-.8f,-.3f,.8f,null);yield return StyleHold("INK_FIREFLY",.3f,-.6f,.8f,null);if(failed)yield break;
+            ui.ChooseStyleItem("INK_SAKURA");if(ui.Popup!=COgheProductPopup.StyleReplaceInk){Fail("A fifth color did not ask");yield break;}
+            yield return Capture("36-style-replace");ui.Resume();
+            ui.LeaveStyle();yield return new WaitForSecondsRealtime(2.5f);yield return Capture("37-home-styled");
+            COgheStyle.ResetForTests();
             COgheHomeRoom.UnlockedLevelOverride=null;
-            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"autoAdvancedToLevel\":2,\"savedProgressWritten\":false,\"captures\":29}");
+            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"autoAdvancedToLevel\":2,\"savedProgressWritten\":false,\"captures\":37}");
             Debug.Log("COGHE PRODUCT NATIVE PROOF PASSED");Application.Quit(0);
+        }
+        /// <summary>Hold a syringe on COghe (x, y: across the body from its middle, in units of 2.5 cm) like a finger would.</summary>
+        private IEnumerator StyleHold(string ink,float x,float y,float seconds,string capture)
+        {
+            ui.ChooseStyleItem(ink);
+            var drawn=game.Matter.GetComponent<VenomSurface>().DrawnParticles;var c=Vector3.zero;foreach(var d in drawn)c+=d;c/=drawn.Length;
+            var view=game.Owner.View.transform;
+            if(!ui.BeginStyleHold(game.Owner.View.WorldToScreenPoint(c+view.right*x*.025f+view.up*y*.025f),false)){Fail("A hold on COghe did not start ("+ink+")");yield break;}
+            if(capture!=null){yield return new WaitForSecondsRealtime(seconds*.6f);yield return Capture(capture);yield return new WaitForSecondsRealtime(seconds*.4f);}
+            else yield return new WaitForSecondsRealtime(seconds);
+            ui.EndStyleHold();
         }
         private IEnumerator Capture(string name)
         {

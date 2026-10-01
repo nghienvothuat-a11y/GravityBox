@@ -57,7 +57,7 @@ Shader "COghe/Ink Skin"
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
-            #pragma shader_feature_local_fragment _ALPHAPREMULTIPLY_ON
+            #pragma multi_compile_local_fragment _ _ALPHAPREMULTIPLY_ON   // set from code at runtime: must ship in every build
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS

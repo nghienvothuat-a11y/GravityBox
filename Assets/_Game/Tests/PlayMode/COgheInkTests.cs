@@ -81,7 +81,7 @@ namespace GravityBox.Tests
       IEnumerator Clear(bool inside)
       {
        if(extras!=null){Object.Destroy(extras);extras=null;yield return Frames(1);}
-       if(inside)extras=COgheAccessories.Attach(game,COgheAccessory.Inclusions);
+       if(inside){extras=COgheAccessories.Attach(game);extras.Dress("",new[]{"FLOAT_FISH","FLOAT_STARS"});}
       }
       var top=new Vector3(0,1,.55f);var left=new Vector3(-1,.45f,.6f);var right=new Vector3(1,.45f,.6f);
       yield return Roll(1f);

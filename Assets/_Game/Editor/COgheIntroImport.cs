@@ -5,7 +5,7 @@ namespace GravityBox.Editor
 {
     /// <summary>
     /// Import settings for the intro art (Resources/COgheIntro, written by Tools/intro/prepare_intro_layers.py at their
-    /// final size) and the Home item icons (Resources/COgheHome/Icons). ASTC 8×8 on phones keeps the whole comic to a few MB. No mipmaps: the layers are drawn near 1:1, and on
+    /// final size) and the Home and Style item icons (Resources/COgheHome/Icons, Resources/COgheStyle/Icons). ASTC 8×8 on phones keeps the whole comic to a few MB. No mipmaps: the layers are drawn near 1:1, and on
     /// Android a non-power-of-two texture with mipmaps is stored uncompressed (the lab plate went from 0.35 to 5.5 MB).
     /// Replacement files with the same names get the same settings.
     /// </summary>
@@ -15,7 +15,7 @@ namespace GravityBox.Editor
 
         private void OnPreprocessTexture()
         {
-            bool icon = assetPath.Contains("/Resources/COgheHome/Icons/");   // Home item icons (Codex, 256 px): crisper blocks
+            bool icon = assetPath.Contains("/Resources/COgheHome/Icons/") || assetPath.Contains("/Resources/COgheStyle/Icons/");   // Home and Style item icons (Codex, 256 px): crisper blocks
             if (!assetPath.Contains("/Resources/COgheIntro/") && !icon) return;
             var importer = (TextureImporter)assetImporter;
             string name = System.IO.Path.GetFileNameWithoutExtension(assetPath);

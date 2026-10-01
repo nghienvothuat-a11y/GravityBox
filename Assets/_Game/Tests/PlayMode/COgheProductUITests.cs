@@ -12,7 +12,7 @@ using Object=UnityEngine.Object;
 
 namespace GravityBox.Tests
 {
-    public class COgheProductUITests
+    public partial class COgheProductUITests
     {
         private VenomCampaign game;
         private COgheProductUI ui;

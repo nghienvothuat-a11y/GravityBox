@@ -12,7 +12,7 @@ namespace GravityBox.Tests
   [UnityTest] public IEnumerator HatSitsOnTheBiggestPieceAndTouchesNothing()
   {
    yield return Load(1);yield return Frames(30);
-   var a=COgheAccessories.Attach(game,COgheAccessory.Beanie);yield return Frames(30);
+   var a=COgheAccessories.Attach(game);a.Dress("HAT_BEANIE",new string[0]);yield return Frames(30);
    Assert.IsTrue(a.HatWorn,"Worn on the crest");
    float top=float.NegativeInfinity;foreach(var b in game.Matter.Bodies)top=Mathf.Max(top,b.position.y);
    Assert.That(a.HatPosition.y-top,Is.InRange(-.01f,.05f),"Just over the highest particle");
@@ -56,14 +56,14 @@ namespace GravityBox.Tests
      COgheAudio.Heard+=heard;
      cam=new GameObject("Accessory reel camera").AddComponent<Camera>();cam.CopyFrom(game.Owner.View);cam.enabled=false;cam.orthographic=true;cam.aspect=540f/1170;cam.nearClipPlane=.01f;cam.farClipPlane=30;
      var home=Quaternion.Euler(30,-12,0);var room=game.HomeRoom;var pers=game.Personality;
-     acc=COgheAccessories.Attach(game,clear?COgheAccessory.Inclusions:COgheAccessory.Beanie);
+     acc=COgheAccessories.Attach(game);acc.Dress(clear?"":"HAT_BEANIE",clear?new[]{"FLOAT_FISH","FLOAT_STARS"}:new string[0]);
      yield return Roll(3.5f,.17f,home);
      pers.TouchedInHome(game.Motion.Centre(0)+Vector3.right*.02f);yield return Roll(1.8f,.17f,home);
-     if(!clear)acc.Style=COgheAccessory.PartyHat;
+     if(!clear)acc.Dress("HAT_PARTY",new string[0]);
      pers.PlayNow(room.Find(clear?"BALL":"TRAMPOLINE"));
      for(int g=0;g<30*8&&pers.Playing!=null;g++)yield return Roll(1f/30,clear?.24f:.26f,home);
      yield return Roll(.6f,.17f,home);
-     if(!clear){acc.Style=COgheAccessory.FlowerCrown;pers.PlayNow(room.Find("SLIDE"));for(int g=0;g<30*6&&pers.Playing!=null;g++)yield return Roll(1f/30,.26f,home);yield return Roll(1f,.17f,home);}
+     if(!clear){acc.Dress("HAT_FLOWER",new string[0]);pers.PlayNow(room.Find("SLIDE"));for(int g=0;g<30*6&&pers.Playing!=null;g++)yield return Roll(1f/30,.26f,home);yield return Roll(1f,.17f,home);}
      else{pers.TouchedInHome(game.Motion.Centre(0)+Vector3.left*.02f);yield return Roll(1.8f,.17f,home);}
      COgheAudio.Heard-=heard;Object.Destroy(cam.gameObject);cam=null;
      // a level: walking, then split in two
@@ -72,7 +72,7 @@ namespace GravityBox.Tests
      COgheAudio.Heard+=heard;
      cam=new GameObject("Accessory reel camera").AddComponent<Camera>();cam.CopyFrom(game.Owner.View);cam.enabled=false;cam.orthographic=true;cam.aspect=540f/1170;cam.nearClipPlane=.01f;cam.farClipPlane=30;
      var level=game.Owner.View.transform.rotation;placed=false;
-     acc=COgheAccessories.Attach(game,clear?COgheAccessory.Inclusions:COgheAccessory.Beanie);
+     acc=COgheAccessories.Attach(game);acc.Dress(clear?"":"HAT_BEANIE",clear?new[]{"FLOAT_FISH","FLOAT_STARS"}:new string[0]);
      var start=game.Motion.Centre(0);
      yield return Roll(1f,.2f,level);
      game.Motion.Move(0,start+new Vector3(.16f,0,.02f));yield return Roll(3.2f,.2f,level);

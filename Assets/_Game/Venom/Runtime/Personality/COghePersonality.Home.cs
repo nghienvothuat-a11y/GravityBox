@@ -47,6 +47,15 @@ namespace GravityBox.Venom
         public Vector3 SkinCentre => room != null && Act == COgheAct.Home && Pose.Blend > 0 ? Vector3.Lerp(centre, Pose.Centre, Pose.Blend) : game.Motion.Centre(0);
         /// <summary>Main menu: the room is hidden, so COghe stays put and only performs small acts on the spot.</summary>
         internal bool Showcase { get; set; }
+        /// <summary>The Style screen: COghe holds still on its spot (no wandering, games, feeding or acts) while it is dressed.</summary>
+        public bool OnStage { get; private set; }
+        public void TakeStage(Vector3 spot)
+        {
+            StopPlaying(); EndAct(); home = HomeState.Rest; game.Motion.StopAll();
+            if (room != null) TeleportBody(spot);
+            OnStage = true;
+        }
+        public void LeaveStage() { OnStage = false; home = HomeState.Rest; homeTimer = 0; homeNext = 1.5f; }
 
         internal void EnterHome(COgheHomeRoom homeRoom)
         {
@@ -87,6 +96,7 @@ namespace GravityBox.Venom
 
         private void UpdateHome(float dt)
         {
+            if (OnStage) { room.Step(); return; }
             room.Step();
             Reveal(dt);
             stateTime += dt;

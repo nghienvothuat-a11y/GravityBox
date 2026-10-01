@@ -21,10 +21,7 @@ namespace GravityBox.Venom
         private void Build(Material template)
         {
             lit = new Material(template) { name = "Syringe lit" }; lit.SetFloat("_Metallic", 0); lit.SetFloat("_Smoothness", .55f);
-            glass = new Material(template) { name = "Syringe glass" };
-            glass.SetFloat("_Surface", 1); glass.SetOverrideTag("RenderType", "Transparent"); glass.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            glass.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha); glass.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha); glass.SetFloat("_ZWrite", 0);
-            glass.renderQueue = (int)RenderQueue.Transparent + 20; glass.SetFloat("_Smoothness", .92f);
+            glass = Fx(new Color(.82f, .92f, .97f, .14f), 1.2f, .5f, (int)RenderQueue.Transparent + 30);
             materials = new COgheHomeMaterials(lit, glass);
             var k = new COgheLowPoly();
             k.Paint("#9aa3a8").Rod(Vector3.zero, new Vector3(0, .015f, 0), .0007f, 6, .0005f);           // needle
@@ -35,7 +32,7 @@ namespace GravityBox.Venom
             g.Bake("Syringe barrel", transform, materials, true);
             liquid = new GameObject("Ink").transform; liquid.SetParent(transform, false); liquid.localPosition = new Vector3(0, Start, 0);
             var l = new COgheLowPoly(); l.Paint(Color.white).Cylinder(.0039f, .0039f, 0, 1, 12); var lgo = l.Bake("Ink column", liquid, materials);
-            ink = new Material(lit) { name = "Syringe ink" }; ink.EnableKeyword("_EMISSION");
+            ink = Fx(Color.white, .3f, 0, (int)RenderQueue.Transparent + 25);
             foreach (var r in lgo.GetComponentsInChildren<Renderer>()) r.sharedMaterial = ink;
             plunger = new GameObject("Plunger").transform; plunger.SetParent(transform, false);
             var p = new COgheLowPoly();
@@ -48,8 +45,16 @@ namespace GravityBox.Venom
 
         public void SetInk(COgheInk i)
         {
-            ink.SetColor("_BaseColor", i.Color);
-            ink.SetColor("_EmissionColor", i.Color * (.15f + i.Surface.z * .8f));
+            var c = i.Color; c.a = .92f; ink.SetColor("_Color", c);
+        }
+
+        // the barrel and the ink are drawn with the small FX shader (always in builds), after COghe's skin
+        private static Material Fx(Color color, float rim, float rimAlpha, int queue)
+        {
+            var m = new Material(Resources.Load<Shader>("COgheInk/AccessoryFx")) { name = "Syringe FX" };
+            m.SetColor("_Color", color); m.SetFloat("_Rim", rim); m.SetFloat("_RimAlpha", rimAlpha);
+            m.SetFloat("_SrcBlend", (float)BlendMode.One); m.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha); m.renderQueue = queue;
+            return m;
         }
 
         /// <summary>Tip on <paramref name="tip"/>, body along <paramref name="outward"/>; <paramref name="away"/> metres back

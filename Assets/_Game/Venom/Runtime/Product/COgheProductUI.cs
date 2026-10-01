@@ -8,8 +8,8 @@ using UnityEngine.UI;
 
 namespace GravityBox.Venom
 {
-    public enum COgheProductPage { MainMenu, Game, Home, Intro, Victory }
-    public enum COgheProductPopup { None, Pause, Help, Restart, LeaveMenu, LeaveHome, Collection, Locked, Failure, Levels }
+    public enum COgheProductPage { MainMenu, Game, Home, Intro, Victory, Style }
+    public enum COgheProductPopup { None, Pause, Help, Restart, LeaveMenu, LeaveHome, Collection, Locked, Failure, Levels, StyleReplaceInk, StyleRinse, StyleReplaceInside, StyleLocked, StyleNeedsClear }
 
     /// <summary>Test-only tools (the level picker in Pause): compiled into development builds and the team's test builds
     /// (COGHE_TEST_TOOLS, added by the build scripts unless COGHE_STORE=1); absent from a store build.</summary>
@@ -30,7 +30,7 @@ namespace GravityBox.Venom
         public COgheProductPopup Popup {get;private set;}
         public COgheProductCatalog Catalog {get;private set;}
         public bool BlockWorldInput => Page!=COgheProductPage.Game && Page!=COgheProductPage.Home || Popup!=COgheProductPopup.None;
-        public bool Showcase => Page==COgheProductPage.MainMenu || Page==COgheProductPage.Home;
+        public bool Showcase => Page==COgheProductPage.MainMenu || Page==COgheProductPage.Home || Page==COgheProductPage.Style;
         public RectTransform SafeRoot => safe;
         public int ResumeLevel => Catalog.NextIncomplete(Game.Progress);
         private COgheUIArt art;
@@ -75,6 +75,7 @@ namespace GravityBox.Venom
         private void Start()
         {
             EnsureInput();started=true;Layout();Guide=COgheGuide.Create(this,Game,safe,art);
+            COgheStyle.Current.ApplyTo(Game);   // COghe's own look, everywhere it appears
             if(COgheProductMode.ReplayIntroOnLoad){COgheProductMode.ReplayIntroOnLoad=false;PlayIntro(true);}
             else if(!COgheProductMode.SessionStarted){COgheProductMode.SessionStarted=true;ShowMenu();}
             else if(Game.Definition.Order==1&&!COgheIntro.Seen)PlayIntro(false);
@@ -84,6 +85,7 @@ namespace GravityBox.Venom
         private void Update()
         {
             if(!started||leaving)return;
+            StyleTick();
             if(lastWidth!=Screen.width||lastHeight!=Screen.height||lastSafe!=Screen.safeArea){Layout();Rebuild();}
             if(Page==COgheProductPage.Intro)return;
             if(Game.Owner.Paused&&Popup==COgheProductPopup.None)ShowPopup(COgheProductPopup.Pause);
@@ -115,6 +117,7 @@ namespace GravityBox.Venom
             }
             if(k!=null&&(k.escapeKey.wasPressedThisFrame||k.pKey.wasPressedThisFrame))
             {
+                if(Page==COgheProductPage.Style){if(Popup!=COgheProductPopup.None)Resume();else LeaveStyle();return true;}
                 if(Popup==COgheProductPopup.Help)ShowPopup(COgheProductPopup.Pause);
                 else if(Popup!=COgheProductPopup.None)Resume();
                 else if(Page==COgheProductPage.MainMenu)return true;
@@ -229,6 +232,7 @@ namespace GravityBox.Venom
         {
             var camera=Game.Owner.View;
             if(Page==COgheProductPage.Home&&FrameHome(camera))return;
+            if(Page==COgheProductPage.Style&&FrameStyle(camera))return;
             camera.orthographic=true;camera.aspect=(float)Screen.width/Screen.height;
             bool menu=Page==COgheProductPage.MainMenu;
             camera.transform.rotation=Quaternion.Euler(menu?17:24,-12,0);
@@ -241,6 +245,6 @@ namespace GravityBox.Venom
             camera.transform.position=focus-camera.transform.forward*.8f-camera.transform.up*((centre-.5f)*2*camera.orthographicSize);
             camera.nearClipPlane=.01f;camera.farClipPlane=30;
         }
-        private void OnDestroy(){art?.Dispose();DisposeItemIcons();if(ownEvents!=null)Destroy(ownEvents.gameObject);}
+        private void OnDestroy(){if(styleSaving&&Game!=null&&Game.Matter!=null)SaveLook();art?.Dispose();DisposeItemIcons();if(ownEvents!=null)Destroy(ownEvents.gameObject);}
     }
 }

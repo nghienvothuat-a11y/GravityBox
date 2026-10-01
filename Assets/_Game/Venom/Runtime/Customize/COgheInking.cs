@@ -26,7 +26,7 @@ namespace GravityBox.Venom
         public static COgheInking Attach(VenomCampaign game, int seed = 1)
         {
             var surface = game.Matter.GetComponent<VenomSurface>();
-            var a = surface.GetComponent<COgheInking>() ?? surface.gameObject.AddComponent<COgheInking>();
+            var a = surface.GetComponent<COgheInking>(); if (a == null) a = surface.gameObject.AddComponent<COgheInking>();
             a.game = game; a.surface = surface; surface.ParticleInk = a.Amount;
             a.Build(seed);
             return a;
@@ -61,7 +61,7 @@ namespace GravityBox.Venom
         public int SlotFor(string ink, int replace = -1)
         {
             for (int s = 0; s < Slots; s++) if (Inks[s] == ink) return s;
-            for (int s = 0; s < Slots; s++) if (Inks[s] == null) { Inks[s] = ink; dirty = true; return s; }
+            for (int s = 0; s < Slots; s++) if (Inks[s] == null) { for (int i = 0; i < Amount.Length; i++) Amount[i][s] = 0; Inks[s] = ink; dirty = true; return s; }
             if (replace < 0) return -1;   // the player chooses which colour goes (the UI asks)
             for (int i = 0; i < Amount.Length; i++) Amount[i][replace] = 0;
             Inks[replace] = ink; dirty = true; return replace;
@@ -87,6 +87,37 @@ namespace GravityBox.Venom
 
         /// <summary>Wash every ink out (over a short moment); accessories are untouched.</summary>
         public void Rinse() { rinse = 1; active = 0; }
+        /// <summary>A rinse still washing out ends now (before a new hold, a snapshot or a save: never half rinsed).</summary>
+        public void FinishRinse()
+        {
+            if (rinse <= 0) return;
+            rinse = 0; System.Array.Clear(Amount, 0, Amount.Length); for (int s = 0; s < Slots; s++) Inks[s] = null; dirty = true;
+        }
+        /// <summary>No ink flowing and nothing left to settle: the look can be saved.</summary>
+        public bool Settled => active <= 0 && rinse <= 0;
+
+        /// <summary>Take on a saved look (instantly).</summary>
+        public void Load(COgheStyle style)
+        {
+            for (int s = 0; s < Slots; s++) Inks[s] = style.Inks[s];
+            System.Array.Copy(style.Amount, Amount, Amount.Length);
+            active = rinse = 0; dirty = true;
+        }
+        /// <summary>Write the current inks into <paramref name="style"/>.</summary>
+        public void Store(COgheStyle style)
+        {
+            for (int s = 0; s < Slots; s++) style.Inks[s] = Inks[s];
+            System.Array.Copy(Amount, style.Amount, Amount.Length);
+        }
+        /// <summary>How see-through the body is on average (0 opaque), from the actual inks: decorations inside need it.</summary>
+        public float Clarity
+        {
+            get
+            {
+                Vector4 mean = Vector4.zero; foreach (var a in Amount) mean += a; mean /= Amount.Length;
+                return ClearShare(mean);
+            }
+        }
 
         private void LateUpdate()
         {
@@ -117,7 +148,8 @@ namespace GravityBox.Venom
         private readonly Vector4[] delta = new Vector4[CohesiveOrganism.ParticleCount];
         private void Diffuse(float dt)
         {
-            float rate = active > 0 ? .9f : .05f;
+            if (active <= 0) return;   // settled: the pattern stays as it is (it travels with the liquid, never smears)
+            float rate = .9f;
             var bodies = game.Matter.Bodies;
             for (int i = 0; i < Amount.Length; i++)
             {

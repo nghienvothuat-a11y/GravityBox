@@ -14,10 +14,10 @@ namespace GravityBox.Venom
         private readonly Dictionary<string, Sprite> itemIcons = new Dictionary<string, Sprite>();
         private Vector3 homeFocus; private float homeSize = -1;
 
-        private Sprite ItemIcon(string id)
+        private Sprite ItemIcon(string id, string folder = "COgheHome/Icons/")
         {
             if (itemIcons.TryGetValue(id, out var s)) return s;
-            var tex = Resources.Load<Texture2D>("COgheHome/Icons/" + id);
+            var tex = Resources.Load<Texture2D>(folder + id);
             s = tex != null ? Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * .5f, 100) : null;
             itemIcons[id] = s; return s;
         }
@@ -81,7 +81,10 @@ namespace GravityBox.Venom
         {
             var room = Game.HomeRoom; if (room == null) return false;
             camera.orthographic = true; camera.aspect = (float)Screen.width / Screen.height;
-            camera.transform.rotation = Quaternion.Euler(42, -6 + homeYaw, 0);
+            var view = Quaternion.Euler(42, -6 + homeYaw, 0);
+            // back from the Style stage: turn smoothly to the room view (a drag turns the room at once)
+            if (homeEase > 0) { homeEase -= Time.unscaledDeltaTime; view = Quaternion.Slerp(camera.transform.rotation, view, 1 - Mathf.Exp(-Time.unscaledDeltaTime * 4)); }
+            camera.transform.rotation = view;
             Vector3 overview = room.Root.position + Vector3.up * .05f + Vector3.forward * .02f;
             // phones are narrow: the width decides; on wider screens the room's depth (1.36 m on screen) plus the UI bars does.
             // Turned, the room's outline on screen changes: scale both fits by how far its corners now reach.

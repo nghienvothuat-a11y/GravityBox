@@ -86,16 +86,46 @@ namespace GravityBox.Venom
             if (wall != null) foreach (var r in Root.GetComponentsInChildren<Renderer>()) if (r.name == "Room glass") r.sharedMaterial = wall;
         }
 
+        /// <summary>The Style stage: the most open spot of the aisle (clear of every item there), near the middle so the floor
+        /// fills the whole picture around COghe.</summary>
+        public Vector3 StageSpot()
+        {
+            Vector3 best = Root.TransformPoint(new Vector3(0, BodyHeight, -.3f)); float bestScore = float.NegativeInfinity;
+            for (int iz = 0; iz <= 16; iz++) for (int ix = -2; ix <= 2; ix++)
+            {
+                float x = ix * .05f, z = -.5f + iz * .05f;
+                var p = Root.TransformPoint(new Vector3(x, BodyHeight, z)); float clear = .25f;
+                foreach (var item in Items)
+                {
+                    if (!item.Root.activeSelf) continue;
+                    var q = bounds[item].ClosestPoint(p); clear = Mathf.Min(clear, new Vector2(q.x - p.x, q.z - p.z).magnitude);
+                }
+                float score = clear - Mathf.Abs(x) * .3f - Mathf.Abs(z + .1f) * .08f;
+                if (score > bestScore) { bestScore = score; best = p; }
+            }
+            return best;
+        }
+        private readonly List<Renderer> staged = new List<Renderer>();
+        /// <summary>Style: only the floor and its frame stay; furniture, back wall and glass step out of the picture (and back).</summary>
+        public void SetStage(bool on)
+        {
+            if (on && staged.Count == 0) { foreach (var r in Root.GetComponentsInChildren<Renderer>()) if (r.enabled && r.name != "Room shell") { r.enabled = false; staged.Add(r); } }
+            else if (!on) { foreach (var r in staged) if (r != null) r.enabled = true; staged.Clear(); }
+        }
+        public bool Staged => staged.Count > 0;
+
         /// <summary>The camera turned around behind the back wall (Home view rotation): hide it, show it again in front.</summary>
-        public void SetBackWallVisible(bool visible) { if (backWall != null && backWall.enabled != visible) backWall.enabled = visible; }
+        public void SetBackWallVisible(bool visible) { if (backWall != null && !Staged && backWall.enabled != visible) backWall.enabled = visible; }
         public bool BackWallVisible => backWall != null && backWall.enabled;
 
         // Unlocks -----------------------------------------------------------------------------------------------------------
         public bool Unlocked(COgheHomeItem item) => LevelReached(item.UnlockLevel);
-        public bool LevelReached(int level)
+        public bool LevelReached(int level) => Reached(game, level);
+        /// <summary>Has the player completed catalog level <paramref name="level"/> (Home items, inks, wardrobe)?</summary>
+        public static bool Reached(VenomCampaign game, int level)
         {
             if (UnlockedLevelOverride.HasValue) return level <= UnlockedLevelOverride.Value;
-            var progress = game.Progress; if (progress == null) return false;
+            var progress = game != null ? game.Progress : null; if (progress == null) return false;
             if (catalog == null) catalog = Resources.Load<COgheProductCatalog>("COgheUI/Catalog");
             if (catalog != null && level <= catalog.Levels.Length && catalog.Levels[level - 1] != null) return progress.Completed.Contains(catalog.Levels[level - 1].Id);
             return progress.Completed.Count >= level;

@@ -75,7 +75,14 @@ and [native Unity verification](../../Verification/COgheProductUI/README.md).
 - First read: COghe. Second: relevant mechanism, slippery surface and exit. Third:
   mounts, labels and the laboratory setting. Decoration must not hide actions.
 - Retain the existing dark, asymmetric liquid body, tendrils, transient lobes and
-  gravity response. Do not add eyes, teeth, ears, costumes or a permanent head.
+  gravity response. Do not add eyes, teeth, ears or a permanent head.
+- Style (approved by Mrk 01/10/2026, which amends the earlier "dark body, no
+  costumes" rule): the player may inject up to four inks into the liquid and
+  dress COghe in one hat plus up to two little things floating inside. The default
+  stays the dark body. Inks travel with the particles and change only the skin's
+  material; wardrobe is presentation only (no colliders, forces or puzzle state)
+  and must never hide a mechanism, the exit or the creature's silhouette. Item
+  icons follow the Home item icon style (Codex, `Resources/COgheStyle/Icons`).
 - Build assets in Unity for this phase. Do not introduce Blender or purchased asset
   dependencies without a new task requiring them.
 
