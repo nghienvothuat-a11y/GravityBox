@@ -114,6 +114,31 @@ namespace GravityBox.Tests
             while(COgheIntro.Playing)yield return null;
             Assert.AreEqual(COgheProductPage.Game,ui.Page);Assert.IsFalse(game.Owner.Paused);Assert.IsFalse(game.Home);
         }
+        // Mrk: after the intro COghe stood mid-box (its menu spot), then jumped to the level start. The level is reset while
+        // paused under the comic, so the reset pose must already be what is drawn, before physics steps again.
+        [UnityTest] public IEnumerator FirstRunIntroDrawsCOgheAtTheLevelStart()
+        {
+            var menuSpot=Drawn();
+            COgheIntro.Seen=false;ui.Play();var intro=Object.FindFirstObjectByType<COgheIntro>();
+            while(!intro.Started)yield return null;
+            for(int i=0;i<5;i++)yield return null;
+            Assert.IsTrue(game.Owner.Paused,"The level waits under the comic");
+            Assert.Greater(Vector3.Distance(menuSpot,game.Motion.Centre(0)),.03f,"Fixture: the menu spot is not the level start");
+            foreach(var body in game.Matter.Bodies)
+                Assert.Less(Vector3.Distance(body.transform.position,body.position),.002f,"Drawn where the level starts: "+body.name);
+            var paused=Drawn();intro.Speed=20;intro.Skip();
+            while(COgheIntro.Playing)yield return null;
+            yield return null;yield return null;
+            Assert.Less(Vector3.Distance(paused,Drawn()),.02f,"No jump when the level starts running");
+        }
+        private float TissueTop(){float top=0;foreach(var body in game.Matter.Bodies)top=Mathf.Max(top,game.Owner.View.WorldToViewportPoint(body.transform.position).y);return top;}
+        private float SkinTop()
+        {
+            var skin=GameObject.Find("Continuous wet skin").GetComponent<MeshFilter>();float top=0;
+            foreach(var v in skin.sharedMesh.vertices)top=Mathf.Max(top,game.Owner.View.WorldToViewportPoint(skin.transform.TransformPoint(v)).y);
+            return top;
+        }
+        private Vector3 Drawn(){var c=Vector3.zero;foreach(var body in game.Matter.Bodies)c+=body.transform.position;return c/game.Matter.Bodies.Length;}
         [UnityTest] public IEnumerator HomeLockAndMenuRoundTripLeavePuzzlePhysicsIntact()
         {
             var patches=game.Surfaces;yield return Click("Home");Assert.AreEqual(COgheProductPopup.Locked,ui.Popup);
@@ -139,6 +164,13 @@ namespace GravityBox.Tests
             Assert.IsTrue(game.Owner.Completed,"Actual crawl and exit must complete, without teleporting or forcing Win");
             yield return null;Assert.AreEqual(COgheProductPage.Victory,ui.Page);
             Assert.IsTrue(game.Progress.Completed.Contains(game.Definition.Id));
+            // Mrk: the confetti pops just over COghe's head in the settled victory shot, then falls past it
+            // (the tissue's top over the settled shot, not the skin: the random pose may raise tendrils above the head)
+            while(game.Owner.Celebration.Elapsed<1.2f)yield return null;
+            float head=0,skin=0,pop=VenomCelebration.SettledViewport(.07f,Screen.width,Screen.height).y;
+            while(game.Owner.Celebration.Elapsed<2f){head=Mathf.Max(head,TissueTop());skin=Mathf.Max(skin,SkinTop());yield return null;}
+            Debug.Log($"Confetti origin {pop:F3}, tissue top {head:F3}, skin top {skin:F3} (viewport), pose {game.Owner.Celebration.Variant}");
+            Assert.That(pop-head,Is.InRange(0f,.18f),$"Confetti origin {pop:F3} just over the tissue {head:F3}");
             end=Time.realtimeSinceStartup+8;
             while(game!=null&&game.Definition.Order==1&&Time.realtimeSinceStartup<end)yield return null;
             yield return null;game=Object.FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;

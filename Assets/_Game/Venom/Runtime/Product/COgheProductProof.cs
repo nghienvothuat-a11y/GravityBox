@@ -42,7 +42,7 @@ namespace GravityBox.Venom
             float end=Time.realtimeSinceStartup+45;
             while(!game.Owner.Completed&&Time.realtimeSinceStartup<end)yield return null;
             if(!game.Owner.Completed){Fail("Native first puzzle could not be solved");yield break;}
-            game.AutoAdvance=false;yield return Capture("07-victory");
+            game.AutoAdvance=false;yield return new WaitForSecondsRealtime(1f);yield return Capture("07-victory");   // the confetti pops as the shot settles
             game.AutoAdvance=true;yield return new WaitForSecondsRealtime(5);
             game=FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;
             if(game.Definition.Order!=2){Fail("Auto advance did not load level 2");yield break;}

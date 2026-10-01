@@ -88,7 +88,7 @@ namespace GravityBox.Venom
             if(Page==COgheProductPage.Game)
             {
                 if(Game.Owner.Lost&&Popup==COgheProductPopup.None){ShowPopup(COgheProductPopup.Failure);return;}
-                if(Game.Owner.Completed){Page=COgheProductPage.Victory;Rebuild();COgheConfetti.Burst(safe,width,height,Game.Definition.Order);return;}
+                if(Game.Owner.Completed){Page=COgheProductPage.Victory;Rebuild();COgheConfetti.Burst(safe,height,ConfettiOrigin(),Game.Definition.Order);return;}
                 if(Time.unscaledTime>=nextRefresh)
                 {
                     nextRefresh=Time.unscaledTime+.1f;int signature=FragmentSignature();
@@ -170,6 +170,13 @@ namespace GravityBox.Venom
         {
             MenuShadows(false);Page=COgheProductPage.Intro;Popup=COgheProductPopup.None;canvas.gameObject.SetActive(false);
             COgheBossIntro.Play(Game,()=>{if(this==null)return;canvas.gameObject.SetActive(true);Page=COgheProductPage.Game;Rebuild();});
+        }
+        /// <summary>Just over COghe's head once the victory shot settles, in safe-area units from its lower-left corner.</summary>
+        private Vector2 ConfettiOrigin()
+        {
+            var v=VenomCelebration.SettledViewport(.07f,Screen.width,Screen.height);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(safe,new Vector2(v.x*Screen.width,v.y*Screen.height),null,out var local);
+            var p=local-safe.rect.min;return new Vector2(Mathf.Clamp(p.x,0,width),Mathf.Clamp(p.y,height*.3f,height*.85f));
         }
         /// <summary>Test builds: jump to any level from Pause.</summary>
         public void LoadForTest(int n){Popup=COgheProductPopup.None;Load(n);}

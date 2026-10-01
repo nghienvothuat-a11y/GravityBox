@@ -23,7 +23,7 @@ namespace GravityBox.Venom
         public float Clock { get; private set; }
         public bool Finished { get; private set; }
         public float TourLength { get; private set; }
-        public const float DiveIn = 1.5f, PullBack = 1.6f, Warning = 2.7f;
+        public const float DiveIn = 1.1f, Leg = 1.35f, PullBack = 1.15f, Warning = 2.7f;   // Mrk: approach and zoom out a bit faster
 
         private VenomCampaign game;
         private Action done;
@@ -61,7 +61,7 @@ namespace GravityBox.Venom
             Vector3 boxCentre = game.Root.TransformPoint(game.CameraRig.OverviewBounds.center);
             restLook = restPosition + camera.transform.forward * Vector3.Dot(boxCentre - restPosition, camera.transform.forward);
             BuildTour(boxCentre);
-            TourLength = DiveIn + 1.8f * Mathf.Max(1, eyes.Count - 1);
+            TourLength = DiveIn + Leg * Mathf.Max(1, eyes.Count - 1);
             camera.orthographic = false; camera.nearClipPlane = .01f; camera.farClipPlane = 30; camera.fieldOfView = tourFov;
             BuildBanner();
             started = true;

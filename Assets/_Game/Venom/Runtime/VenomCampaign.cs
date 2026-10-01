@@ -107,7 +107,13 @@ namespace GravityBox.Venom
             Owner.Rotation.InputEnabled=Definition.CanRotate;
             if(GateOpen)Owner.LatchGuidedGate();
             for(int i=0;i<32;i++){previous[i]=Owner.Outlet.InverseTransformPoint(Matter.Bodies[i].position);inBore[i]=false;}
-            ResetMechanisms();Physics.SyncTransforms();Motion.Reset();Feedback.ResetFeedback();
+            ResetMechanisms();
+            // a Rigidbody.position write reaches the transform only on the next physics step; a level reset under the paused
+            // intro or Boss tour would still draw COghe at its menu spot, then jump to the start when the level runs. After
+            // the mechanisms (rail sliders re-pose prop bodies), since the sync below pushes these transforms back to physics.
+            foreach(var body in Matter.Bodies)body.transform.SetPositionAndRotation(body.position,body.rotation);
+            foreach(var p in Props)p.Body.transform.SetPositionAndRotation(p.Body.position,p.Body.rotation);
+            Physics.SyncTransforms();Motion.Reset();Feedback.ResetFeedback();
             Onboarding?.ResetObservation();Personality?.ResetState();
         }
         private void ResetBody(Rigidbody body,Vector3 position)

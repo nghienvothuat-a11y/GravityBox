@@ -69,19 +69,28 @@ namespace GravityBox.Venom
             foreach (var body in level.Organism.Bodies) centre += body.transform.position / CohesiveOrganism.ParticleCount;
             // Reserve space for the raised crest and waving tendrils, including
             // both escaped pieces while their real tissue gathers together.
-            float horizontal = .095f, vertical = .105f;
+            float horizontal = Wide, vertical = Tall;
             foreach (var body in level.Organism.Bodies)
             {
                 Vector3 offset = body.transform.position-centre;
                 horizontal = Mathf.Max(horizontal, Mathf.Abs(Vector3.Dot(offset,Right))+.065f);
                 vertical = Mathf.Max(vertical, Mathf.Abs(Vector3.Dot(offset,Up))+.085f);
             }
-            float size = Mathf.Max(vertical/.64f, horizontal*height/(width*.82f));
+            float size = ShotSize(horizontal, vertical, width, height);
             float blend = Mathf.SmoothStep(0, 1, Mathf.Clamp01(Elapsed/1.05f));
             camera.transform.rotation = cameraRotation;
             camera.transform.position = Vector3.Lerp(cameraStart, centre+Up*.02f-Forward*.42f, blend);
             camera.orthographicSize = Mathf.Lerp(sizeStart, size, blend);
         }
+
+        /// <summary>Where a point <paramref name="above"/> metres over the tissue's centre sits on screen (viewport 0–1)
+        /// once the victory shot has settled on the gathered tissue: the win screen drops its confetti over COghe's head.</summary>
+        public static Vector2 SettledViewport(float above, int width, int height)
+            => new Vector2(.5f, .5f + (above - .02f) / (2 * ShotSize(Wide, Tall, width, height)));   // centred, .02 m low
+
+        private const float Wide = .095f, Tall = .105f;
+        private static float ShotSize(float horizontal, float vertical, int width, int height)
+            => Mathf.Max(vertical/.64f, horizontal*height/(width*.82f));
 
         public void Reset()
         {

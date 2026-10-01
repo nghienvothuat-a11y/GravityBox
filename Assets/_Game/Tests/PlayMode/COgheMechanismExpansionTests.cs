@@ -87,6 +87,20 @@ namespace GravityBox.Tests
             train.Wheels[1].localPosition+=Vector3.down*.04f;train.StepMechanism(null,Dt);Assert.AreEqual(0,train.AngularSpeeds[3],"Breaking any contact stops the downstream train");
         }
 
+        // ResetLevel also redraws props at their reset pose (for levels shown paused, under the intro or Boss tour); that
+        // must come after the mechanisms, or the sync pushes the old pose over a rail carriage's reset (the locked knife).
+        [UnityTest] public IEnumerator ResetLevelKeepsRailCarriagesAtTheirResetPose()
+        {
+            yield return Load(44,true);
+            var rails=Object.FindObjectsByType<COgheRailSlider>(FindObjectsSortMode.None);Assert.IsNotEmpty(rails);
+            game.ResetLevel();
+            foreach(var rail in rails)
+            {
+                var expected=rail.Frame.TransformPoint(rail.Start+rail.Axis.normalized*rail.InitialTravel);
+                Assert.Less(Vector3.Distance(rail.Body.position,expected),.001f,rail.name+" at its reset pose");
+                if(rail.GetComponent<VenomMovableProp>()!=null)Assert.Less(Vector3.Distance(rail.Body.transform.position,expected),.001f,rail.name+" drawn there");
+            }
+        }
         private IEnumerator Load(int number,bool campaign=false)
         {
             void Loaded(Scene scene,LoadSceneMode mode){game=Object.FindFirstObjectByType<VenomCampaign>();game.AutoAdvance=false;game.Owner.enabled=false;game.Owner.Rotation.enabled=false;}
