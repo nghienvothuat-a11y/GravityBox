@@ -41,6 +41,13 @@ namespace GravityBox.Venom
         /// <summary>Raised after the skin is rebuilt (every displayed frame).</summary>
         public event Action<VenomSurface> Rebuilt;
         public MeshRenderer SkinRenderer => skin;
+        /// <summary>Injected inks (COgheInking): each particle's share of up to four inks. Null: the skin carries no ink data.
+        /// The isosurface interpolates them like the field itself and writes them to the mesh (UV channel 2).</summary>
+        public Vector4[] ParticleInk;
+        private bool inking;
+        private Vector4[] inkField = Array.Empty<Vector4>();
+        private readonly Vector4[] sourceInks = new Vector4[CohesiveOrganism.ParticleCount+6], cornerInks = new Vector4[8], edgeInks = new Vector4[64];
+        private readonly List<Vector4> vertexInks = new List<Vector4>(20000);
         private VenomLevelController level;
         public int VertexCount => mesh != null ? mesh.vertexCount : 0;
 
@@ -75,6 +82,7 @@ namespace GravityBox.Venom
             level.Campaign?.PrepareSkinConstraints(transform);
             Array.Clear(edgeVersions,0,edgeVersions.Length);cellVersion=0;
             vertices.Clear(); normals.Clear(); triangles.Clear(); int seenCount = 0; fragmentCount = 0;
+            inking = ParticleInk != null; vertexInks.Clear();
             toFloor = floor.transform.worldToLocalMatrix*transform.localToWorldMatrix;
             fromFloor = transform.worldToLocalMatrix*floor.transform.localToWorldMatrix;
             life.BeginFrame();
@@ -92,11 +100,17 @@ namespace GravityBox.Venom
                 {
                     int sources=life.Decorate(points,supports,weights,particleIds,count);
                     for(int k=0;k<count;k++)DrawnParticles[particleIds[k]]=transform.TransformPoint(points[k]);
+                    if(inking)
+                    {
+                        // the body's particles carry their own ink; the life animation's extra sources (feet, crest) the mean
+                        Vector4 mean=Vector4.zero;for(int k=0;k<count;k++){sourceInks[k]=ParticleInk[particleIds[k]];mean+=sourceInks[k];}
+                        mean/=count;for(int k=count;k<sources;k++)sourceInks[k]=mean;
+                    }
                     int start=vertices.Count;BuildFragment(sources);
                     fragmentRanges[fragmentCount++]=new Vector3Int(group,start,vertices.Count);
                 }
             }
-            mesh.Clear(); mesh.SetVertices(vertices); mesh.SetNormals(normals); mesh.SetTriangles(triangles,0,false); mesh.RecalculateBounds();
+            mesh.Clear(); mesh.SetVertices(vertices); mesh.SetNormals(normals); if(inking)mesh.SetUVs(2,vertexInks); mesh.SetTriangles(triangles,0,false); mesh.RecalculateBounds();
             life.EndFrame();
             COgheMobileMetrics.End(0);
             Rebuilt?.Invoke(this);
@@ -141,6 +155,7 @@ namespace GravityBox.Venom
             int length=nx*ny*nz;
             if(field.Length<length){int capacity=Mathf.NextPowerOfTwo(length);field=new float[capacity];gradient=new Vector3[capacity];}
             Array.Clear(field,0,length);Array.Clear(gradient,0,length);
+            if(inking){if(inkField.Length<field.Length)inkField=new Vector4[field.Length];Array.Clear(inkField,0,length);}
             for(int p=0;p<count;p++)
             {
                 float support=supports[p],h2=support*support,weight=weights[p];
@@ -152,6 +167,7 @@ namespace GravityBox.Venom
                 {
                     Vector3 d=min+new Vector3(x,y,z)*cell-points[p];float s=1-d.sqrMagnitude/h2;if(s<=0)continue;
                     int index=x+nx*(y+ny*z);field[index]+=s*s*s*weight;gradient[index]+=d*(6*s*s*weight/h2);
+                    if(inking)inkField[index]+=sourceInks[p]*(s*s*s*weight);
                 }
             }
             for(int z=0;z<nz-1;z++)for(int y=0;y<ny-1;y++)for(int x=0;x<nx-1;x++)
@@ -170,19 +186,22 @@ namespace GravityBox.Venom
                 {
                     Vector3Int o=offsets[c];int index=x+o.x+nx*(y+o.y+ny*(z+o.z));
                     corners[c]=min+new Vector3(x+o.x,y+o.y,z+o.z)*cell;cornerNormals[c]=gradient[index];
+                    if(inking)cornerInks[c]=inkField[index];
                 }
                 for(int t=0;t<6;t++)
                 {
                     int ni=0,no=0;
                     for(int c=0;c<4;c++){int id=tetrahedra[t,c];if(values[id]>=threshold)inside[ni++]=id;else outside[no++]=id;}
                     if(ni==0||ni==4)continue;
-                    if(ni==1){Edge(inside[0],outside[0],out var a,out var an);Edge(inside[0],outside[1],out var b,out var bn);Edge(inside[0],outside[2],out var c,out var cn);Triangle(a,b,c,an,bn,cn);}
-                    else if(ni==3){Edge(outside[0],inside[0],out var a,out var an);Edge(outside[0],inside[1],out var b,out var bn);Edge(outside[0],inside[2],out var c,out var cn);Triangle(a,b,c,an,bn,cn);}
+                    // edge keys (from*8+to) also index each crossing's cached ink
+                    if(ni==1){Edge(inside[0],outside[0],out var a,out var an);Edge(inside[0],outside[1],out var b,out var bn);Edge(inside[0],outside[2],out var c,out var cn);Triangle(a,b,c,an,bn,cn,inside[0]*8+outside[0],inside[0]*8+outside[1],inside[0]*8+outside[2]);}
+                    else if(ni==3){Edge(outside[0],inside[0],out var a,out var an);Edge(outside[0],inside[1],out var b,out var bn);Edge(outside[0],inside[2],out var c,out var cn);Triangle(a,b,c,an,bn,cn,outside[0]*8+inside[0],outside[0]*8+inside[1],outside[0]*8+inside[2]);}
                     else
                     {
                         Edge(inside[0],outside[0],out var a,out var an);Edge(inside[0],outside[1],out var b,out var bn);
                         Edge(inside[1],outside[0],out var c,out var cn);Edge(inside[1],outside[1],out var d,out var dn);
-                        Triangle(a,b,c,an,bn,cn);Triangle(b,d,c,bn,dn,cn);
+                        int ka=inside[0]*8+outside[0],kb=inside[0]*8+outside[1],kc=inside[1]*8+outside[0],kd=inside[1]*8+outside[1];
+                        Triangle(a,b,c,an,bn,cn,ka,kb,kc);Triangle(b,d,c,bn,dn,cn,kb,kd,kc);
                     }
                 }
             }
@@ -197,12 +216,14 @@ namespace GravityBox.Venom
             float t=(organism.Profile.SkinThreshold-values[a])/(values[b]-values[a]);p=Vector3.Lerp(corners[a],corners[b],t);n=Vector3.Lerp(cornerNormals[a],cornerNormals[b],t).normalized;
             ConstrainFloor(ref p,ref n);
             edgeVersions[key]=cellVersion;edgePoints[key]=p;edgeNormals[key]=n;
+            if(inking)edgeInks[key]=Vector4.Lerp(cornerInks[a],cornerInks[b],t)/Mathf.Max(1e-6f,Mathf.Lerp(values[a],values[b],t));
         }
-        private void Triangle(Vector3 a,Vector3 b,Vector3 c,Vector3 an,Vector3 bn,Vector3 cn)
+        private void Triangle(Vector3 a,Vector3 b,Vector3 c,Vector3 an,Vector3 bn,Vector3 cn,int ka,int kb,int kc)
         {
             if (Vector3.Cross(b-a,c-a).sqrMagnitude < 1e-18f) return;
-            if(Vector3.Dot(Vector3.Cross(b-a,c-a),an+bn+cn)<0){(b,c)=(c,b);(bn,cn)=(cn,bn);}
+            if(Vector3.Dot(Vector3.Cross(b-a,c-a),an+bn+cn)<0){(b,c)=(c,b);(bn,cn)=(cn,bn);(kb,kc)=(kc,kb);}
             int i=vertices.Count;vertices.Add(a);vertices.Add(b);vertices.Add(c);normals.Add(an);normals.Add(bn);normals.Add(cn);triangles.Add(i);triangles.Add(i+1);triangles.Add(i+2);
+            if(inking){vertexInks.Add(edgeInks[ka]);vertexInks.Add(edgeInks[kb]);vertexInks.Add(edgeInks[kc]);}
         }
         private void ConstrainFloor(ref Vector3 point,ref Vector3 normal)
         {

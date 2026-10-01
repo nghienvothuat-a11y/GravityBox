@@ -163,6 +163,7 @@ namespace GravityBox.Venom
 
         private void SetTranslucent(bool on)
         {
+            if (GetComponent<COgheInking>() != null) return;   // with inks, clarity comes from the clear inks themselves
             if (skinMaterial == null) skinMaterial = surface.SkinRenderer.sharedMaterial;
             if (on && translucent == null) MakeTranslucent();
             // the skin and every renderer drawn with it (tendrils, limbs)
