@@ -33,6 +33,14 @@ namespace GravityBox.Venom
         private readonly Vector3[] floorPoints = new Vector3[CohesiveOrganism.ParticleCount+6];
         private int sourceCount;
         private bool allAboveFloor,climbing;
+        // what accessories read after each rebuild: every particle's skin source as drawn (after the life animation, so
+        // acts and poses carry them) and each fragment's vertex range
+        public readonly Vector3[] DrawnParticles = new Vector3[CohesiveOrganism.ParticleCount];
+        private readonly Vector3Int[] fragmentRanges = new Vector3Int[CohesiveOrganism.ParticleCount];
+        private int fragmentCount;
+        /// <summary>Raised after the skin is rebuilt (every displayed frame).</summary>
+        public event Action<VenomSurface> Rebuilt;
+        public MeshRenderer SkinRenderer => skin;
         private VenomLevelController level;
         public int VertexCount => mesh != null ? mesh.vertexCount : 0;
 
@@ -66,7 +74,7 @@ namespace GravityBox.Venom
             COgheMobileMetrics.Begin(0);
             level.Campaign?.PrepareSkinConstraints(transform);
             Array.Clear(edgeVersions,0,edgeVersions.Length);cellVersion=0;
-            vertices.Clear(); normals.Clear(); triangles.Clear(); int seenCount = 0;
+            vertices.Clear(); normals.Clear(); triangles.Clear(); int seenCount = 0; fragmentCount = 0;
             toFloor = floor.transform.worldToLocalMatrix*transform.localToWorldMatrix;
             fromFloor = transform.worldToLocalMatrix*floor.transform.localToWorldMatrix;
             life.BeginFrame();
@@ -80,11 +88,41 @@ namespace GravityBox.Venom
                         particleIds[count]=j;supports[count]=organism.Profile.SkinSupport;weights[count]=1;
                         points[count++]=transform.InverseTransformPoint(interpolate ? organism.Bodies[j].transform.position : organism.Bodies[j].position);
                     }
-                if(count>0) BuildFragment(life.Decorate(points,supports,weights,particleIds,count));
+                if(count>0)
+                {
+                    int sources=life.Decorate(points,supports,weights,particleIds,count);
+                    for(int k=0;k<count;k++)DrawnParticles[particleIds[k]]=transform.TransformPoint(points[k]);
+                    int start=vertices.Count;BuildFragment(sources);
+                    fragmentRanges[fragmentCount++]=new Vector3Int(group,start,vertices.Count);
+                }
             }
             mesh.Clear(); mesh.SetVertices(vertices); mesh.SetNormals(normals); mesh.SetTriangles(triangles,0,false); mesh.RecalculateBounds();
             life.EndFrame();
             COgheMobileMetrics.End(0);
+            Rebuilt?.Invoke(this);
+        }
+
+        /// <summary>The highest point of a fragment's skin within <paramref name="radius"/> (across <paramref name="up"/>)
+        /// of <paramref name="near"/>, and its normal, world space: where an accessory sits.</summary>
+        public bool SkinTop(int group, Vector3 near, Vector3 up, float radius, out Vector3 top, out Vector3 normal)
+        {
+            top = near; normal = up;
+            for (int f = 0; f < fragmentCount; f++)
+            {
+                if (fragmentRanges[f].x != group) continue;
+                Vector3 localNear = transform.InverseTransformPoint(near), localUp = transform.InverseTransformDirection(up).normalized;
+                float best = float.NegativeInfinity, r2 = radius * radius; int found = -1;
+                for (int v = fragmentRanges[f].y; v < fragmentRanges[f].z; v++)
+                {
+                    Vector3 d = vertices[v] - localNear; float h = Vector3.Dot(d, localUp);
+                    if ((d - localUp * h).sqrMagnitude > r2 || h <= best) continue;
+                    best = h; found = v;
+                }
+                if (found < 0) return false;
+                top = transform.TransformPoint(vertices[found]); normal = transform.TransformDirection(normals[found]).normalized;
+                return true;
+            }
+            return false;
         }
         private void BuildFragment(int count)
         {
