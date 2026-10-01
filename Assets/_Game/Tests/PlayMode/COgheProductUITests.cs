@@ -188,6 +188,126 @@ namespace GravityBox.Tests
             Assert.AreEqual(16,game.Motion.Selected);Assert.AreEqual(before,game.Feedback.CommandCount);
             yield return Click("Fragment 1");Assert.AreEqual(0,game.Motion.Selected);
         }
+        // Level guides (Mrk): level 1 an arrow on the exit, level 3 "Hold to rotate" and the exit, level 4 the handle to pull.
+        private IEnumerator Level(int n)
+        {
+            yield return SceneManager.LoadSceneAsync(ui.Catalog.Levels[0].SceneSequence[n-1]);yield return null;
+            game=Object.FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;
+            Assert.AreEqual(n,game.Definition.Order);Assert.AreEqual(COgheProductPage.Game,ui.Page);
+        }
+        private Vector2 OnSafe(Vector3 world)
+        {
+            var root=(RectTransform)ui.Guide.transform;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(root,game.Owner.View.WorldToScreenPoint(world),null,out var local);
+            return local-root.rect.min;
+        }
+        private void AssertPointsAt(Vector3 world,string what)
+        {
+            var guide=ui.Guide;Assert.IsTrue(guide.ArrowShown,what);Assert.IsTrue(guide.TargetOnScreen,what);
+            Assert.Less(Vector2.Distance(guide.TargetPoint,OnSafe(world)),2f,"Aimed at "+what);
+            Assert.AreEqual(guide.TargetPoint.x,guide.ArrowTip.x,.5f,what);
+            Assert.That(guide.ArrowTip.y-guide.TargetPoint.y,Is.InRange(6f,30f),"Just above "+what+", pointing down");
+        }
+        [UnityTest] public IEnumerator Level1ArrowPointsAtTheExitUntilCOgheHeadsOut()
+        {
+            ui.Play();Assert.AreEqual(COgheProductPage.Game,ui.Page);
+            var guide=ui.Guide;Assert.IsNotNull(guide,"Level 1 teaches the exit");
+            yield return new WaitForSecondsRealtime(.4f);Assert.IsFalse(guide.ArrowShown,"It fades in after a moment");
+            yield return new WaitForSecondsRealtime(1.4f);
+            Assert.AreEqual(COgheGuide.Target.Exit,guide.Pointing);AssertPointsAt(game.Owner.Outlet.position,"the exit");
+            float y=guide.ArrowTip.y;bool nudged=false;
+            for(int f=0;f<40;f++){yield return null;nudged|=Mathf.Abs(guide.ArrowTip.y-y)>2;}
+            Assert.IsTrue(nudged,"The arrow keeps nudging toward the hole");
+            ui.ShowPopup(COgheProductPopup.Pause);yield return new WaitForSecondsRealtime(.6f);Assert.IsFalse(guide.ArrowShown,"Not over Pause");
+            ui.Resume();yield return new WaitForSecondsRealtime(.6f);Assert.IsTrue(guide.ArrowShown);
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(game.Owner.Outlet.position));yield return new WaitForSecondsRealtime(.6f);
+            Assert.AreEqual(COgheGuide.Target.None,guide.Pointing,"COghe heads out: the arrow steps aside");Assert.IsFalse(guide.ArrowShown);
+        }
+        [UnityTest] public IEnumerator Level3ShowsHoldToRotateUntilTheViewTurns()
+        {
+            yield return Level(3);
+            var guide=ui.Guide;Assert.IsNotNull(guide);yield return new WaitForSecondsRealtime(1.8f);
+            Assert.IsTrue(guide.RotateHintShown,"Hold to rotate");Assert.AreEqual(COgheGuide.Target.Exit,guide.Pointing,"and the way out");Assert.IsTrue(guide.ArrowShown);
+            Assert.IsTrue(ui.GetComponentsInChildren<Text>().Any(t=>t.text=="Hold to rotate"));
+            // a real held drag across the box turns the view
+            Vector2 a=new Vector2(Screen.width*.3f,Screen.height*.5f),b=new Vector2(Screen.width*.75f,Screen.height*.5f);
+            InputSystem.QueueStateEvent(mouse,new MouseState{position=a});yield return null;
+            InputSystem.QueueStateEvent(mouse,new MouseState{position=a,buttons=1});yield return null;
+            for(int i=1;i<=12;i++){InputSystem.QueueStateEvent(mouse,new MouseState{position=Vector2.Lerp(a,b,i/12f),buttons=1});yield return null;}
+            InputSystem.QueueStateEvent(mouse,new MouseState{position=b});yield return null;
+            Assert.Greater(Mathf.Abs(game.CameraRig.OrbitYaw),25f,"The drag turned the view");
+            yield return new WaitForSecondsRealtime(.6f);
+            Assert.IsTrue(guide.RotateLearned);Assert.IsFalse(guide.RotateHintShown,"Learned: the hint goes");
+            Assert.IsTrue(guide.ArrowShown,"The exit arrow stays (at the screen edge if the exit turned away)");
+        }
+        [UnityTest] public IEnumerator Level4ArrowPointsAtTheHandleThenTheExit()
+        {
+            yield return Level(4);
+            var guide=ui.Guide;Assert.IsNotNull(guide);yield return new WaitForSecondsRealtime(1.8f);
+            var handle=game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>().Single(r=>r.Label=="A");
+            Assert.AreEqual(COgheGuide.Target.Handle,guide.Pointing,"The mechanism to pull first");AssertPointsAt(handle.HandPoint,"the handle");
+            game.TouchPoint(game.Owner.View.WorldToScreenPoint(handle.HandPoint+Vector3.up*.004f));yield return new WaitForSecondsRealtime(.5f);
+            Assert.AreEqual(COgheGuide.Target.None,guide.Pointing,"On its way to pull: no arrow");
+            float end=Time.realtimeSinceStartup+40;
+            while(!(handle.CompletedJourneys>0&&game.FinalExitAvailable)&&Time.realtimeSinceStartup<end)yield return null;
+            Assert.IsTrue(game.FinalExitAvailable,"Pulled: the way is open");
+            yield return new WaitForSecondsRealtime(.8f);
+            Assert.AreEqual(COgheGuide.Target.Exit,guide.Pointing,"Then the exit");Assert.IsTrue(guide.ArrowShown);
+        }
+        [UnityTest] public IEnumerator OtherLevelsHaveNoGuide()
+        {
+            yield return Level(2);Assert.IsNull(ui.Guide);
+            yield return Level(5);Assert.IsNull(ui.Guide);
+        }
+        [UnityTest] public IEnumerator IntroSkipSitsLowAndCentredForTheThumb()
+        {
+            COgheIntro.Seen=false;ui.Play();var intro=Object.FindFirstObjectByType<COgheIntro>();
+            while(!intro.Started)yield return null;
+            var safe=Screen.safeArea;float unit=Mathf.Min(safe.width/360f,safe.height/640f);var r=COgheIntro.SkipButton(unit,safe);
+            Assert.AreEqual(safe.center.x,r.center.x,1f,"Centred");
+            Assert.Greater(r.yMax,Screen.height-safe.yMin-40*unit,"In the lower thumb zone");Assert.LessOrEqual(r.yMax,Screen.height-safe.yMin,"Inside the safe area");
+            Assert.GreaterOrEqual(r.height,48*unit-.01f,"Big enough to hit");
+        }
+
+        // Home view (Mrk): drag turns the room like a level; Zoom in follows COghe.
+        [UnityTest] public IEnumerator HomeTurnsWithADragAndZoomFollowsCOghe()
+        {
+            game.Progress.HomeUnlocked=true;COgheHomeRoom.UnlockedLevelOverride=26;
+            try
+            {
+                yield return Click("Home");Assert.AreEqual(COgheProductPage.Home,ui.Page);yield return new WaitForSecondsRealtime(.5f);
+                var view=game.Owner.View;Assert.AreEqual(-6f,Mathf.DeltaAngle(0,view.transform.eulerAngles.y),.5f,"Starts from the front");
+                Vector2 a=new Vector2(Screen.width*.4f,Screen.height*.45f),b=new Vector2(Screen.width*.6f,Screen.height*.45f);   // ~48°
+                InputSystem.QueueStateEvent(mouse,new MouseState{position=a});yield return null;
+                InputSystem.QueueStateEvent(mouse,new MouseState{position=a,buttons=1});yield return null;
+                for(int i=1;i<=12;i++){InputSystem.QueueStateEvent(mouse,new MouseState{position=Vector2.Lerp(a,b,i/12f),buttons=1});yield return null;}
+                InputSystem.QueueStateEvent(mouse,new MouseState{position=b});yield return null;yield return null;
+                Assert.Greater(Mathf.Abs(ui.HomeYaw),25f,"A drag turns the room");Assert.Less(Mathf.Abs(ui.HomeYaw),80f);
+                Assert.AreEqual(-6f+ui.HomeYaw,Mathf.DeltaAngle(0,view.transform.eulerAngles.y),.5f);
+                var room=game.HomeRoom;Assert.IsTrue(room.BackWallVisible);
+                ui.OrbitHome(-(180-ui.HomeYaw)/240*Screen.width);yield return null;yield return null;
+                Assert.AreEqual(180f,Mathf.Abs(ui.HomeYaw),2f);Assert.IsFalse(room.BackWallVisible,"From behind, the back wall steps out of the way");
+                // taps still reach the floor through the invisible guards that keep the food balls in
+                var floor=room.Root.TransformPoint(new Vector3(.05f,0,-.2f));game.Motion.StopAll();
+                game.TouchPoint(view.WorldToScreenPoint(floor));Assert.IsNotNull(game.Motion.Get(0),"A floor tap moves COghe, the room turned round");
+                // the whole room still fits: every floor corner on screen
+                yield return new WaitForSecondsRealtime(1f);
+                for(int i=0;i<4;i++)
+                {
+                    var corner=room.Root.TransformPoint(new Vector3(i%2==0?-COgheHomeRoom.HalfWidth:COgheHomeRoom.HalfWidth,0,i<2?-COgheHomeRoom.HalfDepth:COgheHomeRoom.HalfDepth));
+                    var v=view.WorldToViewportPoint(corner);Assert.That(v.x,Is.InRange(0f,1f),"corner "+i);Assert.That(v.y,Is.InRange(0f,1f),"corner "+i);
+                }
+                float overview=view.orthographicSize;
+                yield return Click("Zoom in");Assert.IsTrue(ui.HomeZoom);yield return new WaitForSecondsRealtime(2f);
+                Assert.Less(view.orthographicSize,overview*.4f,"Close in");
+                var at=view.WorldToViewportPoint(game.Personality.SkinCentre);Assert.That(at.x,Is.InRange(.3f,.7f),"COghe in the middle");Assert.That(at.y,Is.InRange(.25f,.75f));
+                game.Motion.Move(0,room.Root.TransformPoint(new Vector3(.1f,COgheHomeRoom.BodyHeight,-.4f)));yield return new WaitForSecondsRealtime(4f);
+                at=view.WorldToViewportPoint(game.Personality.SkinCentre);Assert.That(at.x,Is.InRange(.25f,.75f),"and follows it");Assert.That(at.y,Is.InRange(.2f,.8f));
+                yield return Click("Zoom out");Assert.IsFalse(ui.HomeZoom);yield return new WaitForSecondsRealtime(2f);
+                Assert.Greater(view.orthographicSize,overview*.8f,"Back to the whole room");
+            }
+            finally{COgheHomeRoom.UnlockedLevelOverride=null;}
+        }
         [UnityTest] public IEnumerator AllFiftyScenesExposeProductControlsInsideTheSafeArea()
         {
             string[] scenes=ui.Catalog.Levels[0].SceneSequence;

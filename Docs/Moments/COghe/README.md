@@ -3,6 +3,7 @@
 01/10/2026 · Theo yêu cầu của Mrk. Xem: [`win-confetti.mp4`](win-confetti.mp4) (5 s, bản Mac, có tiếng),
 [`boss-intro.mp4`](boss-intro.mp4) (10 s, có tiếng; bản nhanh hơn),
 [`screens.jpg`](screens.jpg) (bản Mac: màn thắng có pháo giấy, Pause có nút test, lưới chọn màn, cảnh báo Boss).
+Hướng dẫn màn 1/3/4 và nút Skip: [`guides.mp4`](guides.mp4) (12 s, quay từ bản Mac), [`guides.jpg`](guides.jpg).
 
 ## Pháo giấy khi thắng
 
@@ -42,6 +43,28 @@ Mỗi lần vào một màn Boss (không lặp lại khi Restart). Phần đi v�
   (ray trượt như lưỡi dao tự đặt lại vị trí riêng). Cũng sửa trường hợp vào màn Boss từ menu (phần đi vòng cũng chạy khi
   màn đang tạm dừng).
 - Test: `FirstRunIntroDrawsCOgheAtTheLevelStart`, `ResetLevelKeepsRailCarriagesAtTheirResetPose`.
+
+## Nút Skip intro
+
+- Mrk (01/10): nút Skip chuyển xuống dưới, ở giữa, dạng nút dài "Skip ›" cao 48 điểm, để cầm máy một tay vẫn bấm được bằng
+  ngón cái. Nút Back (khi xem lại intro) vẫn ở góc trên.
+- Code: `COgheIntro.SkipButton`, vẽ bằng `COgheUIArt.GuiPill`. Test `IntroSkipSitsLowAndCentredForTheThumb`.
+
+## Hướng dẫn màn 1, 3, 4
+
+Mrk (01/10). Chỉ là lớp hình trên màn chơi, không đổi gì trong puzzle; nằm dưới thanh nút và dưới các popup.
+
+- **Màn 1:** sau khi vào màn 0,8 s, một mũi tên màu hổ phách viền xanh đậm hiện dần ngay trên lỗ thoát, nhún xuống liên tục
+  chỉ vào lỗ, có vòng sáng lan ra từ lỗ. Khi người chơi đã cho COghe đi ra lỗ (lệnh thoát) hoặc COghe bắt đầu chui ra thì
+  mũi tên ẩn; nếu đổi ý đi chỗ khác thì mũi tên hiện lại.
+- **Màn 3:** khung "Hold to rotate" ở giữa phía dưới, phía trên có ngón tay làm mẫu: ấn giữ, kéo sang phải rồi sang trái, thả.
+  Khi người chơi đã xoay góc nhìn hơn 25° thì khung này tắt hẳn. Mũi tên vẫn chỉ lỗ thoát; khi lỗ quay ra khỏi màn hình
+  thì mũi tên đứng ở mép màn hình, chỉ về hướng lỗ.
+- **Màn 4:** mũi tên chỉ đúng tay kéo A (điểm COghe sẽ nắm). Khi COghe đang đi tới kéo thì ẩn; kéo xong, cửa mở thì mũi tên
+  chuyển sang lỗ thoát.
+- Ẩn khi tạm dừng/popup, khi thắng hoặc thua. Các màn khác không có hướng dẫn.
+- Code: `Assets/_Game/Venom/Runtime/Product/COgheGuide.cs` (tạo trong `COgheProductUI`). Test: `Level1ArrowPointsAtTheExit…`,
+  `Level3ShowsHoldToRotate…`, `Level4ArrowPointsAtTheHandleThenTheExit`, `OtherLevelsHaveNoGuide`.
 
 ## Chọn màn để test
 

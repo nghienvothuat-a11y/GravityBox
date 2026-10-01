@@ -23,7 +23,7 @@ namespace GravityBox.Venom
     /// </summary>
     public sealed partial class COghePersonality
     {
-        private enum HomeState { Rest, Walk, Play, React, Sulk, User }
+        private enum HomeState { Rest, Walk, Play, React, Sulk, User, Eat }
         private enum Reaction { Tickle, Hop, Heart, Roll, Flatten, Dodge }
         private HomeState home;
         private COgheHomeRoom room;
@@ -40,16 +40,21 @@ namespace GravityBox.Venom
         public COgheSkinPose Pose;
         public COgheHomeItem Playing => playing;
         public bool Sulking => home == HomeState.Sulk;
+        /// <summary>Going for, or eating, the food balls.</summary>
+        public bool Eating => home == HomeState.Eat;
+        public int BallsEaten { get; private set; }
+        /// <summary>Where COghe's skin is drawn (its body, or where a Home act carries it): the zoomed Home camera follows it.</summary>
+        public Vector3 SkinCentre => room != null && Act == COgheAct.Home && Pose.Blend > 0 ? Vector3.Lerp(centre, Pose.Centre, Pose.Blend) : game.Motion.Centre(0);
         /// <summary>Main menu: the room is hidden, so COghe stays put and only performs small acts on the spot.</summary>
         internal bool Showcase { get; set; }
 
         internal void EnterHome(COgheHomeRoom homeRoom)
         {
-            room = homeRoom; home = HomeState.Rest; homeTimer = 0; homeNext = 1.2f; playing = target = null; EndAct();
+            room = homeRoom; home = HomeState.Rest; homeTimer = 0; homeNext = 1.2f; playing = target = null; eating = false; meal = null; EndAct();
             reveals.Clear(); revealClock = -.6f; revealVisit = false; revealPending = true;
             for (int i = 0; i < touches.Length; i++) touches[i] = -100;
         }
-        internal void LeaveHome() { room = null; home = HomeState.Rest; playing = target = null; EndAct(); }
+        internal void LeaveHome() { room = null; home = HomeState.Rest; playing = target = null; eating = false; meal = null; EndAct(); }
 
         /// <summary>The player tapped COghe itself.</summary>
         public void TouchedInHome(Vector3 point)
@@ -87,7 +92,9 @@ namespace GravityBox.Venom
             stateTime += dt;
             bool commanded = game.Feedback != null && game.Feedback.CommandCount != lastCommands;
             if (game.Feedback != null) lastCommands = game.Feedback.CommandCount;
-            if ((commanded || game.HomeFeeding) && home != HomeState.User) { StopPlaying(); home = HomeState.User; stateTime = 0; }   // the player steers or feeds: step aside
+            if (commanded && home != HomeState.User) { StopPlaying(); home = HomeState.User; stateTime = 0; }   // the player steers: step aside
+            else if (game.HomeFeeding && !Showcase && (home == HomeState.Rest || home == HomeState.Walk || home == HomeState.Play))
+            { StopPlaying(); home = HomeState.Eat; stateTime = 0; meal = null; }                                          // food! off to eat it
             if (Act != COgheAct.None && Act != COgheAct.Home)
             {
                 // a level act (wave, shape, melt) while resting
@@ -98,7 +105,7 @@ namespace GravityBox.Venom
             switch (home)
             {
                 case HomeState.User:
-                    if (stateTime > 6 && game.Motion.Get(0) == null && !game.HomeFeeding) { home = HomeState.Rest; homeTimer = 0; homeNext = 2; }
+                    if (stateTime > 6 && game.Motion.Get(0) == null) { home = HomeState.Rest; homeTimer = 0; homeNext = 2; }
                     break;
                 case HomeState.Rest:
                     homeTimer += dt;
@@ -124,6 +131,9 @@ namespace GravityBox.Venom
                     break;
                 case HomeState.Sulk:
                     SulkPose(dt);
+                    break;
+                case HomeState.Eat:
+                    UpdateEat(dt);
                     break;
             }
         }
@@ -165,10 +175,15 @@ namespace GravityBox.Venom
             playing = item; lastPlayed = item; home = HomeState.Play;
             float length = item.Id switch
             {
-                "BED" => 7f, "DUMBBELL" => 5.2f, "BALL" => 4.2f, "MIRROR" => 5.8f, "SWING" => 6.5f, "SLIDE" => 4.4f, "TV" => 6f,
+                "BED" => 7f, "DUMBBELL" => 5.2f, "BALL" => 6.8f, "MIRROR" => 5.8f, "SWING" => 6.5f, "SLIDE" => 4.4f, "TV" => 6f,
                 "XYLOPHONE" => 5f, "TRAMPOLINE" => 5.5f, "HAMMOCK" => 7f, "WHEEL" => 6f, "AQUARIUM" => 5.5f, "SHADOW_LAMP" => 6f, _ => 4.8f,
             };
             if (item.Id == "MIRROR" || item.Id == "SHADOW_LAMP") Shape = PickShape();
+            if (item.Id == "BALL")
+            {
+                var ball = item.Part("Ball"); ballSide = rnd.Next(2) == 0 ? -1 : 1;
+                if (ball != null) { ballPrevious = ball.position; ballSpin = ball.rotation; skinTop = SkinTopOver(ball.position - up * (.45f * COgheHomeItems.W)); }
+            }
             Begin(COgheAct.Home, length);
             Pose = default; Pose.Turn = Quaternion.identity; Pose.Squash = 1; Pose.Axis = up; Pose.Bubble = -1;
         }
@@ -182,6 +197,7 @@ namespace GravityBox.Venom
 
         private void StopPlaying()
         {
+            StopEating();   // a touch, a toy or a preview mid-meal: the half-swallowed ball is finished first
             if (playing != null) ResetParts(playing);
             playing = null; target = null;
             if (Act != COgheAct.None) EndAct();
@@ -270,22 +286,8 @@ namespace GravityBox.Venom
                     break;
                 }
                 case "BALL":
-                {
-                    var ball = item.Part("Ball");
-                    Vector3 away = Vector3.ProjectOnPlane(item.World(new Vector3(0, .45f, 0)) - centre, up).normalized;
-                    float bump = Mathf.Sin(Mathf.Clamp01((t - .3f) / .5f) * Mathf.PI);                   // it hops into the ball
-                    float roll = Mathf.Sin(Mathf.Clamp01((t - .7f) / 3f) * Mathf.PI);                   // the ball rolls off and comes back
-                    p.Centre = centre + away * (s * .9f * bump) + up * (s * .8f * bump);
-                    p.Squash = 1 + .15f * bump;
-                    if (ball != null)
-                    {
-                        ball.localPosition = new Vector3(0, .45f, 0) + item.Root.transform.InverseTransformDirection(away) * (1.8f * roll / .07f * .07f);
-                        ball.localRotation = Quaternion.AngleAxis(roll * 300, item.Root.transform.InverseTransformDirection(Vector3.Cross(up, away)));
-                    }
-                    if (Crossed(.55f, 100, t)) COgheAudio.Instance?.Play("creature_pop", .45f, 0, .2f);
-                    if (Crossed(1.2f, 100, t)) COgheAudio.Instance?.Play("creature_happy", .45f, 0, .2f);
+                    BallGame(item, t, ref p);
                     break;
-                }
                 case "MIRROR":
                 {
                     var glass = item.Part("Mirror");
@@ -426,6 +428,181 @@ namespace GravityBox.Venom
                 }
             }
             if (item.Id != "DUMBBELL" && item.Id != "XYLOPHONE" && item.Id != "SLIDE" && item.Id != "TROPHY") p.Blend = 1;
+            Pose = p;
+        }
+
+        // The ball (Mrk: really fun, roll it and toss it): COghe wiggles with excitement, dribbles the ball round a loop
+        // and back, grabs it with two tendrils and tosses it high, heads it twice as it comes down, pops it away behind, and
+        // hops into a heart while the ball rolls back to its spot. The ball rolls without slipping (spun by how far it went).
+        private float ballSide = 1, skinTop = .045f; private Vector3 ballPrevious; private Quaternion ballSpin = Quaternion.identity;
+        private Renderer skinRenderer;
+        /// <summary>How high COghe's skin reaches over the floor right now (the ball lands on that).</summary>
+        private float SkinTopOver(Vector3 floorPoint)
+        {
+            if (skinRenderer == null) foreach (var r in game.Matter.GetComponentsInChildren<MeshRenderer>()) if (r.name == "Continuous wet skin") { skinRenderer = r; break; }
+            return skinRenderer != null ? Mathf.Clamp(Vector3.Dot(skinRenderer.bounds.max - floorPoint, up), .025f, .08f) : .045f;
+        }
+        private void BallGame(COgheHomeItem item, float t, ref COgheSkinPose p)
+        {
+            var ball = item.Part("Ball"); if (ball == null) return;
+            const float s = .036f, loop = .08f;
+            float rb = .45f * COgheHomeItems.W;
+            Vector3 rest = item.World(new Vector3(0, .45f, 0));
+            Vector3 fwd = Vector3.ProjectOnPlane(rest - centre, up); fwd = fwd.sqrMagnitude > 1e-6f ? fwd.normalized : Vector3.forward;
+            Vector3 side = Vector3.Cross(up, fwd) * ballSide;
+            float height = Vector3.Dot(centre - rest, up) + rb;                      // the skin centre over the floor
+            Vector3 Floor(Vector3 at, float h) => at - up * (Vector3.Dot(at - rest, up) + rb) + up * h;
+            Vector3 Loop(float a) => rest + side * (loop * (1 - Mathf.Cos(a))) + fwd * (loop * Mathf.Sin(a));
+            Vector3 Tangent(float a) => (side * Mathf.Sin(a) + fwd * Mathf.Cos(a)).normalized;
+            Vector3 Pusher(float a) => Floor(Loop(a) - Tangent(a) * (rb + s * .9f), height);
+            Vector3 Arc(Vector3 from, Vector3 to, float k, float h) => Vector3.Lerp(from, to, k) + up * (Mathf.Sin(k * Mathf.PI) * h);
+            Vector3 under = Floor(rest, height), behind = rest + fwd * .1f;
+            float onHead = skinTop * .96f;                                           // the ball resting on COghe's head
+            Vector3 at = rest; bool rolling = true;
+            p.Centre = centre;
+            if (t < .6f)
+            {   // can't wait
+                p.Centre = centre + up * (s * .22f * Mathf.Abs(Mathf.Sin(t * 13))); p.Squash = 1 + .07f * Mathf.Sin(t * 26);
+            }
+            else if (t < .95f) p.Centre = Arc(centre, Pusher(0), Smooth01(.6f, .95f, t), s * .5f);
+            else if (t < 3f)
+            {   // dribble: nudging the ball round a loop, leaning into it
+                float a = Mathf.PI * 2 * Smooth01(.95f, 3f, t);
+                at = Loop(a);
+                p.Centre = Pusher(a) + up * (s * .2f * Mathf.Abs(Mathf.Sin(a * 2)));
+                p.Turn = Quaternion.AngleAxis(12, Vector3.Cross(up, Tangent(a)));
+                p.Squash = 1 + .06f * Mathf.Sin(a * 4);
+                if (Crossed(1.3f, .55f, t)) COgheAudio.Instance?.Play("creature_pop", .22f, 0, .2f);
+            }
+            else if (t < 3.35f)
+            {   // two tendrils take hold, it crouches
+                float k = Smooth01(3f, 3.35f, t);
+                p.Centre = Pusher(Mathf.PI * 2); p.Squash = 1 - .18f * k; p.Turn = Quaternion.AngleAxis(8 * k, Vector3.Cross(up, fwd));
+                p.Tendrils = 2; p.TipA = rest + side * (rb * .95f); p.TipB = rest - side * (rb * .95f);
+                if (Crossed(3.05f, 100, t)) COgheAudio.Instance?.Play("creature_grab", .4f, 0, .2f);
+            }
+            else if (t < 4.25f)
+            {   // the toss: high, spinning; COghe hops underneath and looks up
+                float k = (t - 3.35f) / .9f;
+                at = rest + up * (onHead * k + 4 * .2f * k * (1 - k)); rolling = false;
+                if (t < 3.5f)
+                {
+                    p.Centre = Pusher(Mathf.PI * 2) + up * (s * .25f * Smooth01(3.35f, 3.5f, t)); p.Squash = 1.15f;
+                    if (t < 3.45f) { p.Tendrils = 2; p.TipA = at + side * (rb * .95f); p.TipB = at - side * (rb * .95f); }
+                }
+                else if (t < 3.95f) p.Centre = Arc(Pusher(Mathf.PI * 2), under, Smooth01(3.5f, 3.95f, t), s * .5f);
+                else { p.Centre = under; p.Squash = 1.08f + .03f * Mathf.Sin(t * 20); }
+                if (Crossed(3.36f, 100, t)) COgheAudio.Instance?.Play("creature_whoosh", .35f, 0, .2f);
+            }
+            else if (t < 4.92f)
+            {   // two headers
+                float h = t < 4.62f ? .045f : .03f, u = t < 4.62f ? (t - 4.25f) / .37f : (t - 4.62f) / .3f;
+                at = rest + up * (onHead + 4 * h * u * (1 - u)); rolling = false;
+                float hit = Mathf.Exp(-(t - (t < 4.62f ? 4.25f : 4.62f)) * 16);
+                p.Centre = under - up * (s * .25f * hit); p.Squash = 1 - .22f * hit;
+                p.Turn = Quaternion.AngleAxis(Mathf.Sin(t * 18) * 6, Vector3.Cross(up, fwd));
+                if (Crossed(4.25f, 100, t) || Crossed(4.62f, 100, t)) COgheAudio.Instance?.Play("creature_pop", .4f, 0, .1f);
+            }
+            else if (t < 5.45f)
+            {   // the last header pops it away behind; COghe hops back to where it stood
+                float u = (t - 4.92f) / .53f;
+                at = Vector3.Lerp(rest + up * onHead, behind, u) + up * (4 * .08f * u * (1 - u)); rolling = false;
+                float hit = Mathf.Exp(-(t - 4.92f) * 16);
+                p.Centre = Arc(under, centre, Smooth01(4.97f, 5.45f, t), s * .6f) - up * (s * .25f * hit); p.Squash = 1 - .22f * hit;
+                if (Crossed(4.92f, 100, t)) COgheAudio.Instance?.Play("creature_pop", .45f, 0, .1f);
+            }
+            else
+            {   // a little bounce, the ball rolls home; COghe hops into a heart
+                float u = Mathf.Clamp01((t - 5.45f) / .2f);
+                at = t < 5.65f ? behind + up * (4 * .015f * u * (1 - u)) : Vector3.Lerp(behind, rest, 1 - Mathf.Pow(1 - Smooth01(5.65f, 6.5f, t), 2));
+                float hop = Mathf.Sin(Smooth01(5.5f, 5.95f, t) * Mathf.PI);
+                p.Centre = centre + up * (s * 1f * hop); p.Squash = 1 + .12f * hop;
+                p.Morph = Smooth01(5.7f, 6f, t) * (1 - Smooth01(6.35f, 6.65f, t)); p.Shape = COgheShape.Heart;
+                if (Crossed(5.72f, 100, t)) COgheAudio.Instance?.Play("creature_tada", .45f, 0, .2f);
+            }
+            // roll without slipping on the floor; spin freely in the air
+            Vector3 flat = Vector3.ProjectOnPlane(at - ballPrevious, up);
+            if (rolling && flat.sqrMagnitude > 1e-10f) ballSpin = Quaternion.AngleAxis(flat.magnitude / rb * Mathf.Rad2Deg, Vector3.Cross(up, flat).normalized) * ballSpin;
+            else if (!rolling) ballSpin = Quaternion.AngleAxis(lastDt * 560, side) * ballSpin;
+            ballPrevious = at;
+            ball.position = at; ball.rotation = ballSpin;
+        }
+
+        // Eating (Mrk: Feed throws steel balls; COghe goes to where each one stops and eats it) -----------------------------
+        private COgheFeedBall meal; private int mealTries; private bool eating, lastMeal; private Vector3 mealFrom;
+        private void StopEating()
+        {
+            if (eating && meal != null) game.HomeFeedBalls?.Consume(meal);   // half swallowed: finish it
+            if (eating) EndAct();
+            eating = false; meal = null;
+        }
+        private void UpdateEat(float dt)
+        {
+            var food = game.HomeFeedBalls;
+            if (eating)
+            {
+                Time += dt; EatPose(Time);
+                if (Time >= Length) { EndAct(); eating = false; meal = null; }
+                return;
+            }
+            if (food == null || !game.HomeFeeding) { home = HomeState.Rest; homeTimer = 0; homeNext = 2; return; }
+            var body = game.Motion.Centre(0);
+            if (meal == null || meal.Taken)
+            {
+                meal = food.NearestResting(body); mealTries = 0;
+                if (meal == null) return;   // still bouncing: wait for one to stop
+                WalkToMeal(body);
+            }
+            float reach = Vector3.ProjectOnPlane(meal.Position - body, up).magnitude;
+            bool stopped = game.Motion.Get(0) == null;
+            if (stopped && reach < .11f) StartMeal(food);
+            else if (stopped || stateTime > 9)
+            {
+                if (++mealTries <= 2 && stateTime <= 9) WalkToMeal(body);
+                else if (reach < .2f) StartMeal(food);                               // close enough to reach for it
+                else { food.Consume(meal); meal = null; stateTime = 0; }            // out of reach: let it go
+            }
+        }
+        private void WalkToMeal(Vector3 body)
+        {
+            Vector3 to = Vector3.ProjectOnPlane(meal.Position - body, up);
+            Vector3 dir = to.sqrMagnitude > 1e-6f ? to.normalized : CameraFlat();
+            var local = room.Root.InverseTransformPoint(meal.Position - dir * (COgheFeedBall.Radius + .055f));
+            local.x = Mathf.Clamp(local.x, -COgheHomeRoom.HalfWidth + .06f, COgheHomeRoom.HalfWidth - .06f);
+            local.z = Mathf.Clamp(local.z, -COgheHomeRoom.HalfDepth + .06f, COgheHomeRoom.HalfDepth - .06f);
+            local.y = COgheHomeRoom.BodyHeight;
+            game.Motion.Move(0, room.Root.TransformPoint(local)); stateTime = 0;
+        }
+        private void StartMeal(COgheFeedBalls food)
+        {
+            food.Take(meal); mealFrom = meal.Position; eating = true;
+            lastMeal = food.Balls.Count <= 1;
+            Begin(COgheAct.Home, lastMeal ? 1.75f : 1.35f);
+            Pose = default; Pose.Turn = Quaternion.identity; Pose.Squash = 1; Pose.Axis = up; Pose.Bubble = -1;
+        }
+        private void EatPose(float t)
+        {
+            const float s = .036f;
+            var p = new COgheSkinPose { Blend = 1, Centre = centre, Turn = Quaternion.identity, Axis = up, Squash = 1, Bubble = -1 };
+            Vector3 dir = Vector3.ProjectOnPlane(mealFrom - centre, up); dir = dir.sqrMagnitude > 1e-6f ? dir.normalized : CameraFlat();
+            Vector3 mouth = centre + dir * (s * .7f) + up * (s * .35f);
+            float reach = Smooth01(.05f, .3f, t), pull = Smooth01(.3f, .68f, t), swallow = Smooth01(.68f, .86f, t);
+            // a tendril reaches out, wraps the ball and reels it in; it disappears into the body with a gulp
+            Vector3 ballAt = Vector3.Lerp(Vector3.Lerp(mealFrom, mouth, pull), centre + up * (s * .2f), swallow);
+            if (meal != null)
+            {
+                if (t < .86f) meal.Place(ballAt, Mathf.Lerp(1, .6f, pull) * (1 - swallow));
+                else { game.HomeFeedBalls?.Consume(meal); meal = null; BallsEaten++; game.GreetHomeQuietly(); }
+            }
+            p.Tendrils = t < .7f ? 1 : 0; p.TipA = t < .3f ? Vector3.Lerp(centre + dir * s, mealFrom, reach) : ballAt;
+            p.Centre = centre + dir * (s * .25f * reach * (1 - swallow));
+            p.Axis = t < .8f ? dir : up;
+            float gulp = t < .8f ? 0 : Mathf.Sin(Mathf.Clamp01((t - .8f) / .5f) * Mathf.PI * 2) * (1 - Smooth01(.8f, 1.3f, t));
+            p.Squash = t < .8f ? 1 - .1f * reach * (1 - pull) : 1 + .14f * gulp;
+            if (lastMeal) { float hop = Mathf.Sin(Smooth01(1.25f, 1.65f, t) * Mathf.PI); p.Centre += up * (s * .8f * hop); }
+            if (Crossed(.32f, 100, t)) COgheAudio.Instance?.Play("creature_grab", .35f, 0, .1f);
+            if (Crossed(.8f, 100, t)) COgheAudio.Instance?.Play("creature_gulp", .55f, 0, .1f);
+            if (lastMeal && Crossed(1.25f, 100, t)) COgheAudio.Instance?.Play("creature_happy", .45f, 0, .2f);
             Pose = p;
         }
 

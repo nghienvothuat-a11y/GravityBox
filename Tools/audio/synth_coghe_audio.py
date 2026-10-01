@@ -7,7 +7,8 @@ the creature is small, curious, playful and friendly.
 
 Usage: python3 Tools/audio/synth_coghe_audio.py [out_dir] [--music] [--intro]   (needs numpy, scipy, soundfile)
 --music also rebuilds the background loop, --intro the 20 s intro score, --personality the sounds of COghe's acts,
---home the Home furniture sounds, --moments the Boss warning and win confetti (otherwise the committed ones are kept).
+--home the Home furniture sounds, --moments the Boss warning and win confetti, --feed the Home food (steel ball clink,
+gulp) (otherwise the committed ones are kept).
 Default out_dir: Assets/_Game/Venom/Resources/COgheAudio
 """
 import os, sys
@@ -675,6 +676,25 @@ def moments_sfx():
     return out
 
 
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Feeding at Home: a small steel ball clinking on the floor and furniture, and COghe's gulp when it eats one.
+def feed_sfx():
+    global RNG
+    RNG = np.random.default_rng(8181)
+    out = {}
+    n = int(.28 * SR); t = np.arange(n) / SR
+    ping = sum(a_ * np.sin(2 * np.pi * f * t) * np.exp(-t / d) for f, a_, d in [(3150, .7, .05), (5070, .45, .035), (7930, .3, .022), (11240, .15, .012)])
+    tick = highpass(noise(n), 4000) * np.exp(-t / .0015) * .5
+    out["metal_clink"] = save("metal_clink", small_room(ping + tick, .1), -10)
+    gl = voice(np.array([330, 280, 220, 190]), .2, (U, U), breath=.04, nasal=True)
+    m = int(.16 * SR); tt = np.arange(m) / SR
+    plop = np.sin(2 * np.pi * np.cumsum(glide(m, 240, 620, .7)) / SR) * np.exp(-tt / .045) * .7
+    x = np.zeros(len(gl) + m); x[:len(gl)] += gl; x[int(.12 * SR):int(.12 * SR) + m] += plop
+    out["creature_gulp"] = save("creature_gulp", small_room(x, .14), -6)
+    return out
+
+
 if __name__ == "__main__":
     sfx()
     # The music is only rebuilt on request: the committed loop is the one that was approved by ear.
@@ -683,6 +703,7 @@ if __name__ == "__main__":
     if "--personality" in sys.argv: personality_sfx()
     if "--home" in sys.argv: home_sfx()
     if "--moments" in sys.argv: moments_sfx()
+    if "--feed" in sys.argv: feed_sfx()
     print("written to", os.path.abspath(OUT))
     for f in sorted(os.listdir(OUT)):
         if f.endswith(".ogg"):

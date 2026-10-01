@@ -48,6 +48,8 @@ namespace GravityBox.Venom
         private Renderer[] tissueRenderers;
         private UnityEngine.Rendering.ShadowCastingMode[] tissueShadows;
         private float toastUntil;
+        /// <summary>Levels 1, 3 and 4: the arrow and the rotate hint (null elsewhere).</summary>
+        public COgheGuide Guide {get;private set;}
 
         public void Initialize(VenomCampaign game)
         {
@@ -72,7 +74,7 @@ namespace GravityBox.Venom
         }
         private void Start()
         {
-            EnsureInput();started=true;Layout();
+            EnsureInput();started=true;Layout();Guide=COgheGuide.Create(this,Game,safe,art);
             if(COgheProductMode.ReplayIntroOnLoad){COgheProductMode.ReplayIntroOnLoad=false;PlayIntro(true);}
             else if(!COgheProductMode.SessionStarted){COgheProductMode.SessionStarted=true;ShowMenu();}
             else if(Game.Definition.Order==1&&!COgheIntro.Seen)PlayIntro(false);
@@ -186,7 +188,7 @@ namespace GravityBox.Venom
             if(Page==COgheProductPage.Game&&!Game.Owner.Completed){ShowPopup(COgheProductPopup.LeaveHome);return;}
             EnterHome();
         }
-        private void EnterHome(){MenuShadows(false);Game.EnterHome();Game.SetHabitatPresentation(false);Page=COgheProductPage.Home;Popup=COgheProductPopup.None;homeSize=-1;Rebuild();}
+        private void EnterHome(){MenuShadows(false);Game.EnterHome();Game.SetHabitatPresentation(false);Page=COgheProductPage.Home;Popup=COgheProductPopup.None;homeSize=-1;homeYaw=0;homeZoom=false;Rebuild();}
         public void Confirm()
         {
             var action=Popup;Popup=COgheProductPopup.None;

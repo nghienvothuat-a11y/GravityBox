@@ -103,10 +103,11 @@ namespace GravityBox.Venom
         }
         private void HomeView()
         {
-            Top(true);float x=width*.5f-130,y=height-152;
+            Top(true);float x=width*.5f-148,y=height-152;
             MenuEntry(x,y,"Feed",COgheIcon.Food,()=>{Game.FeedHome();COgheAudio.Happy();});
-            MenuEntry(x+104,y,"Play",COgheIcon.Heart,()=>{Game.GreetHome();COgheAudio.Happy();});
-            MenuEntry(x+208,y,"Items",COgheIcon.Menu,()=>ShowPopup(COgheProductPopup.Collection));
+            MenuEntry(x+80,y,"Play",COgheIcon.Heart,()=>{Game.GreetHome();COgheAudio.Happy();});
+            MenuEntry(x+160,y,"Items",COgheIcon.Menu,()=>ShowPopup(COgheProductPopup.Collection));
+            MenuEntry(x+240,y,homeZoom?"Zoom out":"Zoom in",homeZoom?COgheIcon.Overview:COgheIcon.Pinch,ToggleHomeZoom);
         }
         private void VictoryView()
         {

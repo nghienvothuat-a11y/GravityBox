@@ -11,7 +11,9 @@ namespace GravityBox.Venom
         private GameObject room,food;
         /// <summary>The furnished room (Spatial catalog): the items COghe has earned, where it lives and plays.</summary>
         public COgheHomeRoom Room {get;private set;}
-        public bool Feeding=>food!=null;
+        /// <summary>The furnished room's food: steel balls thrown in that COghe eats (null in the plain habitat).</summary>
+        public COgheFeedBalls FeedBalls {get;private set;}
+        public bool Feeding=>food!=null||(FeedBalls!=null&&FeedBalls.Active);
         private Material furnishing;
         private float greeting;
         public float Greeting=>Mathf.Clamp01(greeting-game.Matter.SimulationTime);
@@ -31,6 +33,7 @@ namespace GravityBox.Venom
                 var back=Surface("Home back wall",new Vector3(0,-.3f+COgheHomeRoom.WallHeight*.5f,COgheHomeRoom.HalfDepth),Vector3.back,new Vector2(COgheHomeRoom.HalfWidth*2,COgheHomeRoom.WallHeight),false);
                 game.Surfaces=new[]{floor,back};game.Props=new VenomMovableProp[0];
                 Room=new COgheHomeRoom(game,room.transform,furnishing,GlassTemplate(),null);
+                FeedBalls=new COgheFeedBalls(game,Room,furnishing);
             }
             else
             {
@@ -74,12 +77,14 @@ namespace GravityBox.Venom
         public void Greet(){greeting=game.Matter.SimulationTime+3;}
         public void Feed()
         {
+            if(FeedBalls!=null){FeedBalls.Feed();return;}
             if(food!=null)Object.Destroy(food);
             food=Decor(PrimitiveType.Sphere,"Snack",new Vector3(-.04f,-.279f,-.12f),Vector3.one*.024f,game.Owner.IndicatorMaterial);
             game.Motion.Move(0,food.transform.position);
         }
         public void Step(float dt)
         {
+            FeedBalls?.Step(dt);
             if(food==null||Vector3.Distance(game.Motion.Centre(0),food.transform.position)>.045f)return;
             food.transform.localScale*=Mathf.Exp(-dt*4);Greet();if(food.transform.localScale.x<.002f)Object.Destroy(food);
         }
@@ -87,9 +92,9 @@ namespace GravityBox.Venom
         {
             if(surfaces==null)return;
             game.Surfaces=surfaces;game.Props=props;surfaces=null;
-            game.Personality?.LeaveHome();Room?.Dispose();Room=null;
+            game.Personality?.LeaveHome();FeedBalls?.Dispose();FeedBalls=null;Room?.Dispose();Room=null;
             game.Owner.Apparatus.gameObject.SetActive(true);Object.Destroy(room);Object.Destroy(furnishing);room=food=null;
         }
-        public void Dispose(){Room?.Dispose();Room=null;if(furnishing!=null)Object.Destroy(furnishing);}
+        public void Dispose(){FeedBalls?.Dispose();FeedBalls=null;Room?.Dispose();Room=null;if(furnishing!=null)Object.Destroy(furnishing);}
     }
 }

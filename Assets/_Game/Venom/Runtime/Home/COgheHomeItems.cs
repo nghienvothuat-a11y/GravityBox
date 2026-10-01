@@ -20,14 +20,15 @@ namespace GravityBox.Venom
 
     /// <summary>
     /// The 14 Home items (Codex, OUTBOX/COGHE_HOME_ITEMS_2026_09_30/ITEMS.json), built in W units (COghe's width, 10 cm):
-    /// +Y up, front -Z, origin at the floor centre. Familiar things unlock first.
+    /// +Y up, front -Z, origin at the floor centre. Familiar things unlock first; the ball opens the Home (Mrk: the most
+    /// playful toy first, at level 10; the bed moves to 14).
     /// </summary>
     public static class COgheHomeItems
     {
         public const float W = .1f;   // COghe's relaxed width at Home (measured on the live skin: ~10-12 cm, not the 7 cm first briefed)
         public static readonly (string id, string name, int level)[] Catalog =
         {
-            ("BED", "Bed", 10), ("DUMBBELL", "Dumbbell", 12), ("BALL", "Ball", 14), ("MIRROR", "Mirror", 16),
+            ("BALL", "Ball", 10), ("DUMBBELL", "Dumbbell", 12), ("BED", "Bed", 14), ("MIRROR", "Mirror", 16),
             ("SWING", "Swing", 18), ("SLIDE", "Slide", 20), ("TV", "TV", 23), ("XYLOPHONE", "Xylophone", 26),
             ("TRAMPOLINE", "Trampoline", 30), ("HAMMOCK", "Hammock", 34), ("WHEEL", "Running wheel", 38),
             ("AQUARIUM", "Aquarium", 42), ("SHADOW_LAMP", "Shadow lamp", 46), ("TROPHY", "Trophy", 50),

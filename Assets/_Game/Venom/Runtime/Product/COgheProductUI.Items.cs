@@ -67,23 +67,41 @@ namespace GravityBox.Venom
             else { room.ShowGhost(item); Notify(item.Name + " unlocks at level " + item.UnlockLevel); }
         }
 
-        /// <summary>The Home camera: the whole room, leaning in on the item in play or the one being previewed.</summary>
+        /// <summary>Home view rotation (Mrk: turn the room like a level): degrees around the room, from a drag.</summary>
+        public float HomeYaw => homeYaw;
+        /// <summary>Home "Zoom in": the camera stays close on COghe and follows it.</summary>
+        public bool HomeZoom => homeZoom;
+        private float homeYaw; private bool homeZoom;
+        public void OrbitHome(float pixels) { homeYaw = Mathf.Repeat(homeYaw - pixels / Mathf.Max(1, Screen.width) * 240 + 180, 360) - 180; }
+        public void ToggleHomeZoom() { homeZoom = !homeZoom; Rebuild(); }
+
+        /// <summary>The Home camera: the whole room seen from the player's chosen side, leaning in on the item in play or
+        /// the one being previewed, or close on COghe while zoomed in.</summary>
         private bool FrameHome(Camera camera)
         {
             var room = Game.HomeRoom; if (room == null) return false;
             camera.orthographic = true; camera.aspect = (float)Screen.width / Screen.height;
-            camera.transform.rotation = Quaternion.Euler(42, -6, 0);
+            camera.transform.rotation = Quaternion.Euler(42, -6 + homeYaw, 0);
             Vector3 overview = room.Root.position + Vector3.up * .05f + Vector3.forward * .02f;
-            // phones are narrow: the width decides; on wider screens the room's depth (1.36 m on screen) plus the UI bars does
-            float fitWidth = (COgheHomeRoom.HalfWidth * 2 + .22f) * .5f / camera.aspect, fitDepth = 1.08f;
+            // phones are narrow: the width decides; on wider screens the room's depth (1.36 m on screen) plus the UI bars does.
+            // Turned, the room's outline on screen changes: scale both fits by how far its corners now reach.
+            Extents(room, camera.transform.rotation, out float across, out float upward);
+            Extents(room, Quaternion.Euler(42, -6, 0), out float acrossFront, out float upwardFront);
+            float fitWidth = (COgheHomeRoom.HalfWidth * 2 + .22f) * .5f / camera.aspect * across / acrossFront, fitDepth = 1.08f * upward / upwardFront;
             float size = Mathf.Max(fitWidth, fitDepth), targetSize = size; Vector3 target = overview;
-            var focus = room.Ghost ?? Game.Personality?.Playing;
+            float rate = 2.2f;
+            var focus = room.Ghost ?? (homeZoom ? null : Game.Personality?.Playing);
             if (focus != null)
             {
                 var b = room.BoundsOf(focus);
                 target = Vector3.Lerp(b.center, Game.Motion.Centre(0), .35f); targetSize = Mathf.Max(.3f, size * .45f);
             }
-            float blend = homeSize < 0 ? 1 : 1 - Mathf.Exp(-Time.unscaledDeltaTime * 2.2f);
+            else if (homeZoom)
+            {
+                target = (Game.Personality != null ? Game.Personality.SkinCentre : Game.Motion.Centre(0)) + Vector3.up * .02f;
+                targetSize = .18f; rate = 3.5f;
+            }
+            float blend = homeSize < 0 ? 1 : 1 - Mathf.Exp(-Time.unscaledDeltaTime * rate);
             homeFocus = Vector3.Lerp(homeSize < 0 ? target : homeFocus, target, blend);
             homeSize = Mathf.Lerp(homeSize < 0 ? targetSize : homeSize, targetSize, blend);
             camera.orthographicSize = homeSize;
@@ -91,7 +109,22 @@ namespace GravityBox.Venom
             float pixelY = Screen.safeArea.yMax - logicalY * canvas.scaleFactor, centre = pixelY / Screen.height;
             camera.transform.position = homeFocus - camera.transform.forward * 1.2f - camera.transform.up * ((centre - .5f) * 2 * camera.orthographicSize);
             camera.nearClipPlane = .01f; camera.farClipPlane = 30;
+            // seen from behind, the back wall would stand between the camera and the room
+            room.SetBackWallVisible(room.Root.InverseTransformDirection(camera.transform.forward).z > .2f);
             return true;
+        }
+
+        /// <summary>How far the room's box reaches from its centre along the view's right and up axes.</summary>
+        private static void Extents(COgheHomeRoom room, Quaternion view, out float across, out float upward)
+        {
+            Vector3 right = view * Vector3.right, up = view * Vector3.up, centre = room.Root.TransformPoint(new Vector3(0, COgheHomeRoom.WallHeight * .5f, 0));
+            across = upward = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                var corner = room.Root.TransformPoint(new Vector3(i % 2 == 0 ? -COgheHomeRoom.HalfWidth : COgheHomeRoom.HalfWidth,
+                    (i / 2) % 2 == 0 ? 0 : COgheHomeRoom.WallHeight, i / 4 == 0 ? -COgheHomeRoom.HalfDepth : COgheHomeRoom.HalfDepth)) - centre;
+                across = Mathf.Max(across, Mathf.Abs(Vector3.Dot(corner, right))); upward = Mathf.Max(upward, Mathf.Abs(Vector3.Dot(corner, up)));
+            }
         }
 
         private void DisposeItemIcons()

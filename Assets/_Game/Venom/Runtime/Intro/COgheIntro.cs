@@ -200,7 +200,8 @@ namespace GravityBox.Venom
             {
                 float unit=Mathf.Min(Screen.safeArea.width/360f,Screen.safeArea.height/640f);var safe=Screen.safeArea;
                 if(Replay&&productArt.GuiButton(new Rect(safe.xMin+24*unit,Screen.height-safe.yMax+25*unit,52*unit,52*unit),COgheIcon.Back)){COgheAudio.UiTap();Finish();return;}
-                if(Clock>1f&&Clock<SkipTo-.3f&&productArt.GuiButton(new Rect(safe.xMax-76*unit,Screen.height-safe.yMax+25*unit,52*unit,52*unit),COgheIcon.Skip)){COgheAudio.UiTap();Skip();}
+                // Mrk: low and centred, where a thumb rests when the phone is held in one hand
+                if(Clock>1f&&Clock<SkipTo-.3f&&productArt.GuiPill(SkipButton(unit,safe),COgheIcon.Skip,"Skip",unit)){COgheAudio.UiTap();Skip();}
                 return;
             }
             if (Clock > 1f && Clock < SkipTo - .3f)
@@ -208,9 +209,12 @@ namespace GravityBox.Venom
                 float u = Mathf.Min(Screen.width / 540f, Screen.height / 960f);
                 if (skipStyle == null) skipStyle = new GUIStyle(GUI.skin.button) { fontSize = Mathf.RoundToInt(20 * u), fontStyle = FontStyle.Bold };
                 var safe = Screen.safeArea;
-                if (GUI.Button(new Rect(safe.xMax - 84 * u, Screen.height - safe.yMax + 20 * u, 64 * u, 42 * u), "››", skipStyle)) { COgheAudio.UiTap(); Skip(); }
+                if (GUI.Button(new Rect(safe.center.x - 32 * u, Screen.height - safe.yMin - 70 * u, 64 * u, 42 * u), "››", skipStyle)) { COgheAudio.UiTap(); Skip(); }
             }
         }
+
+        /// <summary>The skip button in GUI coordinates (top-left origin): a pill centred at the bottom of the safe area.</summary>
+        public static Rect SkipButton(float unit, Rect safe) => new Rect(safe.center.x - 62 * unit, Screen.height - safe.yMin - 76 * unit, 124 * unit, 48 * unit);
 
         /// <summary>Draws the frame at the current clock over the active target: the screen in OnGUI, or a RenderTexture
         /// under a top-left pixel matrix (GL.LoadPixelMatrix(0, w, h, 0)).</summary>

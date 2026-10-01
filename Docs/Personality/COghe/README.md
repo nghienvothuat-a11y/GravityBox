@@ -8,6 +8,8 @@ Xem nhanh: [`levels-preview.mp4`](levels-preview.mp4) (40 s: vẫy tay, 8 hình,
 [`home-preview.mp4`](home-preview.mp4) (72 s: đồ bật ra, COghe chơi từng món, phản ứng khi chạm, dỗi),
 [`shapes.jpg`](shapes.jpg), [`home-screens.jpg`](home-screens.jpg) (ảnh chụp bản Mac: nhà, menu đồ vật, hình mờ, hai trò chơi).
 Video có tiếng (tiếng của vở diễn + nhạc nền), render từ Unity.
+Đợt 01/10 (Mrk): [`home-round3.mp4`](home-round3.mp4) (26 s, quay từ bản Mac: xoay phòng, trò chơi bóng, Feed bi thép,
+Zoom in khi COghe ăn), [`home-round3.jpg`](home-round3.jpg).
 
 ## Nguyên tắc
 
@@ -40,7 +42,15 @@ Video có tiếng (tiếng của vở diễn + nhạc nền), render từ Unity.
   xem trước. Đồ vật dựng theo đơn vị W = 10 cm (bề ngang thân COghe khi thả lỏng, đo trên da thật; brief ban đầu ghi 7 cm).
 - **Menu chính:** vẫn dùng phòng này nhưng ẩn; COghe chỉ diễn tại chỗ (vẫy, biến hình, tan chảy), không đi lại.
 - **Tự do:** COghe tự đi lang thang, ghé chơi đồ đã mở, thỉnh thoảng vẫy tay/biến hình. Người chơi chạm sàn thì nó đi tới
-  (tạm dừng tự do vài giây); Feed vẫn thả đồ ăn (nó ưu tiên đi ăn); Play cho một phản ứng vui như khi chạm vào nó.
+  (tạm dừng tự do vài giây); Play cho một phản ứng vui như khi chạm vào nó.
+- **Feed (01/10, Mrk):** mỗi lần bấm ném 3 viên bi thép nhỏ (đường kính 2,2 cm) từ phía người chơi vào phòng, hướng và chỗ
+  rơi ngẫu nhiên. Bi là vật lý thật: nảy, lăn, va kính và đồ đạc rồi dừng (không bao giờ đụng vào thân COghe). Viên nào dừng
+  thì COghe đi tới, vươn xúc tu cuốn bi về, nuốt "ực" (thân phồng lên rồi xẹp), ăn hết thì nhảy vui. Tối đa 9 viên trong
+  phòng. Tiếng bi kêu "keng" theo lực va.
+- **Xoay phòng (01/10, Mrk):** kéo ngang để xoay góc nhìn quanh phòng như trong màn chơi (xoay được cả vòng). Khi nhìn từ phía
+  sau, vách sau tự ẩn để không che phòng; khung hình tự thu phóng để vẫn thấy cả phòng.
+- **Zoom in (01/10, Mrk):** nút thứ tư ở thanh dưới. Camera tiến sát COghe và đi theo nó (cả khi nó đang chơi đồ); bấm
+  "Zoom out" để về toàn cảnh.
 - **Chạm vào COghe:** 6 phản ứng (nhột, nảy, biến tim, lăn, bẹp, né). Chạm dồn dập (4 lần/3 s) thì dỗi: bò vào góc xa, quay
   đi một lúc rồi "hừ" và quay lại.
 - **Menu đồ vật (Items):** 14 món với icon của Codex; đã mở ghi "Play" (chọn: COghe tới chơi), chưa mở có khóa + "Level N"
@@ -49,9 +59,9 @@ Video có tiếng (tiếng của vở diễn + nhạc nền), render từ Unity.
 
 | Màn | Món | COghe làm gì |
 | --- | --- | --- |
-| 10 | Đệm ngủ | nhảy lên nệm, cuộn tròn ngủ, thở, bong bóng ngáy |
+| 10 | Bóng (món đầu tiên, Mrk đổi 01/10) | háo hức lắc lư, đẩy bóng lăn một vòng rồi về (bóng lăn đúng theo quãng đường), hai xúc tu ôm bóng tung lên cao, chạy vào đỡ, đội đầu hai lần, đánh đầu bóng ra sau, nhảy biến thành trái tim trong khi bóng lăn về chỗ |
 | 12 | Tạ | hai xúc tu nắm thanh, nâng ba lần, gồng |
-| 14 | Bóng | húc bóng, bóng lăn đi rồi về |
+| 14 | Đệm ngủ | nhảy lên nệm, cuộn tròn ngủ, thở, bong bóng ngáy |
 | 16 | Gương | tạo dáng: biến hai hình trước gương |
 | 18 | Xích đu | ngồi lên, đu qua lại |
 | 20 | Cầu trượt | leo thang, trượt xuống về phía người chơi |
@@ -72,7 +82,10 @@ Video có tiếng (tiếng của vở diễn + nhạc nền), render từ Unity.
   `ITEMS.json` của Codex), `COgheHomeRoom` (phòng, bố trí, mở khóa, hình mờ). `VenomHabitat` dựng phòng khi vào nhà.
 - Menu đồ vật và camera nhà: `Assets/_Game/Venom/Runtime/Product/COgheProductUI.Items.cs`.
 - Icon: `Assets/_Game/Venom/Resources/COgheHome/Icons/<ID>.png` (256 px, ASTC 6×6).
-- Âm thanh: `Tools/audio/synth_coghe_audio.py --personality` (11 tiếng vở diễn), `--home` (6 nốt đàn gõ).
+- Âm thanh: `Tools/audio/synth_coghe_audio.py --personality` (11 tiếng vở diễn), `--home` (6 nốt đàn gõ), `--feed` (bi
+  thép, tiếng nuốt).
+- Bi thép: `Assets/_Game/Venom/Runtime/Home/COgheFeedBalls.cs` (ném, va chạm chỉ cho bi, nằm yên); ăn bi và trò chơi bóng
+  trong `COghePersonality.Home.cs`. Xoay/zoom: `COgheProductUI.Items.cs` (`FrameHome`).
 
 ## Thêm hình hoặc món mới
 

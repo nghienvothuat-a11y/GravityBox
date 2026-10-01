@@ -26,7 +26,7 @@ namespace GravityBox.Venom
         }
         private IEnumerator Start()
         {
-            deadline=Time.realtimeSinceStartup+180;Application.runInBackground=true;
+            deadline=Time.realtimeSinceStartup+260;Application.runInBackground=true;
             var args=Environment.GetCommandLineArgs();int at=Array.IndexOf(args,"-coghe-product-proof-output");
             output=at>=0&&at+1<args.Length?Path.GetFullPath(args[at+1]):Path.Combine(Application.persistentDataPath,"ProductUIProof");Directory.CreateDirectory(output);
             Screen.SetResolution(720,1280,FullScreenMode.Windowed);yield return new WaitForSecondsRealtime(1);
@@ -78,7 +78,30 @@ namespace GravityBox.Venom
             float bossEnd=Time.realtimeSinceStartup+10;while(COgheBossIntro.Current!=null&&Time.realtimeSinceStartup<bossEnd)yield return null;
             if(COgheBossIntro.Current!=null||game.Owner.Paused){Fail("Boss tour did not hand over");yield break;}
             yield return Capture("22-boss-level");
-            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"autoAdvancedToLevel\":2,\"savedProgressWritten\":false,\"captures\":22}");
+            // first-level guides: the exit arrow (1), "Hold to rotate" (3), the handle to pull (4)
+            int shot=23;
+            foreach(int n in new[]{1,3,4})
+            {
+                ui.LoadForTest(n);yield return new WaitForSecondsRealtime(2.5f);
+                game=FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;
+                if(COgheIntro.Playing){var intro=FindFirstObjectByType<COgheIntro>();while(!intro.Started)yield return null;intro.Speed=30;intro.Skip();while(COgheIntro.Playing)yield return null;}
+                yield return new WaitForSecondsRealtime(1.6f);
+                if(ui.Guide==null||!ui.Guide.ArrowShown||(n==3&&!ui.Guide.RotateHintShown)){Fail("Level "+n+" guide missing");yield break;}
+                yield return Capture((shot++)+"-guide-level"+n);
+            }
+            // Home: turned round, zoomed in on COghe, feeding (steel balls), the ball game
+            COgheHomeRoom.UnlockedLevelOverride=26;
+            ui.ShowMenu();game.Progress.HomeUnlocked=true;ui.OpenHome();yield return new WaitForSecondsRealtime(5);
+            if(game.HomeRoom==null){Fail("Furnished Home missing");yield break;}
+            ui.OrbitHome(-Screen.width*.5f);yield return new WaitForSecondsRealtime(1.5f);yield return Capture("26-home-turned");
+            ui.OrbitHome(Screen.width*.5f);ui.ToggleHomeZoom();yield return new WaitForSecondsRealtime(2.5f);yield return Capture("27-home-zoom");ui.ToggleHomeZoom();
+            yield return new WaitForSecondsRealtime(1.5f);game.FeedHome();yield return new WaitForSecondsRealtime(2.2f);yield return Capture("28-home-feed");
+            if(game.HomeFeedBalls==null||game.HomeFeedBalls.Thrown<3){Fail("Feed threw no balls");yield break;}
+            float fed=Time.realtimeSinceStartup+30;while(game.HomeFeeding&&Time.realtimeSinceStartup<fed)yield return null;
+            if(game.HomeFeeding){Fail("COghe did not eat the balls");yield break;}
+            game.Personality.PlayNow(game.HomeRoom.Find("BALL"));yield return new WaitForSecondsRealtime(3.45f);yield return Capture("29-home-ball-toss");
+            COgheHomeRoom.UnlockedLevelOverride=null;
+            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"autoAdvancedToLevel\":2,\"savedProgressWritten\":false,\"captures\":29}");
             Debug.Log("COGHE PRODUCT NATIVE PROOF PASSED");Application.Quit(0);
         }
         private IEnumerator Capture(string name)

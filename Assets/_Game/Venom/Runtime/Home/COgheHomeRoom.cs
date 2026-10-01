@@ -38,6 +38,7 @@ namespace GravityBox.Venom
         private readonly Dictionary<Renderer, Material[]> realMaterials = new Dictionary<Renderer, Material[]>();
         private COgheHomeItem ghost;
         private float ghostUntil;
+        private Renderer backWall;
         private static COgheProductCatalog catalog;
 
         public COgheHomeRoom(VenomCampaign owner, Transform parent, Material lit, Material glass, Material wall)
@@ -65,8 +66,11 @@ namespace GravityBox.Venom
             // floor slab, a back wall and low glass sides: the room reads as a bigger, friendlier version of a puzzle box
             var k = new COgheLowPoly();
             k.Paint("#ece7da").Box(new Vector3(0, -.006f, 0), new Vector3(HalfWidth * 2, .012f, HalfDepth * 2), .003f);
-            k.Paint("#d8e7dd").Box(new Vector3(0, WallHeight * .5f, HalfDepth + .006f), new Vector3(HalfWidth * 2, WallHeight, .012f));
-            k.Paint("#c9ddd3").Box(new Vector3(0, .006f, HalfDepth - .004f), new Vector3(HalfWidth * 2, .012f, .008f));
+            // the back wall is its own piece: hidden while the player looks at the room from behind it
+            var back = new COgheLowPoly();
+            back.Paint("#d8e7dd").Box(new Vector3(0, WallHeight * .5f, HalfDepth + .006f), new Vector3(HalfWidth * 2, WallHeight, .012f));
+            back.Paint("#c9ddd3").Box(new Vector3(0, .006f, HalfDepth - .004f), new Vector3(HalfWidth * 2, .012f, .008f));
+            backWall = back.Bake("Room back wall", Root, materials).GetComponent<Renderer>();
             k.Paint("#e8e0cf");
             foreach (float x in new[] { -HalfWidth, HalfWidth }) foreach (float z in new[] { -HalfDepth, HalfDepth })
                 k.Box(new Vector3(x, WallHeight * .35f, z), new Vector3(.012f, WallHeight * .7f, .012f), .002f);
@@ -81,6 +85,10 @@ namespace GravityBox.Venom
             panes.Bake("Room glass", Root, materials, true);
             if (wall != null) foreach (var r in Root.GetComponentsInChildren<Renderer>()) if (r.name == "Room glass") r.sharedMaterial = wall;
         }
+
+        /// <summary>The camera turned around behind the back wall (Home view rotation): hide it, show it again in front.</summary>
+        public void SetBackWallVisible(bool visible) { if (backWall != null && backWall.enabled != visible) backWall.enabled = visible; }
+        public bool BackWallVisible => backWall != null && backWall.enabled;
 
         // Unlocks -----------------------------------------------------------------------------------------------------------
         public bool Unlocked(COgheHomeItem item) => LevelReached(item.UnlockLevel);

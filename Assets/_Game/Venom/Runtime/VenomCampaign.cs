@@ -555,7 +555,8 @@ namespace GravityBox.Venom
         {
             if(!pointerDown)return;
             if(!pointerMoved&&(p-pointerStart).magnitude>10*Screen.width/540f){pointerMoved=true;if(Definition.CanRotate&&!Cutting)Owner.Rotation.BeginDrag();}
-            if(pointerMoved&&Definition.ViewOnly)CameraRig.Orbit(p.x-pointerPrevious.x,Screen.width);
+            if(pointerMoved&&Home&&ProductUI!=null)ProductUI.OrbitHome(p.x-pointerPrevious.x);   // Home turns like a level
+            else if(pointerMoved&&Definition.ViewOnly)CameraRig.Orbit(p.x-pointerPrevious.x,Screen.width);
             else if(pointerMoved&&Definition.CanRotate&&!Cutting)Owner.Rotation.Drag((p-pointerPrevious)/Mathf.Min(Screen.width,Screen.height),Owner.View.transform.up,Owner.View.transform.right);
             pointerPrevious=p;
         }
@@ -768,7 +769,10 @@ namespace GravityBox.Venom
         }
         public float Greeting=>Home?(habitat?.Greeting??0):0;
         public COgheHomeRoom HomeRoom=>Home?habitat?.Room:null;
+        public COgheFeedBalls HomeFeedBalls=>Home?habitat?.FeedBalls:null;
         public void FeedHome(){if(Home)habitat?.Feed();}
+        /// <summary>The habitat's greeting glow only (COghe just ate), without a touch reaction.</summary>
+        internal void GreetHomeQuietly()=>habitat?.Greet();
         public void GreetHome()
         {
             if(!Home)return;

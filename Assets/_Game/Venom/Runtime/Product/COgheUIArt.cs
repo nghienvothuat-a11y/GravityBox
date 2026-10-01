@@ -78,6 +78,24 @@ namespace GravityBox.Venom
             }
             return pressed;
         }
+        private GUIStyle pill,pillText;
+        /// <summary>A labelled pill button for IMGUI overlays (the intro), drawn like the retained UI's buttons.</summary>
+        public bool GuiPill(Rect bounds,COgheIcon icon,string label,float unit)
+        {
+            bool pressed=GUI.Button(bounds,GUIContent.none,GUIStyle.none);
+            if(Event.current.type==EventType.Repaint)
+            {
+                if(pill==null)pill=new GUIStyle{normal={background=Panel.texture},border=new RectOffset(32,32,32,32)};
+                if(pillText==null)pillText=new GUIStyle{font=BoldFont,alignment=TextAnchor.MiddleLeft,normal={textColor=Ink}};
+                pillText.fontSize=Mathf.RoundToInt(16*unit);
+                var previous=GUI.color;GUI.color=Paper;pill.Draw(bounds,false,false,false,false);
+                var glyph=icons[(int)icon];var uv=glyph.rect;var tex=glyph.texture;float size=bounds.height*.5f;
+                GUI.color=Ink;GUI.DrawTextureWithTexCoords(new Rect(bounds.x+bounds.height*.42f,bounds.y+(bounds.height-size)*.5f,size,size),tex,new Rect(uv.x/tex.width,uv.y/tex.height,uv.width/tex.width,uv.height/tex.height));
+                GUI.color=Color.white;pillText.Draw(new Rect(bounds.x+bounds.height*.42f+size+8*unit,bounds.y,bounds.width,bounds.height),label,false,false,false,false);
+                GUI.color=previous;
+            }
+            return pressed;
+        }
         public void Dispose(){UnityEngine.Object.Destroy(Panel);foreach(var s in icons)UnityEngine.Object.Destroy(s);}
     }
 }
