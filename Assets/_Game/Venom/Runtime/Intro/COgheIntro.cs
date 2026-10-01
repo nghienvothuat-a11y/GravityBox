@@ -76,7 +76,7 @@ namespace GravityBox.Venom
 
         private VenomCampaign game;
         private Material mat;
-        private Texture2D noise, dots, streaks, burst, star, white;
+        private Texture2D noise, streaks, burst, star, white;
         private readonly List<Texture2D> generated = new List<Texture2D>();
         private readonly Dictionary<string, Art> art = new Dictionary<string, Art>();
         private Dictionary<string, string[]> layout;
@@ -234,9 +234,7 @@ namespace GravityBox.Venom
             else if (t < 14.6f) CloseUp(t);
             else if (t < Seat) Place(t);
             else Seated(t);
-            // printed-comic dots over everything drawn, gone with the dissolve
-            float comic = 1 - Seg(t, DissolveStart, DissolveStart + .9f);
-            if (comic > 0) Tiled(dots, .06f * comic, 30);
+            // no printed-dot overlay: the redrawn comic is clean ink and smooth colour (Mrk, 01/10: the grain read as AI)
         }
 
         // Shots ----------------------------------------------------------------------------------------------------------
@@ -446,13 +444,6 @@ namespace GravityBox.Venom
 
         private void FullScreen(Texture tex, float alpha) => Quad(tex, new Rect(0, 0, W, H), Color.white, alpha, 0, 0, 0);
 
-        private void Tiled(Texture tex, float alpha, float cell)
-        {
-            if (alpha <= .001f) return;
-            float size = cell * s0 * 2;
-            Quad(tex, new Rect(0, 0, W, H), Color.black, alpha, 0, 0, 0, new Rect(0, 0, W / size, H / size));
-        }
-
         private void Quad(Texture tex, Rect r, Color tint, float alpha, float invert, float blur, float dissolve, Rect? source = null)
         {
             if (tex == null || alpha <= .001f || dissolve >= 1.12f) return;
@@ -572,10 +563,6 @@ namespace GravityBox.Venom
                 byte b = (byte)(Mathf.Clamp01(v) * 255); np[y * 128 + x] = new Color32(b, b, b, 255);
             }
             noise.SetPixels32(np); noise.Apply();
-            // halftone: one soft dot per tile
-            dots = NewTexture(32, 32, TextureWrapMode.Repeat); var dp = new Color32[32 * 32];
-            for (int y = 0; y < 32; y++) for (int x = 0; x < 32; x++) { float d = new Vector2(x - 15.5f, y - 15.5f).magnitude; dp[y * 32 + x] = new Color32(255, 255, 255, (byte)(255 * Mathf.Clamp01((7 - d) / 1.5f))); }
-            dots.SetPixels32(dp); dots.Apply();
             // speed lines along the meteor's fall, and the radial burst of the impact frame
             streaks = NewTexture(256, 512); var sp = new Color32[256 * 512];
             for (int i = 0; i < 70; i++)

@@ -44,6 +44,12 @@ SPEC = {
 COGHE_IN = {"S7_HANDS_PLACE", "S6_CLOSEUP", "S7_COGHE_SEATED", "S5_COGHE_RISE"}
 # where to look for COghe when the layer has other dark masses (x0 y0 x1 y1, 0..1): the close-up's palm
 SEARCH = {"S6_CLOSEUP": (.35, .35, .95, .65)}
+# The runtime places the sphere set by fixed points of its 900 canvas (COgheIntro.SpherePole/Cradle) and the rising COghe
+# by its measured foot. The image model does not keep one scale across a repainted set, so each layer is fitted on its own
+# to the first painting's proportions: the spheres by their body (alpha over half: centre x, lowest point, width), the
+# rising COghe by its body (foot x, foot y, width; tendrils excluded, as coghe_anchor measures it).
+SPHERE_FIT = {"S4_SPHERE_CLOSED": (.4994, .8878, .4789), "S4_SPHERE_OPEN": (.4998, .8878, .8381)}
+RISE_FIT = (.50491, .84333, .23222)
 
 
 def load(name):
@@ -115,6 +121,27 @@ def register_to_reference(plate_rgb, ref_rgb):
     return warp
 
 
+def fit_to(canvas, x, y, width, target):
+    """Move and scale a layer so its measured point (x, y) and width land on target (x, y, width; 0..1 of the canvas)."""
+    ch, cw = canvas.shape[:2]
+    k = target[2] * cw / max(1e-3, width)
+    tx, ty = target[0] * cw - x * k, target[1] * ch - y * k
+    m = np.float32([[k, 0, tx], [0, k, ty]])
+    return cv2.warpAffine(canvas, m, (cw, ch), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0)), (k, tx, ty)
+
+
+def fit_sphere_set(name, canvas, anchor):
+    """The sphere layers fitted to the first painting; returns the canvas and the transform (k, tx, ty) or None."""
+    if name in SPHERE_FIT:
+        ys, xs = np.nonzero(canvas[..., 3] > 128)
+        canvas, fit = fit_to(canvas, (xs.min() + xs.max()) / 2, ys.max(), xs.max() - xs.min(), SPHERE_FIT[name])
+    elif name == "S5_COGHE_RISE" and anchor is not None:
+        canvas, fit = fit_to(canvas, anchor[0], anchor[3], anchor[2], RISE_FIT)
+    else: return canvas, None
+    print(f"  {name}: fitted to the first painting, scale {fit[0]:.3f}")
+    return canvas, fit
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     ref = np.array(Image.open(REFERENCE).convert("RGB"))
@@ -137,7 +164,12 @@ def main():
             rect = (0, 0, cw, ch)
         else:
             canvas = np.array(fit_canvas(Image.fromarray(clean_alpha(np.array(img.convert("RGBA")))), cw, ch))
+            # COghe is measured at the painted size, before any refit: a downscaled glossy body breaks into highlights
             anchor = coghe_anchor(canvas, SEARCH.get(name)) if name in COGHE_IN else None
+            canvas, fit = fit_sphere_set(name, canvas, anchor)
+            if fit and anchor:
+                k, tx, ty = fit
+                anchor = (anchor[0] * k + tx, anchor[1] * k + ty, anchor[2] * k, anchor[3] * k + ty)
             ys, xs = np.nonzero(canvas[..., 3])
             x0, y0 = max(0, xs.min() - 2), max(0, ys.min() - 2)
             x1, y1 = min(cw, xs.max() + 3), min(ch, ys.max() + 3)

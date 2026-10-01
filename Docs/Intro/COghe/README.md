@@ -4,6 +4,12 @@
 người Mỹ, trẻ, xinh (không xuất hiện lại); kết bằng cú chuyển từ tranh comic sang hộp kính 3D. Tranh do Codex vẽ
 (`OUTBOX/COGHE_INTRO_ASSETS_2026_09_30` trong workspace Buzz); chuyển động, hiệu ứng, âm thanh, tích hợp do Claude làm.
 
+**Vẽ lại 01/10/2026** (Mrk: người dùng thấy tranh "hơi AI", chất liệu sần): Codex vẽ lại cả 18 lớp theo ảnh tham chiếu
+của Mrk: nét comic sạch, viền mực đậm, mảng màu và bóng mượt, bỏ grain/halftone/hatching
+(`OUTBOX/COGHE_INTRO_SMOOTH_2026_10_01`). Runtime bỏ lớp chấm in (halftone) từng phủ lên toàn bộ intro. Bố cục, nhịp,
+nhân vật và cú chuyển cuối giữ nguyên. So sánh: [`before-after.jpg`](before-after.jpg). Dung lượng gần như không đổi (texture ASTC 8×8
+trên máy 3,06 → 3,08 MB).
+
 Xem nhanh: [`preview.mp4`](preview.mp4) (540×1170, có tiếng, render từ Unity: màn 1 thật nằm dưới tranh) và
 [`contact-sheet.jpg`](contact-sheet.jpg) (24 khung).
 
@@ -30,7 +36,8 @@ hình (đã kiểm 1080×2340 và 1080×1920). COghe vẽ được đặt đúng
 
 - Lần đầu người chơi mở **vị trí 1 của catalog Spatial** (màn 1), trước khi chơi. Màn 1 được tạm dừng bên dưới; HUD ẩn;
   nhạc nền và SFX của game tắt (intro có nhạc riêng). Hết intro, game tự chạy tiếp.
-- Nút **››** (góc trên phải, sau 1 s): nhảy tới đoạn COghe đã ngồi trong hộp rồi tan vào game — bỏ qua vẫn thấy cú chuyển.
+- Nút **Skip** (dưới, giữa màn hình, sau 1 s; Mrk 01/10: bấm bằng ngón cái): nhảy tới đoạn COghe đã ngồi trong hộp rồi
+  tan vào game — bỏ qua vẫn thấy cú chuyển.
 - Xem lại: màn 1 → **Tạm dừng** → **Xem lại phần mở đầu**.
 - Đã xem thì lưu `PlayerPrefs "coghe.intro.seen"`. Không phát khi chạy test, batchmode hay bản proof tự chạy.
 
@@ -53,6 +60,9 @@ hình (đã kiểm 1080×2340 và 1080×1920). COghe vẽ được đặt đúng
    .venv/bin/python Tools/intro/prepare_intro_layers.py <LAYERS> <REFERENCES/level01_start_1080x2340.png>
    ```
    Script chuẩn hoá kích thước, làm sạch alpha, cắt viền, đăng ký tranh lab lên ảnh màn 1, tìm COghe, ghi `layout.txt`.
+   Bộ quả cầu (`S4_SPHERE_CLOSED`, `S4_SPHERE_OPEN`, `S5_COGHE_RISE`) được dời và co giãn chung một phép biến đổi, đo trên
+   quả cầu đóng, về đúng chỗ runtime đặt quả cầu (thân rộng 0,479 canvas, tâm x 0,499, đáy y 0,888); ba lớp phải vẽ cùng
+   khung đăng ký với nhau.
 3. Nhịp và vị trí từng cảnh nằm trong các hàm `Fall`, `Impact`, `Arrival`, `Sphere`, `Emerge`, `Kneel`, `CloseUp`,
    `Place`, `Seated` của `COgheIntro.cs`.
 
