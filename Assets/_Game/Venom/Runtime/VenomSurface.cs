@@ -21,8 +21,10 @@ namespace GravityBox.Venom
         private int cellVersion;
         private readonly int[] inside = new int[4], outside = new int[4];
         private readonly int[] seen = new int[CohesiveOrganism.ParticleCount];
-        private readonly Vector3[] points = new Vector3[CohesiveOrganism.ParticleCount+6];
-        private readonly float[] supports = new float[CohesiveOrganism.ParticleCount+6], weights = new float[CohesiveOrganism.ParticleCount+6];
+        /// <summary>The body's particles plus what the life animation adds (a crest, a shape, the monster).</summary>
+        public const int MaxSkinSources = CohesiveOrganism.ParticleCount + 16;
+        private readonly Vector3[] points = new Vector3[MaxSkinSources];
+        private readonly float[] supports = new float[MaxSkinSources], weights = new float[MaxSkinSources];
         private readonly int[] particleIds = new int[CohesiveOrganism.ParticleCount];
         private readonly int[,] tetrahedra = { {0,5,1,6},{0,1,2,6},{0,2,3,6},{0,3,7,6},{0,7,4,6},{0,4,5,6} };
         private readonly Vector3Int[] offsets = { new Vector3Int(0,0,0),new Vector3Int(1,0,0),new Vector3Int(1,1,0),new Vector3Int(0,1,0),new Vector3Int(0,0,1),new Vector3Int(1,0,1),new Vector3Int(1,1,1),new Vector3Int(0,1,1) };
@@ -30,7 +32,7 @@ namespace GravityBox.Venom
         private VenomLifeAnimation life;
         private VenomFloorBoundary floor,ceiling;
         private Matrix4x4 toFloor,fromFloor;
-        private readonly Vector3[] floorPoints = new Vector3[CohesiveOrganism.ParticleCount+6];
+        private readonly Vector3[] floorPoints = new Vector3[MaxSkinSources];
         private int sourceCount;
         private bool allAboveFloor,climbing;
         // what accessories read after each rebuild: every particle's skin source as drawn (after the life animation, so
@@ -46,7 +48,7 @@ namespace GravityBox.Venom
         public Vector4[] ParticleInk;
         private bool inking;
         private Vector4[] inkField = Array.Empty<Vector4>();
-        private readonly Vector4[] sourceInks = new Vector4[CohesiveOrganism.ParticleCount+6], cornerInks = new Vector4[8], edgeInks = new Vector4[64];
+        private readonly Vector4[] sourceInks = new Vector4[MaxSkinSources], cornerInks = new Vector4[8], edgeInks = new Vector4[64];
         private readonly List<Vector4> vertexInks = new List<Vector4>(20000);
         private VenomLevelController level;
         public int VertexCount => mesh != null ? mesh.vertexCount : 0;

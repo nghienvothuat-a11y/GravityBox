@@ -40,6 +40,7 @@ namespace GravityBox.Venom
         private readonly List<RaycastResult> uiHits=new List<RaycastResult>(16);
         private PointerEventData pointerQuery;
         private Rect lastSafe;
+        private VenomLifeAnimation menuLife;
         private int lastWidth,lastHeight,lastFragmentSignature;
         private float width,height,nextRefresh;
         private bool started,leaving;
@@ -238,6 +239,20 @@ namespace GravityBox.Venom
             camera.transform.rotation=Quaternion.Euler(menu?17:24,-12,0);
             var focus=Game.Motion.Centre(0)+Vector3.up*.025f;
             camera.orthographicSize=menu?Mathf.Max(.215f,.10f/camera.aspect):Mathf.Max(.20f,.15f/camera.aspect);
+            // the menu's monster: keep all of it in the picture, lean in on its face for the roar, shake with it
+            if(menu)
+            {
+                if(menuLife==null)menuLife=Game.Matter.GetComponent<VenomLifeAnimation>();
+                var monster=menuLife!=null?menuLife.Monster:default;
+                if(monster.Body>0)
+                {
+                    var mouth=monster.Head-monster.Up*(monster.Size*.55f);   // the gaping mouth, clear of the logo and Play
+                    focus=Vector3.Lerp(focus,Vector3.Lerp(monster.Focus,mouth,.9f*monster.Zoom),Mathf.SmoothStep(0,1,monster.Body));
+                    camera.orthographicSize*=1-.45f*monster.Zoom;
+                    float shake=Time.unscaledTime;
+                    focus+=(camera.transform.right*Mathf.Sin(shake*53)+camera.transform.up*Mathf.Cos(shake*47))*monster.Shake;
+                }
+            }
             // Reserve a live-character area between the logo and Play at both short and tall portrait ratios.
             float logicalY=menu?(height*.12f+122+height-290)*.5f:height*.49f;
             float pixelY=Screen.safeArea.yMax-logicalY*canvas.scaleFactor;

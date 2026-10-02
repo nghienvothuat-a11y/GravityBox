@@ -47,6 +47,7 @@ namespace GravityBox.Venom
         public Vector3 SkinCentre => room != null && Act == COgheAct.Home && Pose.Blend > 0 ? Vector3.Lerp(centre, Pose.Centre, Pose.Blend) : game.Motion.Centre(0);
         /// <summary>Main menu: the room is hidden, so COghe stays put and only performs small acts on the spot.</summary>
         internal bool Showcase { get; set; }
+        private int showcaseActs;
         /// <summary>The Style screen: COghe holds still on its spot (no wandering, games, feeding or acts) while it is dressed.</summary>
         public bool OnStage { get; private set; }
         public void TakeStage(Vector3 spot)
@@ -59,7 +60,7 @@ namespace GravityBox.Venom
 
         internal void EnterHome(COgheHomeRoom homeRoom)
         {
-            room = homeRoom; home = HomeState.Rest; homeTimer = 0; homeNext = 1.2f; playing = target = null; eating = false; meal = null; EndAct();
+            room = homeRoom; home = HomeState.Rest; homeTimer = 0; homeNext = 1.2f; showcaseActs = 0; playing = target = null; eating = false; meal = null; EndAct();
             reveals.Clear(); revealClock = -.6f; revealVisit = false; revealPending = true;
             for (int i = 0; i < touches.Length; i++) touches[i] = -100;
         }
@@ -68,7 +69,7 @@ namespace GravityBox.Venom
         /// <summary>The player tapped COghe itself.</summary>
         public void TouchedInHome(Vector3 point)
         {
-            if (room == null) return;
+            if (room == null || Act == COgheAct.Monster) return;   // the monster finishes its show
             if (home == HomeState.Sulk) { COgheAudio.Instance?.Play("creature_hmph", .45f, 0, .6f); return; }   // it is not talking to you
             float now = game.Matter.SimulationTime;
             for (int i = touches.Length - 1; i > 0; i--) touches[i] = touches[i - 1];
@@ -154,6 +155,8 @@ namespace GravityBox.Venom
             if (Showcase)
             {
                 homeNext = 5f + (float)rnd.NextDouble() * 4f;
+                // the monster first, to catch the eye as the menu opens (Mrk), then every third act
+                if (showcaseActs++ % 3 == 0) { Begin(COgheAct.Monster, MonsterLength); homeNext = 6f + (float)rnd.NextDouble() * 3f; return; }
                 COgheAct small = rnd.Next(3) == 0 ? COgheAct.Wave : rnd.Next(2) == 0 ? COgheAct.Shape : COgheAct.Melt;
                 if (small == COgheAct.Shape) Shape = PickShape();
                 Begin(small, small == COgheAct.Melt ? 2.3f : 2.9f);

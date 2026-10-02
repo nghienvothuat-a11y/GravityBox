@@ -23,7 +23,7 @@ namespace GravityBox.Tests
    yield return Load(1);yield return Frames(45);
    var p=game.Personality;p.ResetState();
    yield return Frames(120);var control=BodySnapshot();
-   foreach(var act in new[]{COgheAct.Tantrum,COgheAct.Wave,COgheAct.Shape,COgheAct.Melt})
+   foreach(var act in new[]{COgheAct.Tantrum,COgheAct.Wave,COgheAct.Shape,COgheAct.Melt,COgheAct.Monster})
    {
     yield return Load(1);yield return Frames(45);game.Personality.ResetState();
     game.Personality.Force(act,COgheShape.Star);
@@ -62,6 +62,56 @@ namespace GravityBox.Tests
    game.TouchPoint(FloorTapNear(.12f));
    yield return Frames(8);
    Assert.AreEqual(COgheAct.None,p.Act,"A command ends the act at once");
+  }
+
+  // The monster (Mrk 02/10): its face comes with it and goes with it; close stills for review (Artifacts/Monster).
+  [UnityTest] public IEnumerator MonsterGrowsAFaceAndLosesIt()
+  {
+   yield return Load(1);yield return Frames(60);
+   var p=game.Personality;var life=game.Matter.GetComponent<VenomLifeAnimation>();
+   p.Force(COgheAct.Monster);
+   yield return Frames(Mathf.RoundToInt(2.8f*30));
+   Assert.AreEqual(COgheAct.Monster,p.Act);
+   var rig=life.Monster;Assert.Greater(rig.Amount,.9f,"Fully formed at the roar");Assert.Greater(rig.Jaw,.8f,"jaw wide open");
+   var face=game.Matter.GetComponent<COgheMonsterFace>();Assert.IsNotNull(face);
+   foreach(var name in new[]{"Monster eyes","Monster mouth","Monster teeth","Monster tongue"})
+   {var part=face.transform.Find(name);Assert.IsTrue(part.gameObject.activeSelf,name);Assert.Greater(part.GetComponent<MeshFilter>().sharedMesh.vertexCount,10,name);}
+   Assert.Greater(rig.Head.y-game.Motion.Centre(0).y,.07f,"It stands far taller than COghe");
+   foreach(var name in new[]{"Monster eyes","Monster mouth","Monster teeth","Monster tongue"})Assert.IsNull(face.transform.Find(name).GetComponent<Collider>(),"Presentation only");
+   yield return Frames(Mathf.RoundToInt((COghePersonality.MonsterLength-2.8f)*30)+6);
+   Assert.AreNotEqual(COgheAct.Monster,p.Act);Assert.AreEqual(0,life.Monster.Amount);
+   Assert.IsFalse(face.transform.Find("Monster eyes").gameObject.activeSelf,"The face goes with it");
+  }
+  [Explicit("Renders monster review stills")]
+  [UnityTest] public IEnumerator RenderMonsterStills()
+  {
+   yield return Load(1);yield return Frames(60);
+   var p=game.Personality;var view=game.Owner.View;
+   var close=new GameObject("Monster camera").AddComponent<Camera>();close.CopyFrom(view);close.enabled=false;close.aspect=540f/720;close.orthographic=true;
+   var rt=RenderTexture.GetTemporary(540,720,24);var tex=new Texture2D(540,720,TextureFormat.RGB24,false);
+   string root="Artifacts/Monster";if(Directory.Exists(root))Directory.Delete(root,true);Directory.CreateDirectory(root);
+   try
+   {
+    p.Force(COgheAct.Monster);var rest=game.Motion.Centre(0);
+    int frames=Mathf.CeilToInt(COghePersonality.MonsterLength*30);
+    for(int f=0;f<=frames;f++)
+    {
+     yield return Frames(1);
+     if(f%3!=0)continue;
+     close.transform.rotation=view.transform.rotation;close.orthographicSize=.11f;   // the act faces the game camera
+     close.transform.position=rest+Vector3.up*.065f-close.transform.forward*1.2f;
+     Grab(close,rt,tex,$"{root}/close_{f:000}.png");
+     if(f==87||f==150)
+     {
+      // from the side: the jaw and the face parts in profile
+      var rig=game.Matter.GetComponent<VenomLifeAnimation>().Monster;
+      close.transform.rotation=Quaternion.LookRotation(-rig.Right,Vector3.up);close.transform.position=rest+Vector3.up*.065f-close.transform.forward*1.2f;
+      Grab(close,rt,tex,$"{root}/side_{f:000}.png");
+      File.WriteAllText($"{root}/rig_{f:000}.txt",$"jaw {rig.Jaw} size {rig.Size} head {rig.Head} jaw head {rig.JawHead} fwd {rig.Forward} up {rig.Up}");
+     }
+    }
+   }
+   finally{Object.Destroy(close.gameObject);RenderTexture.ReleaseTemporary(rt);Object.Destroy(tex);}
   }
 
   // Preview frames of every act: Artifacts/Personality/<act>/frame_<n>.png (close camera) and wide_<n>.png.

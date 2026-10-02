@@ -9,6 +9,40 @@ using UnityEngine.UI;
 
 namespace GravityBox.Venom
 {
+    /// <summary>Opt-in review reel of the main menu's monster as a player sees it (UI included): one PNG per frame at a
+    /// fixed 30 fps and the sounds it made (-coghe-monster-reel &lt;dir&gt;). Development builds only; writes no saves.</summary>
+    public sealed class COgheMonsterReel : MonoBehaviour
+    {
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void Boot()
+        {
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-coghe-monster-reel")<0)return;
+            VenomCampaignSave.PersistenceEnabled=false;COgheProductMode.OverrideForTests=true;
+            var go=new GameObject("Monster reel");DontDestroyOnLoad(go);go.AddComponent<COgheMonsterReel>();
+        }
+        private IEnumerator Start()
+        {
+            var args=Environment.GetCommandLineArgs();int at=Array.IndexOf(args,"-coghe-monster-reel");
+            string output=at+1<args.Length&&!args[at+1].StartsWith("-")?Path.GetFullPath(args[at+1]):Path.Combine(Application.persistentDataPath,"MonsterReel");
+            Directory.CreateDirectory(output);
+            Screen.SetResolution(472,1022,FullScreenMode.Windowed);Application.runInBackground=true;
+            var sounds=new System.Text.StringBuilder();int frame=0;
+            System.Action<string,float> heard=(clip,volume)=>sounds.AppendLine($"{frame/30f:F3} {clip} {volume:F2}");
+            yield return new WaitForSecondsRealtime(1.5f);
+            var game=FindFirstObjectByType<VenomCampaign>();
+            if(game==null||game.ProductUI==null){Debug.LogError("Monster reel: no menu");Application.Quit(1);yield break;}
+            game.ProductUI.ShowMenu();COgheAudio.Heard+=heard;Time.captureFramerate=30;
+            for(frame=0;frame<30*10;frame++)
+            {
+                ScreenCapture.CaptureScreenshot(Path.Combine(output,$"frame_{frame:00000}.png"));
+                yield return null;
+            }
+            Time.captureFramerate=0;COgheAudio.Heard-=heard;
+            File.WriteAllText(Path.Combine(output,"sounds.txt"),sounds.ToString());
+            Debug.Log("COGHE MONSTER REEL DONE");Application.Quit(0);
+        }
+    }
+
     /// <summary>Opt-in native-player visual verification; never runs for a normal player or writes campaign saves.</summary>
     public sealed class COgheProductProof : MonoBehaviour
     {

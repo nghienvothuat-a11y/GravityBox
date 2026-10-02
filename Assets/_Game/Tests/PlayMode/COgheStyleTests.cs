@@ -162,6 +162,46 @@ namespace GravityBox.Tests
             finally{LeaveStyleTest();}
         }
 
+        // The main menu opens with the monster (Mrk 02/10); a review reel of it as the menu shows it: Artifacts/MenuMonster.
+        [UnityTest] public IEnumerator TheMenuOpensWithTheMonster()
+        {
+            Assert.AreEqual(COgheProductPage.MainMenu,ui.Page);
+            var p=game.Personality;float end=Time.realtimeSinceStartup+4;
+            while(p.Act!=COgheAct.Monster&&Time.realtimeSinceStartup<end)yield return null;
+            Assert.AreEqual(COgheAct.Monster,p.Act,"First thing on the menu");
+            yield return new WaitForSecondsRealtime(2.7f);
+            var life=game.Matter.GetComponent<VenomLifeAnimation>();var rig=life.Monster;
+            Assert.Greater(rig.Amount,.8f);
+            var v=game.Owner.View.WorldToViewportPoint(rig.Head);Assert.That(v.y,Is.InRange(.2f,.92f),"Its face stays in the picture");Assert.That(v.x,Is.InRange(.1f,.9f));
+            Assert.AreEqual(0,game.Progress.Completed.Count,"Nothing in the puzzle changes");
+        }
+        [Explicit("Renders the menu monster review reel")]
+        [UnityTest] public IEnumerator RenderMenuMonster()
+        {
+            string root="Artifacts/MenuMonster";if(System.IO.Directory.Exists(root))System.IO.Directory.Delete(root,true);System.IO.Directory.CreateDirectory(root);
+            var sounds=new System.Text.StringBuilder();int frame=0;
+            System.Action<string,float> heard=(clip,volume)=>sounds.AppendLine($"{frame/30f:F3} {clip} {volume:F2}");
+            var cam=new GameObject("Reel camera").AddComponent<Camera>();cam.enabled=false;
+            var rt=RenderTexture.GetTemporary(540,1170,24);var tex=new Texture2D(540,1170,TextureFormat.RGB24,false);
+            var p=game.Personality;
+            Time.captureFramerate=30;COgheAudio.Heard+=heard;
+            try
+            {
+                // as a player sees it: the menu opens and the monster starts on its own
+                int total=Mathf.CeilToInt((COghePersonality.MonsterLength+2.4f)*30);
+                for(frame=0;frame<total;frame++)
+                {
+                    yield return null;   // the camera and skin of the frame just finished (no end-of-frame in batch mode)
+                    var view=game.Owner.View;cam.CopyFrom(view);cam.aspect=540f/1170;
+                    var old=cam.targetTexture;cam.targetTexture=rt;cam.Render();cam.targetTexture=old;
+                    RenderTexture.active=rt;tex.ReadPixels(new Rect(0,0,540,1170),0,0);tex.Apply();RenderTexture.active=null;
+                    System.IO.File.WriteAllBytes($"{root}/frame_{frame:00000}.png",tex.EncodeToPNG());
+                }
+                System.IO.File.WriteAllText($"{root}/sounds.txt",sounds.ToString());
+            }
+            finally{Time.captureFramerate=0;COgheAudio.Heard-=heard;Object.Destroy(cam.gameObject);RenderTexture.ReleaseTemporary(rt);Object.Destroy(tex);}
+        }
+
         [UnityTest] public IEnumerator TheSavedLookIsWornInTheNextLevel()
         {
             var look=new COgheStyle{Inks=new[]{"INK_GALAXY","INK_GOLD",null,null},Hat="HAT_BEANIE",Seed=9};

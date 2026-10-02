@@ -11,7 +11,7 @@ namespace GravityBox.Venom
     /// </summary>
     public sealed partial class VenomLifeAnimation
     {
-        private const int MaxSources = CohesiveOrganism.ParticleCount + 6, MaxLimbs = 8;
+        private const int MaxSources = VenomSurface.MaxSkinSources, MaxLimbs = 16;
         private static readonly float[] FingerX = { -.44f, -.15f, .15f, .44f }, FingerLength = { .72f, .88f, .9f, .74f }, FingerSpread = { -9, -3, 3, 9 };
         private const float BodyRadius = .036f;
         private int actSerial = -1, shapeCount, limbCount;
@@ -51,6 +51,7 @@ namespace GravityBox.Venom
                 case COgheAct.Doze: return Doze(points, supports, weights, count, centre, ground, t, p.Fade);
                 case COgheAct.GlassTap: return GlassTap(p, points, count, centre, ground, t);
                 case COgheAct.Home: return HomePose(p, points, supports, weights, count, centre, ground, up, floor);
+                case COgheAct.Monster: return MonsterAct(p, points, supports, weights, count, centre, ground, up, floor, t);
             }
             // Wave and Shape: morph into the template and back
             float e = Smooth(0, .5f, t) * (1 - Smooth(length - .5f, length, t)) * p.Fade;
@@ -92,9 +93,10 @@ namespace GravityBox.Venom
             actToCamera = Vector3.Cross(up, actRight);
             float pitch = view != null ? Mathf.Asin(Mathf.Clamp(-Vector3.Dot(view.transform.forward, up), -1, 1)) : 0;
             actTilt = Mathf.Clamp(pitch * .6f, 0, 35 * Mathf.Deg2Rad);   // lean the flat shapes back to face a camera looking down
-            if (p.Act != COgheAct.Wave && p.Act != COgheAct.Shape) return;
+            if (p.Act != COgheAct.Wave && p.Act != COgheAct.Shape && p.Act != COgheAct.Monster) return;
             // match each particle to the nearest free source of the shape at its peak; left-over particles melt into it
-            BuildShape(p.Act, p.Shape, p.Length * .5f, p.Length);
+            if (p.Act == COgheAct.Monster) BuildMonster(MonsterPoseAt(1.9f, p.Length), 1.9f);
+            else BuildShape(p.Act, p.Shape, p.Length * .5f, p.Length);
             int pairs = 0;
             for (int i = 0; i < count; i++)
             {

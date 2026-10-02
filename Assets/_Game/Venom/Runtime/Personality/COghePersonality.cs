@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace GravityBox.Venom
 {
-    public enum COgheAct { None, Tantrum, Wave, Shape, Melt, GlassTap, Doze, Home }
+    public enum COgheAct { None, Tantrum, Wave, Shape, Melt, GlassTap, Doze, Home, Monster }
     /// <summary>Shapes COghe can make of itself, in the order they unlock (see <see cref="COghePersonality.ShapeUnlocks"/>).</summary>
     public enum COgheShape { Heart, Star, Question, Mushroom, Snowman, ThumbsUp, Rocket, Umbrella }
 
@@ -20,6 +20,8 @@ namespace GravityBox.Venom
         /// <summary>Tests and proof runs can switch the character off entirely.</summary>
         public static bool Enabled = true;
         public const float TantrumLength = 3.1f, IdleBeforeFirstAct = 6.5f, IdleBeforeDoze = 45f;
+        /// <summary>The main menu's monster: rises, roars at the viewer, cackles, melts back (Mrk 02/10).</summary>
+        public const float MonsterLength = 6.6f;
         private const int TapsForTantrum = 6;
         private const float TapWindow = 3f, TantrumCooldown = 25f, TantrumWaitLimit = 4f, FadeOut = .16f;
         /// <summary>Catalog position from which each shape can appear (hidden unlocks: it simply starts showing up).</summary>
@@ -133,7 +135,7 @@ namespace GravityBox.Venom
             Shape = shape;
             if (act == COgheAct.Tantrum) FindWall(.30f, true);
             if (act == COgheAct.GlassTap) FindWall(.12f, false);
-            Begin(act, act == COgheAct.Tantrum ? TantrumLength : act == COgheAct.Doze ? 1e6f : act == COgheAct.Melt ? 2.3f : act == COgheAct.GlassTap ? 2.1f : 2.9f);
+            Begin(act, act == COgheAct.Tantrum ? TantrumLength : act == COgheAct.Monster ? MonsterLength : act == COgheAct.Doze ? 1e6f : act == COgheAct.Melt ? 2.3f : act == COgheAct.GlassTap ? 2.1f : 2.9f);
         }
 
         // Sounds on the beats of each act (clips in Resources/COgheAudio; a missing clip is simply silent).
@@ -148,6 +150,9 @@ namespace GravityBox.Venom
                 case COgheAct.Shape: At(from, to, .42f, "creature_tada", .5f); break;
                 case COgheAct.Melt: At(from, to, .05f, "creature_melt", .45f); At(from, to, 1.55f, "creature_pop", .5f); break;
                 case COgheAct.GlassTap: for (int k = 0; k < 3; k++) At(from, to, .7f + k * .32f, "glass_tok", .4f); break;
+                case COgheAct.Monster:
+                    At(from, to, 0, "monster_rumble", .7f); At(from, to, .85f, "monster_rise", .6f); At(from, to, 1.9f, "monster_breath", .55f);
+                    At(from, to, 2.35f, "monster_roar", .95f); At(from, to, 3.85f, "monster_cackle", .85f); At(from, to, 5.95f, "creature_pop", .5f); break;
                 case COgheAct.Doze: if (to > 1.5f && Mathf.Floor((to - 1.5f) / 3.4f) != Mathf.Floor((from - 1.5f) / 3.4f)) COgheAudio.Instance?.Play("creature_snore", .3f, 0, .5f); break;
             }
         }

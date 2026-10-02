@@ -83,6 +83,10 @@ and [native Unity verification](../../Verification/COgheProductUI/README.md).
   material; wardrobe is presentation only (no colliders, forces or puzzle state)
   and must never hide a mechanism, the exit or the creature's silhouette. Item
   icons follow the Home item icon style (Codex, `Resources/COgheStyle/Icons`).
+- The main menu monster (approved by Mrk 02/10/2026): for that one act COghe may
+  rise into an original Venom-inspired liquid monster with white slanted eyes,
+  fangs and a tongue; they appear only while the act plays and vanish with it.
+  No Marvel logo or identifying marks. See `Docs/Personality/COghe/README.md`.
 - Build assets in Unity for this phase. Do not introduce Blender or purchased asset
   dependencies without a new task requiring them.
 

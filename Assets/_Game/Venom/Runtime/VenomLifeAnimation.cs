@@ -93,6 +93,7 @@ namespace GravityBox.Venom
             clock += dt;
             vertices.Clear(); normals.Clear(); triangles.Clear(); plants.Clear();
             HeadAmount = HeadHeight = CrawlAmount = DanceAmount = 0; TendrilCount = RaisedTendrilCount = SlidingTendrilCount = 0;
+            Monster.Amount = Monster.Body = Monster.Zoom = Monster.Shake = 0;
             GravitySag=Vector3.zero;
             foreach (var fragment in fragments) if (fragment != null) fragment.Seen = false;
         }
