@@ -8,7 +8,7 @@ the creature is small, curious, playful and friendly.
 Usage: python3 Tools/audio/synth_coghe_audio.py [out_dir] [--music] [--intro]   (needs numpy, scipy, soundfile)
 --music also rebuilds the background loop, --intro the 20 s intro score, --personality the sounds of COghe's acts,
 --home the Home furniture sounds, --moments the Boss warning and win confetti, --feed the Home food (steel ball clink,
-gulp), --monster the main menu monster (rumble, rise, breath, roar, cackle) (otherwise the committed ones are kept).
+gulp), --monster the main menu monster (its liquid rising, the tongue's slurp) (otherwise the committed ones are kept).
 Default out_dir: Assets/_Game/Venom/Resources/COgheAudio
 """
 import os, sys
@@ -697,89 +697,26 @@ def feed_sfx():
 
 
 # ---------------------------------------------------------------------------------------------------------------------
-# The main menu's monster (COgheAct.Monster): a rumble as the liquid shivers, a gooey rise, a sharp breath, the roar, and
-# a wicked cackle whose "khặc" syllables land on the jaw's chatter (VenomLifeAnimation.MonsterPoseAt).
-def growl(f0_curve, seconds, formants, rough=0.5, sub=0.4, breath=0.25, drive=2.2, bright=4200):
-    """A big rough voice: a buzzy source with a sub-octave and jittered pitch, breath riding the pulses, formants, drive."""
-    n = int(seconds * SR); t = np.arange(n) / SR
-    f0 = np.interp(np.linspace(0, 1, n), np.linspace(0, 1, len(f0_curve)), f0_curve)
-    jitter = lowpass(noise(n), 40); jitter /= np.max(np.abs(jitter)) + 1e-9
-    f0 = f0 * (1 + rough * 0.06 * jitter)
-    phase = 2 * np.pi * np.cumsum(f0) / SR
-    src = sum(np.sin(k * phase) / k ** 1.15 for k in range(1, 28))
-    src += sub * np.sin(phase / 2) * 1.4
-    flutter = 1 + rough * 0.55 * np.sin(2 * np.pi * 27 * t + 3 * jitter)
-    pulses = 0.5 + 0.5 * np.sin(phase)
-    src = src * flutter + breath * bandpass(noise(n), 400, 5000) * pulses * 3
-    start, end = formants
-    out = np.zeros(n); block = 441
-    for s0 in range(0, n, block):
-        u = s0 / n; seg = np.zeros(min(block, n - s0))
-        for (fa, qa, ga), (fb, qb, gb) in zip(start, end):
-            b, a = signal.iirpeak(fa + (fb - fa) * u, qa + (qb - qa) * u, fs=SR)
-            seg += (ga + (gb - ga) * u) * signal.lfilter(b, a, src[s0:s0 + block])
-        out[s0:s0 + block] = seg
-    out = soft_clip(out / (np.max(np.abs(out)) + 1e-9) * drive, 1.0)
-    return lowpass(out, bright)
-
-BIG_A = [(560, 3, 1.0), (980, 4, 0.75), (2300, 5, 0.3)]     # a huge open "aaa"
-BIG_O = [(430, 3, 1.0), (760, 4, 0.7), (2200, 5, 0.2)]
-BIG_E = [(480, 3, 1.0), (1700, 5, 0.6), (2500, 6, 0.3)]     # "eh" of "heh"
-BIG_M = [(220, 3, 1.0), (900, 6, 0.15), (2200, 8, 0.05)]
-
+# The main menu's monster (COgheAct.Monster): liquid sounds only, no voice (Mrk 02/10): the body flowing up, and the long
+# tongue sliding out wet.
 def monster_sfx():
     global RNG
     RNG = np.random.default_rng(9191)
     out = {}
-    # rumble: a deep growl building under a shiver of the liquid
-    n = int(1.05 * SR); t = np.arange(n) / SR
-    g = growl(np.array([52, 56, 62, 70, 78]), 1.05, (BIG_M, BIG_O), rough=.9, sub=.6, breath=.2, drive=2.8, bright=1800)
-    rumble = lowpass(brown(n), 160) * 2.5 * (0.6 + 0.4 * np.sin(2 * np.pi * 7 * t))
-    bubbles = sum(np.sin(2 * np.pi * np.cumsum(glide(n, f, f * 1.9, .4)) / SR) * np.exp(-((t - at) / .02) ** 2) * .25
-                  for f, at in [(300, .25), (420, .41), (260, .55), (510, .68), (350, .8)])
-    x = (g * .8 + rumble + bubbles) * env(n, .25, .2) * np.linspace(.55, 1, n)
-    out["monster_rumble"] = save("monster_rumble", small_room(x, .2), -4)
-    # rise: the liquid stretching up, wet and creaking
+    # rise: the liquid stretching up, soft and wet, a few drips
+    n = int(1.2 * SR); t = np.arange(n) / SR
+    stretch = swept_bandpass(noise(n), glide(n, 220, 1300, 1.5), q=3.0) * env(n, .25, .35) * .8
+    body = lowpass(brown(n), 300) * env(n, .3, .4) * .6
+    drips = sum(np.sin(2 * np.pi * np.cumsum(glide(n, f, f * 1.5, .5)) / SR) * np.exp(-np.maximum(0, t - at) / .035) * (t >= at) * .22
+                for f, at in [(640, .35), (900, .6), (760, .85)])
+    out["monster_rise"] = save("monster_rise", small_room(stretch + body + drips, .18), -9)
+    # slurp: the tongue sliding out, wet and a little sticky
     n = int(.9 * SR); t = np.arange(n) / SR
-    stretch = swept_bandpass(noise(n), glide(n, 250, 1700, 1.6), q=3.5) * env(n, .12, .25) * .9
-    creak = growl(np.array([90, 120, 150]), .9, (BIG_M, BIG_A), rough=1.0, sub=.2, breath=.05, drive=1.6, bright=2500) * .35 * env(n, .3, .2)
-    drips = sum(np.sin(2 * np.pi * np.cumsum(glide(n, f, f * 1.6, .5)) / SR) * np.exp(-np.maximum(0, t - at) / .03) * (t >= at) * .3
-                for f, at in [(700, .22), (980, .43), (820, .61)])
-    out["monster_rise"] = save("monster_rise", small_room(stretch + creak + drips, .18), -6)
-    # breath: a sharp, hissing intake before the roar
-    n = int(.5 * SR); t = np.arange(n) / SR
-    hiss = swept_bandpass(noise(n), glide(n, 700, 3200, 1.3), q=2.0) * env(n, .3, .06) * np.linspace(.4, 1, n)
-    out["monster_breath"] = save("monster_breath", small_room(hiss, .15), -7)
-    # roar: the jaw snaps open and it roars at the viewer
-    n = int(1.45 * SR); t = np.arange(n) / SR
-    voice_ = growl(np.array([95, 150, 148, 140, 145, 135, 120, 95, 80]), 1.45, (BIG_A, BIG_O), rough=.85, sub=.55, breath=.45, drive=3.0, bright=5200)
-    air = swept_bandpass(noise(n), glide(n, 1600, 900), q=1.6) * .55
-    thump = np.sin(2 * np.pi * np.cumsum(glide(int(.4 * SR), 75, 38, .6)) / SR) * np.exp(-np.arange(int(.4 * SR)) / SR / .12) * 1.2
-    x = (voice_ + air) * env(n, .05, .35)
-    x[:len(thump)] += thump
-    out["monster_roar"] = save("monster_roar", reverb(x, 1.6, .28, damp=3500)[:, 0], -1.5)
-    # cackle: "khặc khặc khặc" in time with the jaw (beats of (t-3.85)·f(t), f from 4.6 to 3.4 a second)
-    total = 2.25; n = int(total * SR); x = np.zeros(n)
-    def f_of(tt): u = np.clip((tt - 4.6) / .9, 0, 1); u = u * u * (3 - 2 * u); return 4.6 + (3.4 - 4.6) * u
-    act = 3.85 + np.arange(n) / SR
-    beats = (act - 3.85) * f_of(act)
-    laugh = np.clip((act - 3.8) / .35, 0, 1) * (1 - np.clip((act - 5.45) / .5, 0, 1))
-    onsets = [i for i in range(1, n) if np.floor(beats[i]) != np.floor(beats[i - 1])]
-    onsets = [0] + onsets
-    for k, i0 in enumerate(onsets):
-        if laugh[min(i0 + int(.06 * SR), n - 1)] < .15: continue
-        peak = 1.0 if 3 <= k <= 6 else .8
-        pitch = (205 if k < 3 else 170 - 6 * (k - 3)) * (1.08 if k % 2 else 1.0)
-        dur = .16 if k < 3 else .2
-        kh = bandpass(noise(int(.05 * SR)), 1100, 3800) * env(int(.05 * SR), .004, .03) * .9
-        syl = growl(np.array([pitch * 1.12, pitch, pitch * .82]), dur, (BIG_E if k < 3 else BIG_A, BIG_A), rough=.7, sub=.35, breath=.5, drive=2.6, bright=4800)
-        syl *= env(len(syl), .012, .07)
-        seg = np.concatenate([kh, syl]) * peak * laugh[min(i0 + int(.06 * SR), n - 1)]
-        e = min(n, i0 + len(seg)); x[i0:e] += seg[:e - i0]
-    tail = int(.35 * SR)
-    wheeze = swept_bandpass(noise(tail), glide(tail, 1800, 900), q=2.5) * env(tail, .05, .25) * .5
-    s0 = max(0, onsets[-1] + int(.12 * SR)); e = min(n, s0 + tail); x[s0:e] += wheeze[:e - s0]
-    out["monster_cackle"] = save("monster_cackle", reverb(x, 1.1, .2, damp=4200)[:, 0], -2)
+    slide = swept_bandpass(noise(n), glide(n, 1900, 700, .8), q=4.0) * env(n, .08, .45) * .7
+    clicks = sum(bandpass(noise(n), 1800, 5000) * np.exp(-((t - at) / .004) ** 2) * .5 for at in [.12, .2, .33, .47, .6])
+    bubble = sum(np.sin(2 * np.pi * np.cumsum(glide(n, f, f * 1.7, .4)) / SR) * np.exp(-np.maximum(0, t - at) / .025) * (t >= at) * .2
+                 for f, at in [(520, .25), (700, .5)])
+    out["monster_slurp"] = save("monster_slurp", small_room(slide + clicks + bubble, .14), -10)
     return out
 
 if __name__ == "__main__":

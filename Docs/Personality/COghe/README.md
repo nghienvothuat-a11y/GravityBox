@@ -37,22 +37,24 @@ Zoom in khi COghe ăn), [`home-round3.jpg`](home-round3.jpg).
 
 ## Main menu: quái vật (02/10, Mrk)
 
-Màn mở đầu gây chú ý: menu vừa hiện (~1,2 s) là COghe diễn, sau đó cứ 3 vở diễn ở menu lại có một lần. Dài 6,6 s.
-Xem: [`monster-menu.mp4`](monster-menu.mp4) (quay từ bản Mac, có giao diện menu và tiếng), [`monster-menu.jpg`](monster-menu.jpg).
+Màn mở đầu gây chú ý: menu vừa hiện (~1,2 s) là COghe diễn, sau đó cứ 3 vở diễn ở menu lại có một lần. Dài 7,2 s.
+Mềm mại như chất lỏng, không dọa, không giọng nói (Mrk sửa lần 2). Xem: [`monster-menu.mp4`](monster-menu.mp4) (quay từ
+bản Mac, có giao diện menu và tiếng), [`monster-menu.jpg`](monster-menu.jpg).
 
 | Lúc | Diễn |
 | --- | --- |
-| 0–0,9 s | Chất lỏng rung, phồng, gai đâm ra ("gừ" trầm) |
-| 0,8–1,7 s | Vọt lên thành cột rồi nặn thành quái vật: ngực vai to, tay chất lỏng có vuốt, xúc tu sau lưng; mắt trắng xếch và hàm răng hiện ra |
-| 1,9–2,35 s | Lấy đà: ngửa ra, hít mạnh, hé miệng, thè lưỡi |
-| 2,35–3,3 s | Há to mồm, đầu phình to và chồm về phía người xem, hai tay vươn tới, GẦM; camera dí sát mặt và rung |
-| 3,8–5,6 s | Ngả người, hai tay ôm bụng, cười khằng khặc: hàm đóng mở theo từng tiếng "khặc", vai nảy, đầu gật và lắc kiểu đắc ý, mắt híp |
-| 5,9–6,6 s | Tan về COghe ("pốc") |
+| 0–1,5 s | Chất lỏng phồng nhẹ, dâng lên thành cột rồi nặn thành dáng Venom; mắt trắng xếch và hàm răng hiện ra |
+| 1,3–2,3 s | Quay nghiêng (thấy mặt nghiêng) |
+| 1,6–4,5 s | Cả thân lượn uốn éo như chất lỏng; há miệng từ từ, thè lưỡi dài, lưỡi uốn lượn |
+| 3,9–4,9 s | Rụt lưỡi, ngậm miệng, ngước nhìn ra xa |
+| 4,5–6,6 s | Quay sang nhìn camera, chớp mắt, nghiêng đầu |
+| 6,3–7,2 s | Tan về COghe |
 
 - Như mọi vở diễn: chỉ là lớp da, không hạt nào di chuyển. Mắt, răng, miệng, lưỡi (`COgheMonsterFace`) nằm đúng trên mặt da
   (tìm trong trường của lớp da mỗi khung) và chỉ có trong vở này — ngoại lệ Mrk cho với quy tắc "không mắt, không răng".
 - Hình lấy cảm hứng từ Venom nhưng là thiết kế riêng, không dùng logo hay chi tiết nhận diện của Marvel.
-- Camera menu: khung cả con quái vật, khi gầm thì dí vào miệng (giữa logo và nút Play) và rung (`COgheProductUI.FrameShowcase`).
+- Camera menu: khung cả con quái vật, lại gần mặt một chút khi há miệng và nghiêng đầu (`COgheProductUI.FrameShowcase`).
+- Tiếng: chỉ tiếng chất lỏng (dâng lên, lưỡi trượt ra) và tiếng "pốc" khi tan.
 
 ## Trong nhà (mở ở màn 10)
 
@@ -103,7 +105,7 @@ Xem: [`monster-menu.mp4`](monster-menu.mp4) (quay từ bản Mac, có giao diệ
 - Menu đồ vật và camera nhà: `Assets/_Game/Venom/Runtime/Product/COgheProductUI.Items.cs`.
 - Icon: `Assets/_Game/Venom/Resources/COgheHome/Icons/<ID>.png` (256 px, ASTC 6×6).
 - Âm thanh: `Tools/audio/synth_coghe_audio.py --personality` (11 tiếng vở diễn), `--home` (6 nốt đàn gõ), `--feed` (bi
-  thép, tiếng nuốt), `--monster` (quái vật: gừ, vọt lên, hít, gầm, cười khằng khặc).
+  thép, tiếng nuốt), `--monster` (quái vật: chất lỏng dâng lên, lưỡi trượt ra).
 - Bi thép: `Assets/_Game/Venom/Runtime/Home/COgheFeedBalls.cs` (ném, va chạm chỉ cho bi, nằm yên); ăn bi và trò chơi bóng
   trong `COghePersonality.Home.cs`. Xoay/zoom: `COgheProductUI.Items.cs` (`FrameHome`).
 
@@ -126,7 +128,7 @@ thêm ~14 món low-poly (vật liệu dùng chung). Chưa đo trên OPPO.
   vở diễn tự bắt đầu khi để yên và dừng khi có lệnh.
 - `COgheHomeTests`: chỉ hiện món đã mở, hình mờ cho món khóa; COghe tự đi, chơi đồ, không rời sàn; chạm có phản ứng, chạm
   dồn thì dỗi.
-- Quái vật: không đổi hạt nào; có mặt khi gầm, mặt mất khi xong (`MonsterGrowsAFaceAndLosesIt`); menu mở là quái vật,
-  mặt nằm trong khung hình (`TheMenuOpensWithTheMonster`).
+- Quái vật: không đổi hạt nào; nghiêng mặt khi thè lưỡi, rồi nhìn camera nghiêng đầu; mặt mất khi xong
+  (`MonsterGrowsAFaceAndLosesIt`); menu mở là quái vật, mặt nằm trong khung hình (`TheMenuOpensWithTheMonster`).
 - Explicit: `RenderPersonalityActs` (khung từng vở diễn), `RenderHome` (toàn cảnh, nhìn từ trên, từng trò chơi),
   `RenderMonsterStills`, `RenderMenuMonster`. Bản Mac: `-coghe-monster-reel <thư mục>` quay menu thật (PNG 30 khung/s + `sounds.txt`).

@@ -5,8 +5,8 @@ using UnityEngine.Rendering;
 namespace GravityBox.Venom
 {
     /// <summary>
-    /// The monster's face (<see cref="VenomLifeAnimation.Monster"/>): two big white slanted eyes, a mouth from cheek to cheek
-    /// with rows of sharp teeth, and a long tongue. Every point is put on the skin itself (found in the skin's field), so the
+    /// The monster's face (<see cref="VenomLifeAnimation.Monster"/>): two big white slanted eyes (they blink), a mouth from
+    /// cheek to cheek with rows of sharp teeth, and a long writhing tongue. Every point is put on the skin itself (found in the skin's field), so the
     /// face rides the head as it lunges, laughs and melts. Only while the act plays; presentation only (no colliders).
     /// The eyes, teeth and tongue appear only in this act (Mrk 02/10, an exception to the "no eyes or teeth" rule).
     /// </summary>
@@ -188,7 +188,8 @@ namespace GravityBox.Venom
                 foreach (var q0 in EyeShape)
                 {
                     // a squint narrows it and drops the inner corner: a smug, wicked look
-                    Vector2 q = new Vector2(q0.x * side, q0.y * (1 - .55f * Mathf.Max(0, squint)) + q0.x * .28f * Mathf.Max(0, squint)) * (size * 1.45f);
+                    float open = 1 - .92f * Mathf.Clamp01(rig.Blink);   // a blink closes it to a slit
+                    Vector2 q = new Vector2(q0.x * side, (q0.y * (1 - .55f * Mathf.Max(0, squint)) + q0.x * .28f * Mathf.Max(0, squint)) * open) * (size * 1.45f);
                     Vector3 p = OnSkin(middle.x + q.x, middle.y + q.y);
                     v.Add(p + life.SkinNormal(p) * Mathf.Max(rig.Size * .08f, .0042f)); n.Add(rig.Forward);
                 }
@@ -198,20 +199,24 @@ namespace GravityBox.Venom
             Commit(eyes);
         }
 
+        private readonly Vector3[] tonguePath = new Vector3[21];
+        /// <summary>A long tongue sliding out and writhing: a wave travels down it, mostly up and down so it reads in profile.</summary>
         private void BuildTongue(float show)
         {
             Begin();
             float out_ = rig.Tongue;
             if (out_ < .02f) { Commit(tongue); return; }
             int mid = Lip / 2;
-            Vector3 root = OutsideSkin(Vector3.Lerp(upper[mid], lower[mid], .75f)) - rig.Forward * (rig.Size * .05f);
-            Vector3 down = -rig.Up, fwd = rig.Forward, right = rig.Right;
-            float sway = rig.Sway;
-            // over the lower teeth and down the chin, swaying
-            Vector3 p1 = root + fwd * (rig.Size * .4f * out_);
-            Vector3 p2 = root + fwd * (rig.Size * .62f * out_) + down * (rig.Size * .18f * out_) + right * (rig.Size * .15f * sway * out_);
-            Vector3 p3 = root + fwd * (rig.Size * .7f * out_) + down * (rig.Size * .5f * out_) + right * (rig.Size * .32f * sway * out_);
-            Tube(root, p1, p2, p3, rig.Size * .13f, rig.Size * .055f);
+            Vector3 root = OutsideSkin(Vector3.Lerp(upper[mid], lower[mid], .7f)) - rig.Forward * (rig.Size * .06f);
+            float length = rig.Size * 2.6f * out_, t = rig.Time;
+            for (int k = 0; k < tonguePath.Length; k++)
+            {
+                float u = k / (float)(tonguePath.Length - 1);
+                float lift = .27f * Mathf.Sin(t * 5.2f - u * 7.5f) * u + .25f * u * u * u * u;   // the tip curls up
+                float side = .09f * Mathf.Sin(t * 3.7f - u * 5f) * u;
+                tonguePath[k] = root + rig.Forward * (length * u) + rig.Up * (length * (lift - .2f * u * u)) + rig.Right * (length * side);
+            }
+            TubePath(tonguePath, rig.Size * .17f, rig.Size * .055f);
             Commit(tongue);
         }
 
@@ -266,15 +271,14 @@ namespace GravityBox.Venom
                 if (Vector3.Dot(normal, outward) >= 0) { tri.Add(a); tri.Add(b); tri.Add(tip); } else { tri.Add(a); tri.Add(tip); tri.Add(b); }
             }
         }
-        private void Tube(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float r0, float r1)
+        private void TubePath(Vector3[] path, float r0, float r1)
         {
-            const int segments = 12, sides = 8;
-            int first = v.Count;
+            const int sides = 8;
+            int first = v.Count, segments = path.Length - 1;
             for (int ring = 0; ring <= segments; ring++)
             {
-                float t = ring / (float)segments, u = 1 - t;
-                Vector3 p = u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3;
-                Vector3 tangent = (3 * u * u * (p1 - p0) + 6 * u * t * (p2 - p1) + 3 * t * t * (p3 - p2)).normalized;
+                float t = ring / (float)segments;
+                Vector3 p = path[ring], tangent = (path[Mathf.Min(segments, ring + 1)] - path[Mathf.Max(0, ring - 1)]).normalized;
                 Vector3 right = Vector3.Cross(tangent, rig.Up); if (right.sqrMagnitude < 1e-6f) right = rig.Right; right.Normalize();
                 Vector3 normal = Vector3.Cross(right, tangent).normalized;
                 float cap = t < .85f ? 1 : Mathf.Sqrt(Mathf.Max(0, 1 - Mathf.Pow((t - .85f) / .15f, 2)));

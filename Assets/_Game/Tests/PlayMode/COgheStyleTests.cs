@@ -169,7 +169,7 @@ namespace GravityBox.Tests
             var p=game.Personality;float end=Time.realtimeSinceStartup+4;
             while(p.Act!=COgheAct.Monster&&Time.realtimeSinceStartup<end)yield return null;
             Assert.AreEqual(COgheAct.Monster,p.Act,"First thing on the menu");
-            yield return new WaitForSecondsRealtime(2.7f);
+            yield return new WaitForSecondsRealtime(3.3f);
             var life=game.Matter.GetComponent<VenomLifeAnimation>();var rig=life.Monster;
             Assert.Greater(rig.Amount,.8f);
             var v=game.Owner.View.WorldToViewportPoint(rig.Head);Assert.That(v.y,Is.InRange(.2f,.92f),"Its face stays in the picture");Assert.That(v.x,Is.InRange(.1f,.9f));

@@ -20,8 +20,8 @@ namespace GravityBox.Venom
         /// <summary>Tests and proof runs can switch the character off entirely.</summary>
         public static bool Enabled = true;
         public const float TantrumLength = 3.1f, IdleBeforeFirstAct = 6.5f, IdleBeforeDoze = 45f;
-        /// <summary>The main menu's monster: rises, roars at the viewer, cackles, melts back (Mrk 02/10).</summary>
-        public const float MonsterLength = 6.6f;
+        /// <summary>The main menu's monster: flows up, turns, sways, slides out its tongue, looks at you, melts back (Mrk 02/10).</summary>
+        public const float MonsterLength = 7.2f;
         private const int TapsForTantrum = 6;
         private const float TapWindow = 3f, TantrumCooldown = 25f, TantrumWaitLimit = 4f, FadeOut = .16f;
         /// <summary>Catalog position from which each shape can appear (hidden unlocks: it simply starts showing up).</summary>
@@ -151,8 +151,8 @@ namespace GravityBox.Venom
                 case COgheAct.Melt: At(from, to, .05f, "creature_melt", .45f); At(from, to, 1.55f, "creature_pop", .5f); break;
                 case COgheAct.GlassTap: for (int k = 0; k < 3; k++) At(from, to, .7f + k * .32f, "glass_tok", .4f); break;
                 case COgheAct.Monster:
-                    At(from, to, 0, "monster_rumble", .7f); At(from, to, .85f, "monster_rise", .6f); At(from, to, 1.9f, "monster_breath", .55f);
-                    At(from, to, 2.35f, "monster_roar", .95f); At(from, to, 3.85f, "monster_cackle", .85f); At(from, to, 5.95f, "creature_pop", .5f); break;
+                    // liquid sounds only, no voice (Mrk)
+                    At(from, to, .35f, "monster_rise", .5f); At(from, to, 2.55f, "monster_slurp", .45f); At(from, to, MonsterLength - .75f, "creature_pop", .45f); break;
                 case COgheAct.Doze: if (to > 1.5f && Mathf.Floor((to - 1.5f) / 3.4f) != Mathf.Floor((from - 1.5f) / 3.4f)) COgheAudio.Instance?.Play("creature_snore", .3f, 0, .5f); break;
             }
         }
