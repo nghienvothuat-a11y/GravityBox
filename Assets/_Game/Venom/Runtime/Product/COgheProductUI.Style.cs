@@ -44,6 +44,38 @@ namespace GravityBox.Venom
         private COgheInking Inking => Game.Matter.GetComponent<COgheInking>();
         private bool InHome => Page == COgheProductPage.Home || Page == COgheProductPage.Style;
         private bool Earned(int level) => COgheHomeRoom.Reached(Game, level);
+        // the shop (Mrk 02/10): items whose level is reached can be tried on COghe; only an owned look is kept
+        private COgheStyle styleCommitted; private string styleTrying;
+        private readonly List<string> unownedInLook = new List<string>(6);
+        /// <summary>Items in the look COghe wears now that are not owned (inks only if some of them is in the liquid).</summary>
+        public List<string> UnownedInLook()
+        {
+            SyncLook(); unownedInLook.Clear(); var s = COgheStyle.Current;
+            for (int slot = 0; slot < COgheInking.Slots; slot++)
+            {
+                string id = s.Inks[slot]; if (string.IsNullOrEmpty(id) || COgheShop.Owns(id) || unownedInLook.Contains(id)) continue;
+                foreach (var a in s.Amount) if (a[slot] > .002f) { unownedInLook.Add(id); break; }
+            }
+            if (!COgheShop.Owns(s.Hat)) unownedInLook.Add(s.Hat);
+            foreach (var id in s.Inside) if (!COgheShop.Owns(id) && !unownedInLook.Contains(id)) unownedInLook.Add(id);
+            return unownedInLook;
+        }
+        private bool LookOwned() => UnownedInLook().Count == 0;
+        /// <summary>Back to the last look that was all owned (trying on ends without buying).</summary>
+        private void RevertLook()
+        {
+            if (styleCommitted == null) return;
+            COgheStyle.Current.CopyFrom(styleCommitted); COgheStyle.Current.ApplyTo(Game);
+            styleTrying = null; styleUndo.Clear(); styleSaving = false;
+        }
+        /// <summary>The item on trial right now and not owned: the selected ink, or the hat / inside thing last put on.</summary>
+        private string TriedForSale()
+        {
+            if (styleTab == 0) return COgheShop.Owns(styleInk) ? null : styleInk;
+            if (styleTrying == null || COgheShop.Owns(styleTrying)) return null;
+            var wear = COgheWardrobe.Find(styleTrying); return wear != null && wear.Inside == (styleSub == 1) ? styleTrying : null;
+        }
+        private void BuyTried(string id) => OfferItem(id, () => { if (styleTrying == id) styleTrying = null; SaveLook(); Rebuild(); });
 
         // Entering and leaving ----------------------------------------------------------------------------------------------
         public void OpenStyle()
@@ -51,7 +83,8 @@ namespace GravityBox.Venom
             if (Page != COgheProductPage.Home) return;
             Page = COgheProductPage.Style; Popup = COgheProductPopup.None; styleOpen = true;
             styleTab = styleSub = 0; styleReplaceSlot = -1; stylePending = null; styleUndo.Clear(); styleScroll = 1;
-            var chosen = COgheInks.Find(styleInk); if (chosen == null || !Earned(chosen.Level)) styleInk = COgheInks.Catalog[0].Id;
+            var chosen = COgheInks.Find(styleInk); if (chosen == null || !Earned(chosen.Level) || !COgheShop.Owns(styleInk)) styleInk = COgheInks.Catalog[0].Id;
+            styleCommitted = COgheStyle.Current.Clone(); styleTrying = null;
             var room = Game.HomeRoom;
             Game.Personality?.TakeStage(room != null ? room.StageSpot() : Game.Motion.Centre(0));   // a clear spot of the floor
             styleFocus = homeFocus; styleSize = homeSize; styleRotation = Game.Owner.View.transform.rotation;
@@ -61,6 +94,8 @@ namespace GravityBox.Venom
         public void LeaveStyle()
         {
             if (Page != COgheProductPage.Style) return;
+            if (styleStage != null) styleStage.Release();
+            if (!LookOwned()) { ShowStylePopup(COgheProductPopup.StyleTryOn); return; }   // keep it (buy) or take it off
             CloseStyle();
             Page = COgheProductPage.Home; Popup = COgheProductPopup.None;
             if (styleSize > 0) { homeFocus = styleFocus; homeSize = styleSize; homeEase = 1.2f; }   // the room camera eases back
@@ -77,7 +112,8 @@ namespace GravityBox.Venom
             if (syringe != null) { Destroy(syringe.gameObject); syringe = null; }
             syringeAway = 1; styleReplaceSlot = -1; stylePending = null; styleUndo.Clear();
             Game.Personality?.LeaveStage(); Game.HomeRoom?.SetStage(false);
-            SaveLook();   // a hold still settling is stored again when it settles
+            if (LookOwned()) SaveLook();   // a hold still settling is stored again when it settles
+            else RevertLook();             // left another way while trying something on: it was not bought
         }
 
         /// <summary>Every frame: finish saving a settling look; while holding, inject and move the syringe.</summary>
@@ -104,7 +140,12 @@ namespace GravityBox.Venom
         private void SyncLook() { var ink = Inking; if (ink != null) { ink.FinishRinse(); ink.Store(COgheStyle.Current); } }
         /// <summary>App to the background: write the look now (a settling hold would otherwise wait for the app to come back).</summary>
         private void OnApplicationPause(bool paused) { if (paused && (styleOpen || styleSaving) && Game != null && Game.Matter != null) SaveLook(); }
-        private void SaveLook() { SyncLook(); COgheStyle.Current.Save(); }
+        /// <summary>Keep the look on the device, if everything in it is owned (a look being tried on is never kept).</summary>
+        private void SaveLook()
+        {
+            if (!LookOwned()) return;
+            COgheStyle.Current.Save(); styleCommitted = COgheStyle.Current.Clone();
+        }
         private void PushUndo(COgheStyle before)
         {
             if (styleUndo.Count == StyleHistory) styleUndo.RemoveAt(0);
@@ -128,7 +169,7 @@ namespace GravityBox.Venom
             if (injecting || styleUndo.Count == 0) return;
             var last = styleUndo[styleUndo.Count - 1]; styleUndo.RemoveAt(styleUndo.Count - 1);
             styleSaving = false; styleReplaceSlot = -1;
-            COgheStyle.Current.CopyFrom(last); COgheStyle.Current.Save(); COgheStyle.Current.ApplyTo(Game);
+            COgheStyle.Current.CopyFrom(last); COgheStyle.Current.ApplyTo(Game); SaveLook();
             Rebuild();
         }
 
@@ -138,7 +179,7 @@ namespace GravityBox.Venom
             if (ink != null)
             {
                 SyncLook(); PushUndo(COgheStyle.Current.Clone());
-                ink.Rinse(); styleSaving = true; styleReplaceSlot = -1;
+                ink.Rinse(); styleSaving = true; styleReplaceSlot = -1; COgheAnalytics.Log("style_rinse");
             }
             Rebuild(); Notify("Colors rinsed · Undo available");
         }
@@ -171,7 +212,7 @@ namespace GravityBox.Venom
             injecting = onBody = false;
             if (holdChanged)
             {
-                PushUndo(beforeHold); styleSaving = true;
+                PushUndo(beforeHold); styleSaving = true; COgheAnalytics.Log("style_inject", "ink", styleInk, "seconds", held);
                 for (int s = 0; s < COgheInking.Slots; s++) if (beforeHold.Inks[s] != MixInks()[s]) styleDirty = true;
                 COgheAudio.Instance?.Play("creature_happy", .35f, 0, .3f);
             }
@@ -260,6 +301,7 @@ namespace GravityBox.Venom
             if (ink != null)
             {
                 if (!Earned(ink.Level)) { stylePending = id; ShowStylePopup(COgheProductPopup.StyleLocked); return; }
+                if (!COgheShop.Owns(id)) COgheAnalytics.Log("item_preview", "item", id);
                 if (styleInk != id) styleReplaceSlot = -1;
                 { var washing = Inking; if (washing != null) washing.FinishRinse(); }
                 styleInk = id;   // choosing a syringe does not change COghe
@@ -270,6 +312,7 @@ namespace GravityBox.Venom
             if (id == "") { if (s.Hat != "") Change(() => s.Hat = ""); Rebuild(); return; }
             var wear = COgheWardrobe.Find(id); if (wear == null) return;
             if (!Earned(wear.Level)) { stylePending = id; ShowStylePopup(COgheProductPopup.StyleLocked); return; }
+            if (!COgheShop.Owns(id)) { styleTrying = id; COgheAnalytics.Log("item_preview", "item", id); }
             if (!wear.Inside) { if (s.Hat != id) Change(() => s.Hat = id); Rebuild(); return; }
             if (s.Inside.Contains(id)) { Change(() => s.Inside.Remove(id)); Rebuild(); return; }
             if (s.Inside.Count >= COgheWardrobe.MaxInside) { stylePending = id; ShowStylePopup(COgheProductPopup.StyleReplaceInside); return; }
@@ -302,8 +345,9 @@ namespace GravityBox.Venom
         {
             var s = COgheStyle.Current;
             art.Button(pageRoot, "Back", new Rect(24, 25, 52, 52), COgheIcon.Back, LeaveStyle);
-            art.Label(pageRoot, "Style title", "Style", new Rect(85, 25, width - 170, 52), 19);
-            styleStatus = art.Label(pageRoot, "Status", "", new Rect(width - 112, 25, 88, 52), 12, COgheUIArt.Muted, TextAnchor.MiddleRight);
+            art.Label(pageRoot, "Style title", "Style", new Rect(85, 20, width - 210, 40), 19);
+            styleStatus = art.Label(pageRoot, "Status", "", new Rect(85, 56, width - 210, 18), 11, COgheUIArt.Muted);
+            DropsCounter(pageRoot, new Rect(width - 124, 29, 100, 44));
 
             // the stage gets what the catalog does not need: one row and a bit on short screens, two rows on tall ones
             float catalogHeight = Mathf.Clamp(height - 348 - 168, 124, 196), stageHeight = height - 348 - catalogHeight;
@@ -332,7 +376,17 @@ namespace GravityBox.Venom
             Tab(panel, "Accessories", new Rect(12 + tab, 8, tab, 44), styleTab == 1, () => SetStyleTab(1, styleSub));
             art.Label(panel, "Selected", "", new Rect(16, 60, pw - 72, 22), 15, null, TextAnchor.MiddleLeft).font = art.BoldFont;
             styleDetail = art.Label(panel, "Detail", "", new Rect(16, 82, pw - 72, 18), 11, COgheUIArt.Muted, TextAnchor.MiddleLeft);
-            art.Icon(panel, styleTab == 0 ? COgheIcon.Tap : COgheIcon.Sparkles, new Rect(pw - 48, 66, 28, 28), COgheUIArt.Teal);
+            string sale = TriedForSale();
+            if (sale == null) art.Icon(panel, styleTab == 0 ? COgheIcon.Tap : COgheIcon.Sparkles, new Rect(pw - 48, 66, 28, 28), COgheUIArt.Teal);
+            else
+            {
+                // on trial: buy it right here
+                var buy = art.Box(panel, "Buy tried", new Rect(pw - 112, 60, 100, 38), COgheUIArt.Teal, true); buy.pixelsPerUnitMultiplier = 2f;
+                var button = buy.gameObject.AddComponent<Button>(); button.targetGraphic = buy; string id = sale;
+                button.onClick.AddListener(() => { COgheAudio.UiTap(); BuyTried(id); });
+                DropIcon(buy.transform, new Rect(10, 8, 22, 22));
+                art.Label(buy.transform, "Price", COgheEconomy.Price(sale).ToString(), new Rect(34, 0, 60, 38), 15, COgheUIArt.Paper).font = art.BoldFont;
+            }
             StyleCatalog(panel, new Rect(8, 104, pw - 16, catalogHeight));
 
             float aw = (width - 64) / 3, ay = height - 76;
@@ -354,9 +408,10 @@ namespace GravityBox.Venom
             if (styleTab == 0)
             {
                 title = ink.Name;
-                detail = replacing != null ? "Hold to replace " + replacing : ink.Material + " · Hold on COghe to add";
+                detail = replacing != null ? "Hold to replace " + replacing : !COgheShop.Owns(ink.Id) ? "Try it on COghe · buy it to keep it" : ink.Material + " · Hold on COghe to add";
                 caption = injecting ? onBody ? "Adding " + ink.Name + "…" : "Back on COghe to keep adding" : replacing != null ? "Hold on COghe to replace " + replacing : "Hold on COghe. Release to keep.";
             }
+            else if (TriedForSale() is string trying) { title = COgheEconomy.Find(trying)?.Name ?? ""; detail = "Trying it on · buy it to keep it"; caption = "Looks good? Buy it to keep it."; }
             else if (styleSub == 0) { title = "A little personality"; detail = "Pick one hat. Tap None to take it off."; caption = "One hat, all yours."; }
             else
             {
@@ -408,14 +463,14 @@ namespace GravityBox.Venom
                 if (styleTab == 0)
                 {
                     var ink = COgheInks.Catalog[i]; bool mixed = System.Array.IndexOf(MixInks(), ink.Id) >= 0;
-                    StyleCard(content, cardRect, ink.Id, ink.Name, Earned(ink.Level), ink.Level, styleInk == ink.Id, styleInk == ink.Id ? "Selected" : mixed ? "In mix" : null);
+                    StyleCard(content, cardRect, ink.Id, ink.Name, Earned(ink.Level), ink.Level, styleInk == ink.Id, styleInk == ink.Id ? "Selected" : mixed ? "In mix" : null, COgheShop.Owns(ink.Id));
                 }
                 else if (styleSub == 0 && i == 0) StyleCard(content, cardRect, "", "None", true, 0, s.Hat == "", "Remove hat");
                 else
                 {
                     var wear = styleSub == 0 ? COgheWardrobe.Hats[i - 1] : COgheWardrobe.InsideItems[i];
                     bool on = styleSub == 0 ? s.Hat == wear.Id : s.Inside.Contains(wear.Id);
-                    StyleCard(content, cardRect, wear.Id, wear.Name, Earned(wear.Level), wear.Level, on, on ? "Equipped" : null);
+                    StyleCard(content, cardRect, wear.Id, wear.Name, Earned(wear.Level), wear.Level, on, on ? "Equipped" : null, COgheShop.Owns(wear.Id));
                 }
             }
             var scroll = viewport.gameObject.AddComponent<ScrollRect>(); scroll.viewport = viewport; scroll.content = content;
@@ -424,7 +479,7 @@ namespace GravityBox.Venom
             scroll.onValueChanged.AddListener(v => styleScroll = v.y);
         }
 
-        private void StyleCard(Transform content, Rect r, string id, string name, bool open, int level, bool on, string meta)
+        private void StyleCard(Transform content, Rect r, string id, string name, bool open, int level, bool on, string meta, bool owned = true)
         {
             if (on) art.Box(content, "Outline " + id, new Rect(r.x - 2, r.y - 2, r.width + 4, r.height + 4), COgheUIArt.Teal).pixelsPerUnitMultiplier = 2.2f;
             var box = art.Box(content, "Card " + (id == "" ? "NONE" : id), r, on ? COgheUIArt.Mint : open ? new Color(.995f, .995f, .972f) : new Color(.93f, .94f, .91f), true);
@@ -447,6 +502,12 @@ namespace GravityBox.Venom
             {
                 var state = art.Label(box.transform, "State", "Level " + level, new Rect(14, size + 21, r.width - 17, 15), 10, COgheUIArt.Muted);
                 float wide = state.preferredWidth; art.Icon(box.transform, COgheIcon.Lock, new Rect((r.width - wide) * .5f - 5, size + 22, 12, 12), COgheUIArt.Muted);
+            }
+            else if (!owned)
+            {
+                // for sale: its price in Drops (it can still be tried on)
+                var price = art.Label(box.transform, "State", COgheEconomy.Price(id).ToString(), new Rect(14, size + 20, r.width - 17, 16), 11, COgheUIArt.Teal);
+                price.font = art.BoldFont; DropIcon(box.transform, new Rect((r.width - price.preferredWidth) * .5f - 8, size + 21, 13, 13));
             }
             else if (meta != null) art.Label(box.transform, "State", meta, new Rect(3, size + 21, r.width - 6, 15), 10, on ? COgheUIArt.Teal : COgheUIArt.Muted);
             if (on) art.Icon(box.transform, COgheIcon.Check, new Rect(r.width - 20, 4, 16, 16), COgheUIArt.Teal);
@@ -493,8 +554,8 @@ namespace GravityBox.Venom
         // Dialogs -----------------------------------------------------------------------------------------------------------
         private bool StylePopup()
         {
-            if (Popup < COgheProductPopup.StyleReplaceInk) return false;
-            float w = Mathf.Min(312, width - 40), h = Popup == COgheProductPopup.StyleRinse || Popup == COgheProductPopup.StyleNeedsClear ? 290 : 330;
+            if (Popup < COgheProductPopup.StyleReplaceInk || Popup > COgheProductPopup.StyleTryOn) return false;
+            float w = Mathf.Min(312, width - 40), h = Popup == COgheProductPopup.StyleRinse || Popup == COgheProductPopup.StyleNeedsClear ? 290 : Popup == COgheProductPopup.StyleTryOn ? 360 : 330;
             var panel = art.Box(popupRoot, "Panel", new Rect((width - w) * .5f, (height - h) * .5f, w, h), COgheUIArt.Paper, true).rectTransform;
             float half = (w - 60) * .5f;
             switch (Popup)
@@ -556,6 +617,25 @@ namespace GravityBox.Venom
                     art.Icon(panel, COgheIcon.Lock, new Rect(w * .5f + 34, 150, 22, 22), COgheUIArt.Muted);
                     art.Label(panel, "Message", "Complete level " + level + " to unlock " + name + ".", new Rect(24, 184, w - 48, 44), 13, COgheUIArt.Muted);
                     LabelButton(panel, "Close preview", new Rect(24, h - 80, w - 48, 56), COgheIcon.Back, "Back", CloseStylePopup, true);
+                    break;
+                }
+                case COgheProductPopup.StyleTryOn:
+                {
+                    // leaving with something tried on and not bought: keep it (buy) or take it off
+                    var unowned = UnownedInLook(); int total = 0; foreach (var id in unowned) total += COgheEconomy.Price(id);
+                    PopupTitle(panel, w, "Keep this look?");
+                    var names = new System.Text.StringBuilder();
+                    foreach (var id in unowned) { if (names.Length > 0) names.Append(", "); names.Append(COgheEconomy.Find(id)?.Name ?? id); }
+                    art.Label(panel, "Message", names + " " + (unowned.Count == 1 ? "is" : "are") + " only tried on.", new Rect(24, 70, w - 48, 40), 13, COgheUIArt.Muted);
+                    bool can = COgheShop.Drops >= total;
+                    var buyAll = DropButton(panel, "Buy tried on", new Rect(24, 120, w - 48, 54), "Buy · " + total, () =>
+                    {
+                        foreach (var id in UnownedInLook().ToArray()) COgheShop.Buy(id);
+                        if (LookOwned()) { COgheAudio.Happy(); SaveLook(); Popup = COgheProductPopup.None; LeaveStyle(); }
+                    });
+                    if (!can) { buyAll.interactable = false; buyAll.GetComponent<Image>().color = new Color(.62f, .7f, .7f); art.Label(panel, "Short", "You have " + COgheShop.Drops + " Drops", new Rect(24, 176, w - 48, 18), 12, COgheUIArt.Muted); }
+                    LabelButton(panel, "Take it off", new Rect(24, h - 140, w - 48, 52), COgheIcon.Close, "Take it off", () => { RevertLook(); Popup = COgheProductPopup.None; LeaveStyle(); });
+                    LabelButton(panel, "Keep trying", new Rect(24, h - 80, w - 48, 52), COgheIcon.Back, "Keep trying", CloseStylePopup);
                     break;
                 }
                 case COgheProductPopup.StyleNeedsClear:

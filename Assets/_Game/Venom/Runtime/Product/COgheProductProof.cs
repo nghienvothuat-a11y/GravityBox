@@ -60,7 +60,7 @@ namespace GravityBox.Venom
         }
         private IEnumerator Start()
         {
-            deadline=Time.realtimeSinceStartup+320;Application.runInBackground=true;
+            deadline=Time.realtimeSinceStartup+380;Application.runInBackground=true;
             var args=Environment.GetCommandLineArgs();int at=Array.IndexOf(args,"-coghe-product-proof-output");
             output=at>=0&&at+1<args.Length?Path.GetFullPath(args[at+1]):Path.Combine(Application.persistentDataPath,"ProductUIProof");Directory.CreateDirectory(output);
             Screen.SetResolution(720,1280,FullScreenMode.Windowed);yield return new WaitForSecondsRealtime(1);
@@ -151,8 +151,22 @@ namespace GravityBox.Venom
             yield return Capture("36-style-replace");ui.Resume();
             ui.LeaveStyle();yield return new WaitForSecondsRealtime(2.5f);yield return Capture("37-home-styled");
             COgheStyle.ResetForTests();
+            // the shop (Mrk 02/10): Drops, prices, buying, what a win unlocks, Plus, trying on; test ads show the banner's place
+            COgheShop.ResetForTests(new COgheShop.State{Migrated=true});COgheShop.TestsOwnUnlocked=false;COgheShop.Earn(null,150,"proof");
+            COgheHomeRoom.UnlockedLevelOverride=26;COgheAds.Provider=new COgheTestAds();
+            ui.ShowMenu();yield return new WaitForSecondsRealtime(1.5f);yield return Capture("38-menu-shop");
+            ui.OpenHome();yield return new WaitForSecondsRealtime(3);yield return Capture("39-home-shop");
+            ui.ShowPopup(COgheProductPopup.Collection);yield return Capture("40-home-items-prices");
+            ui.OfferItem("SWING",null);yield return Capture("41-buy");ui.Resume();
+            var level10=ui.Catalog.Levels[9];ui.ShowVictoryForTests(level10.Id,10);yield return new WaitForSecondsRealtime(.6f);yield return Capture("42-victory-drops");
+            yield return new WaitForSecondsRealtime(3.5f);ui.VictoryStepForTests();yield return Capture("43-unlocks");ui.Resume();
+            ui.ShowShopPopup(COgheProductPopup.Plus);yield return Capture("44-plus");ui.Resume();
+            ui.ShowMenu();ui.OpenHome();yield return new WaitForSecondsRealtime(2);ui.OpenStyle();yield return new WaitForSecondsRealtime(1.2f);
+            ui.SetStyleTab(1,0);ui.ChooseStyleItem("HAT_STRAW");yield return new WaitForSecondsRealtime(.8f);yield return Capture("45-style-tryon");
+            ui.LeaveStyle();yield return Capture("46-style-keep-or-take-off");
+            COgheAds.Provider=null;COgheShop.ResetForTests();COgheStyle.ResetForTests();
             COgheHomeRoom.UnlockedLevelOverride=null;
-            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"autoAdvancedToLevel\":2,\"savedProgressWritten\":false,\"captures\":37}");
+            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"autoAdvancedToLevel\":2,\"savedProgressWritten\":false,\"captures\":46}");
             Debug.Log("COGHE PRODUCT NATIVE PROOF PASSED");Application.Quit(0);
         }
         /// <summary>Hold a syringe on COghe (x, y: across the body from its middle, in units of 2.5 cm) like a finger would.</summary>

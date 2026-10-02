@@ -15,7 +15,8 @@ namespace GravityBox.Editor
 
         private void OnPreprocessTexture()
         {
-            bool icon = assetPath.Contains("/Resources/COgheHome/Icons/") || assetPath.Contains("/Resources/COgheStyle/Icons/");   // Home and Style item icons (Codex, 256 px): crisper blocks
+            bool icon = assetPath.Contains("/Resources/COgheHome/Icons/") || assetPath.Contains("/Resources/COgheStyle/Icons/")
+                        || assetPath.EndsWith("/Resources/COgheUI/Drop.png");   // item icons (Codex, 256 px) and the Drops droplet: crisper blocks
             if (!assetPath.Contains("/Resources/COgheIntro/") && !icon) return;
             var importer = (TextureImporter)assetImporter;
             string name = System.IO.Path.GetFileNameWithoutExtension(assetPath);

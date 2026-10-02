@@ -10,10 +10,11 @@ namespace GravityBox.Venom
         private void LevelsPopup(RectTransform panel, float w, float h)
         {
             PopupTitle(panel, w, "Levels (test)"); ClosePopup(panel, w, () => ShowPopup(COgheProductPopup.Pause));
+            float top = ShopTestTools(panel, w, 70);   // test ads, +500 Drops, reset the shop
             const int columns = 5;
             float cell = (w - 28) / columns, cellHeight = 50;
             int count = Catalog.Levels.Length, rows = (count + columns - 1) / columns;
-            var viewport = art.Rect(panel, "Viewport", new Rect(14, 74, w - 28, h - 88)); viewport.gameObject.AddComponent<RectMask2D>();
+            var viewport = art.Rect(panel, "Viewport", new Rect(14, top, w - 28, h - top - 14)); viewport.gameObject.AddComponent<RectMask2D>();
             var content = art.Rect(viewport, "Content", new Rect(0, 0, w - 28, rows * cellHeight + 8));
             var scroll = panel.gameObject.AddComponent<ScrollRect>(); scroll.viewport = viewport; scroll.content = content;
             scroll.horizontal = false; scroll.vertical = true; scroll.movementType = ScrollRect.MovementType.Clamped;
@@ -29,7 +30,7 @@ namespace GravityBox.Venom
                 art.Label(box.transform, "Number", n.ToString("00"), new Rect(0, 4, cell - 6, 24), 15, boss ? new Color(.74f, .35f, .25f) : COgheUIArt.Ink);
                 art.Label(box.transform, "Tag", boss ? "Boss" : done ? "Done" : "", new Rect(0, 25, cell - 6, 14), 9, done ? COgheUIArt.Teal : COgheUIArt.Muted);
             }
-            content.anchoredPosition = new Vector2(0, Mathf.Clamp((Game.Definition.Order - 1) / columns * cellHeight - 2 * cellHeight, 0, Mathf.Max(0, rows * cellHeight - (h - 88))));
+            content.anchoredPosition = new Vector2(0, Mathf.Clamp((Game.Definition.Order - 1) / columns * cellHeight - 2 * cellHeight, 0, Mathf.Max(0, rows * cellHeight - (h - top - 14))));
         }
     }
 }

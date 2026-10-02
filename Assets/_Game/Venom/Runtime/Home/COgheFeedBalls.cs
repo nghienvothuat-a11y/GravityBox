@@ -92,7 +92,7 @@ namespace GravityBox.Venom
             Box(new Vector3(0, -.05f, 0), new Vector3(w * 2 + .04f, .1f, d * 2 + .04f));   // a thick floor: a ball squeezed in a gap can't be pushed through
             foreach (var item in room.Items)
             {
-                if (!room.Unlocked(item)) continue;
+                if (!room.Present(item)) continue;
                 var part = item.Part("Ball");
                 if (item.Id == "BALL" && part != null)
                 {

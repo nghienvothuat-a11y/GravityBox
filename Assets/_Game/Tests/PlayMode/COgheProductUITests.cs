@@ -26,6 +26,7 @@ namespace GravityBox.Tests
             editorInput=InputSystem.settings.editorInputBehaviorInPlayMode;InputSystem.settings.editorInputBehaviorInPlayMode=InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
             background=InputSystem.settings.backgroundBehavior;InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;
             VenomCampaignSave.PersistenceEnabled=false;COgheProductMode.OverrideForTests=true;COgheIntro.Seen=true;
+            COgheShop.ResetForTests(new COgheShop.State{Migrated=true});COgheAds.ResetForTests();COgheEntitlements.ResetForTests();COgheEconomy.ResetForTests();
             mouse=InputSystem.AddDevice<Mouse>();
             yield return SceneManager.LoadSceneAsync("COgheSpatial01");yield return null;
             game=Object.FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;
@@ -164,6 +165,7 @@ namespace GravityBox.Tests
             Assert.IsTrue(game.Owner.Completed,"Actual crawl and exit must complete, without teleporting or forcing Win");
             yield return null;Assert.AreEqual(COgheProductPage.Victory,ui.Page);
             Assert.IsTrue(game.Progress.Completed.Contains(game.Definition.Id));
+            Assert.AreEqual(COgheEconomy.FirstWin,ui.VictoryDrops,"A first win pays Drops");Assert.AreEqual(COgheEconomy.FirstWin,COgheShop.Drops);
             // Mrk: the confetti pops just over COghe's head in the settled victory shot, then falls past it
             // (the tissue's top over the settled shot, not the skin: the random pose may raise tendrils above the head)
             while(game.Owner.Celebration.Elapsed<1.2f)yield return null;

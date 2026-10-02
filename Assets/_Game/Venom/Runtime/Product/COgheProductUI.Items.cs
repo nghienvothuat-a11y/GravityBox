@@ -37,9 +37,9 @@ namespace GravityBox.Venom
             {
                 var entry = COgheHomeItems.Catalog[i];
                 var item = room?.Find(entry.id);
-                bool open = room != null && item != null && room.Unlocked(item);
+                bool open = room != null && item != null && room.Present(item), sale = room != null && item != null && room.ForSale(item);
                 float x = (i % columns) * cell, y = (i / columns) * cellHeight;
-                var box = art.Box(content, "Item " + entry.id, new Rect(x + 4, y + 4, cell - 8, cellHeight - 8), open ? new Color(.995f, .995f, .972f) : new Color(.93f, .94f, .91f), true);
+                var box = art.Box(content, "Item " + entry.id, new Rect(x + 4, y + 4, cell - 8, cellHeight - 8), open || sale ? new Color(.995f, .995f, .972f) : new Color(.93f, .94f, .91f), true);
                 box.pixelsPerUnitMultiplier = 2f;
                 var button = box.gameObject.AddComponent<Button>(); button.targetGraphic = box;
                 string id = entry.id; button.onClick.AddListener(() => { COgheAudio.UiTap(); ChooseItem(id); });
@@ -47,9 +47,15 @@ namespace GravityBox.Venom
                 var ir = icon.rectTransform; ir.SetParent(box.transform, false); ir.anchorMin = ir.anchorMax = new Vector2(0, 1); ir.pivot = new Vector2(0, 1);
                 float size = cell - 30; ir.anchoredPosition = new Vector2((cell - 8 - size) * .5f, -4); ir.sizeDelta = new Vector2(size, size);
                 icon.sprite = ItemIcon(entry.id); icon.preserveAspect = true; icon.raycastTarget = false;
-                icon.color = open ? Color.white : new Color(1, 1, 1, .45f);
+                icon.color = open || sale ? Color.white : new Color(1, 1, 1, .45f);
                 art.Label(box.transform, "Name", entry.name, new Rect(2, size - 2, cell - 12, 18), 11);
                 if (open) art.Label(box.transform, "State", "Play", new Rect(2, size + 13, cell - 12, 16), 10, COgheUIArt.Teal);
+                else if (sale)
+                {
+                    // for sale (Mrk 02/10): bought with Drops, then it appears in the room
+                    var price = art.Label(box.transform, "State", COgheEconomy.Price(entry.id).ToString(), new Rect(14, size + 13, cell - 26, 16), 11, COgheUIArt.Teal);
+                    price.font = art.BoldFont; DropIcon(box.transform, new Rect((cell - 8) * .5f - 22, size + 13, 14, 14));
+                }
                 else
                 {
                     art.Icon(box.transform, COgheIcon.Lock, new Rect(cell - 34, 8, 18, 18), COgheUIArt.Muted);
@@ -61,10 +67,15 @@ namespace GravityBox.Venom
         private void ChooseItem(string id)
         {
             var room = Game.HomeRoom; var item = room?.Find(id);
-            Resume();
-            if (item == null) return;
-            if (room.Unlocked(item)) Game.Personality?.PlayWith(item);
-            else { room.ShowGhost(item); Notify(item.Name + " unlocks at level " + item.UnlockLevel); }
+            if (item == null) { Resume(); return; }
+            if (room.Present(item)) { Resume(); Game.Personality?.PlayWith(item); }
+            else if (room.ForSale(item))
+            {
+                // buy it: it pops into the room and COghe runs to it
+                room.ShowGhost(item, 6);
+                OfferItem(id, () => { room.HideGhost(); Game.Personality?.RevealNew(); });
+            }
+            else { Resume(); room.ShowGhost(item); Notify(item.Name + " unlocks at level " + item.UnlockLevel); }
         }
 
         /// <summary>Home view rotation (Mrk: turn the room like a level): degrees around the room, from a drag.</summary>

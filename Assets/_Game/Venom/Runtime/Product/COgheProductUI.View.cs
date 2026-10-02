@@ -11,7 +11,7 @@ namespace GravityBox.Venom
             var area=Screen.safeArea;if(area.width<1||area.height<1)area=new Rect(0,0,Screen.width,Screen.height);
             float scale=Mathf.Min(area.width/360f,area.height/640f);
             canvas.GetComponent<CanvasScaler>().scaleFactor=scale;canvas.scaleFactor=scale;
-            width=area.width/scale;height=area.height/scale;
+            width=area.width/scale;height=fullHeight=area.height/scale;
             safe.anchoredPosition=new Vector2(area.x/scale,-(Screen.height-area.yMax)/scale);safe.sizeDelta=new Vector2(width,height);
             lastSafe=Screen.safeArea;lastWidth=Screen.width;lastHeight=Screen.height;
         }
@@ -20,7 +20,8 @@ namespace GravityBox.Venom
         {
             if(!started)return;
             if(Page!=COgheProductPage.Style)CloseStyle();
-            Clear(ref popupRoot);Clear(ref pageRoot);dynamicRoot=null;
+            Clear(ref popupRoot);Clear(ref pageRoot);dynamicRoot=null;dropsLabel=null;
+            PlaceBanner();
             if(toast!=null)Destroy(toast.transform.parent.gameObject);toast=null;
             pageRoot=art.Rect(safe,"Page "+Page,new Rect(0,0,width,height));
             switch(Page)
@@ -36,6 +37,7 @@ namespace GravityBox.Venom
         private void MainMenuView()
         {
             art.Label(pageRoot,"COghe logo","C<color=#356D6D>O</color>ghe",new Rect(0,height*.12f,width,83),65);
+            PlusButton();DropsCounter(pageRoot,new Rect(width-124,25,100,44));
             art.Box(pageRoot,"Brand underline",new Rect(width*.5f-12,height*.12f+92,24,2),new Color(.58f,.71f,.66f));
             float y=height-265,w=Mathf.Min(280,width-80),x=(width-w)*.5f;
             art.Button(pageRoot,"Play",new Rect(x,y,w,64),COgheIcon.Play,Play,"Play",true);
@@ -112,12 +114,17 @@ namespace GravityBox.Venom
             MenuEntry(x+240,y,"Style",COgheIcon.Sparkles,OpenStyle);
             // the camera's Zoom stays one tap away, floating above the row (Codex: four main actions, not five)
             art.Button(pageRoot,homeZoom?"Zoom out":"Zoom in",new Rect(width-72,y-64,48,48),homeZoom?COgheIcon.Overview:COgheIcon.Pinch,ToggleHomeZoom);
+            GiftButton(y-64);DropsCounter(pageRoot,new Rect(width-188,29,100,44));
+            if(COgheEntitlements.HasPlus)art.Button(pageRoot,"Monster",new Rect(width-72,y-120,48,48),COgheIcon.Sparkles,()=>Game.Personality?.Force(COgheAct.Monster));
         }
         private void VictoryView()
         {
             bool final=Game.Definition.Order==Game.PlayableLevelCount;
             art.Icon(pageRoot,COgheIcon.Check,new Rect(width*.5f-22,height*.13f,44,44),COgheUIArt.Teal);
             art.Label(pageRoot,"Victory",final?"All done!":"Well done!",new Rect(20,height*.13f+54,width-40,44),28);
+            DropsCounter(pageRoot,new Rect(width-124,25,100,44));
+            if(victoryDrops>0){var earned=art.Label(pageRoot,"Drops earned","+"+victoryDrops+" Drops",new Rect(20,height*.13f+100,width-40,30),17,COgheUIArt.Teal);DropIcon(pageRoot,new Rect(width*.5f-78,height*.13f+103,24,24));}
+            TripleButton();
             if(final)
             {
                 art.Label(pageRoot,"Campaign complete","Every puzzle, together.",new Rect(20,height-225,width-40,32),14,COgheUIArt.Muted);
@@ -131,7 +138,7 @@ namespace GravityBox.Venom
         {
             popupRoot=art.Rect(safe,"Popup "+Popup,new Rect(0,0,width,height));
             var veil=art.Box(popupRoot,"Input shield",new Rect(-width,-height,width*3,height*3),new Color(.13f,.23f,.21f,.36f),true);veil.sprite=null;
-            if(StylePopup())return;
+            if(StylePopup()||ShopPopup())return;
             float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?(COgheTestTools.LevelSelect&&!InHome?482:430):Popup==COgheProductPopup.Levels?Mathf.Min(560,height-90):Popup==COgheProductPopup.Help?450:Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null?Mathf.Min(560,height-90):260;
             var panel=art.Box(popupRoot,"Panel",new Rect((width-w)*.5f,(height-h)*.5f,w,h),COgheUIArt.Paper,true).rectTransform;
             if(Popup==COgheProductPopup.Pause)

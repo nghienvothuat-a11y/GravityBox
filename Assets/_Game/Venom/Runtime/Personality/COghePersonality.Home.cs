@@ -84,7 +84,7 @@ namespace GravityBox.Venom
         /// <summary>The player tapped a piece of furniture, or chose it in the item menu: go and play with it.</summary>
         public void PlayWith(COgheHomeItem item)
         {
-            if (room == null || item == null || !room.Unlocked(item)) return;
+            if (room == null || item == null || !room.Present(item)) return;
             StopPlaying(); GoTo(item);
         }
 
@@ -163,7 +163,7 @@ namespace GravityBox.Venom
                 return;
             }
             choices.Clear();
-            foreach (var item in room.Items) if (room.Unlocked(item) && item != lastPlayed) choices.Add(item);
+            foreach (var item in room.Items) if (room.Present(item) && item != lastPlayed) choices.Add(item);
             float r = (float)rnd.NextDouble();
             if (choices.Count > 0 && r < .55f) { GoTo(choices[rnd.Next(choices.Count)]); return; }
             if (r < .8f)
@@ -630,6 +630,13 @@ namespace GravityBox.Venom
             var fish = item.Part("Fish"); if (fish != null) fish.localPosition = new Vector3(0, .88f, 0);
         }
 
+        /// <summary>Something was just bought for the room: pop it in now and go to it.</summary>
+        public void RevealNew()
+        {
+            if (room == null) return;
+            room.Refresh(); revealPending = true; revealClock = -.25f; reveals.Clear();
+            foreach (var item in room.Newly()) item.Root.transform.localScale = Vector3.zero;   // hidden until its pop
+        }
         private void Reveal(float dt)
         {
             if (revealPending && !Showcase)

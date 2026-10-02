@@ -57,7 +57,7 @@ namespace GravityBox.Venom
                 var b = new Bounds(item.Root.transform.position, Vector3.zero);
                 foreach (var r in item.Root.GetComponentsInChildren<Renderer>()) { b.Encapsulate(r.bounds); realMaterials[r] = r.sharedMaterials; }
                 bounds[item] = b;
-                item.Root.SetActive(Unlocked(item));
+                item.Root.SetActive(Present(item));
             }
         }
 
@@ -119,7 +119,14 @@ namespace GravityBox.Venom
         public bool BackWallVisible => backWall != null && backWall.enabled;
 
         // Unlocks -----------------------------------------------------------------------------------------------------------
-        public bool Unlocked(COgheHomeItem item) => LevelReached(item.UnlockLevel);
+        /// <summary>In the room: its level is reached and it is owned (bought or a gift; Mrk 02/10: an item must be bought to
+        /// appear).</summary>
+        public bool Present(COgheHomeItem item) => Available(item) && COgheShop.Owns(item.Id);
+        /// <summary>Its level is reached: owned, or for sale.</summary>
+        public bool Available(COgheHomeItem item) => LevelReached(item.UnlockLevel);
+        public bool ForSale(COgheHomeItem item) => Available(item) && !COgheShop.Owns(item.Id);
+        /// <summary>Show what is owned now (after a purchase); new items stay hidden (scale 0) for their reveal.</summary>
+        public void Refresh() { foreach (var item in Items) if (item != ghost) item.Root.SetActive(Present(item)); }
         public bool LevelReached(int level) => Reached(game, level);
         /// <summary>Has the player completed catalog level <paramref name="level"/> (Home items, inks, wardrobe)?</summary>
         public static bool Reached(VenomCampaign game, int level)
@@ -135,7 +142,7 @@ namespace GravityBox.Venom
         {
             var seen = PlayerPrefs.GetString(SeenKey, "");
             var list = new List<COgheHomeItem>();
-            foreach (var item in Items) if (Unlocked(item) && !(("," + seen + ",").Contains("," + item.Id + ","))) list.Add(item);
+            foreach (var item in Items) if (Present(item) && !(("," + seen + ",").Contains("," + item.Id + ","))) list.Add(item);
             return list;
         }
         public void MarkSeen(COgheHomeItem item)
@@ -151,7 +158,7 @@ namespace GravityBox.Venom
         public void ShowGhost(COgheHomeItem item, float seconds = 4.5f)
         {
             HideGhost();
-            if (item == null || Unlocked(item)) return;
+            if (item == null || Present(item)) return;
             ghost = item; ghostUntil = Time.unscaledTime + seconds;
             item.Root.SetActive(true);
             foreach (var r in item.Root.GetComponentsInChildren<Renderer>())
@@ -165,7 +172,7 @@ namespace GravityBox.Venom
             if (ghost == null) return;
             foreach (var r in ghost.Root.GetComponentsInChildren<Renderer>())
                 if (realMaterials.TryGetValue(r, out var mats)) { r.sharedMaterials = mats; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On; }
-            ghost.Root.SetActive(Unlocked(ghost)); ghost = null;
+            ghost.Root.SetActive(Present(ghost)); ghost = null;
         }
         public COgheHomeItem Ghost => ghost;
         public void Step() { if (ghost != null && Time.unscaledTime > ghostUntil) HideGhost(); }
@@ -182,7 +189,7 @@ namespace GravityBox.Venom
             COgheHomeItem best = null; float nearest = float.MaxValue;
             foreach (var item in Items)
             {
-                if (!Unlocked(item) || !item.Root.activeSelf) continue;
+                if (!Present(item) || !item.Root.activeSelf) continue;
                 var b = bounds[item]; b.Expand(.01f);
                 if (b.IntersectRay(ray, out float d) && d < nearest) { nearest = d; best = item; }
             }
