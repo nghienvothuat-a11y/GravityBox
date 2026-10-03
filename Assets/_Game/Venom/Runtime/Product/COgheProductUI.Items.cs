@@ -119,7 +119,7 @@ namespace GravityBox.Venom
             homeFocus = Vector3.Lerp(homeSize < 0 ? target : homeFocus, target, blend);
             homeSize = Mathf.Lerp(homeSize < 0 ? targetSize : homeSize, targetSize, blend);
             camera.orthographicSize = homeSize;
-            float logicalY = height * .49f;
+            float logicalY = (84 + height - 160) * .5f;   // the middle of the room's free area: under the top bar, over the buttons
             float pixelY = Screen.safeArea.yMax - logicalY * canvas.scaleFactor, centre = pixelY / Screen.height;
             camera.transform.position = homeFocus - camera.transform.forward * 1.2f - camera.transform.up * ((centre - .5f) * 2 * camera.orthographicSize);
             camera.nearClipPlane = .01f; camera.farClipPlane = 30;

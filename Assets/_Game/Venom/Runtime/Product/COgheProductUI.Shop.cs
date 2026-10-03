@@ -159,7 +159,9 @@ namespace GravityBox.Venom
             float w = Mathf.Min(312, width - 40);
             float h = Popup == COgheProductPopup.Buy ? BuyPopupHeight() : Popup == COgheProductPopup.Unlocks ? UnlocksPopupHeight() : Popup == COgheProductPopup.Gift ? 310 : 380;
             h = Mathf.Min(h, height - 30);
-            var panel = art.Box(popupRoot, "Panel", new Rect((width - w) * .5f, (height - h) * .5f, w, h), COgheUIArt.Paper, true).rectTransform;
+            float top = (height - h) * .5f;
+            if (Page == COgheProductPage.Victory) top = Mathf.Clamp(height * .13f + 136, top, height - h - 16);   // under "+10 Drops"
+            var panel = art.Box(popupRoot, "Panel", new Rect((width - w) * .5f, top, w, h), COgheUIArt.Paper, true).rectTransform;
             switch (Popup)
             {
                 case COgheProductPopup.Buy: BuyPopup(panel, w, h); break;

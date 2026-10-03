@@ -614,8 +614,8 @@ namespace GravityBox.Venom
                     var ir = icon.rectTransform; ir.SetParent(panel, false); ir.anchorMin = ir.anchorMax = new Vector2(0, 1); ir.pivot = new Vector2(0, 1);
                     ir.anchoredPosition = new Vector2((w - 104) * .5f, -72); ir.sizeDelta = new Vector2(104, 104);
                     icon.sprite = stylePending != null ? ItemIcon(stylePending, "COgheStyle/Icons/") : null; icon.preserveAspect = true; icon.raycastTarget = false; icon.color = new Color(1, 1, 1, .6f);
-                    art.Icon(panel, COgheIcon.Lock, new Rect(w * .5f + 34, 150, 22, 22), COgheUIArt.Muted);
-                    art.Label(panel, "Message", "Complete level " + level + " to unlock " + name + ".", new Rect(24, 184, w - 48, 44), 13, COgheUIArt.Muted);
+                    art.Icon(panel, COgheIcon.Lock, new Rect(w * .5f - 10, 182, 20, 20), COgheUIArt.Muted);   // under the picture, not on it
+                    art.Label(panel, "Message", "Complete level " + level + " to unlock " + name + ".", new Rect(24, 204, w - 48, 40), 13, COgheUIArt.Muted);
                     LabelButton(panel, "Close preview", new Rect(24, h - 80, w - 48, 56), COgheIcon.Back, "Back", CloseStylePopup, true);
                     break;
                 }

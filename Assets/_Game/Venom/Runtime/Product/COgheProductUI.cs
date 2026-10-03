@@ -227,7 +227,9 @@ namespace GravityBox.Venom
         public void Notify(string message)
         {
             if(toast!=null)Destroy(toast.transform.parent.gameObject);
-            var box=art.Box(safe,"Notice",new Rect(24,height-180,width-48,58),COgheUIArt.Ink);
+            // up top, clear of the bottom buttons (Home row, menu entries, level tray); under the logo on the menu
+            float y=Page==COgheProductPage.MainMenu?height*.12f+100:Page==COgheProductPage.Victory?height-180:136;
+            var box=art.Box(safe,"Notice",new Rect(24,y,width-48,58),COgheUIArt.Ink);
             toast=art.Label(box.transform,"Message",message,new Rect(12,2,width-72,54),12,COgheUIArt.Paper);toastUntil=Time.unscaledTime+3;
         }
         private void MenuShadows(bool menu)

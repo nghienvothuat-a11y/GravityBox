@@ -50,7 +50,7 @@ namespace GravityBox.Venom
         private COgheProductUI ui;
         private string output;
         private float deadline;
-        private bool failed;
+        private bool failed, phone;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Boot()
         {
@@ -63,7 +63,9 @@ namespace GravityBox.Venom
             deadline=Time.realtimeSinceStartup+380;Application.runInBackground=true;
             var args=Environment.GetCommandLineArgs();int at=Array.IndexOf(args,"-coghe-product-proof-output");
             output=at>=0&&at+1<args.Length?Path.GetFullPath(args[at+1]):Path.Combine(Application.persistentDataPath,"ProductUIProof");Directory.CreateDirectory(output);
-            Screen.SetResolution(720,1280,FullScreenMode.Windowed);yield return new WaitForSecondsRealtime(1);
+            // -coghe-product-proof-phone: keep the window at a phone's shape (19.5:9) for the layout review
+            phone=Array.IndexOf(args,"-coghe-product-proof-phone")>=0;
+            if(phone)Screen.SetResolution(472,1022,FullScreenMode.Windowed);else Screen.SetResolution(720,1280,FullScreenMode.Windowed);yield return new WaitForSecondsRealtime(1);
             game=FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;
             if(ui==null){Fail("Product UI missing");yield break;}
             yield return new WaitForSecondsRealtime(3);yield return Capture("01-main-menu");
@@ -99,7 +101,7 @@ namespace GravityBox.Venom
             ui.Play();if(COgheIntro.Playing){replay=FindFirstObjectByType<COgheIntro>();while(!replay.Started)yield return null;replay.Speed=30;replay.Skip();while(COgheIntro.Playing)yield return null;}
             game.Owner.enabled=false;var half=new bool[32];for(int i=0;i<16;i++)half[i]=true;game.Matter.Partition(0,half);
             yield return Capture("12-fragments-ui-fixture");game.Owner.enabled=true;ui.ShowMenu();
-            Screen.SetResolution(720,1612,FullScreenMode.Windowed);yield return new WaitForSecondsRealtime(1);
+            if(!phone)Screen.SetResolution(720,1612,FullScreenMode.Windowed);yield return new WaitForSecondsRealtime(1);
             yield return Capture("13-tall-menu");ui.Play();if(COgheIntro.Playing){replay=FindFirstObjectByType<COgheIntro>();while(!replay.Started)yield return null;replay.Speed=30;replay.Skip();while(COgheIntro.Playing)yield return null;}
             yield return Capture("14-tall-game");ui.ShowPopup(COgheProductPopup.Pause);yield return Capture("15-tall-pause");
             // test-build level picker, then a Boss level's opening tour and warning

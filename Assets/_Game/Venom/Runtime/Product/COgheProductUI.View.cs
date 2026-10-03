@@ -6,13 +6,17 @@ namespace GravityBox.Venom
     public sealed partial class COgheProductUI
     {
         private readonly bool[] shownGroups=new bool[32];
+        /// <summary>Tests (the UI layout audit): lay the UI out for this screen (its whole area is safe) instead of the real one.</summary>
+        public static Rect? LayoutAreaForTests;
+        public void RelayoutForTests(){Layout();Rebuild();}
         private void Layout()
         {
-            var area=Screen.safeArea;if(area.width<1||area.height<1)area=new Rect(0,0,Screen.width,Screen.height);
+            var area=LayoutAreaForTests??Screen.safeArea;if(area.width<1||area.height<1)area=new Rect(0,0,Screen.width,Screen.height);
+            float screenHeight=LayoutAreaForTests.HasValue?area.height:Screen.height;
             float scale=Mathf.Min(area.width/360f,area.height/640f);
             canvas.GetComponent<CanvasScaler>().scaleFactor=scale;canvas.scaleFactor=scale;
             width=area.width/scale;height=fullHeight=area.height/scale;
-            safe.anchoredPosition=new Vector2(area.x/scale,-(Screen.height-area.yMax)/scale);safe.sizeDelta=new Vector2(width,height);
+            safe.anchoredPosition=new Vector2(area.x/scale,-(screenHeight-area.yMax)/scale);safe.sizeDelta=new Vector2(width,height);
             lastSafe=Screen.safeArea;lastWidth=Screen.width;lastHeight=Screen.height;
         }
         private void Clear(ref RectTransform r){if(r!=null){r.gameObject.SetActive(false);Destroy(r.gameObject);}r=null;}
