@@ -134,6 +134,7 @@ namespace GravityBox.Venom
             float fed=Time.realtimeSinceStartup+30;while(game.HomeFeeding&&Time.realtimeSinceStartup<fed)yield return null;
             if(game.HomeFeeding){Fail("COghe did not eat the balls");yield break;}
             game.Personality.PlayNow(game.HomeRoom.Find("BALL"));yield return new WaitForSecondsRealtime(3.45f);yield return Capture("29-home-ball-toss");
+            ui.ShowPopup(COgheProductPopup.Pause);yield return Capture("47-home-pause");ui.Resume();
             // Style: inks held into COghe, the mix, a hat, things inside, a locked item, a fifth color's question, back home
             COgheHomeRoom.UnlockedLevelOverride=30;COgheStyle.ResetForTests(new COgheStyle{Seed=4});COgheStyle.Current.ApplyTo(game);
             ui.OpenStyle();yield return new WaitForSecondsRealtime(1.5f);
@@ -166,7 +167,7 @@ namespace GravityBox.Venom
             ui.LeaveStyle();yield return Capture("46-style-keep-or-take-off");
             COgheAds.Provider=null;COgheShop.ResetForTests();COgheStyle.ResetForTests();
             COgheHomeRoom.UnlockedLevelOverride=null;
-            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"autoAdvancedToLevel\":2,\"savedProgressWritten\":false,\"captures\":46}");
+            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"autoAdvancedToLevel\":2,\"savedProgressWritten\":false,\"captures\":47}");
             Debug.Log("COGHE PRODUCT NATIVE PROOF PASSED");Application.Quit(0);
         }
         /// <summary>Hold a syringe on COghe (x, y: across the body from its middle, in units of 2.5 cm) like a finger would.</summary>

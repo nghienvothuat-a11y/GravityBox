@@ -114,7 +114,7 @@ namespace GravityBox.Venom
             MenuEntry(x+240,y,"Style",COgheIcon.Sparkles,OpenStyle);
             // the camera's Zoom stays one tap away, floating above the row (Codex: four main actions, not five)
             art.Button(pageRoot,homeZoom?"Zoom out":"Zoom in",new Rect(width-72,y-64,48,48),homeZoom?COgheIcon.Overview:COgheIcon.Pinch,ToggleHomeZoom);
-            GiftButton(y-64);DropsCounter(pageRoot,new Rect(width-188,29,100,44));
+            GiftButton(y-64);DropsCounter(pageRoot,new Rect(width-124,88,100,40));   // under Pause, clear of the title
             if(COgheEntitlements.HasPlus)art.Button(pageRoot,"Monster",new Rect(width-72,y-120,48,48),COgheIcon.Sparkles,()=>Game.Personality?.Force(COgheAct.Monster));
         }
         private void VictoryView()
@@ -139,18 +139,24 @@ namespace GravityBox.Venom
             popupRoot=art.Rect(safe,"Popup "+Popup,new Rect(0,0,width,height));
             var veil=art.Box(popupRoot,"Input shield",new Rect(-width,-height,width*3,height*3),new Color(.13f,.23f,.21f,.36f),true);veil.sprite=null;
             if(StylePopup()||ShopPopup())return;
-            float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?(COgheTestTools.LevelSelect&&!InHome?482:430):Popup==COgheProductPopup.Levels?Mathf.Min(560,height-90):Popup==COgheProductPopup.Help?450:Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null?Mathf.Min(560,height-90):260;
+            float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?(InHome?324:COgheTestTools.LevelSelect?482:430):Popup==COgheProductPopup.Levels?Mathf.Min(560,height-90):Popup==COgheProductPopup.Help?450:Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null?Mathf.Min(560,height-90):260;
             var panel=art.Box(popupRoot,"Panel",new Rect((width-w)*.5f,(height-h)*.5f,w,h),COgheUIArt.Paper,true).rectTransform;
             if(Popup==COgheProductPopup.Pause)
             {
                 PopupTitle(panel,w,"Paused");art.Label(panel,"Context",InHome?"Home":"Level "+Game.Definition.Order,new Rect(20,65,w-40,22),12,COgheUIArt.Muted);
                 bool home=InHome;float cell=(w-36)/3;
-                Tile(panel,18,108,cell,COgheIcon.Restart,"Restart",()=>ShowPopup(COgheProductPopup.Restart),!home);
-                Tile(panel,18+cell,108,cell,Game.Progress.HomeUnlocked?COgheIcon.Home:COgheIcon.Lock,"Home",OpenHome,!home);
-                Tile(panel,18+2*cell,108,cell,COgheIcon.Menu,"Menu",RequestMenu);
-                Tile(panel,18,214,cell,COgheIcon.Help,"How to play",()=>ShowPopup(COgheProductPopup.Help),!home);
-                Tile(panel,18+cell,214,cell,COgheIcon.Music,"Music",ToggleMusic,true,COgheAudio.MusicOn);
-                Tile(panel,18+2*cell,214,cell,COgheAudio.EffectsOn?COgheIcon.Sound:COgheIcon.Muted,"Sound",ToggleSound,true,COgheAudio.EffectsOn);
+                // only what applies here, three to a row, each row centred (in Home: Menu, Music, Sound on one row)
+                var tiles=new System.Collections.Generic.List<(COgheIcon icon,string label,System.Action action,bool? on)>(6);
+                if(!home){tiles.Add((COgheIcon.Restart,"Restart",()=>ShowPopup(COgheProductPopup.Restart),null));tiles.Add((Game.Progress.HomeUnlocked?COgheIcon.Home:COgheIcon.Lock,"Home",OpenHome,null));}
+                tiles.Add((COgheIcon.Menu,"Menu",RequestMenu,null));
+                if(!home)tiles.Add((COgheIcon.Help,"How to play",()=>ShowPopup(COgheProductPopup.Help),null));
+                tiles.Add((COgheIcon.Music,"Music",ToggleMusic,COgheAudio.MusicOn));
+                tiles.Add((COgheAudio.EffectsOn?COgheIcon.Sound:COgheIcon.Muted,"Sound",ToggleSound,COgheAudio.EffectsOn));
+                for(int i=0;i<tiles.Count;i++)
+                {
+                    int row=i/3,inRow=Mathf.Min(3,tiles.Count-row*3);
+                    var t=tiles[i];Tile(panel,18+(3-inRow)*cell*.5f+(i%3)*cell,108+row*106,cell,t.icon,t.label,t.action,true,t.on);
+                }
                 art.Button(panel,"Resume",new Rect(24,h-82,w-48,58),COgheIcon.Play,Resume,"Resume",true);ClosePopup(panel,w,Resume);
                 if(COgheTestTools.LevelSelect&&!home)art.Button(panel,"Test levels",new Rect(24,h-138,w-48,48),COgheIcon.Overview,()=>ShowPopup(COgheProductPopup.Levels),"Levels (test)");
             }
