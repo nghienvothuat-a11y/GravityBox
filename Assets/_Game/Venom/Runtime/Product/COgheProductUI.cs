@@ -183,7 +183,7 @@ namespace GravityBox.Venom
         /// <summary>Just over COghe's head once the victory shot settles, in safe-area units from its lower-left corner.</summary>
         private Vector2 ConfettiOrigin()
         {
-            var v=VenomCelebration.SettledViewport(.07f,Screen.width,Screen.height);
+            var v=VenomCelebration.SettledViewport(.07f,Screen.width,Screen.height,VictoryStageScreenRect);
             RectTransformUtility.ScreenPointToLocalPointInRectangle(safe,new Vector2(v.x*Screen.width,v.y*Screen.height),null,out var local);
             var p=local-safe.rect.min;return new Vector2(Mathf.Clamp(p.x,0,width),Mathf.Clamp(p.y,height*.3f,height*.85f));
         }

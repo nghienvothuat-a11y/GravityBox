@@ -210,8 +210,8 @@ namespace GravityBox.Venom
         private void TripleButton()
         {
             if (victoryDrops <= 0 || !COgheAds.RewardedAvailable) return;
-            float w = Mathf.Min(260, width - 80), y = height * .13f + 140;
-            if (tripleTaken) { art.Label(pageRoot, "Tripled", "+" + (victoryDrops + COgheEconomy.TripleExtra) + " Drops", new Rect(20, y, width - 40, 30), 17, COgheUIArt.Teal); return; }
+            float w = Mathf.Min(260, width - 80), y = height - 140;
+            if (tripleTaken) return;   // the single earned amount above the button now includes the bonus
             if (Time.unscaledTime >= tripleUntil) return;
             var b = LabelButton(pageRoot, "Triple drops", new Rect((width - w) * .5f, y, w, 52), COgheIcon.Play, COgheEntitlements.InstantRewards ? "×3 Drops · Plus" : "×3 Drops · watch an ad", () =>
             {

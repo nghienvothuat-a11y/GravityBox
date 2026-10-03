@@ -76,21 +76,28 @@ namespace GravityBox.Venom
                 horizontal = Mathf.Max(horizontal, Mathf.Abs(Vector3.Dot(offset,Right))+.065f);
                 vertical = Mathf.Max(vertical, Mathf.Abs(Vector3.Dot(offset,Up))+.085f);
             }
-            float size = ShotSize(horizontal, vertical, width, height);
+            Rect? stage = level.Campaign?.ProductUI != null ? level.Campaign.ProductUI.VictoryStageScreenRect : (Rect?)null;
+            float size = ShotSize(horizontal, vertical, width, height, stage);
             float blend = Mathf.SmoothStep(0, 1, Mathf.Clamp01(Elapsed/1.05f));
             camera.transform.rotation = cameraRotation;
-            camera.transform.position = Vector3.Lerp(cameraStart, centre+Up*.02f-Forward*.42f, blend);
+            float stageY=stage.HasValue?stage.Value.center.y/height:.5f;
+            Vector3 framingOffset=Up*((stageY-.5f)*2*size);
+            camera.transform.position = Vector3.Lerp(cameraStart, centre+Up*.02f-Forward*.42f-framingOffset, blend);
             camera.orthographicSize = Mathf.Lerp(sizeStart, size, blend);
         }
 
         /// <summary>Where a point <paramref name="above"/> metres over the tissue's centre sits on screen (viewport 0–1)
         /// once the victory shot has settled on the gathered tissue: the win screen drops its confetti over COghe's head.</summary>
-        public static Vector2 SettledViewport(float above, int width, int height)
-            => new Vector2(.5f, .5f + (above - .02f) / (2 * ShotSize(Wide, Tall, width, height)));   // centred, .02 m low
+        public static Vector2 SettledViewport(float above, int width, int height, Rect? stage=null)
+            => new Vector2(.5f, (stage.HasValue?stage.Value.center.y/height:.5f) + (above - .02f) / (2 * ShotSize(Wide, Tall, width, height,stage)));
 
         private const float Wide = .095f, Tall = .105f;
-        private static float ShotSize(float horizontal, float vertical, int width, int height)
-            => Mathf.Max(vertical/.64f, horizontal*height/(width*.82f));
+        private static float ShotSize(float horizontal, float vertical, int width, int height,Rect? stage=null)
+        {
+            if(stage.HasValue)
+                return Mathf.Max(vertical*height/(stage.Value.height*.86f),horizontal*height/(stage.Value.width*.82f));
+            return Mathf.Max(vertical/.64f, horizontal*height/(width*.82f));
+        }
 
         public void Reset()
         {
@@ -103,7 +110,7 @@ namespace GravityBox.Venom
             scenery.Clear(); Active = false; Variant = -1;
         }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR || DEVELOPMENT_BUILD || COGHE_TEST_TOOLS
         public void SetVariantForTests(int variant) { Variant = Mathf.Clamp(variant, 0, 2); }
 #endif
     }

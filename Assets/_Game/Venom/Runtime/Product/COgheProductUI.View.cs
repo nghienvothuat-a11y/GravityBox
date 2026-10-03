@@ -121,22 +121,40 @@ namespace GravityBox.Venom
             GiftButton(y-64);DropsCounter(pageRoot,new Rect(width-124,88,100,40));   // under Pause, clear of the title
             if(COgheEntitlements.HasPlus)art.Button(pageRoot,"Monster",new Rect(width-72,y-120,48,48),COgheIcon.Sparkles,()=>Game.Personality?.Force(COgheAct.Monster));
         }
+        /// <summary>Uncovered space for the real victory dance, in screen pixels. The safe-area
+        /// inset and optional banner affect the composition, never the tissue simulation.</summary>
+        public Rect VictoryStageScreenRect
+        {
+            get
+            {
+                float scale=canvas.scaleFactor;var area=Screen.safeArea;
+                float top=area.yMax-(height*.13f+112)*scale;
+                float bottom=area.yMax-(height-202)*scale;
+                return Rect.MinMaxRect(area.xMin+24*scale,bottom,area.xMax-24*scale,Mathf.Max(bottom+80*scale,top));
+            }
+        }
         private void VictoryView()
         {
             bool final=Game.Definition.Order==Game.PlayableLevelCount;
             art.Icon(pageRoot,COgheIcon.Check,new Rect(width*.5f-22,height*.13f,44,44),COgheUIArt.Teal);
             art.Label(pageRoot,"Victory",final?"All done!":"Well done!",new Rect(20,height*.13f+54,width-40,44),28);
             DropsCounter(pageRoot,new Rect(width-124,25,100,44));
-            if(victoryDrops>0){var earned=art.Label(pageRoot,"Drops earned","+"+victoryDrops+" Drops",new Rect(20,height*.13f+100,width-40,30),17,COgheUIArt.Teal);DropIcon(pageRoot,new Rect(width*.5f-78,height*.13f+103,24,24));}
+            // The centre belongs to the dance. Keep rewards together in a bottom dock,
+            // above both the next-level line and the optional ad banner.
+            if(victoryDrops>0)
+            {
+                int earned=tripleTaken?victoryDrops+COgheEconomy.TripleExtra:victoryDrops;
+                var reward=art.Rect(pageRoot,"Victory reward",new Rect(width*.5f-74,height-184,148,32));
+                DropIcon(reward,new Rect(0,3,26,26));
+                art.Label(reward,"Drops earned","+"+earned+" Drops",new Rect(34,0,114,32),17,COgheUIArt.Teal,TextAnchor.MiddleLeft);
+            }
             TripleButton();
             if(final)
             {
-                art.Label(pageRoot,"Campaign complete","Every puzzle, together.",new Rect(20,height-225,width-40,32),14,COgheUIArt.Muted);
-                art.Button(pageRoot,"Back to menu",new Rect(width*.5f-130,height-140,260,58),COgheIcon.Menu,ShowMenu,"Menu",true);
+                art.Button(pageRoot,"Back to menu",new Rect(width*.5f-130,height-74,260,58),COgheIcon.Menu,ShowMenu,"Menu",true);
             }
-            else art.Label(pageRoot,"Next level","→  Level "+(Game.Definition.Order+1),new Rect(24,height-105,width-48,32),14,COgheUIArt.Muted);
-            if(Game.Progress.RevealHome)
-            {art.Label(pageRoot,"Home unlocked","Home unlocked",new Rect(20,height-208,width-40,30),17);art.Button(pageRoot,"Visit Home",new Rect(width*.5f-70,height-170,140,52),COgheIcon.Home,EnterHome,"Home");}
+            else art.Label(pageRoot,"Next level","→  Level "+(Game.Definition.Order+1),new Rect(24,height-64,width-48,32),14,COgheUIArt.Muted);
+            // Home/Style unlocks already have their own popup after the celebration.
         }
         private void PopupView()
         {

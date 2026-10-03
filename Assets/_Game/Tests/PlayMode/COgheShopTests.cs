@@ -161,6 +161,33 @@ namespace GravityBox.Tests
             finally { EndShop(); }
         }
 
+        [UnityTest] public IEnumerator VictoryRewardsStayBelowDanceAndTripleUpdatesOneAmount()
+        {
+            try
+            {
+                FreshShop(true); COgheAds.Provider = new CountingAds();
+                COgheProductUI.LayoutAreaForTests = new Rect(0, 0, 720, 1280); ui.RelayoutForTests();
+                var level = ui.Catalog.Levels[0];
+                ui.ShowVictoryForTests(level.Id, 1); yield return null;
+                Canvas.ForceUpdateCanvases();
+                var earned = ui.GetComponentsInChildren<Text>().Single(t => t.name == "Drops earned");
+                var triple = ui.GetComponentsInChildren<Button>().Single(b => b.name == "Triple drops");
+                Rect reward = WorldRect(earned.rectTransform), offer = WorldRect((RectTransform)triple.transform);
+                // The live native proof also checks all three deforming dance meshes against these controls.
+                var screen = WorldRect(ui.SafeRoot);
+                Assert.Less(reward.yMax, screen.yMin + screen.height * .44f, "Reward in the lower portion of the portrait screen");
+                Assert.Less(offer.yMax, reward.yMin, "Offer below the reward, not over COghe");
+                Assert.Greater(offer.yMin, screen.yMin + COgheAds.BannerHeight, "Offer clear of the banner");
+                triple.onClick.Invoke(); yield return null;
+                var amounts = ui.GetComponentsInChildren<Text>().Where(t => t.name == "Drops earned" || t.name == "Tripled").ToArray();
+                Assert.AreEqual(1, amounts.Length, "One earned amount after claiming, not two totals");
+                Assert.AreEqual("+" + (COgheEconomy.FirstWin + COgheEconomy.TripleExtra) + " Drops", amounts[0].text);
+                Assert.IsFalse(ui.GetComponentsInChildren<Button>().Any(b => b.name == "Triple drops"));
+                Assert.AreEqual(COgheEconomy.FirstWin + COgheEconomy.TripleExtra, COgheShop.Drops);
+            }
+            finally { COgheProductUI.LayoutAreaForTests = null; ui.RelayoutForTests(); EndShop(); }
+        }
+
         [UnityTest] public IEnumerator EarlierPlayersKeepWhatTheyEarnedAndTheGiftComesDaily()
         {
             var completed = game.Progress.Completed.ToList();

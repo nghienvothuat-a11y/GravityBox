@@ -169,7 +169,7 @@ namespace GravityBox.Tests
             // Mrk: the confetti pops just over COghe's head in the settled victory shot, then falls past it
             // (the tissue's top over the settled shot, not the skin: the random pose may raise tendrils above the head)
             while(game.Owner.Celebration.Elapsed<1.2f)yield return null;
-            float head=0,skin=0,pop=VenomCelebration.SettledViewport(.07f,Screen.width,Screen.height).y;
+            float head=0,skin=0,pop=VenomCelebration.SettledViewport(.07f,Screen.width,Screen.height,ui.VictoryStageScreenRect).y;
             while(game.Owner.Celebration.Elapsed<2f){head=Mathf.Max(head,TissueTop());skin=Mathf.Max(skin,SkinTop());yield return null;}
             Debug.Log($"Confetti origin {pop:F3}, tissue top {head:F3}, skin top {skin:F3} (viewport), pose {game.Owner.Celebration.Variant}");
             Assert.That(pop-head,Is.InRange(0f,.18f),$"Confetti origin {pop:F3} just over the tissue {head:F3}");

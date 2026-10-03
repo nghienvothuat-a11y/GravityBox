@@ -1,5 +1,7 @@
 # COghe Product UI — Unity implementation
 
+Latest scoped update: [OPPO victory layout and fullscreen inspection, 3 October 2026](../COgheMobileUI/README.md).
+
 30 September 2026 · NewGraphic · Spatial 50 · Unity 6000.3.19f1.
 
 The approved [UI mockup](../../ArtDirection/COghe/ProductUI/review.html) is implemented
