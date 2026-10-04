@@ -79,23 +79,24 @@ namespace GravityBox.Venom
             COgheStyle.Current.ApplyTo(Game);   // COghe's own look, everywhere it appears
             COgheShop.Migrate(Game);            // a player from before the shop keeps every item already earned
             COgheAds.BannerChanged += OnBannerChanged;
+            COgheAds.AvailabilityChanged += OnBannerChanged;
             if(COgheProductMode.ReplayIntroOnLoad){COgheProductMode.ReplayIntroOnLoad=false;PlayIntro(true);}
             else if(!COgheProductMode.SessionStarted){COgheProductMode.SessionStarted=true;ShowMenu();}
-            else if(Game.Definition.Order==1&&!COgheIntro.Seen){LevelStart();PlayIntro(false);}
-            else if(Game.Definition.Boss){LevelStart();PlayBossIntro();}
-            else{LevelStart();Rebuild();}
+            else if(Game.Definition.Order==1&&!COgheIntro.Seen){PlayIntro(false);}
+            else if(Game.Definition.Boss){PlayBossIntro();}
+            else{Rebuild();}
         }
-        private void LevelStart()=>COgheAnalytics.Log("level_start","level",Game.Definition.Order);
         private void Update()
         {
             if(!started||leaving)return;
+            TrackAttempt();
             StyleTick();TickShop();
             if(lastWidth!=Screen.width||lastHeight!=Screen.height||lastSafe!=Screen.safeArea){Layout();Rebuild();}
             if(Page==COgheProductPage.Intro)return;
             if(Game.Owner.Paused&&Popup==COgheProductPopup.None)ShowPopup(COgheProductPopup.Pause);
             if(Page==COgheProductPage.Game)
             {
-                if(Game.Owner.Lost&&Popup==COgheProductPopup.None){COgheAnalytics.Log("level_fail","level",Game.Definition.Order);ShowPopup(COgheProductPopup.Failure);return;}
+                if(Game.Owner.Lost&&Popup==COgheProductPopup.None){ShowPopup(COgheProductPopup.Failure);return;}
                 if(Game.Owner.Completed){Page=COgheProductPage.Victory;BeginVictory();Rebuild();COgheConfetti.Burst(safe,height,ConfettiOrigin(),Game.Definition.Order);return;}
                 if(Time.unscaledTime>=nextRefresh)
                 {
@@ -103,10 +104,12 @@ namespace GravityBox.Venom
                     if(signature!=lastFragmentSignature){lastFragmentSignature=signature;BuildContextControls();}
                 }
             }
-            if(Page==COgheProductPage.Victory && Popup==COgheProductPopup.None && Game.AutoAdvance && Game.Owner.Celebration.ReadyForNext && VictoryReady())
+            if(Page==COgheProductPage.Victory && Popup==COgheProductPopup.None && victoryNextRequested && VictoryReady())
             {
+                victoryNextRequested=false;
                 if(Game.Progress.RevealHome){Game.Progress.RevealHome=false;Game.Progress.Write();}
                 if(Game.Definition.Order<Game.PlayableLevelCount)Load(Game.Definition.Order+1);
+                else ShowMenu();
             }
             if(toast!=null&&Time.unscaledTime>toastUntil){Destroy(toast.transform.parent.gameObject);toast=null;}
         }
@@ -152,6 +155,7 @@ namespace GravityBox.Venom
         public void Resume(){Popup=COgheProductPopup.None;SetPaused(false);Rebuild();}
         public void ShowMenu()
         {
+            attempt.Abandon("menu");
             Popup=COgheProductPopup.None;Game.EnterShowcase();Page=COgheProductPage.MainMenu;
             Game.SetHabitatPresentation(true);MenuShadows(true);Rebuild();
         }
@@ -160,7 +164,7 @@ namespace GravityBox.Venom
             int next=ResumeLevel;
             if(next==0){Notify("All puzzles complete. Visit Home!");return;}
             if(Game.Definition.Order!=next){Load(next);return;}
-            MenuShadows(false);Game.ResetLevel();Page=COgheProductPage.Game;Popup=COgheProductPopup.None;LevelStart();
+            MenuShadows(false);Game.ResetLevel();Page=COgheProductPage.Game;Popup=COgheProductPopup.None;
             if(next==1&&!COgheIntro.Seen)PlayIntro(false);else if(Game.Definition.Boss)PlayBossIntro();else Rebuild();
         }
         public void ReplayIntro()
@@ -173,7 +177,13 @@ namespace GravityBox.Venom
             MenuShadows(false);Game.ResetLevel();Page=COgheProductPage.Intro;Popup=COgheProductPopup.None;canvas.gameObject.SetActive(false);
             COgheIntro.Play(Game,()=>{if(this==null)return;canvas.gameObject.SetActive(true);if(replay)ShowMenu();else{Page=COgheProductPage.Game;Rebuild();}},replay);
         }
-        private void Load(int n){leaving=true;SetPaused(false);Game.Load(n);}
+        private void Load(int n){attempt.Abandon("level_change");leaving=true;SetPaused(false);Game.Load(n);}
+        /// <summary>Only an explicit victory-button tap starts unlocks and the between-level transition.</summary>
+        public void NextLevel()
+        {
+            if(leaving||Page!=COgheProductPage.Victory||Popup!=COgheProductPopup.None||COgheAds.Showing||victoryNextRequested)return;
+            victoryNextRequested=true;tripleUntil=0;Rebuild();
+        }
         /// <summary>Boss levels open with a tour of the box and a warning, the level paused underneath.</summary>
         private void PlayBossIntro()
         {
@@ -195,11 +205,11 @@ namespace GravityBox.Venom
             if(Page==COgheProductPage.Game&&!Game.Owner.Completed){ShowPopup(COgheProductPopup.LeaveHome);return;}
             EnterHome();
         }
-        private void EnterHome(){MenuShadows(false);Game.EnterHome();Game.SetHabitatPresentation(false);Page=COgheProductPage.Home;Popup=COgheProductPopup.None;homeSize=-1;homeYaw=0;homeZoom=false;Rebuild();}
+        private void EnterHome(){COgheShop.VisitCommerce();attempt.Abandon("home");MenuShadows(false);Game.EnterHome();Game.SetHabitatPresentation(false);Page=COgheProductPage.Home;Popup=COgheProductPopup.None;homeSize=-1;homeYaw=0;homeZoom=false;Rebuild();}
         public void Confirm()
         {
             var action=Popup;Popup=COgheProductPopup.None;
-            if(action==COgheProductPopup.Restart||action==COgheProductPopup.Failure){COgheAnalytics.Log("level_retry","level",Game.Definition.Order);Game.ResetLevel();Page=COgheProductPage.Game;Rebuild();}
+            if(action==COgheProductPopup.Restart||action==COgheProductPopup.Failure){attempt.Abandon("restart");attempt.Retry();COgheShop.NoteRetry(Game.Definition.Id);Game.ResetLevel();Page=COgheProductPage.Game;Rebuild();}
             else if(action==COgheProductPopup.LeaveHome)EnterHome();
             else ShowMenu();
         }
@@ -265,6 +275,6 @@ namespace GravityBox.Venom
             camera.transform.position=focus-camera.transform.forward*.8f-camera.transform.up*((centre-.5f)*2*camera.orthographicSize);
             camera.nearClipPlane=.01f;camera.farClipPlane=30;
         }
-        private void OnDestroy(){COgheAds.BannerChanged-=OnBannerChanged;if(styleSaving&&Game!=null&&Game.Matter!=null)SaveLook();art?.Dispose();if(dropSprite!=null)Destroy(dropSprite);DisposeItemIcons();if(ownEvents!=null)Destroy(ownEvents.gameObject);}
+        private void OnDestroy(){COgheAds.BannerChanged-=OnBannerChanged;COgheAds.AvailabilityChanged-=OnBannerChanged;if(styleSaving&&Game!=null&&Game.Matter!=null)SaveLook();art?.Dispose();if(dropSprite!=null)Destroy(dropSprite);DisposeItemIcons();if(ownEvents!=null)Destroy(ownEvents.gameObject);}
     }
 }

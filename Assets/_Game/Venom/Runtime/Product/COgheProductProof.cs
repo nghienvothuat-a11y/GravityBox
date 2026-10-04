@@ -79,9 +79,11 @@ namespace GravityBox.Venom
             while(!game.Owner.Completed&&Time.realtimeSinceStartup<end)yield return null;
             if(!game.Owner.Completed){Fail("Native first puzzle could not be solved");yield break;}
             game.AutoAdvance=false;yield return new WaitForSecondsRealtime(1f);yield return Capture("07-victory");   // the confetti pops as the shot settles
-            game.AutoAdvance=true;yield return new WaitForSecondsRealtime(5);
+            yield return new WaitForSecondsRealtime(5);
+            if(game.Definition.Order!=1||ui.Page!=COgheProductPage.Victory){Fail("Victory did not wait for Next Level");yield break;}
+            ui.NextLevel();yield return new WaitForSecondsRealtime(2);
             game=FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;
-            if(game.Definition.Order!=2){Fail("Auto advance did not load level 2");yield break;}
+            if(game.Definition.Order!=2){Fail("Next Level did not load level 2");yield break;}
             yield return Capture("08-next-puzzle");
             // Home with the furniture earned up to level 26 (a fixture: no progress is written)
             COgheHomeRoom.UnlockedLevelOverride=26;
@@ -169,7 +171,7 @@ namespace GravityBox.Venom
             ui.LeaveStyle();yield return Capture("46-style-keep-or-take-off");
             COgheAds.Provider=null;COgheShop.ResetForTests();COgheStyle.ResetForTests();
             COgheHomeRoom.UnlockedLevelOverride=null;
-            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"autoAdvancedToLevel\":2,\"savedProgressWritten\":false,\"captures\":47}");
+            File.WriteAllText(Path.Combine(output,"native-result.json"),"{\"result\":\"passed\",\"nativeFirstLevelSolved\":true,\"advancedByTapToLevel\":2,\"savedProgressWritten\":false,\"captures\":47}");
             Debug.Log("COGHE PRODUCT NATIVE PROOF PASSED");Application.Quit(0);
         }
         /// <summary>Hold a syringe on COghe (x, y: across the body from its middle, in units of 2.5 cm) like a finger would.</summary>

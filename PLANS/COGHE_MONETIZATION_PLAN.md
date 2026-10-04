@@ -14,6 +14,19 @@ quảng cáo, Plus / No Ads, chỗ banner, sự kiện. Kèm quảng cáo thử 
 trên store), tracking, Remote Config. Còn chưa làm: bộ đồ độc quyền của Plus, gợi ý bằng quảng cáo thưởng. Bản phân tích ban đầu: `PLANS/COGHE_MONETIZATION_ANALYSIS_2026_10_02.md`. Kế hoạch của Codex:
 `PLANS/COGHE_MONETIZATION_CODEX_2026_10_02.md`; một số ý kỹ thuật của Codex đã đưa vào đây, có ghi rõ.
 
+## Cập nhật triển khai 04/10/2026
+
+- Android: Google Mobile Ads + UMP, Firebase Analytics và Firebase Remote Config đã nối vào runtime. Kiểm chứng mới được ghi ở `Docs/Monetization/COghe/GOOGLE_SERVICES.md`.
+- **IAP thật chờ Mrk đưa app lên Google Play Console và tạo sản phẩm.** Trong thời gian chờ, bản store ẩn mua/restore; bản test ghi rõ mua thử. Bộ độc quyền Plus phải hoàn tất trước khi bán Plus; chưa coi quyền lợi này đã có.
+- Ball và món đầu mỗi nhóm Style được tặng ở mốc mở khóa tương ứng; mặc thử đã chốt, không còn là đề xuất.
+- Thưởng không Retry mặc định **0**, chỉ bật +5 trong một thử nghiệm có đo lường. Retry vẫn giữ toàn bộ thưởng cơ bản.
+- Plus nhân đôi **nguồn cơ bản**, không nhân khoản thưởng quảng cáo: thắng 20 + bonus 20 = 40; quà ngày 30 + bonus 15 = 45; shop bonus 15. UI ghi chính xác số Giọt, không ghi ×3 cho tổng 40.
+- No Ads chỉ bỏ banner/interstitial; rewarded vẫn tự nguyện. Plus nhận reward ngay. Thưởng được lưu tại callback earned, không đợi đóng quảng cáo.
+- Remote Config: đã publish baseline version 1, 57 tham số trong Firebase `coghe-57f21`; tải/cất cache rồi áp dụng **lần khởi động kế tiếp**. Có giá mặc định, kiểm tra kiểu/khoảng giá trị; không cho tăng tần suất quảng cáo vượt trần đã chốt. Thêm `economy_revision`/`economy_variant` vào tracking. Chưa tự khởi chạy A/B trên người dùng.
+- `gift_items` chỉ bổ sung quà, không thu hồi bốn món tặng đã chốt hoặc đồ đã sở hữu. `plus_offer_after` hỗ trợ `home_visit`/`never`.
+- Revenue dùng callback SDK `OnAdPaid` → event chẩn đoán `ad_revenue`; không ghi trùng `ad_impression` tự động của Firebase/AdMob. Giá trị dương trên quảng cáo production cần kiểm chứng sau xét duyệt app.
+- Quảng cáo gợi ý là mục sau, chưa nằm trong đợt tích hợp này. Không thêm gợi ý Boss hoặc thay đổi luật puzzle.
+
 ## 0. Quyết định của Mrk (02/10/2026)
 
 | # | Quyết định |
@@ -52,7 +65,7 @@ Tách phần kiếm tiền khỏi physics, puzzle và JSON diện mạo (Codex n
 - **Style:**
   - `COgheProductUI.Earned(level)` tách thành **Unlocked** (tới level) và **Owned**.
   - Thẻ catalog có 3 trạng thái: khóa (Level N), mở bán (giá + nút mua), đã có.
-- **Victory:** điều kiện tự chuyển màn trong `COgheProductUI.Update` (`Page==Victory && Game.AutoAdvance && ReadyForNext`) thêm bước popup mở khóa, thưởng ×3, rồi quảng cáo xen kẽ.
+- **Victory (cập nhật 04/10/2026):** giữ màn hình thắng tới khi user bấm **Next Level**. Sau nút này mới xử lý popup mở khóa và quảng cáo xen kẽ đủ điều kiện; không tự chuyển theo timer hay `Game.AutoAdvance` trong Product UI.
 - **Banner:**
   - `Layout()` đọc chiều cao **adaptive banner từ SDK**, không cố định 50/58 (Codex).
   - Áp làm "vùng nội dung" cho UI, khung camera (`FrameShowcase`, `FrameHome`) và vùng chạm, chỉ trên 3 màn có banner.
@@ -68,7 +81,7 @@ Tách phần kiếm tiền khỏi physics, puzzle và JSON diện mạo (Codex n
 | Nguồn | Giọt | Ghi chú |
 | --- | ---: | --- |
 | Thắng màn **lần đầu** | +10 | Không nhận lại khi chơi lại |
-| Thắng không Retry | +5 | (Codex đề xuất bỏ để người chơi yếu không thiệt: cho vào A/B) |
+| Thắng không Retry | 0 mặc định; +5 khi A/B | (Codex đề xuất bỏ để người chơi yếu không thiệt: cho vào A/B) |
 | Victory "×3" bằng quảng cáo thưởng | +20 thêm | Tự bấm |
 | Quà mỗi ngày ở Home | +15 (×2 bằng quảng cáo) | |
 | Shop "Xem quảng cáo +Giọt" | +15 | Tối đa 3 lần / ngày |
@@ -84,7 +97,7 @@ Tách phần kiếm tiền khỏi physics, puzzle và JSON diện mạo (Codex n
 | Vật trôi | 6 (Star bits tặng) | 5 × 60–120 | ~450 |
 | **Tổng** | 40 | | **~2.750** |
 
-  \* **Đề xuất cần Mrk xác nhận:** tặng **Ball** khi mở Home (màn 10), để lần đầu vào nhà không trống và trò chơi bóng
+  \* **Đã chốt:** tặng **Ball** khi mở Home (màn 10), để lần đầu vào nhà không trống và trò chơi bóng
   hoạt động ngay. Mỗi nhóm Style tặng món đầu tiên để người chơi thử được Style ngay.
 
 - **Cân bằng mục tiêu tại màn 50** (sẽ chỉnh theo số liệu thật):
@@ -107,8 +120,7 @@ Tách phần kiếm tiền khỏi physics, puzzle và JSON diện mạo (Codex n
 - **Home:** món chưa mua **không hiện** trong phòng. Trong menu Items: thẻ "Mở bán · 60 Giọt". Bấm mua thì món "bật ra"
   trong nhà như hiện nay. Món khóa vẫn xem trước được bằng hình mờ.
 - **Style:** catalog hiện giá; bấm món mở bán thì hiện hộp mua (Giọt / xem quảng cáo nếu món rẻ / Hủy). Món chưa sở hữu
-  vẫn **xem thử** được trên COghe (thử mực một lần rồi Undo, đội thử mũ), nhưng không lưu nếu chưa mua. Đây là cách bán
-  hiệu quả; cần Mrk xác nhận.
+  vẫn **xem thử** được trên COghe (thử mực một lần rồi Undo, đội thử mũ), nhưng không lưu nếu chưa mua. Đã chốt cho mặc thử; mua mới lưu diện mạo.
 - **Người chơi đã có bản trước (migration):** món đã mở theo level trước bản cập nhật được tặng luôn, không ai mất đồ.
   Diện mạo đang mặc được giữ.
 
@@ -116,15 +128,19 @@ Tách phần kiếm tiền khỏi physics, puzzle và JSON diện mạo (Codex n
 
 Thứ tự (màn hình Victory **có banner**):
 
+Theo chỉnh sửa 04/10/2026, “Next Level” bên dưới là thao tác chạm vào dòng chữ
+**→ Level N** đã có. Giữ kiểu chữ/vị trí cũ, không thêm nút dạng khối; vùng chạm
+trong suốt cao 48 px để dễ bấm trên điện thoại.
+
 1. Hiệu ứng thắng như hiện nay. Bộ đếm Giọt bay +10 (+5).
-2. Nút **"×3 Giọt (xem quảng cáo)"** hiện khoảng 3 s. Trong lúc đó tạm dừng tự chuyển màn; bấm thì xem, không bấm thì tiếp.
-3. **Popup mở khóa** (nếu màn này mở món hoặc tính năng):
+2. Nút **"+20 Drops · watch an ad"** (Plus cũng ghi +20, nhận ngay) hiện khoảng 3 s. Hết thời gian hoặc đóng quảng cáo vẫn ở màn thắng. User bấm **Next Level** khi muốn tiếp tục; không bắt chờ hết thời gian thưởng.
+3. Sau khi bấm **Next Level**, hiện **popup mở khóa** (nếu màn này mở món hoặc tính năng):
    - "Mới: Cầu trượt / Mực Gold / Home…" có hình món.
    - Nút **Mua (N Giọt)**, **Để sau**; với món rẻ thêm **Xem quảng cáo để nhận**.
    - Mở Home (màn 10) và Style là popup **tính năng** có nút "Vào xem".
-   - Popup **dừng tự chuyển màn** tới khi đóng.
+   - Popup giữ yêu cầu chuyển màn tới khi user bấm Continue; chọn Visit Home thì vào Home.
 4. **Quảng cáo xen kẽ** (nếu đủ điều kiện ở mục 6). Chưa tải được thì bỏ qua.
-5. Sang màn sau.
+5. Sang màn sau một lần. Màn cuối giữ màn hoàn tất với nút Menu và không gọi quảng cáo chuyển màn.
 
 ## 6. Quảng cáo
 
@@ -186,7 +202,7 @@ Plus: các thưởng trên **nhận ngay** không cần xem. No Ads: vẫn xem �
 ## 9. Remote Config (mặc định trong code)
 
 ```
-drops_first_win=10  drops_clean_win=5  drops_triple_ad=20  drops_daily=15  drops_ad_shop=15  ad_shop_daily_cap=3
+drops_first_win=10  drops_clean_win=0  drops_triple_ad=20  drops_daily=15  drops_ad_shop=15  ad_shop_daily_cap=3
 price_<ITEM_ID>=…   gift_items=BALL,INK_OCEAN,HAT_BEANIE,FLOAT_STARS
 interstitial_from_win=6  interstitial_min_wins=2  interstitial_min_seconds=90  interstitial_session_cap=4  interstitial_daily_cap=10
 banner_menu=1  banner_home=1  banner_victory=1  plus_offer_after=home_visit
@@ -221,8 +237,8 @@ banner_menu=1  banner_home=1  banner_victory=1  plus_offer_after=home_visit
 ## 12. Còn mở
 
 - Độ tuổi đối tượng (Mrk: tính sau; phải chốt trước khi phát hành).
-- Tặng Ball khi mở Home và tặng món đầu mỗi nhóm Style (đề xuất).
-- Cho xem thử món chưa mua ở Style (đề xuất).
+- Tặng Ball và món đầu mỗi nhóm Style: đã chốt.
+- Cho xem thử món chưa mua ở Style: đã chốt.
 - Thiết kế bộ đồ độc quyền của Plus.
 
 ## Nguồn

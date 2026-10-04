@@ -2,6 +2,7 @@
 set -euo pipefail
 VENOM_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 UNITY_EDITOR="${UNITY_EDITOR:-/Applications/Unity/Hub/Editor/6000.3.19f1/Unity.app/Contents/MacOS/Unity}"
+python3 "$VENOM_ROOT/Tools/setup-google-sdks.py"
 mkdir -p "$VENOM_ROOT/Artifacts/Venom01"
 VENOM_BUILD_METHOD="GravityBox.Editor.VenomCampaignBuilder.BuildMac"
 if [[ "${1:-}" == "--tap" ]]; then

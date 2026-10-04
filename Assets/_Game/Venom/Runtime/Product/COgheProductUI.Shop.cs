@@ -17,7 +17,7 @@ namespace GravityBox.Venom
         private float fullHeight; private bool bannerDirty;
         // the victory screen
         private readonly List<string> victoryUnlocks = new List<string>(6);
-        private bool victoryHome, victoryAdChecked, tripleTaken; private float tripleUntil; private int victoryDrops;
+        private bool victoryHome, victoryAdChecked, victoryNextRequested, tripleTaken; private float tripleUntil; private int victoryDrops;
 
         public int VictoryDrops => victoryDrops;
         public IReadOnlyList<string> VictoryUnlocks => victoryUnlocks;
@@ -56,6 +56,10 @@ namespace GravityBox.Venom
         {
             if (dropsLabel != null && dropsShown != COgheShop.Drops) { dropsShown = COgheShop.Drops; dropsLabel.text = dropsShown.ToString(); }
             if (bannerDirty && !injecting) { bannerDirty = false; Rebuild(); }
+            if (Page == COgheProductPage.Victory && tripleUntil > 0 && Time.unscaledTime >= tripleUntil && !COgheAds.Showing)
+            {
+                tripleUntil = 0; Rebuild(); // An expired reward offer never advances the level.
+            }
         }
         private bool placingBanner;
         private void OnBannerChanged() { if (!placingBanner) bannerDirty = true; }
@@ -63,7 +67,7 @@ namespace GravityBox.Venom
         /// <summary>Called by Rebuild: the banner only on the menu, Home and the victory screen; their content stays clear of it.</summary>
         private void PlaceBanner()
         {
-            placingBanner = true; COgheAds.Banner(BannerPage && Page != COgheProductPage.Intro); placingBanner = false;
+            placingBanner = true; COgheAds.Banner(BannerPage && Popup == COgheProductPopup.None && COgheEconomy.BannerEnabled(Page.ToString()), Page.ToString().ToLowerInvariant()); placingBanner = false;
             float inset = BannerPage ? COgheAds.BannerHeight / Mathf.Max(.01f, canvas.scaleFactor) : 0;
             height = fullHeight - (inset > 0 ? inset + 8 : 0);
         }
@@ -124,7 +128,7 @@ namespace GravityBox.Venom
                 if (price <= COgheEconomy.AdItemMaxPrice && COgheAds.RewardedAvailable)
                 {
                     LabelButton(panel, "Free with ad", new Rect(24, y, w - 48, 48), COgheIcon.Play, COgheEntitlements.InstantRewards ? "Free with Plus" : "Free · watch an ad", () =>
-                        COgheAds.Rewarded("item", ok => { if (!ok) return; COgheShop.Grant(id, "rewarded"); COgheAudio.Happy(); FinishOffer(id); }));
+                        COgheAds.Rewarded("item", COgheReward.Item(id), ok => { if (this == null || !ok) return; COgheAudio.Happy(); FinishOffer(id); }));
                     y += 56;
                 }
             }
@@ -133,11 +137,11 @@ namespace GravityBox.Venom
                    art.Label(panel, "How", "Win levels for Drops. Each new level gives " + COgheEconomy.FirstWin * COgheEntitlements.DropsMultiplier + ".", new Rect(24, y, w - 48, 36), 12, COgheUIArt.Muted); y += 44; }
             if (COgheAds.RewardedAvailable && COgheShop.AdForDropsAvailable)
             {
-                LabelButton(panel, "Drops for ad", new Rect(24, y, w - 48, 48), COgheIcon.Play, "+" + COgheEconomy.AdForDrops + " Drops · watch an ad", () =>
-                    COgheAds.Rewarded("drops", ok => { if (ok) COgheShop.RewardAdForDrops(); Rebuild(); }));
+                LabelButton(panel, "Drops for ad", new Rect(24, y, w - 48, 48), COgheIcon.Play, "+" + COgheEconomy.AdForDrops + (COgheEntitlements.InstantRewards ? " Drops · Plus" : " Drops · watch an ad"), () =>
+                    COgheAds.Rewarded("drops", COgheReward.Shop(), ok => { if (this != null) Rebuild(); }));
                 y += 56;
             }
-            if (COgheEntitlements.StoreAvailable && !COgheEntitlements.HasPlus)
+            if (COgheEntitlements.StoreAvailable && !COgheEntitlements.HasPlus && COgheEconomy.PlusOfferEnabled && COgheShop.Current.CommerceVisited)
                 LabelButton(panel, "Plus offer", new Rect(24, y, w - 48, 44), COgheIcon.Sparkles, "COghe Plus · ×2 Drops", () => ShowShopPopup(COgheProductPopup.Plus));
         }
         private float BuyPopupHeight()
@@ -147,7 +151,7 @@ namespace GravityBox.Venom
             if (item != null && COgheShop.Drops < COgheEconomy.Price(item.Id)) h += 24;
             if (item != null && COgheEconomy.Price(item.Id) <= COgheEconomy.AdItemMaxPrice && COgheAds.RewardedAvailable) h += 56;
             if (COgheAds.RewardedAvailable && COgheShop.AdForDropsAvailable) h += 56;
-            if (COgheEntitlements.StoreAvailable && !COgheEntitlements.HasPlus) h += 52;
+            if (COgheEntitlements.StoreAvailable && !COgheEntitlements.HasPlus && COgheEconomy.PlusOfferEnabled && COgheShop.Current.CommerceVisited) h += 52;
             return h;
         }
         /// <summary>Open a shop popup (Buy without an item: ways to get Drops; Gift; Plus).</summary>
@@ -176,17 +180,16 @@ namespace GravityBox.Venom
         private string victoryLevel;
         /// <summary>Tests: the victory screen of level <paramref name="order"/> without playing it (pays, lists what it unlocks).</summary>
         public void ShowVictoryForTests(string levelId, int order) { Page = COgheProductPage.Victory; Popup = COgheProductPopup.None; BeginVictory(levelId, order); Rebuild(); }
-        /// <summary>Tests: one step of what follows a win (the ×3 wait, the unlock popup, the paced ad).</summary>
+        /// <summary>Tests: one transition step after choosing Next Level (unlocks and the paced ad).</summary>
         public bool VictoryStepForTests() => VictoryReady();
         private void BeginVictory() => BeginVictory(Game.Definition.Id, Game.Definition.Order);
         private void BeginVictory(string levelId, int order)
         {
             victoryLevel = levelId;
             string key = "win:" + levelId; bool first = !COgheShop.Paid(key);
-            victoryDrops = COgheShop.Earn(key, COgheEconomy.FirstWin * COgheEntitlements.DropsMultiplier, "level_win");
+            victoryDrops = COgheShop.Earn(key, COgheShop.WinReward(levelId), "level_win");
             COgheAds.NoteWin();
-            COgheAnalytics.Log("level_complete", "level", order, "first", first);
-            victoryUnlocks.Clear(); victoryHome = false; victoryAdChecked = false; tripleTaken = false;
+            victoryUnlocks.Clear(); victoryHome = false; victoryAdChecked = false; victoryNextRequested = false; tripleTaken = false;
             if (first)
             {
                 foreach (var item in COgheEconomy.Items) if (item.Level == order) { victoryUnlocks.Add(item.Id); COgheAnalytics.Log("item_unlock", "item", item.Id); }
@@ -195,15 +198,15 @@ namespace GravityBox.Venom
             }
             tripleUntil = victoryDrops > 0 && COgheAds.RewardedAvailable ? Time.unscaledTime + COgheEconomy.TripleWindow : 0;
         }
-        /// <summary>Victory, every frame: wait for the ×3 offer and the unlock popup, then the paced ad, then the next level.</summary>
+        /// <summary>After Next Level: finish unlocks and any eligible ad before loading once.</summary>
         private bool VictoryReady()
         {
-            if (COgheAds.Showing || Time.unscaledTime < tripleUntil) return false;
+            if (COgheAds.Showing) return false;
             if (victoryUnlocks.Count > 0 || victoryHome) { Popup = COgheProductPopup.Unlocks; Rebuild(); return false; }
             if (!victoryAdChecked)
             {
                 victoryAdChecked = true;
-                if (COgheAds.TryInterstitial("level_end", Game.Progress.Completed.Count, null)) return false;
+                if (Game.Definition.Order < Game.PlayableLevelCount && COgheAds.TryInterstitial("level_end", Game.Progress.Completed.Count, null)) return false;
             }
             return true;
         }
@@ -213,12 +216,13 @@ namespace GravityBox.Venom
             float w = Mathf.Min(260, width - 80), y = height - 140;
             if (tripleTaken) return;   // the single earned amount above the button now includes the bonus
             if (Time.unscaledTime >= tripleUntil) return;
-            var b = LabelButton(pageRoot, "Triple drops", new Rect((width - w) * .5f, y, w, 52), COgheIcon.Play, COgheEntitlements.InstantRewards ? "×3 Drops · Plus" : "×3 Drops · watch an ad", () =>
+            var b = LabelButton(pageRoot, "Triple drops", new Rect((width - w) * .5f, y, w, 52), COgheIcon.Play, "+" + COgheEconomy.TripleExtra + (COgheEntitlements.InstantRewards ? " Drops · Plus" : " Drops · watch an ad"), () =>
             {
                 tripleUntil = Time.unscaledTime + 60;   // hold the screen while the ad plays
-                COgheAds.Rewarded("victory_triple", ok =>
+                COgheAds.Rewarded("victory_triple", COgheReward.Victory(victoryLevel), ok =>
                 {
-                    if (ok && COgheShop.Earn("triple:" + victoryLevel, COgheEconomy.TripleExtra, "victory_triple") > 0) { tripleTaken = true; COgheAudio.Happy(); }
+                    if (this == null) return;
+                    if (ok) { tripleTaken = true; COgheAudio.Happy(); }
                     tripleUntil = 0; Rebuild();
                 });
             }, true);
@@ -278,14 +282,15 @@ namespace GravityBox.Venom
             art.Label(panel, "Amount", "+" + amount + " Drops", new Rect(24, 142, w - 48, 30), 20).font = art.BoldFont;
             LabelButton(panel, "Claim gift", new Rect(24, 186, w - 48, 52), COgheIcon.Check, "Claim", () => { COgheShop.ClaimGift(COgheEntitlements.DropsMultiplier); COgheAudio.Happy(); Resume(); }, true);
             if (COgheAds.RewardedAvailable)
-                LabelButton(panel, "Claim double", new Rect(24, 246, w - 48, 48), COgheIcon.Play, COgheEntitlements.InstantRewards ? "Claim ×2 · Plus" : "Claim ×2 · watch an ad",
-                    () => COgheAds.Rewarded("daily_gift", ok => { COgheShop.ClaimGift(COgheEntitlements.DropsMultiplier * (ok ? 2 : 1)); COgheAudio.Happy(); Resume(); }));
+                LabelButton(panel, "Claim double", new Rect(24, 246, w - 48, 48), COgheIcon.Play, "Claim " + (amount + COgheEconomy.DailyGift) + (COgheEntitlements.InstantRewards ? " · Plus" : " · watch an ad"),
+                    () => COgheAds.Rewarded("daily_gift", COgheReward.Daily(), ok => { if (this == null) return; if (ok) { COgheAudio.Happy(); Resume(); } else Rebuild(); }));
         }
 
         // COghe Plus / No Ads --------------------------------------------------------------------------------------------------
         private void PlusPopup(RectTransform panel, float w, float h)
         {
-            PopupTitle(panel, w, "COghe Plus"); ClosePopup(panel, w, Resume);
+            PopupTitle(panel, w, COgheEntitlements.Store is COgheTestStore ? "COghe Plus · test only" : "COghe Plus"); ClosePopup(panel, w, Resume);
+            if (!COgheEntitlements.StoreAvailable) { art.Label(panel, "Unavailable", "Purchases are not available yet.", new Rect(24, 90, w - 48, 80), 15); return; }
             var store = COgheEntitlements.Store; float y = 74;
             string[] perks = { "No ads, anywhere", "Rewards without watching ads", "×2 Drops from levels and gifts", "Call COghe's monster act at Home" };
             foreach (var perk in perks) { art.Icon(panel, COgheIcon.Check, new Rect(26, y + 2, 18, 18), COgheUIArt.Teal); art.Label(panel, "Perk", perk, new Rect(52, y, w - 76, 22), 13, null, TextAnchor.MiddleLeft); y += 28; }
@@ -306,7 +311,7 @@ namespace GravityBox.Venom
         }
         private void PlusButton()
         {
-            if (!COgheEntitlements.StoreAvailable) return;
+            if (!COgheEntitlements.StoreAvailable || !COgheEconomy.PlusOfferEnabled || !COgheShop.Current.CommerceVisited) return;
             LabelButton(pageRoot, "Plus", new Rect(24, 25, 92, 44), COgheIcon.Sparkles, COgheEntitlements.HasPlus ? "Plus ✓" : "Plus", () => ShowShopPopup(COgheProductPopup.Plus));
         }
 
@@ -314,11 +319,12 @@ namespace GravityBox.Venom
         private float ShopTestTools(RectTransform panel, float w, float y)
         {
             float bw = (w - 48 - 12) / 3;
-            LabelButton(panel, "Test ads", new Rect(24, y, bw, 40), COgheIcon.Play, COgheAds.TestAds ? "Ads on" : "Ads off", () => { COgheAds.TestAds = !COgheAds.TestAds; COgheAds.Banner(false); Rebuild(); });
+            var testAds = LabelButton(panel, "Test ads", new Rect(24, y, bw, 40), COgheIcon.Play, COgheAds.Provider != null ? "SDK ads" : COgheAds.TestAds ? "Ads on" : "Ads off", () => { COgheAds.TestAds = !COgheAds.TestAds; COgheAds.Banner(false); Rebuild(); });
+            testAds.interactable = COgheAds.Provider == null; // The local fake-ad switch does not control a native provider.
             LabelButton(panel, "Test drops", new Rect(30 + bw, y, bw, 40), COgheIcon.Sparkles, "+500", () => { COgheShop.Earn(null, 500, "test"); Rebuild(); });
             LabelButton(panel, "Test reset shop", new Rect(36 + 2 * bw, y, bw, 40), COgheIcon.Restart, "Reset", () =>
             {
-                if (VenomCampaignSave.PersistenceEnabled) { PlayerPrefs.DeleteKey("coghe.shop.v1"); PlayerPrefs.DeleteKey("coghe.entitlements.v1"); }
+                if (VenomCampaignSave.PersistenceEnabled) { PlayerPrefs.DeleteKey("coghe.shop.v1"); PlayerPrefs.DeleteKey("coghe.entitlements.test.v1"); }
                 COgheShop.ResetForTests(new COgheShop.State { Migrated = true }); COgheEntitlements.ResetForTests(); Rebuild();
             });
             return y + 48;

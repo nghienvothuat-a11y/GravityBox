@@ -2,6 +2,7 @@
 set -euo pipefail
 VENOM_VERIFY_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 UNITY_EDITOR="${UNITY_EDITOR:-/Applications/Unity/Hub/Editor/6000.3.19f1/Unity.app/Contents/MacOS/Unity}"
+python3 "$VENOM_VERIFY_ROOT/Tools/setup-google-sdks.py"
 VENOM_SCENE_BACKUP="$(mktemp -t venom-scenes)"
 cp "$VENOM_VERIFY_ROOT/ProjectSettings/EditorBuildSettings.asset" "$VENOM_SCENE_BACKUP"
 trap 'cp "$VENOM_SCENE_BACKUP" "$VENOM_VERIFY_ROOT/ProjectSettings/EditorBuildSettings.asset"; rm -f "$VENOM_SCENE_BACKUP"' EXIT

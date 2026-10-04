@@ -2,6 +2,30 @@
 
 Latest scoped update: [OPPO victory layout and fullscreen inspection, 3 October 2026](../COgheMobileUI/README.md).
 
+## Manual victory continuation — 4 October 2026
+
+User revision: the victory screen now waits for a tap on the existing **→ Level N**
+text. Its appearance and centre stay unchanged, with an invisible 48 px touch
+area and no new filled button. The close-up,
+dance and first-win reward remain; the reward-offer timer and rewarded-ad closure
+cannot load another scene. Next Level handles unlock notices and eligible
+interstitials, ignores duplicate taps, and continues after ad closure/failure.
+The final scene offers Menu. Product UI ignores the legacy `AutoAdvance` flag;
+archived control experiments are unchanged.
+
+Verification: **37/37 Product UI tests passed**, followed by **5/5 targeted tests**
+after retaining the original text presentation. The real level-1 solve waits eight
+seconds beyond the dance checks, then pixel-clicks the text to load level 2.
+Separate UI fixtures verify reward completion keeps Victory open, duplicate taps
+are ignored, ad failure releases an already-requested transition, and unlocks
+wait for the tap. XML: `Artifacts/COgheManualVictory/product-ui.xml` and
+`text-tap.xml`. Native Mac proof also passed: real level-1 escape, hold at
+Victory, then explicit continuation to level 2. Captures/result:
+`Artifacts/COgheManualVictory/native/`. Mac and Android builds succeeded; the
+updated APK was **not installed** because OPPO was no longer listed by ADB.
+Build hash/status: `Artifacts/COgheManualVictory/build-result.json`.
+The automatic-progression evidence in the original September report is historical.
+
 30 September 2026 · NewGraphic · Spatial 50 · Unity 6000.3.19f1.
 
 The approved [UI mockup](../../ArtDirection/COghe/ProductUI/review.html) is implemented
@@ -19,9 +43,9 @@ as retained Unity UI. [Native screenshot gallery](review.html).
 - Contextual buttons select fragments by mass, release a held task, inspect camera
   zones or return to the overview. Gesture controls remain unchanged.
 - First-run Intro hands over to level 1; replay from Main Menu returns to Main Menu.
-- Existing victory dance and 4.8-second close-up run before automatic progression,
-  including Boss levels. Level 50 remains on campaign completion instead of loading
-  a nonexistent level. Home unlocks after the first Boss, at campaign position 10.
+- Existing victory dance and close-up remain until the player chooses Next Level,
+  including Boss levels. Level 50 remains on campaign completion with Menu.
+  Home unlocks after the first Boss, at campaign position 10.
 - Home retains the existing Feed/Play interactions. Collection explains that more
   furnishings are coming; this change does not implement a furniture shop.
 

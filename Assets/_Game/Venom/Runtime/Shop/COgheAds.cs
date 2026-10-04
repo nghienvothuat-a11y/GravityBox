@@ -4,14 +4,14 @@ using UnityEngine.UI;
 
 namespace GravityBox.Venom
 {
-    /// <summary>An ad network / mediation SDK (Mrk integrates it; it plugs in through <see cref="COgheAds.Provider"/>).</summary>
+    /// <summary>An ad network SDK (the Android Google provider plugs in through <see cref="COgheAds.Provider"/>).</summary>
     public interface ICOgheAdProvider
     {
         bool InterstitialReady { get; }
-        void ShowInterstitial(string placement, Action done);
+        void ShowInterstitial(string placement, Action shown, Action<bool> closed);
         bool RewardedReady { get; }
-        /// <summary>done(true) once the reward was earned, done(false) if it was closed early or failed.</summary>
-        void ShowRewarded(string placement, Action<bool> done);
+        /// <summary>earned runs at SDK reward time, independently of dismissal. closed reports whether it displayed.</summary>
+        void ShowRewarded(string placement, Action shown, Action earned, Action<bool> closed);
         /// <summary>The anchored banner at the bottom of the safe area (shown or hidden).</summary>
         void SetBanner(bool show);
         /// <summary>The banner's height in screen pixels while shown (adaptive: it comes from the SDK), else 0.</summary>
@@ -22,11 +22,11 @@ namespace GravityBox.Venom
     /// Every ad goes through here (Mrk 02/10, PLANS/COGHE_MONETIZATION_PLAN.md §6): the banner only on the main menu, Home and
     /// the victory screen; the full-screen ad only between levels after a win, paced (from the 6th win, 2 wins and 90 s
     /// apart, capped per session and day, never right after a rewarded ad); rewarded ads only when the player asks. No
-    /// ads at all with No Ads or Plus; Plus gets rewards without an ad. When an ad is not ready the game simply goes on.
+    /// forced ads with No Ads or Plus; No Ads keeps opt-in rewards, Plus receives them immediately.
     /// </summary>
     public static class COgheAds
     {
-        /// <summary>The real SDK, once integrated. Without it: test ads in development/test builds, otherwise none.</summary>
+        /// <summary>The native SDK provider. Editor/Mac may use the local test provider.</summary>
         public static ICOgheAdProvider Provider;
         /// <summary>Test ads (a grey card that "plays" for 2 s, a grey banner): on by default in development/test builds outside
         /// tests and proofs; a switch in Pause turns them off.</summary>
@@ -44,6 +44,13 @@ namespace GravityBox.Venom
         /// <summary>A full-screen ad is up: the game waits (no auto-advance, no input).</summary>
         public static bool Showing { get; private set; }
         public static event Action BannerChanged;
+        public static event Action AvailabilityChanged;
+        public static void NotifyAvailabilityChanged() => AvailabilityChanged?.Invoke();
+        public static Func<bool> PrivacyRequired;
+        public static Action OpenPrivacy;
+        public static string BannerPlacement { get; private set; } = "menu";
+        public static bool ForcedAdsAllowed => !COgheEntitlements.AdsRemoved;
+        public static bool RewardAdsAllowed => !COgheEntitlements.HasPlus;
         private static bool bannerWanted; private static ICOgheAdProvider bannerOn;
         private static float lastInterstitial = -1e6f, lastRewarded = -1e6f;
         private static int winsSinceInterstitial, sessionInterstitials;
@@ -52,8 +59,10 @@ namespace GravityBox.Venom
 
         // Banner -------------------------------------------------------------------------------------------------------------
         /// <summary>Whether the current screen wants the banner (the product UI asks on every page change).</summary>
-        public static void Banner(bool show)
+        public static void Banner(bool show, string placement = null)
         {
+            // Keep the last visible page for SDK events queued while a banner is being hidden.
+            if (show && placement != null) BannerPlacement = placement;
             bool on = show && !COgheEntitlements.AdsRemoved;
             if (on == bannerWanted && Active == bannerOn) return;
             if (bannerOn != null && bannerOn != Active) bannerOn.SetBanner(false);   // the SDK (or test ads) changed
@@ -61,25 +70,45 @@ namespace GravityBox.Venom
         }
         /// <summary>The SDK calls this when the banner's size changes (an adaptive banner loads late): screens make room.</summary>
         public static void NotifyBannerChanged() => BannerChanged?.Invoke();
+        public static void RefreshBanner() => Banner(bannerWanted);
         /// <summary>Screen pixels the banner takes at the bottom (0 when there is none).</summary>
         public static float BannerHeight => bannerWanted && !COgheEntitlements.AdsRemoved ? Active.BannerHeight : 0;
 
         // Rewarded ----------------------------------------------------------------------------------------------------------
         /// <summary>Can a reward be offered now (Plus gets it without an ad)?</summary>
         public static bool RewardedAvailable => COgheEntitlements.InstantRewards || Active.RewardedReady;
-        public static void Rewarded(string placement, Action<bool> done)
+        public static void Rewarded(string placement, COgheReward reward, Action<bool> done)
         {
-            if (COgheEntitlements.InstantRewards) { COgheAnalytics.Log("ad_rewarded_instant", "placement", placement); done?.Invoke(true); return; }
+            if (Showing || reward == null || !reward.Available) { done?.Invoke(false); return; }
+            if (COgheEntitlements.InstantRewards)
+            {
+                bool applied = COgheShop.ApplyReward(reward);
+                COgheAnalytics.Log("ad_rewarded_instant", "placement", placement); done?.Invoke(applied); return;
+            }
             if (Showing || !Active.RewardedReady) { COgheAnalytics.Log("ad_fail", "type", "rewarded", "placement", placement); done?.Invoke(false); return; }
-            Showing = true; COgheAnalytics.Log("ad_show", "type", "rewarded", "placement", placement);
-            bool finished = false;
-            Active.ShowRewarded(placement, ok =>
+            Showing = true;
+            bool finished = false, earned = false, displayed = false;
+            void Shown()
+            {
+                if (displayed || finished) return;
+                displayed = true; COgheAnalytics.Log("ad_show", "type", "rewarded", "placement", placement);
+            }
+            void Earned()
+            {
+                if (earned) return;
+                // No UI dependency: commit the wallet, ownership and transaction key together before dismissal.
+                earned = COgheShop.ApplyReward(reward);
+                if (earned) COgheAnalytics.Log("ad_reward", "type", "rewarded", "placement", placement);
+            }
+            void Closed(bool ok)
             {
                 if (finished) return; finished = true;   // a callback that comes twice pays once
-                Showing = false; lastRewarded = Now;
-                COgheAnalytics.Log(ok ? "ad_complete" : "ad_closed", "type", "rewarded", "placement", placement);
-                done?.Invoke(ok);
-            });
+                Showing = false; if (displayed || earned) lastRewarded = Now;
+                COgheAnalytics.Log(!ok ? "ad_fail" : earned ? "ad_complete" : "ad_closed", "type", "rewarded", "placement", placement);
+                done?.Invoke(earned);
+            }
+            try { Active.ShowRewarded(placement, Shown, Earned, Closed); }
+            catch (Exception) { Closed(false); }
         }
 
         // Full-screen, between levels ------------------------------------------------------------------------------------
@@ -100,32 +129,39 @@ namespace GravityBox.Venom
         {
             if (Showing || !InterstitialDue(totalWins)) return false;
             if (!Active.InterstitialReady) { COgheAnalytics.Log("ad_fail", "type", "interstitial", "placement", placement); return false; }
-            Showing = true; winsSinceInterstitial = 0; sessionInterstitials++; lastInterstitial = Now; COgheShop.NoteInterstitial();
-            COgheAnalytics.Log("ad_show", "type", "interstitial", "placement", placement);
-            bool finished = false;
-            Active.ShowInterstitial(placement, () =>
+            Showing = true;
+            bool finished = false, displayed = false;
+            void Shown()
+            {
+                if (displayed || finished) return;
+                displayed = true; winsSinceInterstitial = 0; sessionInterstitials++; lastInterstitial = Now; COgheShop.NoteInterstitial();
+                COgheAnalytics.Log("ad_show", "type", "interstitial", "placement", placement);
+            }
+            void Closed(bool ok)
             {
                 if (finished) return; finished = true;
-                Showing = false; COgheAnalytics.Log("ad_complete", "type", "interstitial", "placement", placement);
+                Showing = false; COgheAnalytics.Log(ok && displayed ? "ad_complete" : "ad_fail", "type", "interstitial", "placement", placement);
                 done?.Invoke();
-            });
+            }
+            try { Active.ShowInterstitial(placement, Shown, Closed); }
+            catch (Exception) { Closed(false); }
             return true;
         }
 
         public static void ResetForTests()
         {
-            Provider = null; Showing = false; bannerWanted = false; bannerOn = null; lastInterstitial = lastRewarded = -1e6f;
-            winsSinceInterstitial = sessionInterstitials = 0; TestAds = false;
+            BannerPlacement = "menu"; Provider = null; Showing = false; bannerWanted = false; bannerOn = null; lastInterstitial = lastRewarded = -1e6f;
+            winsSinceInterstitial = sessionInterstitials = 0; TestAds = false; PrivacyRequired = null; OpenPrivacy = null;
         }
     }
 
-    /// <summary>No SDK yet (a store build before integration): no ads, nothing to wait for.</summary>
+    /// <summary>No available SDK or consent yet: no ads, nothing to wait for.</summary>
     public sealed class COgheNoAds : ICOgheAdProvider
     {
         public bool InterstitialReady => false;
-        public void ShowInterstitial(string placement, Action done) => done();
+        public void ShowInterstitial(string placement, Action shown, Action<bool> closed) => closed(false);
         public bool RewardedReady => false;
-        public void ShowRewarded(string placement, Action<bool> done) => done(false);
+        public void ShowRewarded(string placement, Action shown, Action earned, Action<bool> closed) => closed(false);
         public void SetBanner(bool show) { }
         public float BannerHeight => 0;
     }
@@ -179,30 +215,32 @@ namespace GravityBox.Venom
             banner.GetComponentInChildren<Text>().fontSize = Mathf.RoundToInt(bannerHeight * .32f);
             banner.gameObject.SetActive(show);
         }
-        public void ShowInterstitial(string placement, Action done) => Play("Test ad (full screen) · " + placement, false, ok => done());
-        public void ShowRewarded(string placement, Action<bool> done) => Play("Test rewarded ad · " + placement, true, done);
+        public void ShowInterstitial(string placement, Action shown, Action<bool> closed) { shown(); Play("Test ad (full screen) · " + placement, false, null, closed); }
+        public void ShowRewarded(string placement, Action shown, Action earned, Action<bool> closed) { shown(); Play("Test rewarded ad · " + placement, true, earned, closed); }
 
-        private void Play(string title, bool rewarded, Action<bool> done)
+        private void Play(string title, bool rewarded, Action earned, Action<bool> done)
         {
             Ensure();
             card.gameObject.SetActive(true); card.SetAsLastSibling();
             var runner = card.GetComponent<Runner>(); if (runner == null) runner = card.gameObject.AddComponent<Runner>();
-            runner.Begin(title, rewarded, cardText, close, ok => { card.gameObject.SetActive(false); done(ok); });
+            runner.Begin(title, rewarded, cardText, close, earned, ok => { card.gameObject.SetActive(false); done(ok); });
         }
 
         private sealed class Runner : MonoBehaviour
         {
-            private float end; private string title; private bool rewarded; private Text text; private Button close; private Action<bool> done;
-            public void Begin(string t, bool r, Text label, Button button, Action<bool> finish)
+            private float end; private string title; private bool rewarded; private Text text; private Button close; private Action<bool> done; private Action earned;
+            public void Begin(string t, bool r, Text label, Button button, Action reward, Action<bool> finish)
             {
-                title = t; rewarded = r; text = label; close = button; done = finish; end = Time.realtimeSinceStartup + 2;
+                title = t; rewarded = r; text = label; close = button; done = finish; earned = reward; end = Time.realtimeSinceStartup + 2;
                 close.onClick.RemoveAllListeners();
-                close.onClick.AddListener(() => { bool earned = Time.realtimeSinceStartup >= end; var d = done; done = null; d?.Invoke(!rewarded || earned); });
+                close.onClick.AddListener(() => { PayIfEarned(); var d = done; done = null; d?.Invoke(true); });
             }
+            private void PayIfEarned() { if (rewarded && Time.realtimeSinceStartup >= end) { var reward = earned; earned = null; reward?.Invoke(); } }
             private void Update()
             {
                 if (done == null) return;
                 float left = end - Time.realtimeSinceStartup;
+                PayIfEarned();
                 text.text = title + "\n\n" + (left > 0 ? (rewarded ? "Reward in " : "") + Mathf.CeilToInt(left) + " s" : rewarded ? "Reward earned" : "");
             }
         }

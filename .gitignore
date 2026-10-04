@@ -5,6 +5,16 @@
 [Uu]ser[Ss]ettings/
 Builds/
 Artifacts/
+# Official Firebase Unity SDK, restored with Tools/setup-google-sdks.py.
+# The macOS native library exceeds GitHub's 100 MB single-file limit.
+Assets/Firebase/
+Assets/Firebase.meta
+Assets/Editor Default Resources/Firebase/
+Assets/Editor Default Resources/Firebase.meta
+Assets/Plugins/iOS/Firebase/
+Assets/Plugins/iOS/Firebase.meta
+Assets/Plugins/tvOS/Firebase/
+Assets/Plugins/tvOS/Firebase.meta
 .vs/
 .idea/
 .DS_Store
@@ -25,3 +35,12 @@ Recordings/
 # Local Python tooling caches
 __pycache__/
 *.py[cod]
+
+# Firebase/EDM4U generated outputs (recreated from the pinned SDK and app config).
+Assets/GeneratedLocalRepo/
+Assets/GeneratedLocalRepo.meta
+Assets/StreamingAssets/google-services-desktop.json*
+Assets/Plugins/Android/FirebaseApp.androidlib/
+Assets/Plugins/Android/FirebaseApp.androidlib.meta
+ProjectSettings/AndroidResolverDependencies.xml
+Assets/Resources/PerformanceTestRun*.json*

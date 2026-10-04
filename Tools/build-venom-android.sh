@@ -2,6 +2,7 @@
 set -euo pipefail
 COGHE_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 UNITY_EDITOR="${UNITY_EDITOR:-/Applications/Unity/Hub/Editor/6000.3.19f1/Unity.app/Contents/MacOS/Unity}"
+python3 "$COGHE_ROOT/Tools/setup-google-sdks.py"
 COGHE_ANDROID_METHOD="GravityBox.Editor.COgheAndroidBuilder.Build"
 COGHE_ANDROID_OUTPUT="Builds/Venom/Android/COghe.apk"
 if [[ "${1:-}" == "--tap" ]]; then

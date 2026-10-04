@@ -11,7 +11,10 @@ vật lý. [Quy chuẩn đồ hoạ hiện hành](Docs/ArtDirection/COghe/STYLE_
 ```sh
 git clone --branch NewGraphic git@github.com:nghienvothuat-a11y/GravityBox.git
 cd GravityBox
+python3 Tools/setup-google-sdks.py
 ```
+
+Chạy bước setup ở trên trước khi mở Unity: khôi phục Firebase Analytics + Remote Config 13.17.0 từ Google, kiểm tra SHA-256. Binary SDK không đưa vào Git (native macOS >100 MB); script Android/Mac cũng tự chạy bước này. Google Mobile Ads 11.5.0 và EDM4U 1.2.190 do UPM khôi phục.
 
 Mở thư mục repo bằng **Unity 6000.3.19f1** qua Unity Hub; để Unity khôi phục package
 từ `Packages/packages-lock.json`. Scene, mesh, material và `.meta` đã có trong Git;
@@ -48,13 +51,24 @@ không tự sinh lại màn hoặc bỏ qua scene bị thiếu. [Cài lên thi�
 miệng và thân ống trong catalog Spatial 50. Giữ nguyên vật lý và lời giải.
 [Phạm vi, ảnh và kiểm chứng](Docs/Verification/COgheSurfaceReadability/README.md).
 
+## AdMob + Firebase — 04/10/2026
+
+Android `com.gravityboxlab.venom` nối project Firebase **coghe-57f21** và ba ad unit COghe đã tạo. Bản test dùng test unit chính thức của Google; `COGHE_STORE=1` dùng unit thật. Banner chỉ ở Menu/Home/Victory; interstitial/rewarded giữ lịch và giới hạn hiện hành.
+
+Tracking từng lượt: `level_start`, `level_end` (`outcome=win/lost`), `level_retry`, `level_abandon`; có mã màn, thứ tự, thời gian chơi chủ động và số lần thử. [Cài SDK, báo cáo độ khó, kiểm chứng](Docs/Monetization/COghe/GOOGLE_SERVICES.md).
+
+Remote Config đã có 57 tham số (giá, thưởng, giới hạn quảng cáo), cache an toàn và áp dụng ở lần mở tiếp theo. No Ads giữ quảng cáo thưởng tự chọn; Plus nhận thưởng ngay. Phần thưởng được lưu tại callback earned, chống cộng trùng. **IAP thật chờ thiết lập Google Play Console**; mua thử ghi rõ không thu tiền và dùng dữ liệu quyền riêng, bản store chưa mở bán.
+
 ## Product UI — 30/09/2026
 
 Catalog **Spatial 50** dùng giao diện Product: tiếng Anh, chơi tuần tự, không chọn màn.
 Main Menu có COghe **3D đang chạy trong Unity** với Play / Home / Intro; chạm sinh vật
 để nó phản ứng. Nút Pause mở Restart, Home, Menu, Help và hai công tắc Music/Sound
 độc lập. Gameplay giữ icon xem toàn cảnh, chọn khoang và chọn từng phần khi cần.
-Sau ăn mừng tự sang màn tiếp; Home mở sau Boss 10. Giữ nguyên ID và dữ liệu tiến độ.
+Màn chiến thắng giữ nguyên tới khi bấm dòng **→ Level N** ở dưới (cập nhật 04/10/2026);
+giữ kiểu chữ cũ, không thêm nút mới. Popup mở khóa và quảng cáo chuyển màn chỉ xử lý
+sau thao tác này. Home mở sau Boss 10.
+Giữ nguyên ID và dữ liệu tiến độ.
 
 - **Mac:** Unity → **Gravity Box → COghe → Product UI → Build Mac** →
   `Builds/COgheProduct/macOS/COghe.app`.

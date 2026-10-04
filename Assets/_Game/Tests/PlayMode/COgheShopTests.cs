@@ -19,9 +19,9 @@ namespace GravityBox.Tests
         {
             public int Interstitials, Rewardeds; public bool Shown; public float Height = 120; public bool Earn = true;
             public bool InterstitialReady => true;
-            public void ShowInterstitial(string placement, Action done) { Interstitials++; done(); }
+            public void ShowInterstitial(string placement, Action shown, Action<bool> closed) { Interstitials++; shown(); closed(true); }
             public bool RewardedReady => true;
-            public void ShowRewarded(string placement, Action<bool> done) { Rewardeds++; done(Earn); }
+            public void ShowRewarded(string placement, Action shown, Action earned, Action<bool> closed) { Rewardeds++; shown(); if (Earn) earned(); closed(true); }
             public void SetBanner(bool show) { Shown = show; }
             public float BannerHeight => Shown ? Height : 0;
         }
@@ -130,7 +130,7 @@ namespace GravityBox.Tests
                 COgheEconomy.Set("interstitial_min_seconds", 0); COgheAds.NoteWin(); COgheAds.NoteWin();
                 Assert.IsFalse(COgheAds.InterstitialDue(30));
                 COgheAds.Banner(true); Assert.AreEqual(0, COgheAds.BannerHeight);
-                int before = ads.Rewardeds; bool rewarded = false; COgheAds.Rewarded("test", ok => rewarded = ok);
+                int before = ads.Rewardeds; bool rewarded = false; COgheAds.Rewarded("test", COgheReward.Shop(), ok => rewarded = ok);
                 Assert.IsTrue(rewarded); Assert.AreEqual(before, ads.Rewardeds, "Plus: rewarded without watching");
                 Assert.AreEqual(2, COgheEntitlements.DropsMultiplier);
                 yield return null;

@@ -16,12 +16,13 @@ namespace GravityBox.Venom
     /// pay in Drops, what each item costs, and how often the full-screen ad may come. Every value has a default here and can
     /// be replaced from Remote Config (<see cref="Set"/>) once the tracking SDK is in, without a new build.
     /// </summary>
-    public static class COgheEconomy
+    public static partial class COgheEconomy
     {
         // Gifts (Mrk 02/10): the ball when Home opens, and the first item of each Style group.
         public static readonly string[] Gifts = { "BALL", "INK_OCEAN", "HAT_BEANIE", "FLOAT_STARS" };
         private static readonly Dictionary<string, int> overrides = new Dictionary<string, int>();
 
+        public static int CleanWin => Value("drops_clean_win", 0);
         public static int FirstWin => Value("drops_first_win", 10);
         public static int TripleExtra => Value("drops_triple_ad", 20);
         public static int DailyGift => Value("drops_daily", 15);
@@ -41,7 +42,7 @@ namespace GravityBox.Venom
 
         /// <summary>Remote Config: replace a value (key names as in the plan, prices as price_ITEM_ID).</summary>
         public static void Set(string key, int value) { overrides[key] = value; }
-        public static void ResetForTests() { overrides.Clear(); }
+        public static void ResetForTests() { overrides.Clear(); extraGifts.Clear(); Revision = "defaults"; Variant = "control"; }
         private static int Value(string key, int fallback) => overrides.TryGetValue(key, out int v) ? v : fallback;
 
         private static List<COgheShopItem> items;
@@ -60,13 +61,18 @@ namespace GravityBox.Venom
             }
         }
         public static COgheShopItem Find(string id) { foreach (var i in Items) if (i.Id == id) return i; return null; }
-        public static bool IsGift(string id) => System.Array.IndexOf(Gifts, id) >= 0;
+        public static bool IsGift(string id) => System.Array.IndexOf(Gifts, id) >= 0 || extraGifts.Contains(id);
 
         /// <summary>The price in Drops: dearer the later it unlocks (Home and inks 40–120, hats 50–110, inside 60–120).</summary>
         public static int Price(string id)
         {
+            if (IsGift(id)) return 0;
             if (overrides.TryGetValue("price_" + id, out int set)) return set;
-            var item = Find(id); if (item == null || IsGift(id)) return 0;
+            return DefaultPrice(id);
+        }
+        private static int DefaultPrice(string id)
+        {
+            var item = Find(id); if (item == null || System.Array.IndexOf(Gifts, id) >= 0) return 0;
             int low = 40, high = 120;
             if (item.Group == COgheShopGroup.Hat) { low = 50; high = 110; }
             if (item.Group == COgheShopGroup.Inside) { low = 60; high = 120; }

@@ -1,5 +1,23 @@
 # COghe — camera gần và xem từng khoang
 
+## Giới hạn pinch zoom Spatial — 04/10/2026
+
+Theo yêu cầu mở rộng zoom, camera của các màn `ViewOnly` dùng `ZoomScale`
+**0,35–1,50** (trước đây 0,55–1,15). So với khung mặc định tự vừa hộp,
+hình phóng gần tối đa **2,86×**, thu xa tối đa **0,67×**. Khung mặc định vẫn
+là 1,00; Overview/Retry khôi phục góc nhìn theo hành vi hiện có. Hai ngón zoom
+quanh trung điểm chạm; con lăn chuột dùng cùng giới hạn.
+
+Đây chỉ là thay đổi phạm vi camera trong màn chơi. Camera Nhà, ăn mừng và
+Follow của các bản Origin lịch sử giữ cấu hình riêng. Không đổi scene, cơ quan,
+vật lý, trọng lực hoặc chất lượng đồ họa.
+
+Kiểm chứng: 6/6 PlayMode tests đạt về pinch/release, tránh lệnh chạm ngoài ý muốn,
+retry, trung điểm zoom, portrait/safe area và nền Origin khi xoay/follow. Kết quả:
+`Artifacts/COgheZoomRange/tests.xml`. Build Mac Product 50 màn thành công tại
+`Builds/COgheProduct/macOS/COghe.app`; log `Artifacts/COgheZoomRange/build-mac.log`.
+Các test có sẵn không quét hai giới hạn mới trên đủ 50 màn; chưa đo lại OPPO.
+
 ## Sửa mép nền lộ khi xoay màn 03 — 17/09/2026
 
 Camera tự vừa hộp khi xoay nhưng bàn nền cũ chỉ rộng 12 m, far clip 10 m và camera luôn cách tâm nhìn 2 m. Ở góc nhìn thấp, khung hình dọc có thể nhìn ra ngoài mép bàn hoặc cắt xuống dưới mặt bàn, làm lộ màu clear xám thành dải/đường chéo thay đổi khi xoay. Test tái hiện trước sửa thất bại: tia góc chạm bàn tại z = 6,274 m, ngoài mép z = 6 m.

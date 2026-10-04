@@ -17,7 +17,7 @@ namespace GravityBox.Venom
         public void Orbit(float pixels,float viewportWidth)
         {if(game.Definition.ViewOnly&&!game.Home)OrbitYaw=Mathf.Repeat(OrbitYaw-pixels/Mathf.Max(1,viewportWidth)*240+180,360)-180;}
         public void Pinch(float ratio)
-        {if(game.Definition.ViewOnly&&!game.Home&&ratio>0)ZoomScale=Mathf.Clamp(ZoomScale/ratio,.55f,1.15f);}
+        {if(game.Definition.ViewOnly&&!game.Home&&ratio>0)ZoomScale=Mathf.Clamp(ZoomScale/ratio,.35f,1.5f);}
         public void PinchAt(float ratio,Vector2 screen)
         {
             float before=ZoomScale;var camera=game.Owner.View;Vector3 centre=game.Root.TransformPoint(OverviewBounds.center);

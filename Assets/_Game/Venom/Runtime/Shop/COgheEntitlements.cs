@@ -22,7 +22,7 @@ namespace GravityBox.Venom
     public static class COgheEntitlements
     {
         public const string Plus = "coghe_plus", NoAds = "coghe_no_ads";
-        private const string Key = "coghe.entitlements.v1";
+        private static string Key => COgheTestTools.LevelSelect ? "coghe.entitlements.test.v1" : "coghe.entitlements.store.v1";
         private static ICOgheStore store;
         /// <summary>The store: Unity IAP once integrated; a test store in development/test builds; none in a store build until then.</summary>
         public static ICOgheStore Store { get => store ??= COgheTestTools.LevelSelect ? new COgheTestStore() : null; set => store = value; }
@@ -69,7 +69,7 @@ namespace GravityBox.Venom
     public sealed class COgheTestStore : ICOgheStore
     {
         public bool Available => true;
-        public string Price(string product) => product == COgheEntitlements.Plus ? "$5.99" : "$2.99";
+        public string Price(string product) => "Test · no charge";
         public void Purchase(string product, Action<bool> done) => done(true);
         public void Restore(Action<bool> done) => done(true);
     }

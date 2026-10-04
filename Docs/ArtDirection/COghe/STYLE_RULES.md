@@ -58,8 +58,12 @@ and [native Unity verification](../../Verification/COgheProductUI/README.md).
   and effects are separate persisted preferences.
 - Contextual fragment/zone/release controls appear only when needed. UI controls
   must not also issue a command to the glass underneath them.
-- Victory uses the existing close-up and dance, then proceeds automatically;
-  the last level ends on the completion screen. No forced Next tap.
+- Victory uses the existing close-up and dance and remains visible until the
+  player taps the existing **→ Level N** text (user revision, 04/10/2026). Keep
+  that line's appearance and position; add a 48 px invisible touch area, no new
+  filled button. Unlock notices and any
+  eligible between-level ad follow that tap; timers and rewarded-ad dismissal
+  never advance on their own. The final level offers **Menu**, not a nonexistent next level.
 - Main Menu/Home presentation reuses the creature, background and lighting.
   Keep menu room colliders separate from the authored puzzle; restore the puzzle
   on Play. Never use decorative movement to alter puzzle state.

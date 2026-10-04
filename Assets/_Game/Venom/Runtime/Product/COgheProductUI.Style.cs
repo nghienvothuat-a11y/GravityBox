@@ -139,7 +139,7 @@ namespace GravityBox.Venom
         /// <summary>Copy the inks on COghe into the saved look (nothing is written to disk).</summary>
         private void SyncLook() { var ink = Inking; if (ink != null) { ink.FinishRinse(); ink.Store(COgheStyle.Current); } }
         /// <summary>App to the background: write the look now (a settling hold would otherwise wait for the app to come back).</summary>
-        private void OnApplicationPause(bool paused) { if (paused && (styleOpen || styleSaving) && Game != null && Game.Matter != null) SaveLook(); }
+        private void OnApplicationPause(bool paused) { background = paused; if (paused && (styleOpen || styleSaving) && Game != null && Game.Matter != null) SaveLook(); }
         /// <summary>Keep the look on the device, if everything in it is owned (a look being tried on is never kept).</summary>
         private void SaveLook()
         {

@@ -152,8 +152,9 @@ namespace GravityBox.Tests
             foreach(var collider in game.Matter.Bodies.Select(b=>b.GetComponent<Collider>()))Assert.IsTrue(collider.enabled);
             Assert.AreEqual(0,game.Progress.Completed.Count);
         }
-        [UnityTest] public IEnumerator GuidingThroughExitCelebratesAndAutomaticallyLoadsNextPuzzle()
+        [UnityTest] public IEnumerator GuidingThroughExitWaitsForNextLevelTap()
         {
+            COgheAnalytics.Recent.Clear();
             yield return Click("Play");yield return new WaitForSecondsRealtime(.25f);
             Vector2 p=game.Owner.View.WorldToScreenPoint(game.Owner.Outlet.position);
             Assert.IsTrue(ui.AllowsWorldPointer(p));
@@ -164,6 +165,9 @@ namespace GravityBox.Tests
             while(!game.Owner.Completed&&Time.realtimeSinceStartup<end)yield return null;
             Assert.IsTrue(game.Owner.Completed,"Actual crawl and exit must complete, without teleporting or forcing Win");
             yield return null;Assert.AreEqual(COgheProductPage.Victory,ui.Page);
+            Assert.AreEqual(1, COgheAnalytics.Recent.Count(e => e.StartsWith("level_complete ")));
+            Assert.AreEqual(1, COgheAnalytics.Recent.Count(e => e.StartsWith("level_end ")));
+            Assert.AreEqual(0, COgheAnalytics.Recent.Count(e => e.StartsWith("level_fail ")));
             Assert.IsTrue(game.Progress.Completed.Contains(game.Definition.Id));
             Assert.AreEqual(COgheEconomy.FirstWin,ui.VictoryDrops,"A first win pays Drops");Assert.AreEqual(COgheEconomy.FirstWin,COgheShop.Drops);
             // Mrk: the confetti pops just over COghe's head in the settled victory shot, then falls past it
@@ -173,6 +177,18 @@ namespace GravityBox.Tests
             while(game.Owner.Celebration.Elapsed<2f){head=Mathf.Max(head,TissueTop());skin=Mathf.Max(skin,SkinTop());yield return null;}
             Debug.Log($"Confetti origin {pop:F3}, tissue top {head:F3}, skin top {skin:F3} (viewport), pose {game.Owner.Celebration.Variant}");
             Assert.That(pop-head,Is.InRange(0f,.18f),$"Confetti origin {pop:F3} just over the tissue {head:F3}");
+            yield return new WaitForSecondsRealtime(8);
+            Assert.IsTrue(game.AutoAdvance,"Legacy scene flag must not bypass the Product victory button");
+            Assert.AreEqual(1,game.Definition.Order);Assert.AreEqual(COgheProductPage.Victory,ui.Page);
+            Assert.AreEqual(COgheProductPopup.None,ui.Popup);
+            Assert.AreEqual(COgheEconomy.FirstWin,COgheShop.Drops,"Waiting must not pay the win twice");
+            var next=ui.GetComponentsInChildren<Button>().Single(b=>b.name=="Next level");
+            Assert.AreEqual("→  Level 2",next.GetComponent<Text>().text,"Keep the existing next-level line, not a new pill button");
+            Assert.IsNull(next.GetComponent<Image>());
+            Assert.GreaterOrEqual(((RectTransform)next.transform).rect.height,48);
+            int commands=game.Feedback.CommandCount;
+            yield return Click("Next level");
+            if(game!=null)Assert.AreEqual(commands,game.Feedback.CommandCount,"Next Level must not issue a world command");
             end=Time.realtimeSinceStartup+8;
             while(game!=null&&game.Definition.Order==1&&Time.realtimeSinceStartup<end)yield return null;
             yield return null;game=Object.FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;

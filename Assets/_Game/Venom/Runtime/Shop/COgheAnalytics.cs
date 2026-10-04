@@ -26,7 +26,9 @@ namespace GravityBox.Venom
                 values = new Dictionary<string, object>(pairs.Length / 2);
                 for (int i = 0; i + 1 < pairs.Length; i += 2) values[pairs[i].ToString()] = pairs[i + 1];
             }
-            Sink?.Invoke(name, values);
+            // Telemetry is observational: a provider fault must never interrupt a win, save or reward.
+            try { Sink?.Invoke(name, values); }
+            catch (Exception e) { Debug.LogWarning("COghe analytics unavailable: " + e.GetType().Name); }
             line.Clear().Append(name);
             for (int i = 0; i + 1 < pairs.Length; i += 2) line.Append(' ').Append(pairs[i]).Append('=').Append(pairs[i + 1]);
             if (Recent.Count == Recent.Capacity) Recent.RemoveAt(0);

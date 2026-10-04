@@ -140,7 +140,7 @@ namespace GravityBox.Venom
             art.Label(pageRoot,"Victory",final?"All done!":"Well done!",new Rect(20,height*.13f+54,width-40,44),28);
             DropsCounter(pageRoot,new Rect(width-124,25,100,44));
             // The centre belongs to the dance. Keep rewards together in a bottom dock,
-            // above both the next-level line and the optional ad banner.
+            // above both the tappable next-level line and the optional ad banner.
             if(victoryDrops>0)
             {
                 int earned=tripleTaken?victoryDrops+COgheEconomy.TripleExtra:victoryDrops;
@@ -151,10 +151,17 @@ namespace GravityBox.Venom
             TripleButton();
             if(final)
             {
-                art.Button(pageRoot,"Back to menu",new Rect(width*.5f-130,height-74,260,58),COgheIcon.Menu,ShowMenu,"Menu",true);
+                art.Button(pageRoot,"Back to menu",new Rect(width*.5f-130,height-74,260,58),COgheIcon.Menu,NextLevel,"Menu",true).interactable=!victoryNextRequested;
             }
-            else art.Label(pageRoot,"Next level","→  Level "+(Game.Definition.Order+1),new Rect(24,height-64,width-48,32),14,COgheUIArt.Muted);
-            // Home/Style unlocks already have their own popup after the celebration.
+            else
+            {
+                // Keep the existing text and its centre; expand only the invisible touch area to 48 px.
+                var next=art.Label(pageRoot,"Next level","→  Level "+(Game.Definition.Order+1),new Rect(24,height-72,width-48,48),14,COgheUIArt.Muted);
+                next.raycastTarget=true;
+                var button=next.gameObject.AddComponent<Button>();button.targetGraphic=next;button.interactable=!victoryNextRequested;
+                button.onClick.AddListener(()=>{COgheAudio.UiTap();NextLevel();});
+            }
+            // Home/Style unlocks appear after the player chooses to continue.
         }
         private void PopupView()
         {
@@ -162,6 +169,8 @@ namespace GravityBox.Venom
             var veil=art.Box(popupRoot,"Input shield",new Rect(-width,-height,width*3,height*3),new Color(.13f,.23f,.21f,.36f),true);veil.sprite=null;
             if(StylePopup()||ShopPopup())return;
             float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?(InHome?324:COgheTestTools.LevelSelect?482:430):Popup==COgheProductPopup.Levels?Mathf.Min(560,height-90):Popup==COgheProductPopup.Help?450:Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null?Mathf.Min(560,height-90):260;
+            bool privacy=Popup==COgheProductPopup.Pause&&COgheAds.PrivacyRequired?.Invoke()==true;
+            if(privacy)h+=56;
             var panel=art.Box(popupRoot,"Panel",new Rect((width-w)*.5f,(height-h)*.5f,w,h),COgheUIArt.Paper,true).rectTransform;
             if(Popup==COgheProductPopup.Pause)
             {
@@ -181,6 +190,7 @@ namespace GravityBox.Venom
                 }
                 art.Button(panel,"Resume",new Rect(24,h-82,w-48,58),COgheIcon.Play,Resume,"Resume",true);ClosePopup(panel,w,Resume);
                 if(COgheTestTools.LevelSelect&&!home)art.Button(panel,"Test levels",new Rect(24,h-138,w-48,48),COgheIcon.Overview,()=>ShowPopup(COgheProductPopup.Levels),"Levels (test)");
+                if(privacy)art.Button(panel,"Privacy choices",new Rect(24,h-(COgheTestTools.LevelSelect&&!home?194:138),w-48,48),COgheIcon.Lock,()=>COgheAds.OpenPrivacy?.Invoke(),"Privacy choices");
             }
             else if(Popup==COgheProductPopup.Levels)LevelsPopup(panel,w,h);
             else if(Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null)ItemsPopup(panel,w,h);

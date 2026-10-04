@@ -23,6 +23,8 @@ namespace GravityBox.Venom
             public string GiftDay = "", AdDay = "";
             public int AdsForDropsToday, InterstitialsToday;
             public bool Migrated;
+            public bool CommerceVisited;
+            public List<string> Retried = new List<string>();
         }
 
         private const string Key = "coghe.shop.v1";
@@ -48,6 +50,7 @@ namespace GravityBox.Venom
                     catch (Exception e) { Debug.LogWarning("COghe shop save unreadable, starting fresh: " + e.Message); }
                 }
                 state.Owned ??= new List<string>(); state.Paid ??= new List<string>(); state.GiftDay ??= ""; state.AdDay ??= "";
+                state.Retried ??= new List<string>();
                 return state;
             }
         }
@@ -79,6 +82,39 @@ namespace GravityBox.Venom
             return amount;
         }
         public static bool Paid(string key) => Current.Paid.Contains(key);
+
+        public static void VisitCommerce() { if (Current.CommerceVisited) return; Current.CommerceVisited = true; Save(); }
+        public static void NoteRetry(string levelId) { if (Current.Retried.Contains(levelId)) return; Current.Retried.Add(levelId); Save(); }
+        public static int WinReward(string levelId) => (COgheEconomy.FirstWin +
+            (Current.Retried.Contains(levelId) ? 0 : COgheEconomy.CleanWin)) * COgheEntitlements.DropsMultiplier;
+
+        /// <summary>Commit the entire earned reward in one save, immediately at the SDK earned callback.
+        /// UI dismissal only refreshes presentation. Repeated callbacks/reloaded state cannot pay it twice.</summary>
+        public static bool ApplyReward(COgheReward reward)
+        {
+            if (reward == null || Paid(reward.Key)) return false;
+            if (reward.Type == COgheReward.Kind.Item)
+            {
+                if (COgheEconomy.Find(reward.ItemId) == null) return false;
+                if (!Current.Owned.Contains(reward.ItemId)) Current.Owned.Add(reward.ItemId);
+            }
+            else if (reward.Type == COgheReward.Kind.Daily)
+            {
+                if (string.CompareOrdinal(Current.GiftDay, reward.Day) < 0) Current.GiftDay = reward.Day;
+            }
+            else if (reward.Type == COgheReward.Kind.Shop)
+            {
+                // An ad spanning midnight is charged to its offer day; it does not consume tomorrow's cap.
+                if (string.CompareOrdinal(Current.AdDay, reward.Day) < 0)
+                { Current.AdDay = reward.Day; Current.AdsForDropsToday = 0; Current.InterstitialsToday = 0; }
+                if (Current.AdDay == reward.Day) Current.AdsForDropsToday++;
+            }
+            Current.Paid.Add(reward.Key); Current.Drops += reward.Amount; Save();
+            if (reward.Type == COgheReward.Kind.Item) COgheAnalytics.Log("item_grant", "item", reward.ItemId, "source", "rewarded");
+            else COgheAnalytics.Log("drops_earn", "source", reward.Source, "amount", reward.Amount, "balance", Current.Drops);
+            if (reward.Type == COgheReward.Kind.Daily) COgheAnalytics.Log("daily_gift", "amount", reward.Amount, "rewarded", 1);
+            return true;
+        }
 
         /// <summary>Buy with Drops: false (nothing changes) if already owned or not enough.</summary>
         public static bool Buy(string id)
