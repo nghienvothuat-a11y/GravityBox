@@ -20,9 +20,9 @@ namespace GravityBox.Venom
         private void LateUpdate()
         {
             if (Rack == null || coilRest == null) return;
-            Pinion.localRotation = restRotation * Quaternion.AngleAxis(Rack.Position / PinionRadius * Mathf.Rad2Deg, Vector3.forward);
+            Pinion.localRotation = restRotation * Quaternion.AngleAxis(Rack.ShownPosition / PinionRadius * Mathf.Rad2Deg, Vector3.forward);
             for (int i = 0; i < coilRest.Length; i++)
-                SpringCoils[i].localPosition = coilRest[i] + Vector3.up * Rack.Position * (1f - i / (float)coilRest.Length) * .55f;
+                SpringCoils[i].localPosition = coilRest[i] + Vector3.up * Rack.ShownPosition * (1f - i / (float)coilRest.Length) * .55f;
         }
     }
 }

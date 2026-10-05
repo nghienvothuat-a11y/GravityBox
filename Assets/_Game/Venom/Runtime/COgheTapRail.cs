@@ -38,7 +38,9 @@ namespace GravityBox.Venom
         public float Speed = .09f;
         public float StallSeconds = 3;
         public bool CompensateLoad;
-        private float accumulatedEffort;
+        private float accumulatedEffort, lastEffort, olderEffort, lastSpeed, heldBack;
+        // The rail steps before this task on its object, so the effort queued last tick is still to act on the body.
+        private bool pendingLag;
         public TaskPhase Phase { get; private set; }
         public float RequestedPosition=>target;
         public bool Busy => Phase != TaskPhase.Idle;
@@ -77,12 +79,15 @@ namespace GravityBox.Venom
         private bool backSide;
 
         public override void InitializeMechanism(VenomCampaign game)
-        { owner = game; stance=StandOffset; if (InterlockPin != null) pinRest = InterlockPin.localPosition; }
+        {
+            owner = game; stance=StandOffset; if (InterlockPin != null) pinRest = InterlockPin.localPosition;
+            pendingLag = System.Array.IndexOf(game.Mechanisms, Rail) < System.Array.IndexOf(game.Mechanisms, this);
+        }
         public override void ResetMechanism(VenomCampaign game)
         {
             owner = game; Phase = TaskPhase.Idle; Actor = -1; order = null;
             Holding = false; AppliedEffort = 0;
-            accumulatedEffort=0;CompletedJourneys = 0; LastFailure = null; messageUntil = 0; stableTime = 0;
+            accumulatedEffort=0;lastEffort=0;CompletedJourneys = 0; LastFailure = null; messageUntil = 0; stableTime = 0;
             targetStop = 0; target = 0;
             stance=StandOffset;
             backSide=false;
@@ -174,13 +179,14 @@ namespace GravityBox.Venom
         {
             if (Actor >= 0 && ReferenceEquals(owner.Motion.Get(Actor), order)) owner.Motion.Cancel(Actor);
             Phase = TaskPhase.Idle; Actor = -1; order = null;
-            Holding = false; AppliedEffort = 0; accumulatedEffort=0;
+            Holding = false; AppliedEffort = 0; accumulatedEffort=0; lastEffort=0;
             if (reason != null) Message(reason);
         }
         private void OnDisable()
         {if(owner!=null&&owner.Motion!=null)CancelTask();}
         public override void StepMechanism(VenomCampaign game, float dt)
         {
+            float pending = lastEffort, older = olderEffort; lastEffort = olderEffort = 0;
             Holding = false; AppliedEffort = 0;
             if (HoldAtEnd && Rail.Position > .0002f)
                 Rail.ApplyEffort(-Rail.WorldAxis * ReturnForce);
@@ -211,7 +217,7 @@ namespace GravityBox.Venom
                 float distance = Vector3.Distance(centre, StandPoint);
                 if (distance < bestDistance - .006f) { bestDistance = distance; lastProgressAt = now; }
                 if (distance < .039f && feet >= 2 && game.Clear(centre, HandPoint, 0, Rail.Body))
-                { Phase = TaskPhase.Operating; bestDistance = Mathf.Abs(target - Rail.Position); lastProgressAt = now; }
+                { Phase = TaskPhase.Operating; bestDistance = Mathf.Abs(target - Rail.Position); lastProgressAt = now; lastSpeed = 0; heldBack = 0; }
                 else if (now - lastProgressAt > StallSeconds + 3) CancelTask("Không tới được tay nắm — thử đường khác");
                 return;
             }
@@ -228,18 +234,32 @@ namespace GravityBox.Venom
             if (RequiredGrip != null && !InterlockOpen) { lastProgressAt = now; return; }
             if (!(HoldAtEnd && reached) && now - lastProgressAt > StallSeconds)
             { CancelTask("Cơ quan bị kẹt hoặc phần này chưa đủ lực"); return; }
-            float desired = Mathf.Clamp((target - Rail.Position) * 3, -Speed, Speed);
+            // A journey to either end aims 2 mm past it, so the carriage seats against its stop rather than settling at
+            // the edge of the catch, where a rider could slip back out of it.
+            float aim = target >= Rail.Travel - 1e-4f ? target + .002f : target <= 1e-4f ? target - .002f : target;
+            float desired = Mathf.Clamp((aim - Rail.Position) * 3, -Speed, Speed);
             float mass = actorCount * game.Matter.Profile.ParticleMass;
             // Finite hand effort, equal/opposite tissue reaction and actual planted-foot support.
             float gain = HoldAtEnd ? Rail.Body.mass * 20 : Mathf.Max(Rail.Body.mass, .18f) * 25;
+            // Never correct more than 90% of the speed error in one tick: a 30–35 g carriage would overshoot and chatter.
+            gain = Mathf.Min(gain, .9f * Rail.Body.mass / dt);
+            // Judge the speed the rail will have once last tick's queued effort has acted. Correcting the measured speed
+            // instead made every light handle hunt at ~20 Hz and step backwards (Mrk, 05/10/2026: "rung và giật").
+            // The load holding the rail back (friction, a cable, a latch, a heavy span or a block in the way) is what the
+            // last tick's effort did not turn into speed; smoothed, since contact makes single ticks noisy.
+            heldBack += (older - (velocity - lastSpeed) * Rail.Body.mass / dt - heldBack) * .2f;
+            heldBack = Mathf.Clamp(heldBack, -mass * 7 - 1, mass * 7 + 1);
+            lastSpeed = velocity;
+            float judged = velocity + (pendingLag ? (pending - heldBack) * dt / Rail.Body.mass : 0);
+            // The load integral still reads the measured speed, so a steady load (a cable, a crate) is met in full.
             if(CompensateLoad)accumulatedEffort=Mathf.Clamp(accumulatedEffort+(desired-velocity)*gain*dt*3,-mass*7,mass*7);
-            float effort = Mathf.Clamp((desired - velocity) * gain + accumulatedEffort + (HoldAtEnd ? ReturnForce + Rail.Resistance : 0),
+            float effort = Mathf.Clamp((desired - judged) * gain + accumulatedEffort + (HoldAtEnd ? ReturnForce + Rail.Resistance : 0),
                 -mass * 7, mass * 7);
             if (reached && !HoldAtEnd) effort = 0;
             AppliedEffort = Mathf.Max(0, effort);
             Holding = HoldAtEnd && reached && effort >= ReturnForce * .9f;
             Vector3 force = axis * effort;
-            Rail.ApplyEffort(force);
+            Rail.ApplyEffort(force); lastEffort = effort; olderEffort = pending;
             game.Motion.BraceAgainstManipulation(Actor, force);
             for (int i = 0; i < CohesiveOrganism.ParticleCount; i++)
                 if (game.Matter.Groups[i] == game.Matter.Groups[Actor]) game.Matter.Bodies[i].AddForce(-force / actorCount);

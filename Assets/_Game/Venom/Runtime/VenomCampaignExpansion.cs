@@ -23,6 +23,14 @@ namespace GravityBox.Venom
             foreach(var mechanism in Mechanisms)if(mechanism is COgheCooperativeDrive)ordered[next++]=mechanism;
             Mechanisms=ordered;
             tapRails=Owner.Apparatus.GetComponentsInChildren<COgheTapRail>(true);
+            // Mechanisms are drawn between physics ticks like the creature is, so a 120 Hz rail does not judder against it
+            // at an uneven frame rate. FixedUpdate still reads the simulated pose (COgheInterpolationProbeTests).
+            // Scripted physics (tests, proofs) steps many ticks per frame and never interpolates; there transforms must
+            // keep following the simulation, so only real-time play turns interpolation on.
+            var shell=Owner.Rotation!=null?Owner.Rotation.GetComponent<Rigidbody>():null;
+            if(Physics.simulationMode==SimulationMode.FixedUpdate)
+                foreach(var body in Owner.Apparatus.GetComponentsInChildren<Rigidbody>(true))
+                    if(!body.isKinematic&&body!=shell)body.interpolation=RigidbodyInterpolation.Interpolate;
             foreach(var mechanism in Mechanisms)mechanism.InitializeMechanism(this);
             transportMechanisms=Array.FindAll(Mechanisms,m=>m.TransportsTissue);
             fusionBarriers=Array.FindAll(Mechanisms,m=>m.SeparatesTissue);
@@ -39,6 +47,9 @@ namespace GravityBox.Venom
         {
             foreach(var mechanism in Mechanisms)if(mechanism.isActiveAndEnabled)mechanism.StepMechanism(this,dt);
             if(Mechanisms.Length==0||Matter.SimulationTime<mechanismGraphAt)return;
+            // A handle in mid-pull moves only its carriage and what it drives. The task rebuilds the graph once it settles
+            // and an opening aperture rebuilds at once; a full rebuild every 0.35 s of the pull only stalls frames.
+            foreach(var tap in tapRails)if(tap.Phase==COgheTapRail.TaskPhase.Operating&&!tap.Holding&&tap.Rail.Moving)return;
             mechanismGraphAt=Matter.SimulationTime+.35f;
             for(int i=0;i<Surfaces.Length;i++)
                 if(Vector3.Distance(graphSurfacePositions[i],Root.InverseTransformPoint(Surfaces[i].transform.position))>.010f||

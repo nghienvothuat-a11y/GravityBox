@@ -14,8 +14,13 @@ namespace GravityBox.Venom
         public bool Gravity = true, Locked, LatchAtEnd, LatchAtStart;
         public bool Latched { get; private set; }
         public float Effort { get; private set; }
+        /// <summary>Axial speed relative to its frame at the last step; a rail is moving above 5 mm/s.</summary>
+        public float Speed { get; private set; }
+        public bool Moving => Mathf.Abs(Speed) > .005f;
         public float Position => Mathf.Clamp(Vector3.Dot(Frame.InverseTransformPoint(Body.position) - Start, Axis.normalized), 0, Travel);
         public float Fraction => Travel > 0 ? Position / Travel : 0;
+        /// <summary>Position as drawn this frame (interpolated). Presentation reads this; simulation reads Position.</summary>
+        public float ShownPosition => Mathf.Clamp(Vector3.Dot(Frame.InverseTransformPoint(Body.transform.position) - Start, Axis.normalized), 0, Travel);
         public Vector3 WorldAxis => Frame.TransformDirection(Axis.normalized);
         public bool AtEnd => Position >= Travel - CatchTolerance;
         private Vector3 pendingEffort;
@@ -27,9 +32,10 @@ namespace GravityBox.Venom
         public void ReleaseLatch() { Latched = false; }
         public override void ResetMechanism(VenomCampaign game)
         {
-            pendingEffort = Vector3.zero; Effort = 0; Latched = false; brakeSet = false; lowerCatch = false;
+            pendingEffort = Vector3.zero; Effort = 0; Speed = 0; Latched = false; brakeSet = false; lowerCatch = false;
             Body.position = Frame.TransformPoint(Start + Axis.normalized * InitialTravel);
             Body.rotation = Frame.rotation;
+            Body.transform.SetPositionAndRotation(Body.position, Body.rotation); // no interpolated slide on Retry
             Body.linearVelocity = Body.angularVelocity = Vector3.zero;
             SetBrake(Locked);
         }
@@ -49,7 +55,7 @@ namespace GravityBox.Venom
             if (Latched && (lowerCatch ? Effort > Resistance + .004f : Effort < -Resistance - .004f)) Latched = false;
             SetBrake(Locked || Latched);
             Vector3 relative = Body.linearVelocity - Frame.GetComponent<Rigidbody>().GetPointVelocity(Body.position);
-            float speed = Vector3.Dot(relative, WorldAxis);
+            float speed = Vector3.Dot(relative, WorldAxis); Speed = speed;
             float gravity = Gravity ? Vector3.Dot(Vector3.down * 9.81f * Body.mass, WorldAxis) : 0;
             // Campaign applies gravity to props. Cancel it here and apply exactly one axial force.
             if (GetComponent<VenomMovableProp>() != null) Body.AddForce(Vector3.up * 9.81f, ForceMode.Acceleration);

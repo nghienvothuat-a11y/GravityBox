@@ -26,11 +26,11 @@ namespace GravityBox.Venom
         private void LateUpdate()
         {
             if(Cable==null||Input==null||Output==null)return;
-            Cable.positionCount=Guides.Length+2;Cable.SetPosition(0,DrumAnchor!=null?DrumAnchor.position:Input.Body.position+Vector3.up*.035f);
-            if(Drum!=null)Drum.localRotation=Quaternion.Euler(90,Input.Position/.024f*Mathf.Rad2Deg,0);
-            if(Wheels!=null)foreach(var wheel in Wheels)wheel.localRotation=Quaternion.Euler(90,Output.Position/.027f*Mathf.Rad2Deg,0);
+            Cable.positionCount=Guides.Length+2;Cable.SetPosition(0,DrumAnchor!=null?DrumAnchor.position:Input.Body.transform.position+Vector3.up*.035f);
+            if(Drum!=null)Drum.localRotation=Quaternion.Euler(90,Input.ShownPosition/.024f*Mathf.Rad2Deg,0);
+            if(Wheels!=null)foreach(var wheel in Wheels)wheel.localRotation=Quaternion.Euler(90,Output.ShownPosition/.027f*Mathf.Rad2Deg,0);
             for(int i=0;i<Guides.Length;i++)Cable.SetPosition(i+1,Guides[i].position);
-            Cable.SetPosition(Guides.Length+1,Output.Body.position+Vector3.up*.022f);
+            Cable.SetPosition(Guides.Length+1,Output.Body.transform.position+Vector3.up*.022f);
         }
     }
 }

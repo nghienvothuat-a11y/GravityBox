@@ -71,7 +71,7 @@ namespace GravityBox.Venom
         private void LateUpdate()
         {
             if (Rope == null || Anchor == null || Tray == null) return;
-            Rope.positionCount = Guides.Length + 2; Rope.SetPosition(0, Tray.Body.position + Vector3.up * .02f);
+            Rope.positionCount = Guides.Length + 2; Rope.SetPosition(0, Tray.Body.transform.position + Vector3.up * .02f);
             for (int i = 0; i < Guides.Length; i++) Rope.SetPosition(i + 1, Guides[i].position);
             Rope.SetPosition(Guides.Length + 1, Anchor.position);
         }
