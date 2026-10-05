@@ -30,7 +30,7 @@ namespace GravityBox.Venom.ChapterProof
     case "E08":yield return E08();break;case "E09":yield return E09();break;case "E10":yield return E10();break;case "E11":yield return E11();break;
     case "E12":yield return E12();break;case "E13":yield return E13();break;case "E14":yield return E14();break;case "E15":yield return E15();break;
     case "E16":yield return E16();break;case "E17":yield return E17();break;case "E18":yield return E18();break;case "B2":yield return B2();break;
-    case "N13":yield return N13();break;case "N15":yield return N15();break;case "N18":yield return N18();break;
+    case "N13":yield return N13();break;case "N15":yield return N15();break;case "N18":yield return N18();break;case "N19":yield return N19();break;
     default:throw new NotImplementedException("Spatial Plus route "+COgheSpatialNextScenario.ContentKey(game));
    }
    yield return s.Exit();
@@ -120,6 +120,29 @@ namespace GravityBox.Venom.ChapterProof
    yield return Pull("C","The whole body pushes the crate against the shelf");
    yield return s.Go(W(.31f,-.24f,.03f),"Climb the crate");
    yield return s.Go(W(.31f,-.21f,.20f),"Onto the shelf");
+  }
+  // N19: E03's door, then the freed holder's second job: hold spring handle C (bolt C out of D's lane) while the
+  // other half pushes D to the shelf. Released, the bolt springs back; the holder follows, they merge and climb.
+  IEnumerator N19()
+  {
+   var q=Find<COgheQuantumSplitter>();var door=s.Slider("A door");var c=s.Task("C");var bolt=s.Slider("C bolt");
+   yield return s.Split(q,Selected);int holder=q.LastRight,worker=q.LastLeft;
+   yield return s.Walk(holder,W(.32f,-.298f,-.20f),"Holder loads pad A");
+   yield return until(10,()=>door.AtEnd,"Pad A raises the door");
+   yield return s.Walk(worker,W(-.16f,-.30f,-.20f),"Through the door");
+   game.SelectFragment(worker);yield return Pull("B","B latches the door open");
+   // The freed holder steps off pad A to spring handle C, then takes it.
+   yield return s.Walk(holder,W(.09f,-.30f,-.19f),"The freed holder walks to spring handle C");
+   game.SelectFragment(holder);
+   for(int attempt=0;attempt<3&&!c.Busy;attempt++){game.SelectFragment(holder);yield return tap(c.HandPoint+Vector3.up*.004f);}
+   if(!c.Busy)throw new InvalidOperationException("Spring handle C rejected: "+c.LastFailure);
+   yield return until(40,()=>c.Holding&&bolt.AtEnd,"The freed holder holds C: the bolt is drawn out of D's lane");
+   game.SelectFragment(worker);yield return Pull("D","The other half pushes D against the shelf");
+   yield return s.Walk(holder,W(-.14f,-.30f,-.22f),"The holder lets go and follows through the door");
+   yield return until(10,()=>bolt.Position<=bolt.CatchTolerance,"Bolt C springs back");
+   yield return s.Merge(W(-.12f,-.30f,-.22f));
+   yield return s.Go(W(-.31f,-.24f,.03f),"Climb D");
+   yield return s.Go(W(-.31f,-.21f,.20f),"Onto the shelf");
   }
   IEnumerator E04()
   {

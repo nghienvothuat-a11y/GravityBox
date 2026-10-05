@@ -675,5 +675,36 @@ namespace GravityBox.Editor
    NextOutline(c,"A step outline",new Vector3(.196f,-.2995f,.14f),new Vector2(.125f,.145f));
    PlusStep(1,new Vector3(-.25f,-.29f,-.05f));PlusStep(2,new Vector3(-.20f,-.27f,-.20f));PlusStep(3,new Vector3(.196f,-.27f,.14f));PlusStep(4,new Vector3(.33f,-.24f,.14f));
   }
+
+  // N19 · 19 · Người giữ có việc thứ hai. N18 mirrored (Q's room on the right, the exit room on the left) so the two do
+  // not look alike. One half holds pad A (door up) while the other goes through and latches the door with B: that
+  // frees the holder for its second job. The step D is blocked by bolt C, whose spring handle is only in Q's room: the
+  // freed holder holds C (the bolt pulls back) while the other half pushes D to the shelf. Let go, merge, climb, out.
+  static void PlusN19(ExpansionContext c)
+  {
+   c.Exit=new Vector3(-.40f,-.163f,.20f);c.Outward=Vector3.left;c.Spawn=new Vector3(.18f,-.25f,-.215f);c.Definition.CameraEuler=new Vector3(44,20,0);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   NextPlinth(c,"Partition wall",new Vector3(-.05f,-.20f,.0775f),new Vector3(.03f,.20f,.435f));
+   NextPlinth(c,"Partition wall",new Vector3(-.05f,-.20f,-.2775f),new Vector3(.03f,.20f,.035f));
+   var door=PlusGate(c,"A door",new Vector3(-.05f,-.20f,-.20f),Vector3.up,.20f,new Vector3(.012f,.20f,.114f));
+   NextQuantum(c,new Vector3(.21f,-.30f,-.02f),.025f,.13f);
+   var a=ExpansionPad(c,"A",new Vector3(.32f,-.298f,-.20f),.009f,.10f);
+   var b=ViewTask(c,"B",new Vector3(-.14f,-.277f,-.10f),Vector3.left,.05f,floor);b.OneWay=true;
+   var safe=new GameObject("Door safety",typeof(COgheTissueClearance)).GetComponent<COgheTissueClearance>();safe.transform.SetParent(c.Root,false);safe.transform.localPosition=new Vector3(-.05f,-.25f,-.20f);safe.Size=new Vector3(.06f,.10f,.12f);
+   var hold=new GameObject("A holds, B latches the door",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();hold.transform.SetParent(c.Root,false);
+   hold.Inputs=new[]{a};hold.Rails=new[]{b.Rail};hold.Output=door;hold.Any=true;hold.Retain=false;hold.Clearance=safe;
+   NextPlinth(c,"Exit shelf",new Vector3(-.31f,-.255f,.20f),new Vector3(.18f,.09f,.20f));
+   NextCrate(c,"D",new Vector3(-.31f,-.27f,-.12f),Vector3.forward,.156f,new Vector3(.14f,.06f,.12f),floor,new Vector3(0,0,-.068f),new Vector3(0,0,-.052f),.06f,.012f);
+   // Bolt C lies across D's lane, in the 3 cm between D's start and its place at the shelf; spring handle C in Q's
+   // room draws it back only while it is held, and it springs back in front of the docked D.
+   var bolt=ExpansionRail(c,"C bolt",new Vector3(-.26f,-.2875f,-.042f),Vector3.right,.10f,0,new Vector3(.12f,.025f,.03f),.02f,.004f,false,false);
+   bolt.GetComponent<VenomMovableProp>().Manipulable=false;bolt.CatchTolerance=.003f;
+   // At the front of Q's room, between pad A and the door: the freed holder walks straight to it.
+   var spring=ViewTask(c,"C",new Vector3(.06f,-.277f,-.13f),Vector3.right,.06f,floor);spring.HoldAtEnd=true;spring.ReturnForce=.03f;spring.Rail.LatchAtEnd=false;
+   ViewLink(c,spring.Rail,bolt,false,null);
+   NextOutline(c,"D shelf step outline",new Vector3(-.31f,-.2995f,.036f),new Vector2(.145f,.125f));
+   NextTrace("A",new Vector3(.27f,-.2992f,-.20f),new Vector3(.05f,-.2992f,-.27f),new Vector3(-.03f,-.2992f,-.27f));
+   NextTrace("B",new Vector3(-.19f,-.2992f,-.068f),new Vector3(-.07f,-.2992f,-.068f),new Vector3(-.07f,-.2992f,-.14f));
+   PlusStep(1,new Vector3(.21f,-.27f,-.07f));PlusStep(2,new Vector3(.32f,-.29f,-.20f));PlusStep(3,new Vector3(-.16f,-.28f,-.15f));PlusStep(4,new Vector3(.09f,-.28f,-.18f));PlusStep(5,new Vector3(-.31f,-.28f,-.25f));PlusStep(6,new Vector3(-.31f,-.24f,.04f));
+  }
  }
 }

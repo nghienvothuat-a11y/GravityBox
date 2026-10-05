@@ -8,8 +8,8 @@ namespace GravityBox.Venom
     public sealed class VenomCampaignSave
     {
         public int Version=CurrentVersion;
-        /// <summary>3: chapter 1 rebuilt; 4: chapter 2 reordered and rebuilt (05/10/2026). Spatial progress saved before it is cleared once.</summary>
-        public const int CurrentVersion=4;
+        /// <summary>3: chapter 1 rebuilt; 4, 5: chapter 2 reordered and rebuilt (05/10/2026). Spatial progress saved before it is cleared once.</summary>
+        public const int CurrentVersion=5;
         public List<string> Completed=new List<string>();
         public bool HomeUnlocked, RevealHome;
         public static bool PersistenceEnabled=true;

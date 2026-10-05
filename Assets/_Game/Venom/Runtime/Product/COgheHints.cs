@@ -57,6 +57,7 @@ namespace GravityBox.Venom
             ["coghe.spatial.next.29"] = "Seat both pieces in the frame first (the far one first), then merge and lift.",
             ["coghe.spatial.plus.n13"] = "Split in Q. One half holds the red block aside; the other pushes the blue block to the island. Let go: the red block springs back as the low step.",
             ["coghe.spatial.plus.n15"] = "The blue handle only works from this side: push the step over first, then take the tube.",
+            ["coghe.spatial.plus.n19"] = "Latch the door with the red handle first: it frees the half on the blue pad. That half then holds the yellow handle (it draws the yellow bolt back) while the other half pushes the green block to the shelf.",
             ["coghe.spatial.plus.n18"] = "One half holds the blue pad; the other goes through and latches the door with the red handle. Merge: the yellow block needs all of COghe.",
             ["coghe.spatial.plus.e01"] = "Step onto the tray beside the crate and press the button to ride up.",
             ["coghe.spatial.plus.e02"] = "Check where each tube comes out before you go in.",

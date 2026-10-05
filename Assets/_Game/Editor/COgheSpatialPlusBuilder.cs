@@ -46,6 +46,7 @@ namespace GravityBox.Editor
    NewPlus("N13","Khối chặn lò xo","Khối chặn có lò xo: buông ra là nó bật về chỗ cũ.",PlusN13),
    NewPlus("N18","Nửa thân không đủ sức","Khối 100% cần cả thân COghe; một nửa chỉ gồng được.",PlusN18),
    NewPlus("N15","Chuẩn bị trước khi đi","Tay nắm chỉ ở phòng này: việc gì ở đây thì làm trước khi đi.",PlusN15),
+   NewPlus("N19","Người giữ có việc thứ hai","Người giữ được thả ra thì còn làm được việc khác.",PlusN19),
   };
 
   // Design notes (root-local): numbered steps, labels and routes, projected onto renders for the design plates.
