@@ -23,14 +23,18 @@ namespace GravityBox.Venom
         private float commandAt;
         private int commandGroup;
         private bool pushedOnce,reachedRoof;
-        private LineRenderer target,ripple,face,stem,selection,hint,roofRing,roofGlyph;
+        private LineRenderer target,ripple,face,stem,selection,hint,roofRing,roofGlyph,deniedRing,deniedSlash;
+        private int seenRefusals=-1;private float deniedAt=-10;private Vector3 deniedPoint;
+        /// <summary>A refused tap on a mechanism is marked where it was refused (a shaking ⊘), not swallowed in silence.</summary>
+        public bool DeniedVisible=>deniedRing!=null&&deniedRing.enabled;
         private Mesh faceMesh;
         private MeshRenderer faceFill;
         private readonly Vector3[] faceVertices=new Vector3[4];
         private readonly Color[] faceColors=new Color[4];
-        private readonly LineRenderer[] lines=new LineRenderer[8];
+        private readonly LineRenderer[] lines=new LineRenderer[10];
         private static readonly Color Mint=new Color(.10f,.57f,.45f);
         private static readonly Color Amber=new Color(.87f,.49f,.12f);
+        private static readonly Color Coral=new Color(.78f,.30f,.24f);
         private Texture2D rotateIcon,lockedIcon;
         private GUIStyle iconLabel;
         private Material fallback;
@@ -49,6 +53,8 @@ namespace GravityBox.Venom
             hint=Line(5,"Lesson arrow",5,.003f,Amber);
             roofRing=Line(6,"Roof departure marker",49,.0016f,Amber);
             roofGlyph=Line(7,"Roof departure chevron",3,.002f,Amber);
+            deniedRing=Line(8,"Refused tap ring",49,.0026f,Coral);
+            deniedSlash=Line(9,"Refused tap slash",2,.0026f,Coral);
             var fill=new GameObject("Touched glass wash");fill.transform.SetParent(visuals,false);
             faceMesh=new Mesh{name="Temporary face feedback"};faceMesh.MarkDynamic();
             faceMesh.vertices=faceVertices;faceMesh.colors=faceColors;faceMesh.triangles=new[]{0,1,2,0,2,3};
@@ -101,6 +107,7 @@ namespace GravityBox.Venom
             faceFill.enabled=false;
             if(game.Home||game.Owner.Completed||game.Owner.Lost)return;
             float now=Time.unscaledTime;
+            ShowRefusal(now);
             if(HasCommand&&commandGroup!=game.Matter.Groups[game.Motion.Selected])HasCommand=false;
             if(HasCommand)
             {
@@ -178,6 +185,21 @@ namespace GravityBox.Venom
                 roofGlyph.SetPosition(1,p+game.Root.right*.004f);
                 roofGlyph.SetPosition(2,p-game.Root.right*.006f+game.Root.forward*.007f);
             }
+        }
+        private void ShowRefusal(float now)
+        {
+            int total=0;COgheMechanism last=null;
+            foreach(var m in game.Mechanisms){if(m==null)continue;total+=m.Refusals;if(m.Refusals>0&&(last==null||m.RefusedAt>last.RefusedAt))last=m;}
+            if(seenRefusals<0||total<seenRefusals)seenRefusals=total;
+            else if(total!=seenRefusals&&last!=null){seenRefusals=total;deniedAt=now;deniedPoint=last.RefusalPoint;}
+            float age=now-deniedAt;if(age>.8f)return;
+            var view=game.Owner.View.transform;float fade=1-age/.8f;
+            // A short head-shake: the ring jitters sideways and settles.
+            Vector3 centre=deniedPoint+view.right*(Mathf.Sin(age*42)*.004f*fade)-view.forward*.02f;
+            deniedRing.enabled=deniedSlash.enabled=true;Circle(deniedRing,centre,-view.forward,.017f);
+            Vector3 diagonal=(view.right+view.up).normalized*.012f;
+            deniedSlash.SetPosition(0,centre-diagonal);deniedSlash.SetPosition(1,centre+diagonal);
+            ColorAlpha(deniedRing,Coral,fade);ColorAlpha(deniedSlash,Coral,fade);
         }
         private static Texture2D RotationIcon(bool locked)
         {

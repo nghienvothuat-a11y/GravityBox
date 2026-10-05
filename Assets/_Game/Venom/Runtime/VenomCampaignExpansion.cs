@@ -90,7 +90,13 @@ namespace GravityBox.Venom
         }
         private bool TouchMechanism(Ray ray,float obstruction)
         {
-            if(Home||heldProp!=null)return false;
+            if(Home)return false;
+            if(heldProp!=null)
+            {
+                // Holding a crate, a tap on a lift button lets the crate go and presses the button (Mrk, 05/10/2026).
+                foreach(var m in Mechanisms)if(m.isActiveAndEnabled&&m.ClaimsTapWhileHolding(ray,obstruction)){ReleaseProp();return m.TryTouch(this,ray,obstruction);}
+                return false;
+            }
             foreach(var m in Mechanisms)if(m.isActiveAndEnabled&&m.TryTouch(this,ray,obstruction))return true;
             return false;
         }

@@ -16,6 +16,18 @@ namespace GravityBox.Tests
  {
   private IEnumerator WaitFor(float seconds,Func<bool> done){for(int i=0;i<seconds/Dt&&!done();i++){Tick();if(i%240==0)yield return null;}}
   private Vector3 Local(Vector3 world)=>game.Root.InverseTransformPoint(world);
+  private bool TubeInFront(Vector3 target)
+  {
+   game.CameraRig.Frame(720,1280,0,true);var ray=game.Owner.View.ScreenPointToRay(game.Owner.View.WorldToScreenPoint(target));
+   var hits=Physics.RaycastAll(ray,Mathf.Max(5,game.Owner.View.farClipPlane));Array.Sort(hits,(a,b)=>a.distance.CompareTo(b.distance));
+   foreach(var hit in hits)
+   {
+    if(hit.collider.GetComponent<VenomContact>()!=null)continue;
+    var face=hit.collider.GetComponent<VenomSurfacePatch>();if(face!=null&&face.ExteriorGlass&&Vector3.Dot(ray.direction,face.Normal)>=-.001f)continue;
+    return hit.collider.GetComponentInParent<COgheTubeNetwork>()!=null;
+   }
+   return false;
+  }
   private IEnumerator WanderPlus(string key)
   {
    yield return LoadPlus(key);
@@ -47,6 +59,8 @@ namespace GravityBox.Tests
     int best=0;for(int i=1;i<targets.Count;i++)if(Vector3.Distance(targets[i],at)<Vector3.Distance(targets[best],at))best=i;
     var target=targets[best];targets.RemoveAt(best);
     var before=game.Motion.Get(0);int id=before!=null?before.CommandId:-1;
+    // A tap that lands on a tube body is a trip through it (Mrk, 05/10/2026), not a walk: leave it to the solve tests.
+    if(TubeInFront(target)){File.AppendAllText(log,$"skip {Local(target):F3} (a tube in front)\n");continue;}
     yield return Tap(target);
     if(game.Attached){game.ReleaseProp();File.AppendAllText(log,$"skip {Local(target):F3} (grabbed a prop; let go)\n");continue;}
     var order=game.Motion.Get(0);

@@ -110,6 +110,7 @@ namespace GravityBox.Venom
                 if (Current.AdDay == reward.Day) Current.AdsForDropsToday++;
             }
             Current.Paid.Add(reward.Key); Current.Drops += reward.Amount; Save();
+            if (reward.Type == COgheReward.Kind.Hint) { COgheAnalytics.Log("hint_unlock", "level_id", reward.Key.Substring(5)); return true; }
             if (reward.Type == COgheReward.Kind.Item) COgheAnalytics.Log("item_grant", "item", reward.ItemId, "source", "rewarded");
             else COgheAnalytics.Log("drops_earn", "source", reward.Source, "amount", reward.Amount, "balance", Current.Drops);
             if (reward.Type == COgheReward.Kind.Daily) COgheAnalytics.Log("daily_gift", "amount", reward.Amount, "rewarded", 1);

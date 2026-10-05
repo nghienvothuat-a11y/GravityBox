@@ -69,7 +69,7 @@ namespace GravityBox.Venom
         }
         private void GameView()
         {
-            Top();art.Button(pageRoot,"Overview",new Rect(width-72,height-82,48,48),COgheIcon.Overview,()=>Game.CameraRig.Overview());
+            Top();HintButton();art.Button(pageRoot,"Overview",new Rect(width-72,height-82,48,48),COgheIcon.Overview,()=>Game.CameraRig.Overview());
             if(Game.CameraRig.ShowZones)
             {
                 float x=24;int count=Game.CameraRig.ZoneCount;

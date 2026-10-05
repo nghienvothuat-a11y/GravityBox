@@ -370,6 +370,17 @@ namespace GravityBox.Editor
    // walking back beside it.
    ChapterTube(c,"Left tube",new Vector3(-.16f,-.255f,-.12f),new Vector3(-.20f,-.25f,-.12f),new Vector3(-.23f,-.19f,-.10f),new Vector3(-.25f,-.12f,-.05f),new Vector3(-.25f,-.07f,.03f),new Vector3(-.25f,-.055f,.14f));
    ChapterTube(c,"Right tube",new Vector3(.16f,-.255f,-.12f),new Vector3(.20f,-.25f,-.12f),new Vector3(.23f,-.19f,-.10f),new Vector3(.25f,-.12f,-.05f),new Vector3(.25f,-.07f,.03f),new Vector3(.25f,-.055f,.14f));
+   // Where each tube starts to climb it is 1–8 cm off the floor: a body walking past wedged under it (wander test,
+   // 05/10/2026). Slick columns follow the tube's underside 6 mm below it, so no gap is left to wedge in and the bore
+   // and mouths stay clear.
+   var low=COgheTubeNetwork.SampleCurve(new[]{new Vector3(-.16f,-.255f,-.12f),new Vector3(-.20f,-.25f,-.12f),new Vector3(-.23f,-.19f,-.10f),new Vector3(-.25f,-.12f,-.05f),new Vector3(-.25f,-.07f,.03f),new Vector3(-.25f,-.055f,.14f)},12);
+   foreach(float side in new[]{-1f,1f})for(float x=.19f;x<=.2501f;x+=.01f)
+   {
+    Vector3 under=low[0];foreach(var p in low)if(p.y<-.12f&&Mathf.Abs(-p.x-x)<Mathf.Abs(-under.x-x))under=p;
+    float top=under.y-.038f-.006f,gap=under.y-.038f+.30f;if(gap<.012f||gap>.085f)continue;
+    int first=c.Surfaces.Count;ViewBlock(c,(side<0?"Left":"Right")+" tube underfill",new Vector3(side*x,(top-.30f)*.5f,under.z),new Vector3(.0105f,top+.30f,.07f));
+    for(int i=first;i<c.Surfaces.Count;i++)c.Surfaces[i].Slippery=true;
+   }
    var latch=new GameObject("A1 A2 slide the step",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();latch.transform.SetParent(c.Root,false);latch.Inputs=new[]{a1,a2};latch.Output=bridge;
    PlusStep(1,new Vector3(0,-.27f,-.17f));PlusStep(2,new Vector3(-.16f,-.255f,-.12f));PlusStep(3,new Vector3(-.345f,-.10f,.245f));PlusStep(4,new Vector3(0,-.27f,.12f));PlusStep(5,new Vector3(0,-.29f,.02f));
    PlusGhost("50%",new Vector3(-.345f,-.08f,.245f));PlusGhost("50%",new Vector3(.345f,-.08f,.245f));

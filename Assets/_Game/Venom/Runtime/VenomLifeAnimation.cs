@@ -280,9 +280,11 @@ namespace GravityBox.Venom
             var game=level.Campaign;
             if(game==null||game.Motion==null)return;
             bool attached=game.TryManipulationContact(anchor,out var handPoint,out bool pulling);
+            float strain=attached?game.ManipulationStrain(anchor):0;
             Vector3 direction=velocity.sqrMagnitude>.001f?velocity.normalized:Vector3.down;
             if(attached)direction=(handPoint-centre).normalized;
-            float stretch=game.IsFlowing(anchor)?1:attached?(pulling?1.16f:.88f):!grounded||game.Definition.Passive?1+Mathf.Clamp(velocity.magnitude*.14f,0,.18f):1-game.Impact*.24f;
+            // Straining against a load that will not move: the body stretches further and trembles.
+            float stretch=game.IsFlowing(anchor)?1:attached?(pulling?1.16f+.16f*strain:.88f-.07f*strain):!grounded||game.Definition.Passive?1+Mathf.Clamp(velocity.magnitude*.14f,0,.18f):1-game.Impact*.24f;
             for(int i=0;i<count;i++)
             {
                 Vector3 p=transform.TransformPoint(points[i]),d=p-centre;
@@ -298,20 +300,31 @@ namespace GravityBox.Venom
                 {
                     Vector3 axis=game.Impact>.1f?up:direction;
                     Vector3 change=axis*Vector3.Dot(d,axis)*(stretch-1)+Vector3.ProjectOnPlane(d,axis)*(1/Mathf.Sqrt(stretch)-1);
-                    p+=Vector3.ClampMagnitude(change,.006f);
+                    if(strain>.3f)change+=Vector3.Cross(up,axis).normalized*(Mathf.Sin(clock*64+i*1.7f)*.0013f*strain);
+                    p+=Vector3.ClampMagnitude(change,.0075f);
                 }
                 points[i]=transform.InverseTransformPoint(p);
             }
             if(attached)
             {
                 Vector3 side=Vector3.Cross(up,direction).normalized;
-                for(int arm=0;arm<2;arm++)
+                // Under strain the tendrils pull taut and thin, and a third one joins in.
+                int arms=strain>.5f?3:2;float thickness=1-.35f*strain;
+                for(int arm=0;arm<arms;arm++)
                 {
-                    Vector3 a=centre+side*((arm*2-1)*.014f),end=handPoint+side*((arm*2-1)*.008f);
-                    Vector3 bend=up*(pulling?.003f:.014f);
-                    Tube(a,Vector3.Lerp(a,end,.3f)+bend,Vector3.Lerp(a,end,.7f)+bend,end,up,centre-up*.04f,1);
+                    float offset=arms==3?arm-1:arm*2-1;
+                    Vector3 a=centre+side*(offset*.014f),end=handPoint+side*(offset*.008f);
+                    Vector3 bend=up*((pulling?.003f:.014f)*(1-strain));
+                    Tube(a,Vector3.Lerp(a,end,.3f)+bend,Vector3.Lerp(a,end,.7f)+bend,end,up,centre-up*.04f,thickness);
                     TendrilCount++;
                 }
+            }
+            else if(game.TryPressContact(anchor,out var pressPoint,out float pressDepth))
+            {
+                // One tendril reaches the tray button and pushes it down while the press lasts.
+                Vector3 reach=pressPoint-centre,lift=up*(.012f*(1-pressDepth)+.004f);
+                Tube(centre+up*.012f,Vector3.Lerp(centre,pressPoint,.35f)+lift*1.6f,Vector3.Lerp(centre,pressPoint,.75f)+lift,pressPoint,up,centre-up*.04f,.8f);
+                TendrilCount++;
             }
             else if(game.Motion.TryCatchPoint(anchor,out var caughtPoint))
             {

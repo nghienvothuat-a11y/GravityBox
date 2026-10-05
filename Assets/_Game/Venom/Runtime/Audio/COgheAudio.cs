@@ -63,6 +63,9 @@ namespace GravityBox.Venom
         private float[] railPosition, railTravel, tableAngle;
         private Vector3[] loosePosition;
         private int[] trips, landings, journeys;
+        private COghePassengerLift.ButtonState[] liftButtons = new COghePassengerLift.ButtonState[0];
+        private int refusals;
+        private bool[] overloaded = new bool[0];
         private COgheSwingTransfer.SwingPhase[] swingPhase;
         private string[] failures;
         private int fragments, commands, escaped;
@@ -159,6 +162,9 @@ namespace GravityBox.Venom
             active = new bool[pads.Length]; for (int i = 0; i < pads.Length; i++) active[i] = pads[i].Active;
             meshed = new bool[trains.Length]; for (int i = 0; i < trains.Length; i++) meshed[i] = trains[i].Meshed;
             trips = new int[lifts.Length]; for (int i = 0; i < lifts.Length; i++) trips[i] = lifts[i].Trips;
+            liftButtons = new COghePassengerLift.ButtonState[lifts.Length]; for (int i = 0; i < lifts.Length; i++) liftButtons[i] = lifts[i].Button;
+            refusals = Refusals();
+            overloaded = new bool[tasks.Length];
             caught = new bool[tables.Length]; tableAngle = new float[tables.Length];
             for (int i = 0; i < tables.Length; i++) { caught[i] = tables[i].Caught; tableAngle[i] = tables[i].Angle; }
             swingPhase = new COgheSwingTransfer.SwingPhase[swings.Length]; landings = new int[swings.Length];
@@ -251,8 +257,17 @@ namespace GravityBox.Venom
                 if (op && !operating[i] && !quiet) Play("creature_grab", .45f, BodyPan());
                 operating[i] = op;
                 string f = tasks[i].LastFailure;
-                if (!string.IsNullOrEmpty(f) && f != failures[i] && !quiet) Play("creature_hm", .5f, BodyPan(), 1.2f);
+                if (!string.IsNullOrEmpty(f) && f != failures[i] && !quiet && Refusals() == refusals) Play("creature_hm", .5f, BodyPan(), 1.2f); // a refusal has its own sound
                 failures[i] = f;
+            }
+            int refused = Refusals();
+            if (refused > refusals && !quiet) Play(LastRefusal() == COgheMechanism.Refusal.TooHeavy ? "creature_hmph" : "glass_tok", .5f, BodyPan(), .2f);
+            refusals = refused;
+            for (int i = 0; i < tasks.Length && i < overloaded.Length; i++)
+            {
+                bool o = tasks[i].Overloaded;
+                if (o && !overloaded[i] && !quiet) Play("creature_grumble", .5f, BodyPan(), .5f);
+                overloaded[i] = o;
             }
             for (int i = 0; i < pads.Length; i++)
             {
@@ -271,6 +286,14 @@ namespace GravityBox.Venom
             {
                 if (lifts[i].Trips != trips[i] && !quiet) Play("mech_lift_ding", .5f, Pan(lifts[i].transform.position));
                 trips[i] = lifts[i].Trips;
+                // The tray button clicks down when pressed and pops back up on arrival.
+                var button = lifts[i].Button;
+                if (button != liftButtons[i] && !quiet)
+                {
+                    if (button == COghePassengerLift.ButtonState.Pressing) Play("mech_latch", .45f, Pan(lifts[i].Panel.position));
+                    else if (button == COghePassengerLift.ButtonState.Releasing) Play("metal_clink", .35f, Pan(lifts[i].Panel.position));
+                }
+                liftButtons[i] = button;
             }
             for (int i = 0; i < tables.Length; i++)
             {
@@ -311,6 +334,12 @@ namespace GravityBox.Venom
 
         private bool AnyTubeTravelling() { foreach (var t in tubes) if (t.AnyTravelling) return true; return false; }
         private bool AnySwinging() { foreach (var s in swings) if (s.Phase == COgheSwingTransfer.SwingPhase.Swinging) return true; return false; }
+        private COgheMechanism.Refusal LastRefusal()
+        {
+            COgheMechanism last = null; foreach (var m in game.Mechanisms) if (m != null && m.Refusals > 0 && (last == null || m.RefusedAt > last.RefusedAt)) last = m;
+            return last != null ? last.LastRefusal : COgheMechanism.Refusal.None;
+        }
+        private int Refusals() { int n = 0; if (game != null) foreach (var m in game.Mechanisms) if (m != null) n += m.Refusals; return n; }
         private bool AnyLiftMoving() { foreach (var l in lifts) if (l.Moving) return true; return false; }
 
         // ---- mixing -----------------------------------------------------------------------------------------------------

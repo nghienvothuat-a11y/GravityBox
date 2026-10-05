@@ -22,6 +22,19 @@ namespace GravityBox.Venom
         public virtual bool ControlsExit => false;
         public virtual bool ExitUnlocked => true;
         public virtual string Activity => null;
+        /// <summary>Why a tap on this mechanism was refused. Presentation (marker, sound, product toast) reads it.</summary>
+        public enum Refusal { None, Locked, Busy, NoPower, Blocked, Unreachable, NeedsHold, TooHeavy, Closed }
+        public Refusal LastRefusal { get; private set; }
+        public int Refusals { get; private set; }
+        public Vector3 RefusalPoint { get; private set; }
+        public float RefusedAt { get; private set; } = -10;
+        protected void Refuse(VenomCampaign game, Refusal kind, Vector3 point)
+        {
+            LastRefusal = kind; Refusals++; RefusalPoint = point;
+            RefusedAt = game != null && game.Matter != null ? game.Matter.SimulationTime : 0;
+        }
+        /// <summary>A tap this mechanism would take even while COghe holds a loose prop (the prop is let go first).</summary>
+        public virtual bool ClaimsTapWhileHolding(Ray ray, float nearestSolidDistance) => false;
         public abstract void ResetMechanism(VenomCampaign game);
         public abstract void StepMechanism(VenomCampaign game, float dt);
     }

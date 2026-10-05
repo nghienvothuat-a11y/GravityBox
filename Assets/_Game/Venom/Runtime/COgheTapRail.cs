@@ -38,7 +38,17 @@ namespace GravityBox.Venom
         public float Speed = .09f;
         public float StallSeconds = 3;
         public bool CompensateLoad;
-        private float accumulatedEffort, lastEffort, olderEffort, lastSpeed, heldBack;
+        /// <summary>Optional: the share of the whole COghe this load needs (.5 = half). Presentation only.</summary>
+        public float LoadShare;
+        /// <summary>How long a hand may pull at full strength against a load that will not move before it lets go.</summary>
+        public float StrainSeconds = 1.5f;
+        /// <summary>0..1: how hard the hand pulls against a load that is not moving (presentation reads it).</summary>
+        public float Strain { get; private set; }
+        /// <summary>Pulling at full strength and the load still does not move.</summary>
+        public bool Overloaded { get; private set; }
+        /// <summary>Times a part gave up because the load was too heavy for it.</summary>
+        public int GaveUp { get; private set; }
+        private float accumulatedEffort, lastEffort, olderEffort, lastSpeed, heldBack, overloadedFor;
         // The rail steps before this task on its object, so the effort queued last tick is still to act on the body.
         private bool pendingLag;
         public TaskPhase Phase { get; private set; }
@@ -86,7 +96,7 @@ namespace GravityBox.Venom
         public override void ResetMechanism(VenomCampaign game)
         {
             owner = game; Phase = TaskPhase.Idle; Actor = -1; order = null;
-            Holding = false; AppliedEffort = 0;
+            Holding = false; AppliedEffort = 0; Strain = 0; Overloaded = false; overloadedFor = 0; GaveUp = 0;
             accumulatedEffort=0;lastEffort=0;CompletedJourneys = 0; LastFailure = null; messageUntil = 0; stableTime = 0;
             targetStop = 0; target = 0;
             stance=StandOffset;
@@ -122,22 +132,26 @@ namespace GravityBox.Venom
             Vector3 primary=Handle!=null?Handle.position:Rail.Body.position;
             bool hit=Visible(PickHandleOnly?primary:Rail.Body.position+WorkingSurface.Normal*.023f,PickHandleOnly?primary:Rail.Body.position+WorkingSurface.Normal*.037f);
             if(!hit&&(AlternateHandle==null||!Visible(AlternateHandle.position,AlternateHandle.position)))return false;
-            Request(game.Motion.Selected);
-            game.Feedback.ShowCommand(HandPoint, WorkingSurface.Normal, Rail.transform);
+            if (Request(game.Motion.Selected)) game.Feedback.ShowCommand(HandPoint, WorkingSurface.Normal, Rail.transform);
             return true;
         }
         public bool Request(int anchor)
         {
             if (!owner.Owner.CanControl || owner.Home || anchor < 0 || anchor >= CohesiveOrganism.ParticleCount || owner.Matter.Escaped[anchor]) return false;
-            if (Busy) { Message("Cơ quan đang thực hiện"); return false; }
-            if (!InterlockOpen && RequiredGrip == null) { Message(Clearance != null && Clearance.Blocked ? "Có mô trong vùng chuyển — đưa về bệ an toàn" : RequiredLoad != null ? "Cần một phần giữ bàn đạp" : "Chốt đang khóa"); return false; }
+            if (Busy) { Message("Cơ quan đang thực hiện"); Refuse(owner, Refusal.Busy, HandPoint); return false; }
+            if (!InterlockOpen && RequiredGrip == null)
+            {
+                bool blocked = Clearance != null && Clearance.Blocked, pad = !blocked && RequiredLoad != null && !RequiredLoad.Active;
+                Message(blocked ? "Có mô trong vùng chuyển — đưa về bệ an toàn" : pad ? "Cần một phần giữ bàn đạp" : "Chốt đang khóa");
+                Refuse(owner, blocked ? Refusal.Blocked : pad ? Refusal.NeedsHold : Refusal.Locked, HandPoint); return false;
+            }
             if (!owner.PrepareTapCommand(anchor)) return false;
             stance=StandOffset;
             backSide=TwoSided&&Vector3.Dot(owner.Motion.Centre(anchor)-Rail.Body.position,Rail.Frame.TransformDirection(StandOffset))<0;
             if(backSide)stance=-StandOffset;
             owner.Motion.BuildGraph();
             if (!owner.Motion.FindPath(owner.Motion.Centre(anchor), StandPoint, route, true))
-            { Message("Đường tới cơ quan đang bị chặn"); return false; }
+            { Message("Đường tới cơ quan đang bị chặn"); Refuse(owner, Refusal.Unreachable, HandPoint); return false; }
             Actor = anchor;
             actorCount = CountActor();
             if (HoldAtEnd) target = Rail.Travel;
@@ -179,15 +193,18 @@ namespace GravityBox.Venom
         {
             if (Actor >= 0 && ReferenceEquals(owner.Motion.Get(Actor), order)) owner.Motion.Cancel(Actor);
             Phase = TaskPhase.Idle; Actor = -1; order = null;
-            Holding = false; AppliedEffort = 0; accumulatedEffort=0; lastEffort=0;
+            Holding = false; AppliedEffort = 0; accumulatedEffort=0; lastEffort=0; Overloaded = false; overloadedFor = 0;
             if (reason != null) Message(reason);
         }
         private void OnDisable()
         {if(owner!=null&&owner.Motion!=null)CancelTask();}
+        /// <summary>True when the acting body is only part of what is left of COghe.</summary>
+        private bool ActorIsPart => Actor >= 0 && actorCount < CohesiveOrganism.ParticleCount - owner.Matter.EscapedCount;
         public override void StepMechanism(VenomCampaign game, float dt)
         {
             float pending = lastEffort, older = olderEffort; lastEffort = olderEffort = 0;
             Holding = false; AppliedEffort = 0;
+            if (!Busy || Phase != TaskPhase.Operating) Strain = Mathf.MoveTowards(Strain, 0, dt * 4);
             if (HoldAtEnd && Rail.Position > .0002f)
                 Rail.ApplyEffort(-Rail.WorldAxis * ReturnForce);
             // The detent holds the measured position, including a cancelled partial journey.
@@ -233,7 +250,12 @@ namespace GravityBox.Venom
             { CancelTask("Mất điểm bám — chạm lại để tiếp tục"); return; }
             if (RequiredGrip != null && !InterlockOpen) { lastProgressAt = now; return; }
             if (!(HoldAtEnd && reached) && now - lastProgressAt > StallSeconds)
-            { CancelTask("Cơ quan bị kẹt hoặc phần này chưa đủ lực"); return; }
+            {
+                bool part = ActorIsPart;
+                CancelTask(part ? "Phần này chưa đủ sức — nhập lại rồi thử" : "Cơ quan bị kẹt");
+                if (part) GaveUp++;
+                Refuse(game, part ? Refusal.TooHeavy : Refusal.Blocked, HandPoint); return;
+            }
             // A journey to either end aims 2 mm past it, so the carriage seats against its stop rather than settling at
             // the edge of the catch, where a rider could slip back out of it.
             float aim = target >= Rail.Travel - 1e-4f ? target + .002f : target <= 1e-4f ? target - .002f : target;
@@ -256,6 +278,20 @@ namespace GravityBox.Venom
             float effort = Mathf.Clamp((desired - judged) * gain + accumulatedEffort + (HoldAtEnd ? ReturnForce + Rail.Resistance : 0),
                 -mass * 7, mass * 7);
             if (reached && !HoldAtEnd) effort = 0;
+            // A load that will not move however hard the hand pulls: strain visibly, then give up with the reason
+            // (Mrk, 05/10/2026: a small part should still try to drag a heavy load, and fail).
+            float cap = mass * 7;
+            bool stuck = !reached && Mathf.Abs(velocity) < .004f && InterlockOpen;
+            Overloaded = CompensateLoad && stuck && Mathf.Abs(effort) >= cap * .95f;
+            Strain = Mathf.MoveTowards(Strain, stuck ? Mathf.Clamp01(Mathf.Abs(effort) / cap) : 0, dt * 4);
+            overloadedFor = Overloaded ? overloadedFor + dt : 0;
+            if (overloadedFor >= StrainSeconds)
+            {
+                bool part = ActorIsPart;
+                CancelTask(part ? "Phần này chưa đủ sức — nhập lại rồi thử" : "Cơ quan bị kẹt");
+                if (part) GaveUp++;
+                Refuse(game, part ? Refusal.TooHeavy : Refusal.Blocked, HandPoint); return;
+            }
             AppliedEffort = Mathf.Max(0, effort);
             Holding = HoldAtEnd && reached && effort >= ReturnForce * .9f;
             Vector3 force = axis * effort;

@@ -217,7 +217,7 @@ namespace GravityBox.Venom
             else FindPath(Centre(anchor),world,o.Path,o.AvoidSlippery);
             orders[anchor]=o;
         }
-        public bool FindPath(Vector3 start,Vector3 goal,List<Vector3> path,bool avoidSlippery=false)
+        public bool FindPath(Vector3 start,Vector3 goal,List<Vector3> path,bool avoidSlippery=false,bool quiet=false)
         {
             COgheMobileMetrics.Begin(3);
             path.Clear();int n=nodes.Count;
@@ -254,7 +254,7 @@ namespace GravityBox.Venom
                     if(d<costs[next]){costs[next]=d;parents[next]=current;Queue(next);}
                 }
             }
-            if(float.IsPositiveInfinity(costs[b])){Debug.LogWarning($"Disconnected surface route {game.Definition.Order}: {nodes[a]} -> {nodes[b]}, {nodes.Count} nodes");path.Add(game.Root.InverseTransformPoint(goal));COgheMobileMetrics.End(3);return false;}
+            if(float.IsPositiveInfinity(costs[b])){if(!quiet)Debug.LogWarning($"Disconnected surface route {game.Definition.Order}: {nodes[a]} -> {nodes[b]}, {nodes.Count} nodes");path.Add(game.Root.InverseTransformPoint(goal));COgheMobileMetrics.End(3);return false;}
             for(int at=b;at>=0;at=parents[at])
             {
                 path.Add(nodes[at]);if(at==a)break;

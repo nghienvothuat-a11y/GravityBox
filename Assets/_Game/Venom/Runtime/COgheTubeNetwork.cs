@@ -58,6 +58,8 @@ namespace GravityBox.Venom
         private sealed class Travel
         {
             public int Anchor,Node=-1,Edge=-1,Direction,CommandId,PendingEdge=-1,ArrivalEdge=-1,ArrivalDirection;
+            // Edges still to take after the current one, toward a tapped tube segment.
+            public readonly List<int> Plan=new List<int>();
         }
 
         public Node[] Nodes=Array.Empty<Node>();
@@ -72,6 +74,8 @@ namespace GravityBox.Venom
         public bool CaptureSurfaceCommandsWhileInside;
         public bool SolidExterior;
         public bool HighlightLastCommand=true;
+        [Tooltip("A tap anywhere on a tube enters it at the nearest reachable mouth and travels to the far end of the tapped segment; at a junction a tap on any part of a branch takes it.")]
+        public bool RouteToTappedSegment=true;
         public int FlexibleGeometryInterval=3;
 
         public int LastChosenEdge {get;private set;}=-1;
@@ -92,6 +96,9 @@ namespace GravityBox.Venom
         private readonly int[] queuedEntry=new int[CohesiveOrganism.ParticleCount];
         private readonly int[] queuedEdge=new int[CohesiveOrganism.ParticleCount];
         private readonly Vector3[] queuedApproach=new Vector3[CohesiveOrganism.ParticleCount];
+        private readonly List<int>[] queuedPlan=new List<int>[CohesiveOrganism.ParticleCount];
+        private Collider[] nodeColliders=Array.Empty<Collider>();
+        private readonly List<Vector3> walk=new List<Vector3>();
         // Reused once per travelling body; keep the same curve projection for
         // pacing and force calculation without doubling the path searches.
         private readonly Vector3[] flowLocal=new Vector3[CohesiveOrganism.ParticleCount],flowTangent=new Vector3[CohesiveOrganism.ParticleCount];
@@ -126,7 +133,9 @@ namespace GravityBox.Venom
         public override void InitializeMechanism(VenomCampaign owner)
         {
             game=owner;root=owner.Root;PrepareGraph();
-            for(int i=0;i<queuedEntry.Length;i++){queuedEntry[i]=-1;queuedEdge[i]=-1;}
+            for(int i=0;i<queuedEntry.Length;i++){queuedEntry[i]=-1;queuedEdge[i]=-1;queuedPlan[i]=null;}
+            nodeColliders=new Collider[Nodes.Length];
+            for(int n=0;n<Nodes.Length;n++){var joint=transform.Find(Nodes[n].Name+" junction");nodeColliders[n]=joint!=null?joint.GetComponent<Collider>():null;}
             solidColliders=GetComponentsInChildren<Collider>(true);
             SyncExitDetector();
         }
@@ -134,7 +143,7 @@ namespace GravityBox.Venom
         public override void ResetMechanism(VenomCampaign owner)
         {
             game=owner;root=owner.Root;Array.Clear(travelByParticle,0,travelByParticle.Length);
-            for(int i=0;i<blockedAutoEntry.Length;i++){blockedAutoEntry[i]=-1;queuedEntry[i]=queuedEdge[i]=-1;}
+            for(int i=0;i<blockedAutoEntry.Length;i++){blockedAutoEntry[i]=-1;queuedEntry[i]=queuedEdge[i]=-1;queuedPlan[i]=null;}
             LastChosenEdge=LastReachedNode=-1;ExitReached=false;AnyTravelling=AnyWaiting=AnyApproaching=AnyChoice=false;flexibleTick=nextTravelCommand=0;
             PrepareGraph(true);solidColliders=GetComponentsInChildren<Collider>(true);SyncExitDetector();
         }
@@ -255,7 +264,12 @@ namespace GravityBox.Venom
             int anchor=owner.Motion.Selected;Travel travel=TravelFor(anchor);
             if(travel==null)
             {
+                // A tap at a mouth enters there. Anywhere else on the tube, or at a mouth COghe cannot walk to, routes from
+                // a mouth it can reach.
                 int entry=PickVisibleEntry(ray,nearestSolidDistance);
+                if(RouteToTappedSegment&&PickBody(ray,nearestSolidDistance,out _,out _,out Vector3 bodyPoint)&&
+                   (entry<0||Vector3.Distance(bodyPoint,NodeWorld(entry))>Radius*1.6f||!GroupContactsEntry(anchor,entry)&&!EntryWalkable(anchor,entry)))
+                    return TouchBody(anchor,ray,nearestSolidDistance);
                 if(entry<0)return false;
                 if(!GroupContactsEntry(anchor,entry)||!EntryClearForGroup(anchor,entry))
                 {QueueEntryApproach(anchor,entry,adjacency[entry].Count==1?adjacency[entry][0]:-1);return true;}
@@ -263,9 +277,29 @@ namespace GravityBox.Venom
                 if(adjacency[entry].Count==1)return TryChoose(anchor,adjacency[entry][0]);
                 return true;
             }
-            if(travel.Edge>=0)return CaptureSurfaceCommandsWhileInside;
+            if(travel.Edge>=0)
+            {
+                // Travelling: a tap further along the tubes sets where to go from the next junction.
+                if(RouteToTappedSegment&&PickBody(ray,nearestSolidDistance,out int ahead,out int aheadNode,out Vector3 aheadPoint))
+                {
+                    int next=travel.Direction>0?Edges[travel.Edge].B:Edges[travel.Edge].A;
+                    bool closed=false;List<int> plan=ahead==travel.Edge?new List<int>():Route(next,ahead,aheadNode,out closed);
+                    if(plan!=null){travel.Plan.Clear();travel.Plan.AddRange(plan);ShowTubeCommand(aheadPoint,ray);}
+                    if(closed)Refuse(game,Refusal.Closed,aheadPoint);
+                }
+                return CaptureSurfaceCommandsWhileInside;
+            }
             int chosen=PickAdjacent(travel.Node,ray,nearestSolidDistance);
-            if(chosen>=0&&TryChoose(anchor,chosen))return true;
+            if(chosen>=0&&!Edges[chosen].Open){Refuse(game,Refusal.Closed,BranchPoint(travel.Node,chosen));return true;}
+            if(chosen>=0&&TryChoose(anchor,chosen)){travel.Plan.Clear();return true;}
+            if(RouteToTappedSegment&&PickBody(ray,nearestSolidDistance,out int segment,out int segmentNode,out Vector3 point))
+            {
+                // At a junction: a tap anywhere on a branch (or beyond it) takes that branch.
+                var plan=Route(travel.Node,segment,segmentNode,out bool closed);
+                if(plan!=null&&plan.Count>0&&TryChoose(anchor,plan[0])){travel.Plan.Clear();for(int i=1;i<plan.Count;i++)travel.Plan.Add(plan[i]);ShowTubeCommand(point,ray);}
+                if(closed)Refuse(game,Refusal.Closed,point);
+                return true;
+            }
             // Consume invalid taps as well, so the campaign cannot fall through
             // to a surface destination or show a misleading touch marker.
             return CaptureSurfaceCommandsWhileInside;
@@ -469,6 +503,12 @@ namespace GravityBox.Venom
             if(openTerminal?(!allCrossed||averageBeyond<requiredLead):terminal==TerminalKind.Closed?nearestEnd>Radius*.5f:!allArrived||nearestEnd>JunctionRadius*.72f)return;
             travel.ArrivalEdge=travel.Edge;travel.ArrivalDirection=travel.Direction;
             travel.Node=target;travel.Edge=-1;travel.PendingEdge=-1;LastReachedNode=target;
+            if(Nodes[target].Terminal==TerminalKind.Junction&&travel.Plan.Count>0)
+            {
+                int next=travel.Plan[0];travel.Plan.RemoveAt(0);
+                if(adjacency[target].Contains(next)&&Edges[next].Open){travel.PendingEdge=next;LastChosenEdge=next;}
+                else{travel.Plan.Clear();Refuse(game,Refusal.Closed,BranchPoint(target,next));}
+            }
             if(Nodes[target].Terminal==TerminalKind.Exit)
             {
                 ExitReached=true;
@@ -651,7 +691,8 @@ namespace GravityBox.Venom
                 if(order!=null&&Vector3.Distance(order.Target,queuedApproach[anchor])>.006f){ClearQueuedEntry(anchor);continue;}
                 if(GroupContactsEntry(anchor,node)&&EntryClearForGroup(anchor,node)&&IsEntryOpen(node))
                 {
-                    int edge=queuedEdge[anchor];BeginAtNode(anchor,node);
+                    int edge=queuedEdge[anchor];var plan=queuedPlan[anchor];var travel=BeginAtNode(anchor,node);
+                    if(plan!=null)travel.Plan.AddRange(plan);
                     if(edge>=0)TryChoose(anchor,edge);
                     continue;
                 }
@@ -662,8 +703,108 @@ namespace GravityBox.Venom
         private void ClearQueuedEntry(int anchor)
         {
             if(game==null||anchor<0||anchor>=32)return;int group=game.Matter.Groups[anchor];
-            for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group)queuedEntry[i]=queuedEdge[i]=-1;
+            for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group){queuedEntry[i]=queuedEdge[i]=-1;queuedPlan[i]=null;}
         }
+
+        /// <summary>From outside: a tap on a tube's body enters at the mouth COghe can walk to soonest and travels to the
+        /// far end of the tapped segment (or to the tapped junction).</summary>
+        private bool TouchBody(int anchor,Ray ray,float limit)
+        {
+            if(!PickBody(ray,limit,out int segment,out int node,out Vector3 point))return false;
+            int best=-1;float bestLength=float.PositiveInfinity;List<int> bestPlan=null;bool anyClosed=false;
+            Vector3 centre=game.Motion.Centre(anchor);
+            for(int n=0;n<Nodes.Length;n++)
+            {
+                if(Nodes[n].Terminal!=TerminalKind.Entry||!IsEntryOpen(n))continue;
+                var plan=Route(n,segment,node,out bool closed);anyClosed|=closed;
+                if(plan==null||plan.Count==0)continue;
+                Vector3 approach=ClosestGripPoint(NodeWorld(n)-EntryInwardWorld(n)*(Radius+.008f));
+                if(!game.Motion.FindPath(centre,approach,walk,true,true))continue;
+                float length=Vector3.Distance(centre,game.Root.TransformPoint(walk[0]));
+                for(int i=1;i<walk.Count;i++)length+=Vector3.Distance(walk[i-1],walk[i]);
+                if(length<bestLength){bestLength=length;best=n;bestPlan=plan;}
+            }
+            if(best<0)
+            {
+                // Nowhere to enter from here, or the tapped part lies behind a closed branch: say so instead of nothing.
+                Refuse(game,anyClosed?Refusal.Closed:Refusal.Unreachable,point);return true;
+            }
+            int first=bestPlan[0];bestPlan.RemoveAt(0);
+            ShowTubeCommand(point,ray);
+            if(!GroupContactsEntry(anchor,best)||!EntryClearForGroup(anchor,best))
+            {
+                QueueEntryApproach(anchor,best,first);int group=game.Matter.Groups[anchor];
+                for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group)queuedPlan[i]=bestPlan;
+                return true;
+            }
+            ClearQueuedEntry(anchor);var travel=BeginAtNode(anchor,best);travel.Plan.AddRange(bestPlan);
+            TryChoose(anchor,first);return true;
+        }
+
+        private bool EntryWalkable(int anchor,int node)
+        {
+            Vector3 approach=ClosestGripPoint(NodeWorld(node)-EntryInwardWorld(node)*(Radius+.008f));
+            return game.Motion.FindPath(game.Motion.Centre(anchor),approach,walk,true,true);
+        }
+
+        /// <summary>The tube segment (edge) or junction the ray strikes first, no deeper than the first opaque hit.</summary>
+        private bool PickBody(Ray ray,float limit,out int edge,out int node,out Vector3 point)
+        {
+            edge=node=-1;point=Vector3.zero;float best=limit+.003f;
+            for(int i=0;i<Edges.Length;i++)
+            {
+                var c=Edges[i].Collider;if(c==null||!c.enabled||!c.gameObject.activeInHierarchy)continue;
+                if(c.Raycast(ray,out var hit,best)){best=hit.distance;edge=i;node=-1;point=hit.point;}
+            }
+            for(int n=0;n<nodeColliders.Length;n++)
+            {
+                var c=nodeColliders[n];if(c==null||!c.enabled||!c.gameObject.activeInHierarchy)continue;
+                if(c.Raycast(ray,out var hit,best)){best=hit.distance;node=n;edge=-1;point=hit.point;}
+            }
+            return edge>=0||node>=0;
+        }
+
+        /// <summary>Edges from <paramref name="from"/> through open tubes to the far end of segment <paramref name="edge"/>
+        /// (or to junction <paramref name="node"/>); null when it cannot be reached. <paramref name="closed"/> is set when a
+        /// closed branch is what stands in the way.</summary>
+        private List<int> Route(int from,int edge,int node,out bool closed)
+        {
+            closed=false;
+            if(edge>=0&&!Edges[edge].Open){closed=true;return null;}
+            var via=new int[Nodes.Length];var previous=new int[Nodes.Length];var depth=new int[Nodes.Length];
+            for(int i=0;i<via.Length;i++)via[i]=-2;
+            var queue=new Queue<int>();queue.Enqueue(from);via[from]=-1;
+            while(queue.Count>0)
+            {
+                int n=queue.Dequeue();
+                foreach(int e in adjacency[n])
+                {
+                    int m=Edges[e].A==n?Edges[e].B:Edges[e].A;
+                    if(!Edges[e].Open){closed|=via[m]==-2;continue;}
+                    if(via[m]!=-2)continue;via[m]=e;previous[m]=n;depth[m]=depth[n]+1;queue.Enqueue(m);
+                }
+            }
+            int goal=node;var tail=new List<int>();
+            if(edge>=0)
+            {
+                // Reach the nearer end of the tapped segment, then cross it.
+                int a=Edges[edge].A,b=Edges[edge].B;
+                if(via[a]==-2&&via[b]==-2)return null;
+                goal=via[b]==-2||via[a]!=-2&&depth[a]<=depth[b]?a:b;tail.Add(edge);
+            }
+            if(goal<0||via[goal]==-2)return null;
+            var path=new List<int>();for(int n=goal;via[n]>=0;n=previous[n])path.Insert(0,via[n]);
+            path.AddRange(tail);closed=false;return path;
+        }
+
+        private Vector3 BranchPoint(int node,int edge)
+        {
+            Edge e=Edges[edge];if(e.Path==null||e.Path.Length<2)return NodeWorld(node);
+            return root.TransformPoint(e.Path[e.A==node?Mathf.Min(1,e.Path.Length-1):Mathf.Max(0,e.Path.Length-2)]);
+        }
+
+        private void ShowTubeCommand(Vector3 point,Ray ray)
+        {if(game!=null&&game.Feedback!=null)game.Feedback.ShowCommand(point,-ray.direction,transform);}
 
         private int PickAdjacent(int node,Ray ray,float limit)
         {
@@ -705,6 +846,46 @@ namespace GravityBox.Venom
                 winner.Anchor=anchor;
                 for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group)travelByParticle[i]=winner;
             }
+        }
+
+        private LineRenderer routeLine;
+        private readonly List<Vector3> routePoints=new List<Vector3>();
+        private static readonly Color RouteTeal=new Color(.16f,.70f,.74f);
+        /// <summary>The planned way through the tubes glows while COghe follows it (presentation only).</summary>
+        public bool RouteShown=>routeLine!=null&&routeLine.enabled;
+        private void LateUpdate()
+        {
+            if(game==null||root==null)return;
+            routePoints.Clear();Travel shown=null;
+            for(int i=0;i<travelByParticle.Length&&shown==null;i++)if(travelByParticle[i]!=null&&game.Matter.Groups[i]==game.Matter.Groups[game.Motion.Selected])shown=travelByParticle[i];
+            if(shown!=null)
+            {
+                if(shown.Edge>=0)AddRoute(shown.Edge,shown.Direction>0?Edges[shown.Edge].A:Edges[shown.Edge].B);
+                else if(shown.PendingEdge>=0)AddRoute(shown.PendingEdge,shown.Node);
+                int at=routePoints.Count>0?NodeAt(routePoints[routePoints.Count-1]):shown.Node;
+                foreach(int e in shown.Plan){if(at<0)break;AddRoute(e,at);at=Edges[e].A==at?Edges[e].B:Edges[e].A;}
+            }
+            if(routePoints.Count<2){if(routeLine!=null)routeLine.enabled=false;return;}
+            if(routeLine==null)
+            {
+                if(game.Feedback==null||game.Feedback.MarkerMaterial==null)return;
+                routeLine=new GameObject("Planned tube route · presentation only").AddComponent<LineRenderer>();routeLine.transform.SetParent(transform,false);
+                routeLine.sharedMaterial=game.Feedback.MarkerMaterial;routeLine.useWorldSpace=true;routeLine.startWidth=routeLine.endWidth=.0035f;
+                routeLine.numCapVertices=2;routeLine.numCornerVertices=2;routeLine.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;routeLine.receiveShadows=false;
+            }
+            routeLine.enabled=true;routeLine.positionCount=routePoints.Count;routeLine.SetPositions(routePoints.ToArray());
+            var color=RouteTeal;color.a=.55f+.25f*Mathf.Sin(Time.unscaledTime*4);routeLine.startColor=routeLine.endColor=color;
+        }
+        private void AddRoute(int edge,int fromNode)
+        {
+            Edge e=Edges[edge];if(e.Path==null)return;bool forward=e.A==fromNode;
+            for(int i=0;i<e.Path.Length;i++)routePoints.Add(root.TransformPoint(e.Path[forward?i:e.Path.Length-1-i]));
+        }
+        private int NodeAt(Vector3 world)
+        {
+            Vector3 local=root.InverseTransformPoint(world);
+            for(int n=0;n<Nodes.Length;n++)if(Vector3.Distance(Nodes[n].LocalPosition,local)<.002f)return n;
+            return -1;
         }
 
         private void PrepareGraph(bool resetFlexible=false)

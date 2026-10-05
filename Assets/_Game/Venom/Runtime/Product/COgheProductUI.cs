@@ -90,13 +90,14 @@ namespace GravityBox.Venom
         {
             if(!started||leaving)return;
             TrackAttempt();
-            StyleTick();TickShop();
+            StyleTick();TickShop();TickHints();
             if(lastWidth!=Screen.width||lastHeight!=Screen.height||lastSafe!=Screen.safeArea){Layout();Rebuild();}
             if(Page==COgheProductPage.Intro)return;
             if(Game.Owner.Paused&&Popup==COgheProductPopup.None)ShowPopup(COgheProductPopup.Pause);
             if(Page==COgheProductPage.Game)
             {
                 if(Game.Owner.Lost&&Popup==COgheProductPopup.None){ShowPopup(COgheProductPopup.Failure);return;}
+                WatchRefusals();
                 if(Game.Owner.Completed){Page=COgheProductPage.Victory;BeginVictory();Rebuild();COgheConfetti.Burst(safe,height,ConfettiOrigin(),Game.Definition.Order);return;}
                 if(Time.unscaledTime>=nextRefresh)
                 {

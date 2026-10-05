@@ -113,8 +113,13 @@ namespace GravityBox.Tests
    game.SelectFragment(worker);yield return Tap(b.HandPoint+Vector3.up*.004f);
    if(!b.Busy){yield return Tap(b.StandPoint);yield return Wait(8);yield return Tap(b.HandPoint+Vector3.up*.004f);}
    Assert.IsTrue(b.Busy,"The 50 % part takes the winch");
-   float best=frame.AngleToLevel;
+   float best=frame.AngleToLevel,strain=0;bool overloaded=false;
+   trace=()=>{strain=Mathf.Max(strain,b.Strain);overloaded|=b.Overloaded;};
    for(int k=0;k<60&&b.Busy;k++){yield return Wait(1);best=Mathf.Min(best,frame.AngleToLevel);}
+   trace=null;
+   // Too heavy for a half: it strains visibly at full strength, then lets go and says why (Mrk, 05/10/2026).
+   Assert.IsTrue(overloaded,"The half pulls at full strength against the frame");Assert.Greater(strain,.8f,"…and strains visibly");
+   Assert.AreEqual(1,b.GaveUp,"…then gives up");Assert.AreEqual(COgheMechanism.Refusal.TooHeavy,b.LastRefusal,"…as too heavy, not jammed");
    Capture(29,"half-on-winch");
    Assert.IsFalse(frame.Caught,"Half a body never lifts the frame to the pawl");
    Assert.Greater(best,15f,"Half a body barely stirs the frame (degrees from level)");
