@@ -30,6 +30,7 @@ namespace GravityBox.Venom.ChapterProof
     case "E08":yield return E08();break;case "E09":yield return E09();break;case "E10":yield return E10();break;case "E11":yield return E11();break;
     case "E12":yield return E12();break;case "E13":yield return E13();break;case "E14":yield return E14();break;case "E15":yield return E15();break;
     case "E16":yield return E16();break;case "E17":yield return E17();break;case "E18":yield return E18();break;case "B2":yield return B2();break;
+    case "N13":yield return N13();break;case "N15":yield return N15();break;case "N18":yield return N18();break;
     default:throw new NotImplementedException("Spatial Plus route "+COgheSpatialNextScenario.ContentKey(game));
    }
    yield return s.Exit();
@@ -72,6 +73,53 @@ namespace GravityBox.Venom.ChapterProof
    game.SelectFragment(worker);yield return Pull("B","B latches the door open");
    yield return s.Walk(holder,W(.14f,-.30f,-.22f),"Holder leaves A and follows");
    yield return s.Merge(W(.24f,-.30f,.02f));
+  }
+  // N13: the holder pulls the spring block B into its bay and holds it; the pusher slides A to the island; letting go,
+  // B springs back across the lane as the low step. Merged, the body climbs B, A, the island.
+  IEnumerator N13()
+  {
+   var q=Find<COgheQuantumSplitter>();var b=s.Task("B");var a=s.Task("A");
+   yield return s.Split(q,Selected);int holder=q.LastLeft,pusher=q.LastRight;
+   game.SelectFragment(holder);
+   for(int attempt=0;attempt<3&&!b.Busy;attempt++){yield return tap(b.HandPoint+Vector3.up*.004f);if(!b.Busy){yield return tap(b.StandPoint);yield return until(20,()=>Vector3.Distance(game.Motion.Centre(holder),b.StandPoint)<.06f,"Holder beside the spring block");}}
+   yield return until(40,()=>b.Holding&&b.Rail.AtEnd,"The holder pulls B into its bay and holds it");
+   game.SelectFragment(pusher);yield return Pull("A","The pusher slides the tall block to the island");
+   yield return s.Walk(holder,W(-.22f,-.30f,-.06f),"The holder lets go");
+   yield return until(15,()=>b.Rail.Position<=b.Rail.CatchTolerance,"B springs back beside the tall block");
+   yield return s.Merge(W(-.12f,-.30f,-.02f));
+   yield return s.Go(W(-.028f,-.27f,.14f),"Mount the low block");
+   yield return s.Go(W(.096f,-.24f,.14f),"Mount the tall block");
+   yield return s.Go(W(.27f,-.21f,.20f),"Reach the exit island");
+  }
+  // N15: push the step through the slot from this side first, then take the tube; climb the step to the shelf.
+  IEnumerator N15()
+  {
+   var tube=Find<COgheTubeNetwork>();var step=s.Slider("A step");
+   yield return Pull("A","Handle A pushes the step through the slot");
+   yield return until(10,()=>step.AtEnd,"The step docks against the shelf");
+   yield return s.EnterTube(tube,0);yield return s.LeaveTube(tube);
+   yield return s.Go(W(.196f,-.27f,.14f),"Onto the step");
+   yield return s.Go(W(.33f,-.24f,.14f),"Onto the shelf");
+  }
+  // N18: as E03, but first the worker tries the 100% crate and gives up (too heavy for a half); after the door is
+  // latched and the halves merge, the whole body pushes it to the shelf and climbs.
+  IEnumerator N18()
+  {
+   var q=Find<COgheQuantumSplitter>();var door=s.Slider("A door");var crate=s.Task("C");
+   yield return s.Split(q,Selected);int holder=q.LastLeft,worker=q.LastRight;
+   yield return s.Walk(holder,W(-.32f,-.298f,-.20f),"Holder loads pad A");
+   yield return until(10,()=>door.AtEnd,"Pad A raises the door");
+   yield return s.Walk(worker,W(.16f,-.30f,-.20f),"Through the door");
+   int gave=crate.GaveUp;game.SelectFragment(worker);
+   for(int attempt=0;attempt<3&&!crate.Busy;attempt++){yield return tap(crate.HandPoint+Vector3.up*.004f);if(!crate.Busy){yield return tap(crate.StandPoint);yield return until(20,()=>Vector3.Distance(game.Motion.Centre(worker),crate.StandPoint)<.06f,"Worker beside the crate");}}
+   yield return until(30,()=>crate.GaveUp>gave,"Half a body strains at the 100% crate and lets go");
+   if(crate.Rail.Position>.01f)throw new InvalidOperationException("Half a body moved the 100% crate");
+   game.SelectFragment(worker);yield return Pull("B","B latches the door open");
+   yield return s.Walk(holder,W(.14f,-.30f,-.22f),"Holder leaves A and follows");
+   yield return s.Merge(W(.18f,-.30f,-.12f));
+   yield return Pull("C","The whole body pushes the crate against the shelf");
+   yield return s.Go(W(.31f,-.24f,.03f),"Climb the crate");
+   yield return s.Go(W(.31f,-.21f,.20f),"Onto the shelf");
   }
   IEnumerator E04()
   {

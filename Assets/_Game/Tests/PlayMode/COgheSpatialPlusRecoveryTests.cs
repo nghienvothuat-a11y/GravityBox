@@ -139,6 +139,9 @@ namespace GravityBox.Tests
   [UnityTest] public IEnumerator SpatialPlusE17Wander(){yield return WanderPlus("E17");}
   [UnityTest] public IEnumerator SpatialPlusE18Wander(){yield return WanderPlus("E18");}
   [UnityTest] public IEnumerator SpatialPlusB2Wander(){yield return WanderPlus("B2");}
+  [UnityTest] public IEnumerator SpatialPlusN13Wander(){yield return WanderPlus("N13");}
+  [UnityTest] public IEnumerator SpatialPlusN18Wander(){yield return WanderPlus("N18");}
+  [UnityTest] public IEnumerator SpatialPlusN15Wander(){yield return WanderPlus("N15");}
 
   // On the way to a handle another tap takes the body elsewhere and nothing moves. Once the hand is on the handle a
   // tap elsewhere is refused (the pull is not interruptible) and the pull finishes; pulling again runs it back.

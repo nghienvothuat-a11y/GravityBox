@@ -17,12 +17,14 @@ namespace GravityBox.Editor
   static readonly string[] SpatialNames={"Chạm để đi","Đi vòng mặt tím","Nhìn quanh vách","Kéo là mở","Mở nắp trước","Leo lên, mở hộp","Chìa khoá dưới hố","Lên, kéo, xuống","Cầu chắn giếng thang","Cỗ máy thân quen"};
   static readonly string[] SpatialLessons={"Chạm vòng xanh để chỉ đường.","COghe leo được mặt ngà, trượt khỏi mặt tím.","Kéo ngang để nhìn quanh vách.","Chạm tay nắm để COghe kéo nó.","Hộp màu khoá tay nắm bên trong: kéo cần cùng màu để mở hộp.","Tay nắm có thể ở trên cao.","Chốt chặn có cần riêng.","Nút thang bật lên lại khi tới nơi.","Một vật có thể làm hai việc.",""};
   // The Spatial campaign in play order: 50 levels in five chapters, a boss every ten (proposal 29/09/2026, approved
-  // 30/09/2026). A key names the content: "01"…"30" are the scenes COgheSpatialNN (pilot 01–10, Spatial 11–30),
+  // 30/09/2026). Chapter 2 rebuilt (Mrk, 05/10/2026): Q is taught first (16); N13, N15 and N18 are new; "11" (Kê một
+  // bậc), E01 (Thang chở hàng) and E02 (Hai ống, một đích) are retired. Until N19 exists, E03 (hold the door) leads
+  // into N18 (the same door plus a 100% crate) and "17" (hold for the tube) is 19. A key names the content: "01"…"30" are the scenes COgheSpatialNN (pilot 01–10, Spatial 11–30),
   // "E01"…"E18", "B1", "B2" the Spatial Plus scenes COgheSpatialPlusKEY. Position = index + 1 = Definition.Order;
   // IDs, scene files and art folders follow the content, so reordering never touches saves or assets.
   public static readonly string[] SpatialOrder={
    "01","02","03","04","05","06","07","08","09","10",
-   "11","12","E01","14","E02","15","16","E03","17","20",
+   "16","12","N13","14","N15","15","E03","N18","17","20",
    "E04","18","E05","19","21","E06","22","13","E07","B1",
    "E08","23","E09","24","25","E10","E11","26","27","30",
    "E12","E13","28","E14","29","E15","E16","E17","E18","B2"};

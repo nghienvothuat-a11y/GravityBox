@@ -600,5 +600,80 @@ namespace GravityBox.Editor
    PlusRoute("50b",new Vector3(-.17f,-.29f,-.22f),new Vector3(-.25f,-.24f,-.16f),new Vector3(-.37f,-.12f,-.16f),new Vector3(-.25f,-.12f,.14f));
    PlusRoute("100",new Vector3(-.24f,-.12f,.22f),new Vector3(-.14f,-.03f,.245f),new Vector3(.30f,-.03f,.20f),c.Exit);
   }
+
+  // ---- chapter 2, rebuilt (Mrk, 05/10/2026) -----------------------------------------------------------------------
+  // N13 · 13 · Khối chặn lò xo. Level 12's crossing, but the low block B is on a spring: pulled into its bay it springs
+  // back across the lane when let go. So Q first: one half holds B aside while the other pushes the tall block A to the
+  // island; let go, B springs back beside A as the low step. Merge, climb B, A, the island.
+  static void PlusN13(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.27f,-.142f,.30f);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   NextPlinth(c,"Exit island",new Vector3(.27f,-.255f,.175f),new Vector3(.22f,.09f,.23f));
+   // Q in the front-right corner, its trays 4 cm clear of the right pane (a tray against the glass stalled the split).
+   NextQuantum(c,new Vector3(.18f,-.30f,-.18f),.025f,.13f);
+   NextCrate(c,"A",new Vector3(-.20f,-.27f,.14f),Vector3.right,.296f,new Vector3(.12f,.06f,.14f),floor,new Vector3(0,0,-.078f),new Vector3(0,0,-.052f),.05f,.012f,0,true);
+   // B rests across the lane; pulled toward the camera into its bay it is held there, and its spring returns it.
+   var b=NextCrate(c,"B",new Vector3(-.028f,-.285f,.14f),Vector3.back,.28f,new Vector3(.12f,.03f,.14f),floor,new Vector3(0,0,-.078f),new Vector3(0,0,-.052f),.04f,.010f,0,true);
+   b.HoldAtEnd=true;b.ReturnForce=.03f;b.Rail.LatchAtEnd=false;
+   NextOutline(c,"A parking outline",new Vector3(.096f,-.2995f,.14f),new Vector2(.125f,.145f));
+   NextOutline(c,"B spring bay outline",new Vector3(-.028f,-.2995f,-.14f),new Vector2(.125f,.145f));
+   PlusStep(1,new Vector3(.22f,-.20f,-.20f));PlusStep(2,new Vector3(-.03f,-.29f,-.27f));PlusStep(3,new Vector3(-.20f,-.29f,.01f));PlusStep(4,new Vector3(-.03f,-.27f,.14f));PlusStep(5,new Vector3(.27f,-.21f,.20f));
+  }
+
+  // N18 · 18 · Nửa thân không đủ sức (Mrk's points 9 and 10). As E03, one half holds pad A to keep the spring door up
+  // while the other goes through. The exit sits on a slick shelf; the only step is the 100% crate C, which a half
+  // strains at and lets go of. So the worker latches the door with B, the holder follows, they merge, and the whole
+  // body pushes C against the shelf, climbs it and leaves.
+  static void PlusN18(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.40f,-.163f,.20f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.18f,-.25f,-.215f);c.Definition.CameraEuler=new Vector3(44,20,0);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   NextPlinth(c,"Partition wall",new Vector3(.05f,-.20f,.0775f),new Vector3(.03f,.20f,.435f));
+   NextPlinth(c,"Partition wall",new Vector3(.05f,-.20f,-.2775f),new Vector3(.03f,.20f,.035f));
+   var door=PlusGate(c,"A door",new Vector3(.05f,-.20f,-.20f),Vector3.up,.20f,new Vector3(.012f,.20f,.114f));
+   // Q stands 15 cm from the partition: a narrower gap between its casing and the wall wedged a wandering body.
+   NextQuantum(c,new Vector3(-.21f,-.30f,-.02f),.025f,.13f);
+   var a=ExpansionPad(c,"A",new Vector3(-.32f,-.298f,-.20f),.009f,.10f);
+   // B in the open middle of the right room, clear of the partition and of the crate's path.
+   var b=ViewTask(c,"B",new Vector3(.14f,-.277f,-.02f),Vector3.right,.05f,floor);b.OneWay=true;
+   var safe=new GameObject("Door safety",typeof(COgheTissueClearance)).GetComponent<COgheTissueClearance>();safe.transform.SetParent(c.Root,false);safe.transform.localPosition=new Vector3(.05f,-.25f,-.20f);safe.Size=new Vector3(.06f,.10f,.12f);
+   var hold=new GameObject("A holds, B latches the door",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();hold.transform.SetParent(c.Root,false);
+   hold.Inputs=new[]{a};hold.Rails=new[]{b.Rail};hold.Output=door;hold.Any=true;hold.Retain=false;hold.Clearance=safe;
+   // A 9 cm slick shelf under the exit: no body climbs it from the floor.
+   NextPlinth(c,"Exit shelf",new Vector3(.31f,-.255f,.20f),new Vector3(.18f,.09f,.20f));
+   // C needs all of COghe: it holds back .45 N; a whole body pushes .67 N at most, a half .34 N.
+   var crate=NextCrate(c,"C",new Vector3(.31f,-.27f,-.12f),Vector3.forward,.156f,new Vector3(.14f,.06f,.12f),floor,new Vector3(0,0,-.068f),new Vector3(0,0,-.052f),.08f,.45f);
+   crate.CompensateLoad=true;crate.LoadShare=1;
+   TapLabel(c.Root,"100%",new Vector3(.31f,-.2985f,-.215f));
+   NextOutline(c,"C shelf step outline",new Vector3(.31f,-.2995f,.036f),new Vector2(.145f,.125f));
+   NextTrace("A",new Vector3(-.27f,-.2992f,-.20f),new Vector3(-.05f,-.2992f,-.27f),new Vector3(.03f,-.2992f,-.27f));
+   NextTrace("B",new Vector3(.19f,-.2992f,.012f),new Vector3(.07f,-.2992f,.012f),new Vector3(.07f,-.2992f,-.14f));
+   PlusStep(1,new Vector3(-.18f,-.27f,-.07f));PlusStep(2,new Vector3(-.32f,-.29f,-.20f));PlusStep(3,new Vector3(.31f,-.28f,-.25f));PlusStep(4,new Vector3(.16f,-.28f,-.07f));PlusStep(5,new Vector3(.31f,-.24f,.04f));
+  }
+
+  // N15 · 15 · Chuẩn bị trước khi đi. A low slick partition with a tube over it. The exit sits on a 6 cm slick shelf in
+  // the far room; its step is pushed there through a 3.4 cm slot under the partition by handle A, which is only on this
+  // side. Push first, then take the tube; a body that went first comes back through the same tube.
+  static void PlusN15(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.40f,-.194f,.14f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.30f,-.25f,-.13f);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   // The slot is 3.4 cm high and 1 cm wider than the step on each side (a flush fit jammed it).
+   NextPlinth(c,"Partition wall",new Vector3(.05f,-.23f,-.12f),new Vector3(.03f,.14f,.36f));
+   NextPlinth(c,"Partition wall",new Vector3(.05f,-.23f,.26f),new Vector3(.03f,.14f,.08f));
+   NextPlinth(c,"Partition lintel",new Vector3(.05f,-.213f,.14f),new Vector3(.03f,.106f,.16f));
+   NextPlinth(c,"Exit shelf",new Vector3(.33f,-.27f,.14f),new Vector3(.14f,.06f,.32f));
+   // The step: 3 cm, it docks against the shelf as the stair between floor and shelf.
+   Vector3 start=new Vector3(-.25f,-.285f,.14f),size=new Vector3(.12f,.03f,.14f);const float travel=.446f;
+   var step=ExpansionRail(c,"A step",start,Vector3.right,travel,0,size,.04f,.010f,false,false);step.LatchAtEnd=true;step.GetComponent<VenomMovableProp>().Manipulable=false;
+   int first=c.Surfaces.Count;ViewBlock(c,"A docked step",start+Vector3.right*travel,size);
+   var docked=c.Surfaces.GetRange(first,c.Surfaces.Count-first).ToArray();foreach(var d in docked)d.gameObject.SetActive(false);
+   var deck=step.gameObject.AddComponent<COgheDockedBridgeDeck>();deck.Rail=step;deck.MovingSurfaces=step.GetComponentsInChildren<VenomSurfacePatch>(true);deck.DockedSurfaces=docked;
+   var a=ViewTask(c,"A",new Vector3(-.32f,-.277f,0),Vector3.right,.14f,floor);
+   ViewLink(c,a.Rail,step,false,null);
+   // The far mouth turns to face the step, so a body leaves the tube already lined up with it (clear of the shelf corner).
+   ChapterTube(c,"Transfer tube",new Vector3(-.20f,-.255f,-.20f),new Vector3(-.12f,-.252f,-.20f),new Vector3(-.05f,-.21f,-.20f),new Vector3(-.01f,-.13f,-.20f),new Vector3(.05f,-.10f,-.20f),
+    new Vector3(.10f,-.13f,-.20f),new Vector3(.14f,-.21f,-.19f),new Vector3(.16f,-.252f,-.15f),new Vector3(.17f,-.255f,-.08f));
+   NextOutline(c,"A step outline",new Vector3(.196f,-.2995f,.14f),new Vector2(.125f,.145f));
+   PlusStep(1,new Vector3(-.25f,-.29f,-.05f));PlusStep(2,new Vector3(-.20f,-.27f,-.20f));PlusStep(3,new Vector3(.196f,-.27f,.14f));PlusStep(4,new Vector3(.33f,-.24f,.14f));
+  }
  }
 }

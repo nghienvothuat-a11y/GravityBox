@@ -38,5 +38,9 @@ namespace GravityBox.Tests
   [UnityTest] public IEnumerator SpatialPlusE17Solve(){yield return SolvePlus("E17");}
   [UnityTest] public IEnumerator SpatialPlusE18Solve(){yield return SolvePlus("E18");}
   [UnityTest] public IEnumerator SpatialPlusB2Solve(){yield return SolvePlus("B2");}
+  // Chapter 2 rebuilt (05/10/2026). N18's route asserts a half gives up on the 100% crate before the whole body moves it.
+  [UnityTest] public IEnumerator SpatialPlusN13Solve(){yield return SolvePlus("N13");}
+  [UnityTest] public IEnumerator SpatialPlusN18Solve(){yield return SolvePlus("N18");}
+  [UnityTest] public IEnumerator SpatialPlusN15Solve(){yield return SolvePlus("N15");}
  }
 }

@@ -41,6 +41,11 @@ namespace GravityBox.Editor
    NewPlus("E17","Hai máy nối nhau","Máy 1 đưa bánh G vào máy 2.",PlusE17),
    NewPlus("E18","Ba lớp răng","Một phần giữ máy, phần kia khớp từng tầng.",PlusE18),
    NewPlus("B2","Tháp bánh răng","",PlusB2,true),
+   // Chapter 2 rebuilt for the hook plan (Mrk, 05/10/2026; PLANS/COGHE_LEVEL_HOOK_PLAN.md §5.2). Appended so the
+   // indexes (mesh serials) of the levels above never move.
+   NewPlus("N13","Khối chặn lò xo","Khối chặn có lò xo: buông ra là nó bật về chỗ cũ.",PlusN13),
+   NewPlus("N18","Nửa thân không đủ sức","Khối 100% cần cả thân COghe; một nửa chỉ gồng được.",PlusN18),
+   NewPlus("N15","Chuẩn bị trước khi đi","Tay nắm chỉ ở phòng này: việc gì ở đây thì làm trước khi đi.",PlusN15),
   };
 
   // Design notes (root-local): numbered steps, labels and routes, projected onto renders for the design plates.
@@ -67,6 +72,21 @@ namespace GravityBox.Editor
    finally{authoredMeshFolder=old;}
    ApplySpatialOrder();
    Debug.Log("SPATIAL PLUS GENERATED "+string.Join(",",levels.Where(d=>only==null||only.Contains(d.Key)).Select(d=>d.Key)));
+  }
+
+  /// <summary>Chapter 2 rebuild (Mrk, 05/10/2026): builds the levels named by -coghe-plus-levels (only those), applies the
+  /// play order, then renumbers the plaque of every level that moved. Other scenes are opened for the plaque only.</summary>
+  public static void GenerateChapterTwoLevels(){GenerateSpatialPlus();RenumberSpatialPlaques();}
+  /// <summary>The plaque on the glass shows the play position; a level that moved in the order gets its new number.</summary>
+  public static void RenumberSpatialPlaques()
+  {
+   foreach(var path in SpatialScenePaths().Where(File.Exists))
+   {
+    var scene=EditorSceneManager.OpenScene(path);var game=Object.FindFirstObjectByType<VenomCampaign>();string number=game.Definition.Order.ToString("00");bool changed=false;
+    foreach(var t in game.GetComponentsInChildren<TextMesh>(true))
+     if(t.transform.parent!=null&&t.transform.parent.name=="COghe specimen number"&&t.text!=number){t.text=number;t.name="Label · "+number;changed=true;}
+    if(changed){EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);Debug.Log("PLAQUE renumbered "+number+" "+path);}
+   }
   }
 
   static void BuildSpatialPlus(PlusLevel d,int index)
