@@ -17,7 +17,7 @@ namespace GravityBox.Tests
   private int clipFrame;private string clipDirectory;
   private IEnumerator Shot()
   {
-   game.CameraRig.Frame(720,1280,0,true);yield return null;
+   yield return null;game.CameraRig.Frame(720,1280,0,true);   // after the frame's own camera fit, so the shot keeps 9:16
    var camera=game.Owner.View;var target=RenderTexture.GetTemporary(720,1280,24);var previous=RenderTexture.active;var texture=new Texture2D(720,1280,TextureFormat.RGB24,false);
    try{camera.targetTexture=target;camera.Render();RenderTexture.active=target;texture.ReadPixels(new Rect(0,0,720,1280),0,0);texture.Apply();File.WriteAllBytes($"{clipDirectory}/{clipFrame++:00000}.png",texture.EncodeToPNG());}
    finally{camera.targetTexture=null;RenderTexture.active=previous;RenderTexture.ReleaseTemporary(target);Object.DestroyImmediate(texture);}
