@@ -62,7 +62,7 @@ namespace GravityBox.Editor
    var r=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=SpatialScenePaths().Where(File.Exists).ToArray(),target=BuildTarget.StandaloneOSX,locationPathName="Builds/SpatialLab/macOS/COghe.app",options=BuildOptions.None,extraScriptingDefines=new[]{"COGHE_MOBILE_BENCHMARK"}});
    if(r.summary.result!=UnityEditor.Build.Reporting.BuildResult.Succeeded)throw new Exception("Spatial Mac failed");
   }
-  static Material SpatialMaterial(string name,Color color)
+  internal static Material SpatialMaterial(string name,Color color)
   {
    string path=SpatialFolder+"/"+name+".mat";var m=AssetDatabase.LoadAssetAtPath<Material>(path);if(m==null){m=new Material(stone);AssetDatabase.CreateAsset(m,path);}m.shader=Shader.Find("Universal Render Pipeline/Lit");m.SetFloat("_Surface",0);m.SetFloat("_SrcBlend",1);m.SetFloat("_DstBlend",0);m.SetFloat("_ZWrite",1);m.SetFloat("_Cull",0);m.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");m.DisableKeyword("_ALPHAPREMULTIPLY_ON");m.renderQueue=2000;m.color=color;
    if(m.HasProperty("_BaseColor"))m.SetColor("_BaseColor",color);if(m.HasProperty("_Smoothness"))m.SetFloat("_Smoothness",.35f);EditorUtility.SetDirty(m);return m;

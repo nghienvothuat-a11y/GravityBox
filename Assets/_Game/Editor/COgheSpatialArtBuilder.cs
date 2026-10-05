@@ -40,6 +40,45 @@ namespace GravityBox.Editor
    Debug.Log($"SPATIAL CIRCUIT ART VERIFIED: {paths.Length} scenes; identical physics, input, mechanisms and definitions.");
   }
 
+  /// <summary>
+  /// Mrk's chapter-1 rules on levels 11–50 (05/10/2026: "tiếp tục sửa những chương sau theo quy tắc này"): colours, not
+  /// letters; no dark parts. An art pass on the existing scenes, never a regeneration (regenerating reorders objects and
+  /// flips marginal physics); physics, input, mechanisms and definitions are verified unchanged.
+  /// </summary>
+  [MenuItem("Gravity Box/COghe/Spatial/Colour rule on levels 11–50 (physics unchanged)")]
+  public static void ApplyColourRuleToLaterChapters()
+  {
+   const string report="Artifacts/COgheSpatialColourRule";
+   Directory.CreateDirectory(report);
+   var paths=VenomCampaignBuilder.SpatialScenePaths().Skip(10).Where(File.Exists).ToArray();
+   string before=COgheViewArtVerification.CapturePhysics(paths);
+   File.WriteAllText(report+"/physics-before.txt",before);
+   var definitions=Directory.GetFiles(VenomCampaignBuilder.SpatialFolder+"/Definitions","*.asset").OrderBy(p=>p).ToArray();
+   var definitionText=definitions.Select(File.ReadAllText).ToArray();
+   var gunmetal=AssetDatabase.LoadAssetAtPath<Material>(VenomCampaignBuilder.Folder+"/Blade.mat");
+   foreach(var path in paths)
+   {
+    var scene=EditorSceneManager.OpenScene(path);
+    var game=Object.FindFirstObjectByType<VenomCampaign>();
+    Material Load(string n)=>AssetDatabase.LoadAssetAtPath<Material>(VenomCampaignBuilder.SpatialFolder+"/"+n+".mat");
+    DecorateSpatialMechanisms(game,Load("Circuit A blue"),Load("Circuit B coral"),Load("Ivory bodies"));
+    // Spatial 11–30 / Plus art (VenomCampaignBuilder.NextSpatialArt): pads and printed traces take their circuit's colour.
+    foreach(var sensor in game.GetComponentsInChildren<COgheTissueSensor>(true))
+     if(sensor.Cap!=null)sensor.Cap.GetComponent<Renderer>().sharedMaterial=Circuit(game,sensor.name).body;
+    foreach(var r in game.GetComponentsInChildren<MeshRenderer>(true))
+     if(r.name.StartsWith("Printed conductor ")&&r.transform.parent!=null&&r.transform.parent.name=="Spatial next printed traces")
+      r.sharedMaterial=Circuit(game,r.name.Substring("Printed conductor ".Length)).trace;
+    Debug.Log($"COLOUR RULE {game.Definition.Order:00}: {RetireLetters(game)} letters removed, {NoDarkParts(game,gunmetal)} dark parts now satin or circuit colour");
+    EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);
+   }
+   AssetDatabase.SaveAssets();
+   string after=COgheViewArtVerification.CapturePhysics(paths);
+   File.WriteAllText(report+"/physics-after.txt",after);
+   if(before!=after||!definitionText.SequenceEqual(definitions.Select(File.ReadAllText)))
+    throw new InvalidOperationException("Colour rule changed physical/input data or definitions.");
+   Debug.Log($"COLOUR RULE VERIFIED: {paths.Length} scenes; identical physics, input, mechanisms and definitions.");
+  }
+
   public static void RebuildSpatialCircuitsAndBuildMac()
   {
    RebuildSpatialCircuits();
@@ -59,28 +98,19 @@ namespace GravityBox.Editor
    mint=AssetDatabase.LoadAssetAtPath<Material>(Folder+"/Quiet mint light.mat");
    var railMat=Lit("Spatial satin guides",new Color(.60f,.69f,.70f),.24f,.40f);
    var shell=Lit("Spatial pearl casing",new Color(.86f,.85f,.77f),.08f,.40f);
-   var traceA=Lit("Spatial printed A",new Color(.30f,.51f,.58f),.08f,.36f);
-   var traceB=Lit("Spatial printed B",new Color(.67f,.43f,.36f),.08f,.36f);
-   var cord=Lit("Spatial woven cable",new Color(.34f,.41f,.42f),.12f,.30f);
    if(ink==null)ink=Lit("Spatial label ink",new Color(.10f,.17f,.21f),0,.3f);
    Remove(root,SpatialCircuitRoot);var art=Child(root,SpatialCircuitRoot);
    var tasks=owner.Apparatus.GetComponentsInChildren<COgheTapRail>();
-   // Chapter 1 (Mrk, 05/10/2026): no letters anywhere; each control and what it works share one colour of their own.
-   bool lettered=!(game.Definition.Id??"").Contains(".pilot.");
-   var circuit=new System.Collections.Generic.Dictionary<string,(Material body,Material trace)>{["A"]=(blue,traceA),["B"]=(coral,traceB)};
-   if(!lettered)
-   {
-    Material Circuit(string n)=>AssetDatabase.LoadAssetAtPath<Material>(VenomCampaignBuilder.SpatialFolder+"/"+n+".mat");
-    circuit["C"]=(Circuit("Circuit C amber")??ink,Lit("Spatial printed C",new Color(.74f,.56f,.18f),.08f,.36f));
-    circuit["D"]=(Circuit("Circuit D green")??ink,Lit("Spatial printed D",new Color(.36f,.58f,.27f),.08f,.36f));
-   }
-   (Material body,Material trace) Colour(string label)=>circuit.TryGetValue(VenomCampaignBuilder.ChapterOneColourKey(game,label)??"",out var c)?c:(ink,railMat);
+   bool pilot=(game.Definition.Id??"").Contains(".pilot.");
+   // Mrk (05/10/2026): no letters anywhere; a control and what it works share one colour of their own (Circuit).
+   (Material body,Material trace) Colour(string label)=>Circuit(game,label);
    string Driver(COgheRailSlider output)
    {
     foreach(var link in owner.Apparatus.GetComponentsInChildren<COgheViewMechanism>())
      if(link.Output==output&&link.Input!=null){var t=link.Input.GetComponent<COgheTapRail>();if(t!=null)return t.Label;}
     return output.name.StartsWith("B")?"B":"A";
    }
+   RetireLetters(game);
 
    // Retire decorative bars only. None of these objects is a collider or input target.
    foreach(var r in root.GetComponentsInChildren<MeshRenderer>(true))
@@ -90,12 +120,12 @@ namespace GravityBox.Editor
     {
      if(r.GetComponent<Collider>()!=null)throw new InvalidOperationException("Unexpected collider on guide decoration");
      r.enabled=false;
-     if(r.name.Contains("rail stop")||!lettered&&ChapterOneHiddenLock(r.name))continue;
+     if(r.name.Contains("rail stop")||ChapterOneHiddenLock(r.name))continue;
      var mount=Child(art,"Satin "+r.name);mount.position=r.transform.position;mount.rotation=r.transform.rotation;
      var size=new Vector3(.003f,r.transform.lossyScale.y,.003f);
      var task=Array.Find(tasks,t=>r.name==t.Rail.name+" fixed guide");
-     // Chapter 1: guide lines only where they lie on a surface (handles, shutters); a lift's, bridge's or pin's stood in mid-air.
-     if(!lettered&&task==null&&!r.name.Contains("shutter"))continue;
+     // Guide lines only where they lie on a surface (handles, shutters); a lift's, bridge's or pin's stood in mid-air.
+     if(task==null&&!r.name.Contains("shutter")){Object.DestroyImmediate(mount.gameObject);continue;}
      if(task!=null)
      {
       // Floor controls have coplanar printed guides, not the old pair of bars
@@ -109,65 +139,55 @@ namespace GravityBox.Editor
      }
      Box(mount,"Recessed guide",Vector3.zero,size,.001f,railMat);
     }
-    if(r.name=="Lift upright"||r.name=="Pulley bearing support")r.sharedMaterial=railMat;
+    if(r.name=="Pulley bearing support")r.sharedMaterial=railMat;
    }
+   // No posts beside lift shafts: dark columns read as clutter (Mrk, 05/10/2026).
+   foreach(var post in root.GetComponentsInChildren<Transform>(true).Where(t=>t.name=="Lift upright").ToArray())Object.DestroyImmediate(post.gameObject);
 
    foreach(var rail in owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())
    {
     Remove(rail.transform,SpatialCircuitRoot);
-    // Keep lavender contact areas and text distinct; neutralize the machine casing.
+    // Keep lavender contact areas distinct; neutralize the machine casing. A bolt wears the colour of what pulls it.
+    var casing=rail.name.Contains(" bolt")?Colour(rail.name).body:shell;
     foreach(var r in rail.GetComponentsInChildren<MeshRenderer>())
     {
-     if(r.GetComponent<TextMesh>()!=null)
-     {
-      // Retire the old oversized/free-floating letters; the authored input handle
-      // and its collider are unchanged. One badge is attached to each body below.
-      r.enabled=false;continue;
-     }
+     if(r.GetComponent<TextMesh>()!=null){r.enabled=false;continue;}
      var patch=r.GetComponent<VenomSurfacePatch>();
      if(patch!=null&&patch.Slippery)continue;
-     r.sharedMaterial=shell;
+     r.sharedMaterial=casing;
     }
     if(!rail.name.Contains("shutter"))continue;
-    bool b=rail.name.StartsWith("B");var trim=Child(rail.transform,SpatialCircuitRoot);
-    var band=lettered?b?coral:blue:Colour(Driver(rail)).body;
+    var trim=Child(rail.transform,SpatialCircuitRoot);
     // Narrow identity band, rather than a large saturated door panel. Moving artwork
     // is parented to the actual shutter; never added to the stationary trace batch.
-    Box(trim,"Circuit identity band",new Vector3(-.051f,0,-.010f),new Vector3(.010f,.09f,.001f),.0004f,band);
-    if(lettered)SpatialBadge(trim,b?"B":"A",new Vector3(0,0,-.012f),Vector3.back,b?coral:blue,shell);
+    Box(trim,"Circuit identity band",new Vector3(-.051f,0,-.010f),new Vector3(.010f,.09f,.001f),.0004f,Colour(Driver(rail)).body);
     CombineByMaterial(trim);
    }
 
    foreach(var task in owner.Apparatus.GetComponentsInChildren<COgheTapRail>())
    {
-    // A and B are the two control circuits. Any other handle (a latch C, a winch E…) is neutral: ink badge, pearl
-    // handle, satin contacts — never a third circuit colour.
-    bool neutral=lettered&&task.Label!="A"&&task.Label!="B";
-    var color=neutral?ink:lettered?task.Label=="B"?coral:blue:Colour(task.Label).body;
+    var color=Colour(task.Label);
     Remove(task.Rail.transform,"Circuit badge");
     var trim=Child(task.Rail.transform,SpatialCircuitRoot);
     bool wall=Mathf.Abs(task.WorkingSurface.Normal.y)<.5f;
-    if(lettered)SpatialBadge(trim,task.Label,wall?new Vector3(0,0,-.029f):new Vector3(0,.014f,0),wall?Vector3.back:Vector3.up,color,shell);
-    foreach(var r in task.Handle.GetComponentsInChildren<MeshRenderer>())if(r.GetComponent<TextMesh>()==null)r.sharedMaterial=neutral?shell:color;
+    foreach(var r in task.Handle.GetComponentsInChildren<MeshRenderer>())if(r.GetComponent<TextMesh>()==null)r.sharedMaterial=color.body;
     // Small fixed contact pads at each end. The travel itself stays quiet satin metal.
     foreach(float end in new[]{0f,task.Rail.Travel})
     {
      Vector3 p=task.Rail.Start+task.Rail.Axis*end;
      p+=wall?new Vector3(0,0,.024f):new Vector3(0,-.020f,0);
      Box(art,"Terminal base",p,wall?new Vector3(.028f,.033f,.002f):new Vector3(.030f,.002f,.040f),.0008f,shell);
-     Disk(art,"Terminal contact",p+(wall?Vector3.back:Vector3.up)*.0013f,wall?Vector3.back:Vector3.up,.0035f,.0005f,neutral?railMat:lettered?task.Label=="B"?traceB:traceA:Colour(task.Label).trace);
+     Disk(art,"Terminal contact",p+(wall?Vector3.back:Vector3.up)*.0013f,wall?Vector3.back:Vector3.up,.0035f,.0005f,color.trace);
     }
     CombineByMaterial(trim);
    }
 
    foreach(var link in owner.Apparatus.GetComponentsInChildren<COgheViewMechanism>())
    {
-    bool b=link.Output.name.StartsWith("B");
     var task=link.Input.GetComponent<COgheTapRail>();
     // Chapter 1 draws the trace to a box or its clip itself (VenomCampaignBuilder.ChapterOneFinish).
-    if(!lettered&&VenomCampaignBuilder.ChapterOneOwnTrace(link.Output))continue;
-    var traceMat=lettered?b?traceB:traceA:Colour(task!=null?task.Label:Driver(link.Output)).trace;
-    var portMat=lettered?b?coral:blue:Colour(task!=null?task.Label:Driver(link.Output)).body;
+    if(VenomCampaignBuilder.ChapterOneOwnTrace(link.Output))continue;
+    var colour=Colour(task!=null?task.Label:Driver(link.Output));
     Vector3 from=link.Input.Start+link.Input.Axis*link.Input.Travel;
     Vector3 to=link.Output.Start+new Vector3(-.055f,-.045f,0);
     // Printed on fixed receiving surfaces: floor -> rear glass, wall -> rear glass,
@@ -176,53 +196,43 @@ namespace GravityBox.Editor
     {
      float y=root.InverseTransformPoint(task.WorkingSurface.transform.position).y+.0012f;
      from.y=y;
-     SpatialTrace(art,new[]{from,new Vector3(from.x+.025f,y,from.z),new Vector3(from.x+.025f,y,.298f),new Vector3(from.x+.025f,to.y,.298f),new Vector3(to.x,to.y,.298f)},traceMat);
+     SpatialTrace(art,new[]{from,new Vector3(from.x+.025f,y,from.z),new Vector3(from.x+.025f,y,.298f),new Vector3(from.x+.025f,to.y,.298f),new Vector3(to.x,to.y,.298f)},colour.trace);
     }
     else
     {
      from.z=.298f;
-     SpatialTrace(art,new[]{from,new Vector3(from.x,to.y,.298f),new Vector3(to.x,to.y,.298f)},traceMat);
+     SpatialTrace(art,new[]{from,new Vector3(from.x,to.y,.298f),new Vector3(to.x,to.y,.298f)},colour.trace);
     }
-    SpatialPort(art,new Vector3(to.x,to.y,.2965f),Vector3.back,portMat,shell);
+    SpatialPort(art,new Vector3(to.x,to.y,.2965f),Vector3.back,colour.body,shell);
    }
 
    foreach(var pulley in owner.Apparatus.GetComponentsInChildren<COghePulleyDrive>())
    {
+    var colour=Colour(pulley.Command!=null?pulley.Command.Label:"A");
     var wheels=root.GetComponentsInChildren<Transform>().Where(t=>t.name=="A pulley wheel").ToArray();pulley.Wheels=wheels;
     Remove(root,"A geared cable winch");
-    var t=Child(root,"A geared cable winch");t.localPosition=pulley.Input.Start+new Vector3(-.01f,.038f,lettered?.048f:.063f);   // chapter 1: clear of the box over the handle
+    // Chapter 1's winch sits 1.5 cm further back, clear of the box over its handle.
+    var t=Child(root,"A geared cable winch");t.localPosition=pulley.Input.Start+new Vector3(-.01f,.038f,pilot?.063f:.048f);
     var drum=Child(t,"Winding drum");drum.localRotation=Quaternion.Euler(90,0,0);
     Disk(drum,"Spool",Vector3.zero,Vector3.up,.027f,.036f,railMat);
-    Disk(drum,"Blue winding flange",Vector3.up*.019f,Vector3.up,.028f,.002f,blue);
+    Disk(drum,"Blue winding flange",Vector3.up*.019f,Vector3.up,.028f,.002f,colour.body);
     CombineByMaterial(drum);pulley.Drum=drum;pulley.DrumAnchor=t;
     var bearing=Child(t,"Bearing casing");Box(bearing,"Ivory bearing",new Vector3(0,-.028f,0),new Vector3(.074f,.018f,.064f),.004f,shell);CombineByMaterial(bearing);
-    // Chapter 1: the cable is A's connection, in A's colour.
-    pulley.Cable.sharedMaterial=lettered?cord:traceA;pulley.Cable.startWidth=pulley.Cable.endWidth=.0022f;pulley.Cable.shadowCastingMode=ShadowCastingMode.Off;
+    // The cable is the winch's connection, in its colour.
+    pulley.Cable.sharedMaterial=colour.trace;pulley.Cable.startWidth=pulley.Cable.endWidth=.0022f;pulley.Cable.shadowCastingMode=ShadowCastingMode.Off;
     foreach(var w in wheels)
     {
      w.GetComponent<Renderer>().sharedMaterial=railMat;Remove(w,"Ivory bearing hub");Remove(w,SpatialCircuitRoot);
      var hub=Child(w,SpatialCircuitRoot);
      // Wheel transform already carries the authored cylinder scale.
-     Disk(hub,"A axle cap",new Vector3(0,1.015f,0),Vector3.up,.23f,.035f,blue);CombineByMaterial(hub);
+     Disk(hub,"A axle cap",new Vector3(0,1.015f,0),Vector3.up,.23f,.035f,colour.body);CombineByMaterial(hub);
     }
    }
+   // Every lift button is coral, as in chapter 1.
    foreach(var lift in owner.Apparatus.GetComponentsInChildren<COghePassengerLift>())
    {
-    // Pilot: the boss lift is B's. Spatial 11–30: a lift powered through an enabling rail belongs to B's circuit.
-    bool pilot=(game.Definition.Id??"").Contains(".pilot."),b=game.Definition.Boss&&pilot||!pilot&&lift.RequiredRail!=null;
-    // Chapter 1: a lift button is coral, a colour no handle in those levels uses unless it powers the lift (level 9).
-    if(!lettered)b=true;
-    lift.Panel.GetComponent<Renderer>().sharedMaterial=b?coral:blue;
-    var trim=lift.Rail.transform.Find(SpatialCircuitRoot)??Child(lift.Rail.transform,SpatialCircuitRoot);
-    // The panel itself keeps its depression motion; no overlay obstructs the tap area.
-    if(lettered)SpatialBadge(trim,b?"B":"A",new Vector3(-.05f,.020f,-.06f),Vector3.up,b?coral:blue,shell);
-    CombineByMaterial(trim);
-    // Chapter 1 shows this power by the bridge itself, parked over the shaft; a trace in mid-air explained nothing.
-    if(lift.RequiredRail!=null&&pilot&&lettered)
-    {
-     var start=lift.RequiredRail.Start+lift.RequiredRail.Axis*lift.RequiredRail.Travel;start.y=-.0988f;
-     SpatialTrace(art,new[]{start,new Vector3(start.x,-.0988f,.278f),new Vector3(.385f,-.0988f,.278f)},traceB);
-    }
+    lift.Panel.GetComponent<Renderer>().sharedMaterial=coral;
+    foreach(var call in lift.CallPanels)if(call!=null)foreach(var r in call.GetComponentsInChildren<Renderer>())r.sharedMaterial=coral;
    }
    CombineByMaterial(art);
    foreach(var r in art.GetComponentsInChildren<Renderer>())r.shadowCastingMode=ShadowCastingMode.Off;
@@ -230,12 +240,46 @@ namespace GravityBox.Editor
    RefineSpatialReadability(game);
   }
 
-  private static void SpatialBadge(Transform parent,string text,Vector3 point,Vector3 normal,Material color,Material backing)
+  /// <summary>Colour of a control's circuit (Mrk, 05/10/2026): no letters, a control and what it works share a colour.
+  /// The letter that names it in code picks the colour: A blue, B coral, C amber, D green, E and P (motor pads) pink;
+  /// A1/A2, C1–C3… share their letter's colour. Chapter 1's level 7 lever D wears amber.</summary>
+  internal static (Material body,Material trace) Circuit(VenomCampaign game,string label)
   {
-   var badge=Child(parent,"Identity "+text);badge.localPosition=point;badge.localRotation=Quaternion.FromToRotation(Vector3.up,normal);
-   Disk(badge,"Porcelain rim",Vector3.zero,Vector3.up,.018f,.0014f,color);
-   Disk(badge,"Circuit enamel",Vector3.up*.001f,Vector3.up,.015f,.001f,backing);
-   Label(badge,text,Vector3.up*.002f,Quaternion.Euler(90,0,0),.010f,ink);
+   string key=VenomCampaignBuilder.ChapterOneColourKey(game,label);
+   key=string.IsNullOrEmpty(key)?"A":key.Substring(0,1).ToUpperInvariant();if(key=="P")key="E";
+   switch(key)
+   {
+    case "B":return (VenomCampaignBuilder.SpatialMaterial("Circuit B coral",new Color(.784f,.424f,.345f)),Lit("Spatial printed B",new Color(.67f,.43f,.36f),.08f,.36f));
+    case "C":return (VenomCampaignBuilder.SpatialMaterial("Circuit C amber",VenomCampaignBuilder.ChapterAmber),Lit("Spatial printed C",new Color(.74f,.56f,.18f),.08f,.36f));
+    case "D":return (VenomCampaignBuilder.SpatialMaterial("Circuit D green",VenomCampaignBuilder.ChapterGreen),Lit("Spatial printed D",new Color(.36f,.58f,.27f),.08f,.36f));
+    case "E":return (VenomCampaignBuilder.SpatialMaterial("Circuit E pink",new Color(.78f,.40f,.64f)),Lit("Spatial printed E",new Color(.66f,.40f,.56f),.08f,.36f));
+    default:return (VenomCampaignBuilder.SpatialMaterial("Circuit A blue",new Color(.224f,.498f,.678f)),Lit("Spatial printed A",new Color(.30f,.51f,.58f),.08f,.36f));
+   }
+  }
+  /// <summary>Letters that only named a control (A, B2, P…) go; Q's name, weights (50%) and the level plaque stay.</summary>
+  internal static int RetireLetters(VenomCampaign game)
+  {
+   int gone=0;
+   foreach(var t in game.GetComponentsInChildren<TextMesh>(true).ToArray())
+    if(t.text!="Q"&&System.Text.RegularExpressions.Regex.IsMatch(t.text??"","^[A-Z][0-9]?$")){Object.DestroyImmediate(t.gameObject);gone++;}
+   return gone;
+  }
+  /// <summary>No dark parts (Mrk, 05/10/2026): gunmetal pieces become satin, or their circuit's colour when they belong
+  /// to one (a lock, a bolt, a cable named for it); the dark woven cable likewise.</summary>
+  internal static int NoDarkParts(VenomCampaign game,Material gunmetal)
+  {
+   var railMat=Lit("Spatial satin guides",new Color(.60f,.69f,.70f),.24f,.40f);var cord=Lit("Spatial woven cable",new Color(.34f,.41f,.42f),.12f,.30f);
+   int changed=0;
+   foreach(var r in game.GetComponentsInChildren<Renderer>(true))
+   {
+    if(r.sharedMaterial==null||r.sharedMaterial!=gunmetal&&r.sharedMaterial!=cord)continue;
+    var m=System.Text.RegularExpressions.Regex.Match(r.name,"^([A-Z][0-9]?) ");
+    bool line=r.name.Contains("cable")||r.name.EndsWith(" rope")||r.name.Contains("rope swing");
+    bool owned=m.Success&&(line||r.name.Contains(" lock")||r.name.Contains(" bolt"));
+    r.sharedMaterial=!owned?railMat:line?Circuit(game,m.Groups[1].Value).trace:Circuit(game,m.Groups[1].Value).body;
+    changed++;
+   }
+   return changed;
   }
   private static void SpatialPort(Transform parent,Vector3 p,Vector3 normal,Material color,Material backing)
   {

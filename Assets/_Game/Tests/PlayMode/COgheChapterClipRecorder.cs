@@ -11,7 +11,7 @@ namespace GravityBox.Tests
 {
  // Review clips (Explicit): plays the reference solution of each chosen level and saves a 30 fps frame sequence
  // (720×1280) to Artifacts/Clips/NN, presentation included (skin, tendrils, button rings, refusal marks).
- // COGHE_CLIP_LEVELS picks the levels, e.g. "5,8,10"; default 1–10. Encode with ffmpeg afterwards.
+ // COGHE_CLIP_LEVELS picks play positions 1–50, e.g. "5,8,10"; default 1–10. Encode with ffmpeg afterwards.
  public sealed partial class COgheSpatialCampaignTests
  {
   private int clipFrame;private string clipDirectory;
@@ -35,14 +35,16 @@ namespace GravityBox.Tests
    for(int i=0;i<30;i++){game.CameraRig.Orbit(-degrees/30f/240f*720f,720);for(int k=0;k<4;k++)Tick();yield return Shot();}
   }
 
-  [UnityTest,Explicit,Timeout(3600000)] public IEnumerator RecordChapterOneClips()
+  [UnityTest,Explicit,Timeout(3600000)] public IEnumerator RecordReviewClips()
   {
    string only=Environment.GetEnvironmentVariable("COGHE_CLIP_LEVELS");
    var levels=string.IsNullOrEmpty(only)?new[]{1,2,3,4,5,6,7,8,9,10}:Array.ConvertAll(only.Split(','),int.Parse);
+   // Levels are play positions 1–50: the catalog's scene sequence names each one's scene (pilot, 11–30 or Plus).
+   yield return Load(1);var order=game.Definition.SceneSequence;
    foreach(int n in levels)
    {
     clipDirectory=$"Artifacts/Clips/{n:00}";if(Directory.Exists(clipDirectory))Directory.Delete(clipDirectory,true);Directory.CreateDirectory(clipDirectory);clipFrame=0;
-    yield return Load(n);yield return Hold(1);
+    yield return LoadScene(order[n-1]);yield return Hold(1);
     yield return new COgheSpatialScenario(game,RecordTap,RecordUntil,RecordOrbit).Solve();
     yield return Hold(1.2f);
    }
