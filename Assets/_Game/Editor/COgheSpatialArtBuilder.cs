@@ -65,6 +65,22 @@ namespace GravityBox.Editor
    if(ink==null)ink=Lit("Spatial label ink",new Color(.10f,.17f,.21f),0,.3f);
    Remove(root,SpatialCircuitRoot);var art=Child(root,SpatialCircuitRoot);
    var tasks=owner.Apparatus.GetComponentsInChildren<COgheTapRail>();
+   // Chapter 1 (Mrk, 05/10/2026): no letters anywhere; each control and what it works share one colour of their own.
+   bool lettered=!(game.Definition.Id??"").Contains(".pilot.");
+   var circuit=new System.Collections.Generic.Dictionary<string,(Material body,Material trace)>{["A"]=(blue,traceA),["B"]=(coral,traceB)};
+   if(!lettered)
+   {
+    Material Circuit(string n)=>AssetDatabase.LoadAssetAtPath<Material>(VenomCampaignBuilder.SpatialFolder+"/"+n+".mat");
+    circuit["C"]=(Circuit("Circuit C amber")??ink,Lit("Spatial printed C",new Color(.74f,.56f,.18f),.08f,.36f));
+    circuit["D"]=(Circuit("Circuit D green")??ink,Lit("Spatial printed D",new Color(.36f,.58f,.27f),.08f,.36f));
+   }
+   (Material body,Material trace) Colour(string label)=>circuit.TryGetValue(VenomCampaignBuilder.ChapterOneColourKey(game,label)??"",out var c)?c:(ink,railMat);
+   string Driver(COgheRailSlider output)
+   {
+    foreach(var link in owner.Apparatus.GetComponentsInChildren<COgheViewMechanism>())
+     if(link.Output==output&&link.Input!=null){var t=link.Input.GetComponent<COgheTapRail>();if(t!=null)return t.Label;}
+    return output.name.StartsWith("B")?"B":"A";
+   }
 
    // Retire decorative bars only. None of these objects is a collider or input target.
    foreach(var r in root.GetComponentsInChildren<MeshRenderer>(true))
@@ -74,10 +90,12 @@ namespace GravityBox.Editor
     {
      if(r.GetComponent<Collider>()!=null)throw new InvalidOperationException("Unexpected collider on guide decoration");
      r.enabled=false;
-     if(r.name.Contains("rail stop"))continue;
+     if(r.name.Contains("rail stop")||!lettered&&ChapterOneHiddenLock(r.name))continue;
      var mount=Child(art,"Satin "+r.name);mount.position=r.transform.position;mount.rotation=r.transform.rotation;
      var size=new Vector3(.003f,r.transform.lossyScale.y,.003f);
      var task=Array.Find(tasks,t=>r.name==t.Rail.name+" fixed guide");
+     // Chapter 1: guide lines only where they lie on a surface (handles, shutters); a lift's, bridge's or pin's stood in mid-air.
+     if(!lettered&&task==null&&!r.name.Contains("shutter"))continue;
      if(task!=null)
      {
       // Floor controls have coplanar printed guides, not the old pair of bars
@@ -112,10 +130,11 @@ namespace GravityBox.Editor
     }
     if(!rail.name.Contains("shutter"))continue;
     bool b=rail.name.StartsWith("B");var trim=Child(rail.transform,SpatialCircuitRoot);
+    var band=lettered?b?coral:blue:Colour(Driver(rail)).body;
     // Narrow identity band, rather than a large saturated door panel. Moving artwork
     // is parented to the actual shutter; never added to the stationary trace batch.
-    Box(trim,"Circuit identity band",new Vector3(-.051f,0,-.010f),new Vector3(.010f,.09f,.001f),.0004f,b?coral:blue);
-    SpatialBadge(trim,b?"B":"A",new Vector3(0,0,-.012f),Vector3.back,b?coral:blue,shell);
+    Box(trim,"Circuit identity band",new Vector3(-.051f,0,-.010f),new Vector3(.010f,.09f,.001f),.0004f,band);
+    if(lettered)SpatialBadge(trim,b?"B":"A",new Vector3(0,0,-.012f),Vector3.back,b?coral:blue,shell);
     CombineByMaterial(trim);
    }
 
@@ -123,12 +142,12 @@ namespace GravityBox.Editor
    {
     // A and B are the two control circuits. Any other handle (a latch C, a winch E…) is neutral: ink badge, pearl
     // handle, satin contacts — never a third circuit colour.
-    bool neutral=task.Label!="A"&&task.Label!="B";
-    var color=neutral?ink:task.Label=="B"?coral:blue;
+    bool neutral=lettered&&task.Label!="A"&&task.Label!="B";
+    var color=neutral?ink:lettered?task.Label=="B"?coral:blue:Colour(task.Label).body;
     Remove(task.Rail.transform,"Circuit badge");
     var trim=Child(task.Rail.transform,SpatialCircuitRoot);
     bool wall=Mathf.Abs(task.WorkingSurface.Normal.y)<.5f;
-    SpatialBadge(trim,task.Label,wall?new Vector3(0,0,-.029f):new Vector3(0,.014f,0),wall?Vector3.back:Vector3.up,color,shell);
+    if(lettered)SpatialBadge(trim,task.Label,wall?new Vector3(0,0,-.029f):new Vector3(0,.014f,0),wall?Vector3.back:Vector3.up,color,shell);
     foreach(var r in task.Handle.GetComponentsInChildren<MeshRenderer>())if(r.GetComponent<TextMesh>()==null)r.sharedMaterial=neutral?shell:color;
     // Small fixed contact pads at each end. The travel itself stays quiet satin metal.
     foreach(float end in new[]{0f,task.Rail.Travel})
@@ -136,7 +155,7 @@ namespace GravityBox.Editor
      Vector3 p=task.Rail.Start+task.Rail.Axis*end;
      p+=wall?new Vector3(0,0,.024f):new Vector3(0,-.020f,0);
      Box(art,"Terminal base",p,wall?new Vector3(.028f,.033f,.002f):new Vector3(.030f,.002f,.040f),.0008f,shell);
-     Disk(art,"Terminal contact",p+(wall?Vector3.back:Vector3.up)*.0013f,wall?Vector3.back:Vector3.up,.0035f,.0005f,neutral?railMat:task.Label=="B"?traceB:traceA);
+     Disk(art,"Terminal contact",p+(wall?Vector3.back:Vector3.up)*.0013f,wall?Vector3.back:Vector3.up,.0035f,.0005f,neutral?railMat:lettered?task.Label=="B"?traceB:traceA:Colour(task.Label).trace);
     }
     CombineByMaterial(trim);
    }
@@ -145,6 +164,10 @@ namespace GravityBox.Editor
    {
     bool b=link.Output.name.StartsWith("B");
     var task=link.Input.GetComponent<COgheTapRail>();
+    // Chapter 1 draws the trace to a box or its clip itself (VenomCampaignBuilder.ChapterOneFinish).
+    if(!lettered&&VenomCampaignBuilder.ChapterOneOwnTrace(link.Output))continue;
+    var traceMat=lettered?b?traceB:traceA:Colour(task!=null?task.Label:Driver(link.Output)).trace;
+    var portMat=lettered?b?coral:blue:Colour(task!=null?task.Label:Driver(link.Output)).body;
     Vector3 from=link.Input.Start+link.Input.Axis*link.Input.Travel;
     Vector3 to=link.Output.Start+new Vector3(-.055f,-.045f,0);
     // Printed on fixed receiving surfaces: floor -> rear glass, wall -> rear glass,
@@ -153,27 +176,28 @@ namespace GravityBox.Editor
     {
      float y=root.InverseTransformPoint(task.WorkingSurface.transform.position).y+.0012f;
      from.y=y;
-     SpatialTrace(art,new[]{from,new Vector3(from.x+.025f,y,from.z),new Vector3(from.x+.025f,y,.298f),new Vector3(from.x+.025f,to.y,.298f),new Vector3(to.x,to.y,.298f)},b?traceB:traceA);
+     SpatialTrace(art,new[]{from,new Vector3(from.x+.025f,y,from.z),new Vector3(from.x+.025f,y,.298f),new Vector3(from.x+.025f,to.y,.298f),new Vector3(to.x,to.y,.298f)},traceMat);
     }
     else
     {
      from.z=.298f;
-     SpatialTrace(art,new[]{from,new Vector3(from.x,to.y,.298f),new Vector3(to.x,to.y,.298f)},b?traceB:traceA);
+     SpatialTrace(art,new[]{from,new Vector3(from.x,to.y,.298f),new Vector3(to.x,to.y,.298f)},traceMat);
     }
-    SpatialPort(art,new Vector3(to.x,to.y,.2965f),Vector3.back,b?coral:blue,shell);
+    SpatialPort(art,new Vector3(to.x,to.y,.2965f),Vector3.back,portMat,shell);
    }
 
    foreach(var pulley in owner.Apparatus.GetComponentsInChildren<COghePulleyDrive>())
    {
     var wheels=root.GetComponentsInChildren<Transform>().Where(t=>t.name=="A pulley wheel").ToArray();pulley.Wheels=wheels;
     Remove(root,"A geared cable winch");
-    var t=Child(root,"A geared cable winch");t.localPosition=pulley.Input.Start+new Vector3(-.01f,.038f,.048f);
+    var t=Child(root,"A geared cable winch");t.localPosition=pulley.Input.Start+new Vector3(-.01f,.038f,lettered?.048f:.063f);   // chapter 1: clear of the box over the handle
     var drum=Child(t,"Winding drum");drum.localRotation=Quaternion.Euler(90,0,0);
     Disk(drum,"Spool",Vector3.zero,Vector3.up,.027f,.036f,railMat);
     Disk(drum,"Blue winding flange",Vector3.up*.019f,Vector3.up,.028f,.002f,blue);
     CombineByMaterial(drum);pulley.Drum=drum;pulley.DrumAnchor=t;
     var bearing=Child(t,"Bearing casing");Box(bearing,"Ivory bearing",new Vector3(0,-.028f,0),new Vector3(.074f,.018f,.064f),.004f,shell);CombineByMaterial(bearing);
-    pulley.Cable.sharedMaterial=cord;pulley.Cable.startWidth=pulley.Cable.endWidth=.0022f;pulley.Cable.shadowCastingMode=ShadowCastingMode.Off;
+    // Chapter 1: the cable is A's connection, in A's colour.
+    pulley.Cable.sharedMaterial=lettered?cord:traceA;pulley.Cable.startWidth=pulley.Cable.endWidth=.0022f;pulley.Cable.shadowCastingMode=ShadowCastingMode.Off;
     foreach(var w in wheels)
     {
      w.GetComponent<Renderer>().sharedMaterial=railMat;Remove(w,"Ivory bearing hub");Remove(w,SpatialCircuitRoot);
@@ -186,12 +210,15 @@ namespace GravityBox.Editor
    {
     // Pilot: the boss lift is B's. Spatial 11–30: a lift powered through an enabling rail belongs to B's circuit.
     bool pilot=(game.Definition.Id??"").Contains(".pilot."),b=game.Definition.Boss&&pilot||!pilot&&lift.RequiredRail!=null;
+    // Chapter 1: a lift button is coral, a colour no handle in those levels uses unless it powers the lift (level 9).
+    if(!lettered)b=true;
     lift.Panel.GetComponent<Renderer>().sharedMaterial=b?coral:blue;
     var trim=lift.Rail.transform.Find(SpatialCircuitRoot)??Child(lift.Rail.transform,SpatialCircuitRoot);
     // The panel itself keeps its depression motion; no overlay obstructs the tap area.
-    SpatialBadge(trim,b?"B":"A",new Vector3(-.05f,.020f,-.06f),Vector3.up,b?coral:blue,shell);
+    if(lettered)SpatialBadge(trim,b?"B":"A",new Vector3(-.05f,.020f,-.06f),Vector3.up,b?coral:blue,shell);
     CombineByMaterial(trim);
-    if(lift.RequiredRail!=null&&pilot)
+    // Chapter 1 shows this power by the bridge itself, parked over the shaft; a trace in mid-air explained nothing.
+    if(lift.RequiredRail!=null&&pilot&&lettered)
     {
      var start=lift.RequiredRail.Start+lift.RequiredRail.Axis*lift.RequiredRail.Travel;start.y=-.0988f;
      SpatialTrace(art,new[]{start,new Vector3(start.x,-.0988f,.278f),new Vector3(.385f,-.0988f,.278f)},traceB);

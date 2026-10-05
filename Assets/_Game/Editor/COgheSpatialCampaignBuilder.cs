@@ -15,7 +15,7 @@ namespace GravityBox.Editor
   public const string SpatialFolder="Assets/_Game/Venom/SpatialCampaign";
   // Chapter 1 as rebuilt for the hook plan (05/10/2026). Lessons say how a new mechanism works, never the answer.
   static readonly string[] SpatialNames={"Chạm để đi","Đi vòng mặt tím","Nhìn quanh vách","Kéo là mở","Mở nắp trước","Leo lên, mở hộp","Chìa khoá dưới hố","Lên, kéo, xuống","Cầu chắn giếng thang","Cỗ máy thân quen"};
-  static readonly string[] SpatialLessons={"Chạm vòng xanh để chỉ đường.","COghe leo được mặt ngà, trượt khỏi mặt tím.","Kéo ngang để nhìn quanh vách.","Chạm tay nắm để COghe kéo nó.","Nắp kính khoá tay nắm bên dưới.","Tay nắm có thể ở trên cao.","Chốt chặn có cần riêng.","Nút thang bật lên lại khi tới nơi.","Một vật có thể làm hai việc.",""};
+  static readonly string[] SpatialLessons={"Chạm vòng xanh để chỉ đường.","COghe leo được mặt ngà, trượt khỏi mặt tím.","Kéo ngang để nhìn quanh vách.","Chạm tay nắm để COghe kéo nó.","Hộp màu khoá tay nắm bên trong: kéo cần cùng màu để mở hộp.","Tay nắm có thể ở trên cao.","Chốt chặn có cần riêng.","Nút thang bật lên lại khi tới nơi.","Một vật có thể làm hai việc.",""};
   // The Spatial campaign in play order: 50 levels in five chapters, a boss every ten (proposal 29/09/2026, approved
   // 30/09/2026). A key names the content: "01"…"30" are the scenes COgheSpatialNN (pilot 01–10, Spatial 11–30),
   // "E01"…"E18", "B1", "B2" the Spatial Plus scenes COgheSpatialPlusKEY. Position = index + 1 = Definition.Order;
@@ -100,12 +100,14 @@ namespace GravityBox.Editor
    var camera=new GameObject("Camera",typeof(Camera),typeof(AudioListener)).GetComponent<Camera>();camera.transform.SetParent(owner.transform,false);camera.tag="MainCamera";camera.orthographic=true;camera.nearClipPlane=.005f;camera.farClipPlane=15;camera.clearFlags=CameraClearFlags.SolidColor;camera.transform.rotation=Quaternion.Euler(def.CameraEuler);camera.transform.position=-camera.transform.forward*3;owner.View=camera;
    Lighting();COgheDayLabBuilder.ApplyExpansionLevel(game,$"Meshes/Spatial/Level{n:00}");COgheDayLabBuilder.ApplyGlassPreview(game,true);
    var ivory=SpatialMaterial("Ivory bodies",new Color(.88f,.87f,.76f));var blue=SpatialMaterial("Circuit A blue",new Color(.224f,.498f,.678f));var coral=SpatialMaterial("Circuit B coral",new Color(.784f,.424f,.345f));var slip=SpatialMaterial("Lavender slippery",new Color(.53f,.48f,.72f));
+   // Chapter 1 colours its third and fourth controls (Mrk, 05/10/2026: colours, not letters, show what works what).
+   SpatialMaterial("Circuit C amber",ChapterAmber);SpatialMaterial("Circuit D green",ChapterGreen);
    foreach(var p in c.Surfaces)if(!p.ExteriorGlass&&p!=floor&&p.name!="Departure bank"&&p.name!="Receiving bank"&&p.name!="Recovery basin")p.GetComponent<Renderer>().sharedMaterial=p.Slippery?slip:ivory;
    foreach(var task in owner.Apparatus.GetComponentsInChildren<COgheTapRail>()){var material=task.Label=="B"?coral:blue;foreach(var r in task.Handle.GetComponentsInChildren<Renderer>())r.sharedMaterial=material;}
    foreach(var rail in owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())if(rail.name.Contains("shutter"))foreach(var r in rail.GetComponentsInChildren<Renderer>())r.sharedMaterial=rail.name.StartsWith("B")?coral:blue;
    foreach(var lift in owner.Apparatus.GetComponentsInChildren<COghePassengerLift>())lift.Panel.GetComponent<Renderer>().sharedMaterial=n==10?coral:blue;
    COgheDayLabBuilder.DecorateSpatialMechanisms(game,blue,coral,ivory);
-   ChapterOneFinish(game,ivory);
+   ChapterOneFinish(game);
    EditorUtility.SetDirty(def);EditorSceneManager.SaveScene(scene,SpatialContentPath(n));
   }
   static void SpatialShell(ExpansionContext c,bool slippery)

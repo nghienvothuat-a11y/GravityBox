@@ -16,6 +16,7 @@ namespace GravityBox.Venom
             ["coghe.spatial.pilot.02"] = "COghe climbs ivory. It slides off lavender.",
             ["coghe.spatial.pilot.03"] = "Drag to look around the box.",
             ["coghe.spatial.pilot.04"] = "Tap a handle and COghe pulls it.",
+            ["coghe.spatial.pilot.05"] = "A box locks the handle inside. Pull the control of the same colour to flip it open.",
             ["coghe.spatial.pilot.08"] = "Tap the lift button to ride. It pops up again when the lift arrives.",
             ["coghe.spatial.next.14"] = "Tap a tube to go through it.",
             ["coghe.spatial.next.16"] = "Tap the Q machine to split COghe in two. Close halves merge again.",
@@ -29,11 +30,11 @@ namespace GravityBox.Venom
         /// <summary>The answer, revealed by the Hint button.</summary>
         public static readonly Dictionary<string, string> Solution = new Dictionary<string, string>
         {
-            ["coghe.spatial.pilot.05"] = "Pull the lever on the floor first: it lifts the glass cover off the handle on the wall.",
-            ["coghe.spatial.pilot.06"] = "Climb up and pull the wall handle: it opens the box around the winch. Then turn the winch.",
-            ["coghe.spatial.pilot.07"] = "The pin that locks the bridge is worked from down in the pit. Pull it there, then slide the bridge.",
+            ["coghe.spatial.pilot.05"] = "Pull the yellow lever on the floor first: it flips open the yellow box over the handle on the wall.",
+            ["coghe.spatial.pilot.06"] = "Climb up and pull the yellow handle on the wall: it flips open the yellow box over the winch. Then turn the winch.",
+            ["coghe.spatial.pilot.07"] = "The yellow pin that locks the bridge is pulled by the yellow lever down in the pit. Pull it there, then slide the bridge.",
             ["coghe.spatial.pilot.08"] = "Ride up, pull the handle up there to open the door below, then press the button again to ride down.",
-            ["coghe.spatial.pilot.09"] = "Free the bridge's pin first. Sliding the bridge clears the lift shaft and makes the path in one move.",
+            ["coghe.spatial.pilot.09"] = "Pull the yellow lever to free the bridge's pin first. Sliding the bridge clears the lift shaft and makes the path in one move.",
             ["coghe.spatial.next.11"] = "Push crate A against the ledge and use it as a step.",
             ["coghe.spatial.next.12"] = "Move the low block aside first, push the tall block through, then bring the low block back as a step.",
             ["coghe.spatial.next.13"] = "Load the crate on the tray and ride up with it, then use it as the last step.",
