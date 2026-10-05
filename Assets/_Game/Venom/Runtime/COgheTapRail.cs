@@ -28,6 +28,8 @@ namespace GravityBox.Venom
         public float AppliedEffort { get; private set; }
         public bool CanInterrupt => HoldAtEnd || RequiredGrip != null;
         public COgheRailSlider RequiredRail;
+        /// <summary>Further locks: each of these rails must also be at its end.</summary>
+        public COgheRailSlider[] AlsoRequired = System.Array.Empty<COgheRailSlider>();
         public COgheTissueClearance Clearance;
         public bool RequiredEnd = true;
         // Negative retains the original terminal interlock. Otherwise a real cam at this rail position releases it.
@@ -72,7 +74,8 @@ namespace GravityBox.Venom
         public int NextStop => HasStops && !Busy && CurrentStop >= 0 ? (CurrentStop + 1) % Stops.Length : targetStop;
         public bool InterlockOpen => (RequiredGrip == null || RequiredGrip.Holding) && (Clearance == null || !Clearance.Blocked) && (RequiredLoad == null || RequiredLoad.Active) &&
             (RequiredRail == null || (RequiredPosition >= 0 ? Mathf.Abs(RequiredRail.Position - RequiredPosition) <= RequiredRail.CatchTolerance :
-                RequiredEnd ? RequiredRail.AtEnd : RequiredRail.Position <= RequiredRail.CatchTolerance));
+                RequiredEnd ? RequiredRail.AtEnd : RequiredRail.Position <= RequiredRail.CatchTolerance)) && AlsoOpen;
+        private bool AlsoOpen { get { if (AlsoRequired != null) foreach (var r in AlsoRequired) if (r != null && !r.AtEnd) return false; return true; } }
         public override string Activity => Busy ? Label + (Phase == TaskPhase.Approaching ? " · Đang tới" : Holding ? " · Đang giữ" : RequiredGrip != null && !InterlockOpen ? " · Chờ nhả phanh" : " · Đang chuyển") :
             owner != null && owner.Matter.SimulationTime < messageUntil ? LastFailure : null;
         public Vector3 HandPoint => backSide&&AlternateHandle!=null?AlternateHandle.position:Handle != null ? Handle.position : Rail.Body.position;

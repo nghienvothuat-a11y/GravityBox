@@ -34,7 +34,7 @@ namespace GravityBox.Venom
         /// <summary>The button cap COghe presses with a tendril while the press lasts (presentation reads it).</summary>
         public Vector3 PressPoint=>Panel.TransformPoint(Vector3.up);
         private VenomCampaign game;
-        private int actor=-1;private float target,stable,buttonClock,callClock;
+        private int actor=-1;private float target,stable,buttonClock,callClock,travelIntegral;
         private bool callReleasing;
         private VenomCampaignMotion.Order boardingOrder;
         private Vector3 panelRest;
@@ -85,7 +85,9 @@ namespace GravityBox.Venom
         {
             actor=owner.Motion.Selected;
             if(!owner.PrepareTapCommand(actor))return true;
-            if(Rail.AtEnd&&!OnDeck(actor)&&CallPanels.Length==0){BeginTravel(0,true,-1);return true;}
+            // From below, the button calls the empty tray down; from the landing beside it, COghe boards and rides.
+            bool below=owner.Motion.Centre(actor).y<Deck.transform.position.y-.06f;
+            if(NextDirection<0&&!OnDeck(actor)&&CallPanels.Length==0&&below){BeginTravel(0,true,-1);return true;}
             Boarding=true;Button=ButtonState.Armed;buttonClock=0;
             owner.Motion.Move(actor,BoardPoint!=null?BoardPoint.position:Deck.Closest(Rail.Body.position+Vector3.up*DeckHeight)+Vector3.up*.018f);
             boardingOrder=owner.Motion.Get(actor);
@@ -99,7 +101,7 @@ namespace GravityBox.Venom
         }
         private void BeginTravel(float destination,bool carrying,int call)
         {
-            target=destination;Moving=true;Boarding=false;stable=0;Rail.Locked=false;Rail.ReleaseLatch();
+            target=destination;Moving=true;Boarding=false;stable=0;travelIntegral=0;Rail.Locked=false;Rail.ReleaseLatch();
             if(call>=0){CalledPanel=call;callReleasing=false;}else if(carrying){Button=ButtonState.Latched;buttonClock=0;}
             if(carrying)game.Motion.Cancel(actor);
         }
@@ -118,7 +120,7 @@ namespace GravityBox.Venom
                 {
                     // Fully aboard: COghe presses the button, then the tray leaves.
                     if(Button!=ButtonState.Pressing){Button=ButtonState.Pressing;buttonClock=0;}
-                    else if((buttonClock+=dt)>=PressSeconds)BeginTravel(Rail.AtEnd?0:Rail.Travel,true,-1);
+                    else if((buttonClock+=dt)>=PressSeconds)BeginTravel(NextDirection<0?0:Rail.Travel,true,-1);   // the far stop, even if the tray sagged a little under its rider
                 }
                 else if(Button==ButtonState.Pressing)Button=ButtonState.Armed;
             }
@@ -128,7 +130,11 @@ namespace GravityBox.Venom
             float desired=Mathf.Clamp(error*4,-Speed,Speed);
             float mass=Rail.Body.mass;for(int i=0;i<32;i++)if(OnDeck(i))mass+=owner.Matter.Bodies[i].mass;
             if(CarriesProps)foreach(var prop in owner.Props)if(prop.Body!=Rail.Body&&OnDeckPoint(prop.Body.worldCenterOfMass,0))mass+=prop.Body.mass;
-            Rail.ApplyEffort(Rail.WorldAxis*Mathf.Clamp(mass*9.81f+(desired-speed)*1.0f,-MaximumForce,MaximumForce));
+            // The weight feed-forward assumes the rider rests its whole weight on the deck; a rider partly holding itself
+            // up left a tray stuck at its top stop (the chapter-1 boss, 05/10/2026). A slow integral of the speed error
+            // makes up whatever the estimate misses.
+            travelIntegral=Mathf.Clamp(travelIntegral+(desired-speed)*8f*dt,-1,1);
+            Rail.ApplyEffort(Rail.WorldAxis*Mathf.Clamp(mass*9.81f+(desired-speed)*1.0f+travelIntegral,-MaximumForce,MaximumForce));
             stable=Mathf.Abs(error)<Rail.CatchTolerance&&Mathf.Abs(speed)<.02f?stable+dt:0;
             if(stable>.15f)
             {

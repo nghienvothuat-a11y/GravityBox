@@ -1,5 +1,7 @@
 # COghe — 10 màn thử sàn và chiều cao
 
+**05/10/2026: chương 1 đã dựng lại theo kế hoạch hook — xem [CHAPTER1_HOOK_REBUILD.md](CHAPTER1_HOOK_REBUILD.md).** Danh sách dưới đây là bản gốc 29/09.
+
 Minh hoạ được tạo trước code. Bộ test riêng, không thay V2 30 màn.
 
 - [01 — Chạm để đi](Level01/README.md): Bò trên sàn tới vòng xanh.

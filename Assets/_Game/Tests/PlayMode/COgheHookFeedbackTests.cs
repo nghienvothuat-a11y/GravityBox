@@ -38,7 +38,8 @@ namespace GravityBox.Tests
 
   [UnityTest] public IEnumerator UnpoweredLiftRefusesWithAReason()
   {
-   yield return Load(10);var lift=game.Owner.Apparatus.GetComponentInChildren<COghePassengerLift>();
+   // 9: the parked bridge sits across the lift shaft; until it is moved the lift has no power.
+   yield return Load(9);var lift=game.Owner.Apparatus.GetComponentInChildren<COghePassengerLift>();
    Assert.IsFalse(lift.Powered);int before=lift.Refusals;
    yield return Tap(lift.Panel.position);
    Assert.AreEqual(before+1,lift.Refusals,"The tap is refused, not swallowed");

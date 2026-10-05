@@ -28,13 +28,15 @@ namespace GravityBox.Tests
    }
    return false;
   }
-  private IEnumerator WanderPlus(string key)
+  private IEnumerator WanderPlus(string key){yield return Wander(LoadPlus(key),key);}
+  private IEnumerator Wander(IEnumerator load,string key)
   {
-   yield return LoadPlus(key);
+   yield return load;
    Directory.CreateDirectory("Artifacts/SpatialPlus");string log=$"Artifacts/SpatialPlus/wander-{key}.txt";File.WriteAllText(log,"");
    Vector3 home=game.Motion.Centre(0),homeTap=home+Vector3.down*.025f;
    var q=game.Owner.Apparatus.GetComponentInChildren<COgheQuantumSplitter>();
    var tasks=game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>();var outlet=Local(game.Owner.Outlet.position);
+   var lifts=game.Owner.Apparatus.GetComponentsInChildren<COghePassengerLift>();
    // Every fixed, grippy, upward face: its middle and corners (3.5 cm in). Q and the handles are left alone: a tap
    // there is a split or a pull, not a walk.
    var targets=new List<Vector3>();
@@ -47,6 +49,7 @@ namespace GravityBox.Tests
      var p=f.transform.TransformPoint(new Vector3(o.x,o.y,0));
      if(q!=null&&Vector2.Distance(new Vector2(Local(p).x,Local(p).z),new Vector2(Local(q.transform.position).x,Local(q.transform.position).z))<.14f)continue;
      if(Array.Exists(tasks,t=>Vector3.Distance(t.HandPoint,p)<.07f))continue;
+     if(Array.Exists(lifts,l=>Vector3.Distance(l.Panel.position,p)<.08f))continue; // a lift button is a ride, not a walk
      if(Vector2.Distance(new Vector2(Local(p).x,Local(p).z),new Vector2(outlet.x,outlet.z))<.12f)continue; // walking out is not wandering
      if(targets.Exists(t=>Vector3.Distance(t,p)<.05f))continue;
      targets.Add(p);
@@ -84,6 +87,9 @@ namespace GravityBox.Tests
      break;
     }
    }
+   // Up on a lift's landing, a player presses the lift button to come down.
+   foreach(var lift in lifts)if(lift.Rail.Position>lift.Rail.Travel*.5f&&!game.Owner.Completed)
+   {int trips=lift.Trips;yield return Tap(lift.Panel.position);yield return WaitFor(40,()=>lift.Trips>trips&&!lift.Moving);File.AppendAllText(log,$"rode the lift down, body {Local(game.Motion.Centre(0)):F3}\n");}
    // Home again from wherever the wander ended. If a walk gives up, a player taps somewhere else first and tries
    // again: the room's open middle, then the four sides. Trapped means no tap frees the body.
    var detours=new List<Vector3>{Vector3.zero,new Vector3(-.30f,0,0),new Vector3(.30f,0,0),new Vector3(0,0,-.22f),new Vector3(0,0,.22f)};
@@ -105,6 +111,14 @@ namespace GravityBox.Tests
    yield return new COgheSpatialScenario(game,Tap,Until).Solve();
    Assert.AreEqual(32,game.Matter.EscapedCount);Assert.IsTrue(game.Progress.Completed.Contains(game.Definition.Id));
   }
+  // Chapter 1 rebuilt (05/10/2026): every new level gets a wander (stuck) test.
+  [UnityTest] public IEnumerator Spatial02Wander(){yield return Wander(Load(2),"02");}
+  [UnityTest] public IEnumerator Spatial05Wander(){yield return Wander(Load(5),"05");}
+  [UnityTest] public IEnumerator Spatial06Wander(){yield return Wander(Load(6),"06");}
+  [UnityTest] public IEnumerator Spatial07Wander(){yield return Wander(Load(7),"07");}
+  [UnityTest] public IEnumerator Spatial08Wander(){yield return Wander(Load(8),"08");}
+  [UnityTest] public IEnumerator Spatial09Wander(){yield return Wander(Load(9),"09");}
+  [UnityTest] public IEnumerator Spatial10Wander(){yield return Wander(Load(10),"10");}
   [UnityTest] public IEnumerator SpatialPlusE01Wander(){yield return WanderPlus("E01");}
   [UnityTest] public IEnumerator SpatialPlusE02Wander(){yield return WanderPlus("E02");}
   [UnityTest] public IEnumerator SpatialPlusE03Wander(){yield return WanderPlus("E03");}

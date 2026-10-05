@@ -7,7 +7,9 @@ namespace GravityBox.Venom
     [Serializable]
     public sealed class VenomCampaignSave
     {
-        public int Version=2;
+        public int Version=CurrentVersion;
+        /// <summary>3: chapter 1 rebuilt (05/10/2026). Spatial progress saved before it is cleared once.</summary>
+        public const int CurrentVersion=3;
         public List<string> Completed=new List<string>();
         public bool HomeUnlocked, RevealHome;
         public static bool PersistenceEnabled=true;
@@ -22,6 +24,8 @@ namespace GravityBox.Venom
             result??=new VenomCampaignSave();
             result.Completed??=new List<string>();
             result.storageKey=key;
+            if(result.Version<CurrentVersion&&key.StartsWith("coghe.spatial"))
+            {result.Completed.Clear();result.HomeUnlocked=result.RevealHome=false;result.Version=CurrentVersion;result.Write();}
             return result;
         }
         public void Win(VenomCampaignDefinition definition)

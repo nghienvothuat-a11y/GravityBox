@@ -13,8 +13,9 @@ namespace GravityBox.Editor
  public static partial class VenomCampaignBuilder
  {
   public const string SpatialFolder="Assets/_Game/Venom/SpatialCampaign";
-  static readonly string[] SpatialNames={"Chạm để đi","Leo từng bậc","Nhìn quanh vách","Kéo là mở","Tay kéo trên vách","Một sợi dây","Ghép một nhịp","Đi thang nâng","Nâng rồi kéo","Cỗ máy thân quen"};
-  static readonly string[] SpatialLessons={"Chạm vòng xanh để chỉ đường.","Chạm từng bậc rộng để leo lên.","Kéo ngang để nhìn quanh vách.","Tay xanh A nối với cửa xanh A.","Leo lên vách để kéo tay xanh A.","Kéo dây A để nâng nhịp cầu.","Chạm tay B để đưa nhịp cầu vào chỗ trống.","Chạm nút trên khay để lên thang.","Nâng nhịp A, rồi tìm tay B.",""};
+  // Chapter 1 as rebuilt for the hook plan (05/10/2026). Lessons say how a new mechanism works, never the answer.
+  static readonly string[] SpatialNames={"Chạm để đi","Đi vòng mặt tím","Nhìn quanh vách","Kéo là mở","Mở nắp trước","Leo lên, mở hộp","Chìa khoá dưới hố","Lên, kéo, xuống","Cầu chắn giếng thang","Cỗ máy thân quen"};
+  static readonly string[] SpatialLessons={"Chạm vòng xanh để chỉ đường.","COghe leo được mặt ngà, trượt khỏi mặt tím.","Kéo ngang để nhìn quanh vách.","Chạm tay nắm để COghe kéo nó.","Nắp kính khoá tay nắm bên dưới.","Tay nắm có thể ở trên cao.","Chốt chặn có cần riêng.","Nút thang bật lên lại khi tới nơi.","Một vật có thể làm hai việc.",""};
   // The Spatial campaign in play order: 50 levels in five chapters, a boss every ten (proposal 29/09/2026, approved
   // 30/09/2026). A key names the content: "01"…"30" are the scenes COgheSpatialNN (pilot 01–10, Spatial 11–30),
   // "E01"…"E18", "B1", "B2" the Spatial Plus scenes COgheSpatialPlusKEY. Position = index + 1 = Definition.Order;
@@ -78,29 +79,20 @@ namespace GravityBox.Editor
    owner.Apparatus=new GameObject("Apparatus").transform;owner.Apparatus.SetParent(owner.transform,false);
    var pivot=new GameObject("Fixed chamber",typeof(Rigidbody),typeof(BoxRotationController));pivot.transform.SetParent(owner.Apparatus,false);pivot.GetComponent<Rigidbody>().isKinematic=true;pivot.GetComponent<Rigidbody>().useGravity=false;owner.Rotation=pivot.GetComponent<BoxRotationController>();
    var c=new ExpansionContext{Number=n,Owner=owner,Game=game,Definition=def,Root=pivot.transform,Spawn=new Vector3(-.26f,-.25f,-.19f),Exit=new Vector3(.23f,-.225f,.30f),Outward=Vector3.forward};
-   if(n==2)c.Exit.y=-.07f;if(n==5)c.Exit.y=.05f;if(n==6||n==9)c.Exit.y=-.035f;if(n==8)c.Exit.y=.09f;if(n==10)c.Exit.y=.20f;
+   if(n==2)c.Exit.y=-.07f;if(n==5)c.Exit.y=.05f;if(n==6)c.Exit.y=-.035f;
+   // 8 and 10 exit at floor level through slick glass: the hole starts at the floor, there is nothing to climb.
+   if(n==8)c.Exit=new Vector3(-.23f,-.252f,.30f);if(n==9)c.Exit=new Vector3(-.25f,.09f,.30f);if(n==10)c.Exit=new Vector3(.25f,-.252f,.30f);
    if(n==7){c.Exit=new Vector3(.32f,-.30f,.16f);c.Outward=Vector3.down;ViewShell(c,true);}else SpatialShell(c,n>=6);
    foreach(var surface in c.Surfaces)if(surface.ExteriorGlass)surface.Selectable=true;
    var floor=c.Surfaces[0];
-   if(n==2){ViewBlock(c,"Ivory first step",new Vector3(-.12f,-.26f,.11f),new Vector3(.28f,.08f,.28f));ViewBlock(c,"Ivory second step",new Vector3(.20f,-.22f,.17f),new Vector3(.36f,.16f,.26f));}
-   if(n==3){ViewBlock(c,"Observation wall",new Vector3(.12f,-.15f,.10f),new Vector3(.28f,.30f,.016f));ViewBlock(c,"Observation return",new Vector3(-.02f,-.15f,.16f),new Vector3(.016f,.30f,.12f));def.CameraEuler=new Vector3(38,0,0);}
-   if(n==4||n==5)
+   if(n!=1&&n!=4)ChapterOne(c,n,floor);
+   if(n==4)
    {
     var work=n==4?floor:c.Surfaces.Find(p=>p.name=="Outer pane 2");
     var start=n==4?new Vector3(-.19f,-.277f,.09f):new Vector3(-.23f,-.04f,.268f);
     var task=ViewTask(c,"A",start,Vector3.right,.16f,work);
     if(n==5){task.StandOffset=new Vector3(0,-.068f,0);task.TouchSize=new Vector3(.10f,.08f,.07f);}
     var gate=ViewGate(c,"A blue shutter",c.Exit+Vector3.back*.020f,Vector3.left,.14f,new Vector3(.13f,.14f,.018f));ViewLink(c,task.Rail,gate,true,ViewExitSurface(c));
-   }
-   COghePulleyDrive pulley=null;
-   if(n==6||n==9||n==10) pulley=SpatialPulley(c,floor);
-   if(n==7){var task=ViewBridge(c,floor);task.Label="B";}
-   if(n==8||n==10)SpatialLift(c,n==10?pulley.Output:null);
-   if(n==9)
-   {
-    var upper=c.Surfaces.Find(p=>p.name=="Receiving plinth"&&p.Normal.y>.9f);
-    var task=ViewTask(c,"B",new Vector3(.20f,-.077f,.23f),Vector3.right,.08f,upper);task.StandOffset=new Vector3(0,0,-.06f);
-    var gate=ViewGate(c,"B coral shutter",c.Exit+Vector3.back*.020f,Vector3.left,.14f,new Vector3(.13f,.115f,.018f));ViewLink(c,task.Rail,gate,true,ViewExitSurface(c));
    }
    owner.Spawn=new GameObject("Spawn").transform;owner.Spawn.SetParent(c.Root,false);owner.Spawn.localPosition=c.Spawn;
    owner.Outlet=new GameObject("Final exit").transform;owner.Outlet.SetParent(c.Root,false);owner.Outlet.localPosition=c.Exit;owner.Outlet.localRotation=Quaternion.LookRotation(c.Outward,Mathf.Abs(c.Outward.y)>.9f?Vector3.forward:Vector3.up);Ring(owner.Outlet,Vector2.zero,owner.ApertureRadius,.0032f,mint);
@@ -113,6 +105,7 @@ namespace GravityBox.Editor
    foreach(var rail in owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())if(rail.name.Contains("shutter"))foreach(var r in rail.GetComponentsInChildren<Renderer>())r.sharedMaterial=rail.name.StartsWith("B")?coral:blue;
    foreach(var lift in owner.Apparatus.GetComponentsInChildren<COghePassengerLift>())lift.Panel.GetComponent<Renderer>().sharedMaterial=n==10?coral:blue;
    COgheDayLabBuilder.DecorateSpatialMechanisms(game,blue,coral,ivory);
+   ChapterOneFinish(game,ivory);
    EditorUtility.SetDirty(def);EditorSceneManager.SaveScene(scene,SpatialContentPath(n));
   }
   static void SpatialShell(ExpansionContext c,bool slippery)

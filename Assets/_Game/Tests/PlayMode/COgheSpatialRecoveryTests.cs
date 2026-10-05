@@ -40,10 +40,12 @@ namespace GravityBox.Tests
   }
   [UnityTest] public IEnumerator PulleyCanBeReversedAndReset()
   {
-   yield return Load(6);yield return RailTrip("A");var cable=game.Owner.Apparatus.GetComponentInChildren<COghePulleyDrive>();
+   // 6 (chapter 1 rebuilt): wall handle C lifts the lid off winch A first.
+   yield return Load(6);yield return RailTrip("C");yield return Until(5,()=>Array.Find(game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>(),t=>t.Label=="A").InterlockOpen,"The lid is off the winch");yield return RailTrip("A");var cable=game.Owner.Apparatus.GetComponentInChildren<COghePulleyDrive>();
    yield return Until(10,()=>cable.Output.AtEnd,"Raised bridge holds");yield return Wait(2);Assert.IsTrue(cable.Output.AtEnd);
    yield return RailTrip("A");yield return Until(15,()=>cable.Output.Position<.012f,"Release and lower via gravity");
-   game.ResetLevel();yield return Wait(1);Assert.Less(cable.Input.Position,.004f);Assert.Less(cable.Output.Position,.004f);Assert.IsFalse(cable.Input.Locked);
+   game.ResetLevel();yield return Wait(1);Assert.Less(cable.Input.Position,.004f);Assert.Less(cable.Output.Position,.004f);
+   Assert.IsTrue(cable.Input.Locked,"After Retry the lid is back over the winch, so its rail is locked again");
   }
   [UnityTest] public IEnumerator ElevatorRoundTripCarriesAllTissue()
   {
