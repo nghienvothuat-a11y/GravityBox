@@ -221,19 +221,20 @@ def draw_plan(img, puzzle, path, ox, oy, cs):
 
 
 def plate(puzzle, path, title, subtitle, steps, notes, out, cogh=(0, 0)):
-    img = Image.new('RGB', (1800, 1100), BG)
+    size = 21 if len(steps) <= 8 else 19 if len(steps) <= 11 else 18
+    height = max(1100, 660 + 42 + len(steps) * (size + 9) + 8 + len(notes) * 26 + 40)
+    img = Image.new('RGB', (1800, height), BG)
     d = ImageDraw.Draw(img)
     d.text((60, 40), title, font=font(48), fill=INK)
     d.text((60, 104), subtitle, font=font(28), fill=MUTED)
     cam = Camera(560, 700, 940)
     start = tuple(0 for _ in puzzle.crates)
     draw_iso(img, puzzle, start, cam, cogh=cogh)
-    d.text((70, 1010), 'Trong game: thùng ngà, tay nắm xanh ở đầu kéo; thùng đỏ che lỗ thoát (vòng xanh bạc hà).', font=font(22), fill=MUTED)
+    d.text((70, height - 90), 'Trong game: thùng ngà, tay nắm xanh ở đầu kéo; thùng đỏ che lỗ thoát (vòng xanh bạc hà).', font=font(22), fill=MUTED)
     draw_plan(img, puzzle, path, 1150, 200, 86)
     d.text((1150, 160), 'Nhìn từ trên (hàng dưới = phía trước). Số = lần kéo thứ mấy.', font=font(19), fill=MUTED)
     y = 660
     d.text((1150, y), 'Lời giải ngắn nhất', font=font(28), fill=INK); y += 42
-    size = 21 if len(steps) <= 8 else 19
     for s in steps:
         d.text((1150, y), s, font=font(size), fill=INK); y += size + 9
     y += 8

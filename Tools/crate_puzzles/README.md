@@ -12,3 +12,11 @@ Solver, generator and plate renderer for the crate levels proposed in `PLANS/COG
   `out/summary.json` (exact crate definitions: shape cells, axis, stops, anchor).
 
 Run from this folder: `uv run --with pillow python3 levels.py` (Pillow is only needed for the plates).
+
+## Ten levels with standing room (06/10/2026)
+
+`Puzzle(access=True)` adds COghe's standing room: a pull needs a free cell inside the box right behind the crate (push)
+or right past its stop (pull). `search10.py <levels> <seed from> <seed to> [append]` searches the directed state graph
+(backward BFS from the solved layouts over reversed pulls), requires the shapes each level introduces, and climbs for
+depth, then no dead layouts, then choice → `cand10.json`. `levels10.py` renders the chosen ten (`PICKS`, names in
+`names10.json`) into `out10/`.

@@ -42,6 +42,7 @@ class Puzzle:
     hole: tuple
     crates: list
     walls: set = field(default_factory=set)   # fixed blocks (cells nothing can slide into)
+    access: bool = False   # COghe needs a free cell behind the crate (to push) or past its stop (to pull)
 
     def check(self):
         state = tuple(0 for _ in self.crates)
@@ -64,11 +65,25 @@ class Puzzle:
                 cells |= c.cells(state[i])
         return cells
 
+    def reachable_side(self, c, frm, to, others):
+        """A free floor cell inside the box right behind the crate (push) or right past where it stops (pull)."""
+        d = c.stops[to] - c.stops[frm]
+        step = (1 if d > 0 else -1)
+        dx, dz = (step, 0) if c.axis == 'x' else (0, step)
+        cur, dst = c.cells(frm), c.cells(to)
+        behind = {(x - dx, z - dz) for x, z in cur} - cur
+        ahead = {(x + dx, z + dz) for x, z in dst} - dst
+        ok = lambda cell: 0 <= cell[0] < W and 0 <= cell[1] < H and cell not in others
+        return any(map(ok, behind)) or any(map(ok, ahead))
+
     def moves(self, state):
         for i, c in enumerate(self.crates):
             # A rail with two stops toggles; with more, a pull goes to the next stop and wraps (TapRail.Stops).
             nxt = (state[i] + 1) % len(c.stops)
-            if c.swept(state[i], nxt) & self.occupied(state, skip=i):
+            others = self.occupied(state, skip=i)
+            if c.swept(state[i], nxt) & others:
+                continue
+            if self.access and not self.reachable_side(c, state[i], nxt, others):
                 continue
             s = list(state); s[i] = nxt
             yield i, tuple(s)
