@@ -10,6 +10,19 @@ của Mrk: nét comic sạch, viền mực đậm, mảng màu và bóng mượt
 nhân vật và cú chuyển cuối giữ nguyên. So sánh: [`before-after.jpg`](before-after.jpg). Dung lượng gần như không đổi (texture ASTC 8×8
 trên máy 3,06 → 3,08 MB).
 
+**Có mắt 07/10/2026** (Mrk: "tạo lại intro với COghe có mắt"): COghe trong mọi cảnh có đôi mắt giống hệt mắt trong game
+(trắng, viền tối, con ngươi có đốm sáng, mắt cười hình vòm), vẽ bằng code đè lên tranh nên chớp, liếc và đổi cảm xúc được;
+tranh của Codex giữ nguyên. Không thêm file ảnh: ba texture mắt nhỏ được tạo lúc chạy. Bản 1080×2340 để duyệt:
+`OUTBOX/COGHE_INTRO_EYES_2026_10_07` (workspace Buzz).
+
+| Cảnh | Mắt |
+| --- | --- |
+| S5 trồi lên | Mở to khi vừa nở ra, liếc sang lính bên trái rồi bên phải, chớp, nhìn lên |
+| S6 nhảy lên tay | Nhìn về chỗ đang nhảy tới; đáp xuống thì cười híp, rồi ngước nhìn cô |
+| S6 cận cảnh | Ngước nhìn cô, chớp, rồi cười híp tới hết cảnh |
+| S7 đặt vào hộp | Nhìn xuống sàn kính đang tới gần, rồi nhìn lên, chớp |
+| S7 ngồi trong hộp | Nheo mắt khi đáp, nhìn trái, phải, rồi nhìn người chơi, chớp; tan cùng tranh, lộ ra mắt thật của COghe 3D bên dưới |
+
 Xem nhanh: [`preview.mp4`](preview.mp4) (540×1170, có tiếng, render từ Unity: màn 1 thật nằm dưới tranh) và
 [`contact-sheet.jpg`](contact-sheet.jpg) (24 khung).
 
@@ -44,7 +57,7 @@ hình (đã kiểm 1080×2340 và 1080×1920). COghe vẽ được đặt đúng
 ## File
 
 - Runtime: `Assets/_Game/Venom/Runtime/Intro/COgheIntro.cs` (vẽ immediate mode bằng `Graphics.DrawTexture`, không thêm
-  canvas/camera/scene) và shader `Resources/COgheIntro/IntroLayer.shader` (mờ dần, đảo mực, mờ lấy nét, tan mực).
+  canvas/camera/scene; mắt: `Eyes`, `SeatedEyes`, vị trí theo tâm thân COghe trong `layout.txt`) và shader `Resources/COgheIntro/IntroLayer.shader` (mờ dần, đảo mực, mờ lấy nét, tan mực).
 - Tranh: `Assets/_Game/Venom/Resources/COgheIntro/*.jpg|png` + `layout.txt` (vùng cắt của từng lớp trong khung gốc, vị
   trí COghe trong các lớp có COghe). Nền JPG, nhân vật PNG có alpha.
 - Nhạc: `Assets/_Game/Venom/Resources/COgheAudio/intro_score.ogg` (20 s, stream).
@@ -86,4 +99,4 @@ lũy thừa 2 có mipmap bị lưu không nén (tranh lab từng lên 5,5 MB vì
   tạm dừng, nhạc game nhường, tự kết thúc và trả game đang chạy; bỏ qua nhảy đúng tới đoạn cuối; xem lại từ màn tạm dừng
   cũng trả game đang chạy; chỉ khớp màn 1.
 - `RenderIntroFrames` (explicit): khung xem trước ở 1080×2340 và 1080×1920 (`Artifacts/Intro/`), đặt
-  `COGHE_INTRO_FPS=30` để xuất khung cho video.
+  `COGHE_INTRO_FPS=30` để xuất khung cho video (540×1170, hoặc cỡ khác với `COGHE_INTRO_SIZE=1080x2340`).

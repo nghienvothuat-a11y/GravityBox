@@ -77,6 +77,8 @@ namespace GravityBox.Tests
    else times.AddRange(new[]{.9f,1.75f,1.9f,2.4f,3.8f,5.0f,6.3f,7.05f,7.9f,8.8f,10.0f,10.45f,11.0f,12.1f,14.0f,14.75f,15.5f,16.2f,16.5f,17.5f,18.4f,18.9f,19.3f,19.8f});
    var sizes=new List<Vector2Int>{new Vector2Int(1080,2340),new Vector2Int(1080,1920)};
    if(!string.IsNullOrEmpty(steps))sizes=new List<Vector2Int>{new Vector2Int(540,1170)};
+   string only=System.Environment.GetEnvironmentVariable("COGHE_INTRO_SIZE");   // e.g. 1080x2340 for a sharp video
+   if(!string.IsNullOrEmpty(only)){var wh=only.Split('x');sizes=new List<Vector2Int>{new Vector2Int(int.Parse(wh[0]),int.Parse(wh[1]))};}
    foreach(var size in sizes)
    {
     string dir=$"Artifacts/Intro/{size.x}x{size.y}";if(Directory.Exists(dir))Directory.Delete(dir,true);Directory.CreateDirectory(dir);

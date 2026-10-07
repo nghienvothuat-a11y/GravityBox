@@ -76,7 +76,7 @@ namespace GravityBox.Venom
 
         private VenomCampaign game;
         private Material mat;
-        private Texture2D noise, streaks, burst, star, white;
+        private Texture2D noise, streaks, burst, star, white, eyeWhite, pupil, smile;
         private readonly List<Texture2D> generated = new List<Texture2D>();
         private readonly Dictionary<string, Art> art = new Dictionary<string, Art>();
         private Dictionary<string, string[]> layout;
@@ -299,6 +299,15 @@ namespace GravityBox.Venom
                 var foot = a.Coghe != Vector4.zero ? new Vector2(a.Coghe.x, a.Coghe.w) : new Vector2(.5f, .84f);
                 float grow = EaseOutBack(Seg(t, 7.62f, 7.95f)), wob = Wobble(t - 7.95f);
                 Put("S5_COGHE_RISE", foot, cradle, SphereWidth * RiseScale * grow, cam, 1, 1, 0, Color.white, 1 - .10f * wob, 1 + .14f * wob);
+                // it opens its eyes wide on the world, glances at each soldier flinching back, blinks
+                if (a.Coghe != Vector4.zero && t > 7.9f)
+                {
+                    var size = new Vector2(SphereWidth * RiseScale * grow * (1 - .10f * wob), SphereWidth * RiseScale * grow * a.Canvas.y / a.Canvas.x * (1 + .14f * wob)) * Scale(cam, 1);
+                    var topLeft = ToScreen(cradle, cam, 1) - Vector2.Scale(foot, size);
+                    var look = Glance(t, 8.3f, Vector2.zero, new Vector2(-1, .1f)); look = Glance(t, 8.7f, look, new Vector2(1, .1f)); look = Glance(t, 9.3f, look, new Vector2(0, -.3f));
+                    Eyes(topLeft + new Vector2(a.Coghe.x * size.x, (a.Coghe.y - .05f * a.Coghe.z) * size.y), a.Coghe.z * size.x, look,
+                        Blink(t, 9.15f), 0, 1.18f - .18f * Smooth(Seg(t, 8.3f, 8.7f)), 0, Seg(t, 7.9f, 8.0f), 1 + .14f * wob);
+                }
             }
             // the two soldiers at the frame edges flinch back: each half slides out through its own edge
             float wide = W * 1.04f * (1 + .05f * react);
@@ -325,6 +334,9 @@ namespace GravityBox.Venom
             var p = Vector2.Lerp(from, rest, k) - new Vector2(0, H * .14f * 4 * k * (1 - k));
             float wob = k >= 1 ? Wobble(t - 10.6f) : 0;
             Creature(p, body, new Color(1, .92f, .82f, 1), 1 + .12f * wob, 1 - .16f * wob);
+            // on the way it looks where it is jumping; landed, a happy squint, then up at her face
+            var toward = k < 1 ? (rest - p).normalized : new Vector2(.55f, -.8f);
+            SeatedEyes(p, body, 1 + .12f * wob, 1 - .16f * wob, toward, k >= 1 && t < 11.0f ? 1 : 0, 1, 0);
         }
 
         private void CloseUp(float t)
@@ -335,6 +347,10 @@ namespace GravityBox.Venom
             float zoom = 1f + .22f * Smooth(u);
             var cam = new Cam(zoom, focus);
             Background("S6_CLOSEUP", cam, 1);
+            // on her palm: it looks up at her, blinks, and smiles
+            if (a != null && a.Coghe != Vector4.zero)
+                Eyes(ToScreen(focus - new Vector2(0, .06f * a.Coghe.z * Panel.x), cam, 1), a.Coghe.z * Panel.x * Scale(cam, 1),
+                    new Vector2(-.55f, -.85f), Blink(t, 12.25f), Smooth(Seg(t, 13.15f, 13.3f)));
             // a few glints around the creature on her palm
             Glint(focus + new Vector2(-120, -150), 12.0f, t, cam, zoom);
             Glint(focus + new Vector2(135, -95), 12.55f, t, cam, zoom);
@@ -361,6 +377,9 @@ namespace GravityBox.Venom
             var cam = new Cam(zoom, RefSeat, (target + new Vector2(shift, body * .35f) - (o0 + RefSeat * s0)) / s0);
             Background("S7_BG_LAB_MATCH", cam, 1, 0, 1.2f);
             PutScreen("S7_HANDS_PLACE", anchor, at, wide, new Rect(0, 0, 1, 1), new Color(.97f, .98f, 1, 1));
+            // lowered into the box, it looks down at the glass floor coming up, then around
+            if (hands != null && hands.Coghe != Vector4.zero)
+                Eyes(at - new Vector2(0, .06f * body), body, Glance(t, 15.85f, new Vector2(0, 1), new Vector2(.3f, -.2f)), Blink(t, 16.05f));
         }
 
         private void Seated(float t)
@@ -379,6 +398,10 @@ namespace GravityBox.Venom
             float drop = 1 - EaseIn(Seg(t, Seat, Seat + .16f)), wob = Wobble(t - Seat - .16f);
             float idle = t > Seat + 1.2f ? Mathf.Sin((t - Seat) * 7) * .025f : 0;
             Creature(seat - new Vector2(0, 70 * s * drop), RefCogheWidth * s, Color.white, 1 + .12f * wob + idle, 1 - .16f * wob - idle, dissolve);
+            // a squint as it lands, then a look around its new box (left, right, at the player), a blink
+            var look = Glance(t, Seat + .5f, Vector2.zero, new Vector2(-1, .15f)); look = Glance(t, Seat + 1.05f, look, new Vector2(1, .15f)); look = Glance(t, Seat + 1.6f, look, Vector2.zero);
+            SeatedEyes(seat - new Vector2(0, 70 * s * drop), RefCogheWidth * s, 1 + .12f * wob + idle, 1 - .16f * wob - idle, look,
+                t < Seat + .35f && t > Seat + .1f ? 1 : 0, Blink(t, Seat + 2.05f), dissolve);
         }
 
         // Layers ---------------------------------------------------------------------------------------------------------
@@ -421,6 +444,40 @@ namespace GravityBox.Venom
             var size = new Vector2(wide * sx, wide * sy);
             Draw(a, ground - Vector2.Scale(foot, size), size, new Rect(0, 0, 1, 1), tint, 1, 0, 0, dissolve);
         }
+
+        // COghe's eyes (Mrk 07/10/2026: "tạo lại intro với COghe có mắt"): the same eyes as in the game (white, a dark rim,
+        // a pupil with a shine, smiling arcs), drawn over the painted COghe of each shot. Axis-aligned like the paintings.
+        /// <summary>A pair of eyes on a painted COghe whose body is <paramref name="body"/> wide, the pair centred on
+        /// <paramref name="face"/>. <paramref name="look"/> is a screen direction (y down, length ≤ 1); <paramref name="open"/>
+        /// 1 open, 0 shut; <paramref name="happy"/> 1 for smiling arcs.</summary>
+        private void Eyes(Vector2 face, float body, Vector2 look, float open = 1, float happy = 0, float big = 1, float dissolve = 0, float alpha = 1, float squash = 1)
+        {
+            if (body <= 0 || alpha <= .01f || eyeWhite == null) return;
+            float w = body * .19f * big, h = body * .245f * big * squash, gap = body * .145f;
+            for (int side = -1; side <= 1; side += 2)
+            {
+                var c = face + new Vector2(side * gap, 0);
+                if (happy > .5f) { Quad(smile, new Rect(c.x - w * .62f, c.y - h * .42f, w * 1.24f, h * .62f), Color.white, alpha, 0, 0, dissolve); continue; }
+                float hh = h * Mathf.Max(.1f, open);
+                Quad(eyeWhite, new Rect(c.x - w * .5f, c.y - hh * .5f, w, hh), Color.white, alpha, 0, 0, dissolve);
+                if (open < .4f) continue;   // mid-blink: the lid line only
+                float p = w * .5f / big;
+                var at = c + new Vector2(look.x * w * .2f, look.y * hh * .17f);
+                Quad(pupil, new Rect(at.x - p * .5f, at.y - p * .5f, p, p), Color.white, alpha, 0, 0, dissolve);
+            }
+        }
+        /// <summary>Eyes on the seated sprite, placed like <see cref="Creature"/> (its body centre, squash from its foot).</summary>
+        private void SeatedEyes(Vector2 centre, float body, float sx, float sy, Vector2 look, float happy, float open, float dissolve)
+        {
+            var a = Get("S7_COGHE_SEATED"); if (a == null) return;
+            bool known = a.Coghe != Vector4.zero;
+            float wide = body / (known ? a.Coghe.z : .48f), below = (known ? a.Coghe.w - a.Coghe.y : .18f) * wide;
+            // the body squashes from its foot: its middle moves with it
+            var face = centre + new Vector2(0, below) - new Vector2(0, (below + .04f * body) * sy);
+            Eyes(face, body * sx, look, open, happy, 1, dissolve, 1, sy);
+        }
+        private static Vector2 Glance(float t, float at, Vector2 from, Vector2 to) => Vector2.Lerp(from, to, Smooth(Seg(t, at, at + .14f)));
+        private static float Blink(float t, float at) => 1 - Mathf.Sin(Seg(t, at, at + .16f) * Mathf.PI);
 
         private void Glint(Vector2 panelAt, float start, float t, Cam cam, float zoom)
         {
@@ -588,6 +645,30 @@ namespace GravityBox.Venom
                 st[y * 64 + x] = new Color32(255, 255, 255, (byte)(255 * Mathf.Clamp01(a)));
             }
             star.SetPixels32(st); star.Apply();
+            // COghe's eyes: an ellipse (white, dark rim), a pupil with its shine, a smiling arc (white stroke, dark rim)
+            var ink = new Color(.07f, .08f, .1f, 1);
+            eyeWhite = Shape(96, 120, (x, y) => { float r = Mathf.Sqrt(x * x + y * y); return (Edge(r, 1), Color.Lerp(ink, Color.white, Edge(r, .76f))); });
+            pupil = Shape(64, 64, (x, y) => { float r = Mathf.Sqrt(x * x + y * y), g = Mathf.Sqrt((x + .32f) * (x + .32f) + (y - .34f) * (y - .34f)); return (Edge(r, 1), Color.Lerp(ink, Color.white, Edge(g, .3f))); });
+            smile = Shape(128, 64, (x, y) =>
+            {
+                // the upper half of a ring (y from -1 at the bottom of the texture), with round ends
+                float yy = (y + 1) * .5f * 1.15f - .12f, r = Mathf.Sqrt(x * x / (.8f * .8f) + yy * yy / (.95f * .95f));
+                float d = yy >= 0 ? Mathf.Abs(r - 1) * .8f : Mathf.Min(Vector2.Distance(new Vector2(x, yy), new Vector2(-.8f, 0)), Vector2.Distance(new Vector2(x, yy), new Vector2(.8f, 0)));
+                return (Edge(d, .2f), Color.Lerp(ink, Color.white, Edge(d, .11f)));
+            });
+        }
+        private static float Edge(float distance, float radius) => Mathf.Clamp01((radius - distance) * 24 + .5f);
+        /// <summary>A texture from a shape function over -1..1 (y up): coverage and colour per pixel.</summary>
+        private Texture2D Shape(int w, int h, Func<float, float, (float cover, Color colour)> shape)
+        {
+            var t = NewTexture(w, h); var px = new Color32[w * h];
+            for (int y = 0; y < h; y++) for (int x = 0; x < w; x++)
+            {
+                var (cover, colour) = shape((x + .5f) / w * 2 - 1, (y + .5f) / h * 2 - 1);
+                colour.a = cover; px[y * w + x] = colour;
+            }
+            t.SetPixels32(px); t.Apply();
+            return t;
         }
     }
 }
