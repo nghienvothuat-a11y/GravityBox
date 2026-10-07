@@ -95,9 +95,9 @@ namespace GravityBox.Venom.ChapterProof
    yield return s.Go(W(.096f,-.24f,.14f),"Mount the tall block");
    yield return s.Go(W(.27f,-.21f,.20f),"Reach the exit island");
   }
-  // Crate levels 51–60: the shortest route (Tools/crate_puzzles/logic.py). Before each pull COghe walks to the floor cell
-  // behind the crate (push) or at its face inside the slide (pull), then taps the crate; it slides to its other stop and
-  // COghe follows or backs off. Last, the red crate leaves the exit.
+  // Crate levels: the shortest route (Tools/crate_puzzles/logic.py), played as a player does since 07/10/2026 (Mrk): a tap
+  // on the crate's face at the end COghe works from (behind it to push, the face it moves toward to pull: the route's floor
+  // cell); COghe walks there itself and the crate slides to its other stop. Last, the red crate leaves the exit.
   IEnumerator Crates(string key)
   {
    var tasks=game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>();
@@ -113,14 +113,16 @@ namespace GravityBox.Venom.ChapterProof
     bool Done()=>t.CompletedJourneys>before||index==0&&(game.Owner.Completed||game.Root.InverseTransformPoint(game.Motion.Centre(0)).y<-.32f||!t.Busy&&Mathf.Abs(t.Rail.Position-goal)<.012f);
     for(int attempt=0;attempt<3&&!Done();attempt++)
     {
-     // The back-right part of the cell: from the camera (front-left, above) that tap does not pass over a crate.
-     yield return s.Go(Cell(x,z)+game.Root.TransformDirection(new Vector3(.025f,0,.025f)),$"Pull {n}: stand beside crate {index}",.07f);
-     // Tap the crate's top away from COghe (a tap through COghe's own body selects it instead).
-     Vector3 body=t.Rail.Body.position,me=game.Motion.Centre(Selected),along=t.Rail.WorldAxis;
-     float reach=Mathf.Max(0,Mathf.Abs(Vector3.Dot(t.TouchSize*.5f,t.Rail.Frame.InverseTransformDirection(along)))-.04f);
-     float side=Vector3.Dot(body-me,along)>=0?1:-1;
-     var spots=new[]{body+along*side*reach,body,body-along*side*reach};
-     for(int k=0;k<spots.Length&&!t.Busy;k++)yield return this.tap(spots[k]+Vector3.up*.02f);
+     // The end COghe works from is the side of the crate its route cell is on; tap that end of the crate (its top near the
+     // end, else the end face), only where the camera's ray meets this crate first.
+     Vector3 body=t.Rail.Body.position,me=game.Motion.Centre(Selected),along=t.Rail.WorldAxis,up=game.Root.up;
+     float side=Vector3.Dot(Cell(x,z)-body,along)>=0?1:-1;
+     Vector3 size=t.CrateSize,local=t.Rail.Frame.InverseTransformDirection(along);
+     float half=Mathf.Abs(local.x)*size.x*.5f+Mathf.Abs(local.z)*size.z*.5f;
+     var spots=new[]{body+along*side*half*.78f+up*size.y*.5f,body+along*side*half*.62f+up*size.y*.5f,body+along*side*half+up*size.y*.1f};
+     bool Hits(Vector3 p){var cam=game.Owner.View;var r=cam.ScreenPointToRay(cam.WorldToScreenPoint(p));
+      foreach(var h in System.Linq.Enumerable.OrderBy(Physics.RaycastAll(r,10),h=>h.distance)){var pane=h.collider.GetComponent<VenomSurfacePatch>();if(h.collider.isTrigger||h.collider.GetComponent<VenomContact>()!=null||pane!=null&&pane.ExteriorGlass)continue;return h.rigidbody==t.Rail.Body;}return false;}   // a tap passes through the glass box
+     for(int k=0;k<spots.Length&&!t.Busy;k++)if(Hits(spots[k]))yield return this.tap(spots[k]);
      if(!t.Busy)
      {
       // Diagnose: what does a ray from the camera to the crate's middle hit first?

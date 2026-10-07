@@ -43,6 +43,50 @@ namespace GravityBox.Tests
    for(int i=0;i<30;i++){game.CameraRig.Orbit(-degrees/30f/240f*720f,720);for(int k=0;k<4;k++)Tick();yield return Shot();}
   }
 
+  // The crate taps (Mrk 07/10/2026), played for a review clip: on level 6 (K01) a tap on the red crate held in by the others
+  // (refused), the same end of a crate tapped twice (a push, then a pull), then the level played to the exit with taps on
+  // the crates' faces; then COGHE_CRATE_DEMO_SECOND (a crate key, default K04: level 20) played through. Folders
+  // Artifacts/Clips/crate-<key> with taps.txt and marks.txt (frame, what happens).
+  [UnityTest,Explicit,Timeout(3600000)] public IEnumerator RecordCrateTapDemo()
+  {
+   string size=Environment.GetEnvironmentVariable("COGHE_CLIP_SIZE");
+   if(!string.IsNullOrEmpty(size)){var wh=size.Split('x');clipWidth=int.Parse(wh[0]);clipHeight=int.Parse(wh[1]);}
+   string second=Environment.GetEnvironmentVariable("COGHE_CRATE_DEMO_SECOND");if(string.IsNullOrEmpty(second))second="K04";
+   foreach(var key in new[]{"K01",second})
+   {
+    clipDirectory=$"Artifacts/Clips/crate-{key}";if(Directory.Exists(clipDirectory))Directory.Delete(clipDirectory,true);Directory.CreateDirectory(clipDirectory);clipFrame=0;
+    clipTaps=new System.Text.StringBuilder();var marks=new System.Text.StringBuilder();
+    yield return LoadScene("COgheSpatialPlus"+key);yield return Hold(1);
+    if(key=="K01")
+    {
+     var red=CrateTask("Red crate");
+     marks.AppendLine($"{clipFrame} blocked");
+     yield return RecordTap(red.Rail.Body.position+red.Rail.WorldAxis*.03f+game.Root.up*red.CrateSize.y*.5f);yield return Hold(1.6f);
+     bool shown=false;
+     foreach(var t in game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())
+     {
+      if(shown||!t.CrateFaces)continue;
+      foreach(int s in new[]{1,-1})
+      {
+       if(shown||!t.CanWorkFrom(s))continue;
+       int done=t.CompletedJourneys;
+       marks.AppendLine($"{clipFrame} {(s!=t.NextMoveDirection?"push":"pull")}");
+       yield return RecordTap(EndSpot(t,s));yield return RecordUntil(20,()=>t.CompletedJourneys==done+1,"slides");yield return Hold(.4f);
+       if(!t.CanWorkFrom(s)){yield return RecordTap(EndSpot(t,-s));yield return RecordUntil(20,()=>t.CompletedJourneys==done+2,"back");yield return Hold(.4f);shown=true;continue;}
+       marks.AppendLine($"{clipFrame} {(s!=t.NextMoveDirection?"push":"pull")}");
+       yield return RecordTap(EndSpot(t,s));yield return RecordUntil(20,()=>t.CompletedJourneys==done+2,"slides back");yield return Hold(.6f);
+       shown=true;
+      }
+     }
+    }
+    marks.AppendLine($"{clipFrame} solve");
+    yield return new COgheSpatialScenario(game,RecordTap,RecordUntil,RecordOrbit).Solve();
+    marks.AppendLine($"{clipFrame} exit");
+    yield return Hold(1.2f);
+    File.WriteAllText($"{clipDirectory}/taps.txt",clipTaps.ToString());File.WriteAllText($"{clipDirectory}/marks.txt",marks.ToString());
+   }
+  }
+
   [UnityTest,Explicit,Timeout(3600000)] public IEnumerator RecordReviewClips()
   {
    string only=Environment.GetEnvironmentVariable("COGHE_CLIP_LEVELS"),size=Environment.GetEnvironmentVariable("COGHE_CLIP_SIZE");

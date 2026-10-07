@@ -42,6 +42,18 @@ namespace GravityBox.Venom
         /// <summary>A finished journey sets the carriage exactly on its stop. The pull eases off inside the catch, a few
         /// millimetres short; crates that slide past each other 2 mm apart (crate levels 51–60) must sit on their cells.</summary>
         public bool SeatAtStops;
+        /// <summary>A crate (crate levels, Mrk 07/10/2026: "Khi click vào mặt khối, COghe phải đẩy hoặc kéo, trừ khi bị kịch
+        /// đường"): a tap on any face of it is taken. An end face (or the top/side near an end) says which end COghe works
+        /// from: it pushes the crate away from that end, or pulls it toward that end, whichever way the crate can go, so the
+        /// same face tapped twice pushes and then pulls; if that end has no room, COghe works it from the other end. A tap in
+        /// the middle of the top or a side pushes if it can, else pulls. Before COghe sets off, the move is checked on the grid: the cells the crate slides through, and the cells
+        /// COghe needs (behind the face to push, just past the stop to pull) must be free floor; else the crate does not
+        /// move and the tap is refused at once, with the reason.</summary>
+        public bool CrateFaces;
+        /// <summary>The crate's size along the frame's axes, and the floor it lives on (frame x, z).</summary>
+        public Vector3 CrateSize;
+        public Vector2 ArenaMin, ArenaMax;
+        public float CrateCell = .14f;
         public bool CompensateLoad;
         /// <summary>Optional: the share of the whole COghe this load needs (.5 = half). Presentation only.</summary>
         public float LoadShare;
@@ -129,6 +141,17 @@ namespace GravityBox.Venom
             // Handle meshes have non-unit scale. Pick an authored metric envelope around the entire visible carriage.
             var frame = Rail.Frame;
             Quaternion inverse = Quaternion.Inverse(frame.rotation);
+            if (CrateFaces)
+            {
+                var local = new Ray(inverse * (ray.origin - Rail.Body.position), inverse * ray.direction);
+                if (!new Bounds(Vector3.zero, CrateSize + Vector3.one * .004f).IntersectRay(local, out float at) || at > nearestSolidDistance + .003f) return false;
+                Vector3 a = Rail.Axis.normalized, hitPoint = local.origin + local.direction * at;
+                float along = Vector3.Dot(hitPoint, a), halfLength = HalfAlong(a);
+                // an end face, or the top/a side in the end quarter: that end; the middle: whichever way works
+                int side = Mathf.Abs(along) >= halfLength * .5f ? (along > 0 ? 1 : -1) : 0;
+                if (RequestFrom(game.Motion.Selected, side)) game.Feedback.ShowCommand(HandPoint, WorkingSurface.Normal, Rail.transform);
+                return true;   // a tap on a crate is never a walk onto it
+            }
             bool Visible(Vector3 centre,Vector3 face)
             {
                 var local=new Ray(inverse*(ray.origin-centre),inverse*ray.direction);
@@ -142,6 +165,84 @@ namespace GravityBox.Venom
             if (Request(game.Motion.Selected)) game.Feedback.ShowCommand(HandPoint, WorkingSurface.Normal, Rail.transform);
             return true;
         }
+        private float HalfAlong(Vector3 a) => Mathf.Abs(a.x) * CrateSize.x * .5f + Mathf.Abs(a.y) * CrateSize.y * .5f + Mathf.Abs(a.z) * CrateSize.z * .5f;
+
+        /// <summary>A crate taken by a tap: <paramref name="side"/> +1 / −1 is the end COghe works from (the +Axis end / the
+        /// other), 0 lets the crate choose (push if it can, else pull). Checked on the grid before anyone moves.</summary>
+        public bool RequestFrom(int anchor, int side)
+        {
+            if (!CrateFaces || !HasStops) return Request(anchor);
+            if (!owner.Owner.CanControl || owner.Home || anchor < 0 || anchor >= CohesiveOrganism.ParticleCount || owner.Matter.Escaped[anchor]) return false;
+            if (Busy) { Message("Khối đang chạy"); Refuse(owner, Refusal.Busy, HandPoint); return false; }
+            int current = CurrentStop; if (current < 0) current = Mathf.Abs(Rail.Position - Stops[0]) < Mathf.Abs(Rail.Position - Stops[1]) ? 0 : 1;
+            int next = (current + 1) % Stops.Length; float goal = Stops[next];
+            int towards = goal > Rail.Position ? 1 : -1;   // the way the crate can go (+1: along +Axis)
+            string why = null; var refusal = Refusal.Blocked;
+            if (!CrateCanSlide(goal)) why = "Khối bị chắn — có khối khác trên đường trượt";
+            else
+            {
+                // push from the end it moves away from, pull from the end it moves toward; the tapped end first, then the
+                // other (the crate still goes where it can: a tap on a crate that can move always moves it)
+                int push = -towards, pull = towards;
+                foreach (int s in side != 0 ? new[] { side, -side } : new[] { push, pull })
+                {
+                    if (!StandFree(s, s == pull, goal)) { why = s == pull ? "Không kéo được — sau lưng COghe không có chỗ" : "Không đẩy được — sau khối không có chỗ đứng"; continue; }
+                    if (!owner.PrepareTapCommand(anchor)) return false;
+                    backSide = s < 0; stance = backSide ? -StandOffset : StandOffset;
+                    owner.Motion.BuildGraph();
+                    if (!owner.Motion.FindPath(owner.Motion.Centre(anchor), StandPoint, route, true)) { why = "Đường tới khối đang bị chặn"; refusal = Refusal.Unreachable; continue; }
+                    Actor = anchor; actorCount = CountActor(); targetStop = next; target = goal; replans = 0; LastFailure = null;
+                    Reapproach(owner);
+                    return true;
+                }
+            }
+            Message(why ?? "Khối bị chắn"); Refuse(owner, refusal, side > 0 ? Handle.position : side < 0 && AlternateHandle != null ? AlternateHandle.position : Rail.Body.position);
+            return false;
+        }
+
+        /// <summary>The way the crate's next move goes (+1: along +Axis), and whether COghe has room to make it from the
+        /// <paramref name="side"/> end (+1 / −1): pushing if the crate moves away from that end, pulling if toward it.</summary>
+        public int NextMoveDirection { get { int c = CurrentStop; if (c < 0) c = Mathf.Abs(Rail.Position - Stops[0]) < Mathf.Abs(Rail.Position - Stops[1]) ? 0 : 1; return Stops[(c + 1) % Stops.Length] > Rail.Position ? 1 : -1; } }
+        public bool CanWorkFrom(int side)
+        {
+            if (!CrateFaces || !HasStops || Busy) return false;
+            int c = CurrentStop; if (c < 0) c = Mathf.Abs(Rail.Position - Stops[0]) < Mathf.Abs(Rail.Position - Stops[1]) ? 0 : 1;
+            float goal = Stops[(c + 1) % Stops.Length];
+            return CrateCanSlide(goal) && StandFree(side, side == NextMoveDirection, goal);
+        }
+        /// <summary>The end COghe works from in the current task (+1 / −1).</summary>
+        public int WorkingSide => backSide ? -1 : 1;
+
+        // The crate's footprint on the floor (frame x0, z0, x1, z1) at a rail position, shrunk a little: neighbours stand
+        // 2 mm apart, and only a real overlap blocks.
+        private Vector4 Footprint(COgheTapRail crate, float position, float shrink = .003f)
+        {
+            Vector3 centre = Rail.Frame.InverseTransformPoint(crate.Rail.Frame.TransformPoint(crate.Rail.Start + crate.Rail.Axis.normalized * position));
+            float hx = crate.CrateSize.x * .5f - shrink, hz = crate.CrateSize.z * .5f - shrink;
+            return new Vector4(centre.x - hx, centre.z - hz, centre.x + hx, centre.z + hz);
+        }
+        private static Vector4 Union(Vector4 a, Vector4 b) => new Vector4(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y), Mathf.Max(a.z, b.z), Mathf.Max(a.w, b.w));
+        private static bool Overlap(Vector4 a, Vector4 b) => a.x < b.z && b.x < a.z && a.y < b.w && b.y < a.w;
+        private bool OnFloor(Vector4 r) => r.x >= ArenaMin.x - .001f && r.y >= ArenaMin.y - .001f && r.z <= ArenaMax.x + .001f && r.w <= ArenaMax.y + .001f;
+        private bool FreeOfCrates(Vector4 r)
+        {
+            foreach (var m in owner.Mechanisms)
+                if (m is COgheTapRail other && other != this && other.CrateFaces && Overlap(r, Footprint(other, other.Rail.Position))) return false;
+            return true;
+        }
+        /// <summary>The cells the crate slides through are free (another crate is the only thing that can hold it back).</summary>
+        private bool CrateCanSlide(float goal) { var r = Union(Footprint(this, Rail.Position), Footprint(this, goal)); return OnFloor(r) && FreeOfCrates(r); }
+        /// <summary>Room for COghe: one cell deep across the whole face, behind it to push (at its start), just past the stop to
+        /// pull (where COghe backs off to).</summary>
+        private bool StandFree(int side, bool pulling, float goal)
+        {
+            var f = Footprint(this, pulling ? goal : Rail.Position, 0);
+            Vector3 a = Rail.Axis.normalized * side; float depth = CrateCell - .006f, s = .003f;
+            Vector4 cell = a.x > .5f ? new Vector4(f.z + s, f.y + s, f.z + depth, f.w - s) : a.x < -.5f ? new Vector4(f.x - depth, f.y + s, f.x - s, f.w - s) :
+                           a.z > .5f ? new Vector4(f.x + s, f.w + s, f.z - s, f.w + depth) : new Vector4(f.x + s, f.y - depth, f.z - s, f.y - s);
+            return OnFloor(cell) && FreeOfCrates(cell);
+        }
+
         public bool Request(int anchor)
         {
             if (!owner.Owner.CanControl || owner.Home || anchor < 0 || anchor >= CohesiveOrganism.ParticleCount || owner.Matter.Escaped[anchor]) return false;

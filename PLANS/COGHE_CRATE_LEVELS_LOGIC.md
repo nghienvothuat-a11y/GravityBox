@@ -80,3 +80,31 @@ Kiểm tra: 10 test giải + 10 test đi lang thang (`SpatialPlusK01…K10Solve/
 
 Tìm lại: `python3 logic.py <levels> <seed from> <seed to> [append]` (biến `LOGIC_OUT` chọn file kết quả). Vẽ bảng:
 `uv run --with pillow python3 levels_logic.py`.
+
+## Điều khiển: chạm vào mặt khối (07/10/2026)
+
+Mrk (07/10/2026): "Khi click vào khối cũng không thấy đẩy hoặc kéo. Khi click vào mặt khối, COghe phải đẩy hoặc kéo (trừ
+khi bị kịch đường). Ví dụ lần thứ nhất đẩy thì lần thứ hai kéo, cho đến khi bị kịch đường."
+
+Trước đây chỉ phần nóc khối nhận chạm, còn mặt bên thì không. Đầu mà COghe làm việc phụ thuộc vào chỗ COghe đang đứng, nên
+người chơi phải tự dẫn COghe ra đúng ô rồi mới chạm vào khối. Giờ (`COgheTapRail.CrateFaces`):
+
+- **Mặt nào cũng nhận chạm:** nóc và các mặt bên đều được. Chạm vào khối không bao giờ làm COghe đi lên khối.
+- **Chạm một đầu khối** (mặt đầu, hoặc nóc/mặt bên ở một phần tư sát đầu): COghe tự tới đầu đó.
+  - Khối chạy ra xa đầu đó: COghe đẩy.
+  - Khối chạy về phía đầu đó: COghe kéo, lùi theo.
+  - Chạm cùng một đầu hai lần thì lần đầu đẩy, lần sau kéo về. Nếu đầu đó không có chỗ đứng, COghe vòng sang đầu kia.
+- **Chạm giữa khối:** đẩy nếu được, không thì kéo.
+- **Bị chắn:** trước khi COghe đi, game kiểm luật như trong thiết kế:
+  - các ô khối trượt qua phải trống;
+  - ô COghe cần phải trống (sau mặt khối nếu đẩy, ngay sau điểm dừng nếu kéo).
+  Không được thì khối đứng yên, COghe không đi, và game báo "Something is in the way" ngay lập tức. Trước đây COghe gồng 5 giây
+  rồi mới báo.
+
+Kiểm tra:
+- Lời giải mẫu của cả 10 màn giờ chơi bằng chạm vào mặt khối, không dẫn COghe đi trước. Test giải và test đi lang thang của
+  cả 10 màn đều qua.
+- `COgheCrateTapTests` kiểm hai điều:
+  - chạm mặt bên thì khối trượt; cùng một đầu chạm hai lần thì đẩy rồi kéo;
+  - khối đỏ bị chắn thì bị từ chối ngay, không nhúc nhích, COghe không đi.
+- Clip review: `OUTBOX/COGHE_CRATE_TAPS_2026_10_07/` (màn 6 và 20; quay bằng test `RecordCrateTapDemo`).

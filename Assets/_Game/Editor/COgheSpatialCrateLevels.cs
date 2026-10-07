@@ -7,8 +7,9 @@ namespace GravityBox.Editor
  /// <summary>
  /// Crate levels 51–60 (Mrk approved the redone designs, 06/10/2026: "triển khai levels 51-60 theo phương án này";
  /// PLANS/COGHE_CRATE_LEVELS_LOGIC.md). A 6 × 5 grid of 12 cm cells; the exit is a hole in the floor under the red crate.
- /// Each crate rides its own rail between two stops; a tap on it slides it to the other stop. It has a handle at both ends:
- /// COghe pushes from behind or pulls from the far side, whichever side it stands on. Crates stand taller than COghe and
+ /// Each crate rides its own rail between two stops; a tap on any of its faces slides it to the other stop (Mrk 07/10/2026).
+ /// It has a handle at both ends: the end tapped (or nearest the tap) is where COghe works from, pushing or pulling,
+ /// and the move is checked on the grid before COghe sets off (COgheTapRail.CrateFaces). Crates stand taller than COghe and
  /// are not walked on: COghe goes round them on the floor, so a crate whose slide is clear is always one it can reach the
  /// moment a floor road leads there. Layouts and COghe's start cell come from CrateDesigns (generated from the design data).
  /// </summary>
@@ -66,6 +67,9 @@ namespace GravityBox.Editor
     // A tap anywhere on the crate's top takes it (handles of crates end to end would sit in the same gap). The pick box
     // reaches just over the top only: a tap on the floor past a crate is not taken as a tap on it.
     task.PickHandleOnly = false; task.TouchSize = new Vector3(size.x + .004f, Mathf.Max(.006f, 2 * (height * .5f + .006f - .023f)), size.z + .004f);
+    // Any face takes a tap; the grid check needs the crate's size and the floor (root space, cell corners at the edges).
+    task.CrateFaces = true; task.CrateSize = size; task.CrateCell = CrateCell;
+    task.ArenaMin = new Vector2(-CrateBoxWidth * .5f, -CrateBoxDepth * .5f); task.ArenaMax = new Vector2(CrateBoxWidth * .5f, CrateBoxDepth * .5f);
    }
    // Printed grid on the floor: the cells the crates slide in.
    for (int x = 0; x <= 6; x++) PlusGridLine(c, CrateGrid(x, 0), CrateGrid(x, 5));
