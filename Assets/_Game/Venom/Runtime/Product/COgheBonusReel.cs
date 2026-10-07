@@ -18,21 +18,23 @@ namespace GravityBox.Venom
         private static void Boot()
         {
             var args = Environment.GetCommandLineArgs();
-            if (Array.IndexOf(args, "-coghe-bonus-reel") < 0 && Array.IndexOf(args, "-coghe-bonus-reel2") < 0) return;
+            if (Array.IndexOf(args, "-coghe-bonus-reel") < 0 && Array.IndexOf(args, "-coghe-bonus-reel2") < 0 && Array.IndexOf(args, "-coghe-trailer-reel") < 0) return;
             VenomCampaignSave.PersistenceEnabled = false; COgheProductMode.OverrideForTests = true;
             var go = new GameObject("Bonus reel"); DontDestroyOnLoad(go); go.AddComponent<COgheBonusReel>();
         }
 
-        private string output; private int frame; private bool capturing;
+        private string output; private int frame, superSize = 1; private bool capturing;
         private RectTransform ring; private Image ringImage; private float ringAge = 99;
 
         private IEnumerator Start()
         {
-            var args = Environment.GetCommandLineArgs(); bool second = Array.IndexOf(args, "-coghe-bonus-reel2") >= 0;
-            int at = Array.IndexOf(args, second ? "-coghe-bonus-reel2" : "-coghe-bonus-reel");
+            var args = Environment.GetCommandLineArgs(); bool second = Array.IndexOf(args, "-coghe-bonus-reel2") >= 0, trailer = Array.IndexOf(args, "-coghe-trailer-reel") >= 0;
+            int at = Array.IndexOf(args, trailer ? "-coghe-trailer-reel" : second ? "-coghe-bonus-reel2" : "-coghe-bonus-reel");
             output = at + 1 < args.Length && !args[at + 1].StartsWith("-") ? Path.GetFullPath(args[at + 1]) : Path.Combine(Application.persistentDataPath, "BonusReel");
             Directory.CreateDirectory(output);
-            Screen.SetResolution(472, 1022, FullScreenMode.Windowed); Application.runInBackground = true;
+            // the trailer wants 1080×1920: a 540×960 window (it fits any screen) captured at twice its size
+            if (trailer) { Screen.SetResolution(540, 960, FullScreenMode.Windowed); superSize = 2; } else Screen.SetResolution(472, 1022, FullScreenMode.Windowed);
+            Application.runInBackground = true;
             COgheIntro.Seen = true;
             var sounds = new System.Text.StringBuilder();
             Action<string, float> heard = (clip, volume) => { if (capturing) sounds.AppendLine($"{frame / 30f:F3} {clip} {volume:F2}"); };
@@ -40,6 +42,7 @@ namespace GravityBox.Venom
             var game = FindFirstObjectByType<VenomCampaign>();
             if (game == null || game.ProductUI == null) { Debug.LogError("Bonus reel: no menu"); Application.Quit(1); yield break; }
             if (second) { yield return Second(game, heard, sounds); yield break; }
+            if (trailer) { yield return Trailer(game, heard, sounds); yield break; }
             // level 12, the first boss (its tour plays first, unrecorded)
             game.ProductUI.LoadForTest(12);
             for (int i = 0; i < 600 && (game == null || game.Definition.Order != 12 || game.ProductUI == null || game.ProductUI.Page != COgheProductPage.Game); i++)
@@ -130,13 +133,44 @@ namespace GravityBox.Venom
             Application.Quit(0);
         }
 
+        /// <summary>Home footage for the how-to-play clip (-coghe-trailer-reel, 1080×1920): a furnished Home, Feed and its meal,
+        /// three gentle touches up to a hug with hearts (close), and one bonus question with its reward. Marks in marks.txt.</summary>
+        private IEnumerator Trailer(VenomCampaign game, Action<string, float> heard, System.Text.StringBuilder sounds)
+        {
+            var ui = game.ProductUI; var marks = new System.Text.StringBuilder();
+            void Mark(string what) => marks.AppendLine($"{frame} {what}");
+            COgheShop.ResetForTests(new COgheShop.State { Migrated = true }); COgheHomeRoom.UnlockedLevelOverride = 60;   // every piece of furniture
+            game.Progress.HomeUnlocked = true; game.Progress.Completed.Clear();
+            for (int i = 0; i < 12; i++) game.Progress.Completed.Add(ui.Catalog.Levels[i].Id);
+            BuildRing(); ui.ShowMenu(); yield return new WaitForSecondsRealtime(.8f);
+            ui.OpenHome(); var p = game.Personality;
+            yield return Until(() => p.Act == COgheAct.Wave, 900); yield return new WaitForSecondsRealtime(.5f);   // furniture popped in, hello said: unrecorded
+            COgheAudio.Heard += heard; Time.captureFramerate = 30; capturing = true;
+            StartCoroutine(CaptureFrames());
+            yield return Frames(40);
+            Mark("feed"); yield return Press(ui, "Feed");
+            yield return Until(() => p.BallsEaten >= 3, 900); yield return Frames(20); Mark("fed");
+            ui.ToggleHomeZoom(); yield return Frames(45); Mark("touches");
+            for (int i = 0; i < 3; i++) { yield return Touch(game, p.SkinCentre + Vector3.up * .02f); yield return Frames(i < 2 ? 34 : 75); }
+            Mark("hugged"); ui.ToggleHomeZoom(); yield return Frames(20);
+            Mark("bonus"); ui.StartBonus(1, false); yield return Until(() => p.BonusAsking, 300); yield return Frames(55);
+            Mark("bonus-touch"); yield return Touch(game, p.SkinCentre + Vector3.up * .04f);
+            yield return Frames(75); Mark("bonus-joy-done");
+            capturing = false; Time.captureFramerate = 0; COgheAudio.Heard -= heard;
+            File.WriteAllText(Path.Combine(output, "sounds.txt"), sounds.ToString());
+            File.WriteAllText(Path.Combine(output, "marks.txt"), marks.ToString());
+            File.WriteAllText(Path.Combine(output, "frames.txt"), frame.ToString());
+            Debug.Log("COGHE BONUS REEL DONE " + frame);
+            Application.Quit(0);
+        }
+
         private IEnumerator CaptureFrames()
         {
             while (capturing)
             {
                 yield return new WaitForEndOfFrame();
                 if (!capturing) yield break;
-                ScreenCapture.CaptureScreenshot(Path.Combine(output, $"frame_{frame:00000}.png")); frame++;
+                ScreenCapture.CaptureScreenshot(Path.Combine(output, $"frame_{frame:00000}.png"), superSize); frame++;
             }
         }
         private static IEnumerator Frames(int n) { for (int i = 0; i < n; i++) yield return null; }
