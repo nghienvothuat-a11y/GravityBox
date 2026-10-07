@@ -79,11 +79,12 @@ Mrk hỏi "Nếu COghe có mắt để diễn tả cảm xúc thì có được 
 | Chăm chú | Kéo tay nắm, ăn, chơi bóng, xem TV | Mí hạ nhẹ, nhìn vào vật |
 | Ngủ | Ngủ gật, nằm giường, võng | Nhắm (‿) |
 
+- Đội mũ thì đôi mắt của phần lớn nhất hạ thấp xuống dưới vành mũ (`COgheAccessories.HatShown`).
 - Mắt tắt khi: COghe nặn hình (hình là lời nói, nên câu hỏi bonus vẫn chỉ bằng hình), bị kéo dài mỏng để lách khe (cạnh dài
   gấp 2,6 lần cạnh giữa trong 0,2 s), trong ống của cơ quan, khi ra cửa, và trong vở quái vật. Dẹt (nằm giường, bò sát
   sàn) vẫn có mắt.
 - Chống rung: lớp da dựng lại mỗi khung, nên mắt không bám một đỉnh mà lấy trung bình lớp da ngoài quanh tia nhìn
-  (`VenomSurface.SkinToward`). Rồi mỗi mắt được lọc one-euro theo vị trí so với tâm các hạt của phần đó: đứng yên thì lọc
+  (`VenomSurface.SkinToward`). Rồi mỗi mắt được lọc one-euro (`COgheSteady`, mũ dùng chung) theo vị trí so với tâm các hạt của phần đó: đứng yên thì lọc
   mạnh, chuyển động nhanh thì bám sát, nên đi theo thân không bị trễ. Đo trên clip duyệt: rung còn 0,2–0,5 mm mỗi khung,
   đứng yên hơn 2,4–3,3 lần so với chưa lọc. Mắt nhấc 3 mm về phía camera (camera trực giao nên không thấy) để gợn da không
   che mắt. Một khung thoáng nặn hình không làm mắt chớp tắt (phải ẩn đủ 0,08 s).

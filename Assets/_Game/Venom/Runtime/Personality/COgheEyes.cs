@@ -33,23 +33,8 @@ namespace GravityBox.Venom
         private sealed class Pair
         {
             public float Shown, NextBlink, Blink, Size = -1, Odd, HiddenFor; public Vector2 Look; public COgheMood Current; public bool Seen;
-            public readonly Steady[] Eye = new Steady[2]; public readonly Vector3[] Normal = new Vector3[2];
+            public readonly COgheSteady[] Eye = new COgheSteady[2]; public readonly Vector3[] Normal = new Vector3[2];
             public void Forget() { Eye[0] = Eye[1] = default; Normal[0] = Normal[1] = Vector3.zero; }
-        }
-        /// <summary>A one-euro filter: still, it smooths hard (the skin's ripple does not shake the eyes); moving fast, it
-        /// follows closely (a squash or a hop does not leave them behind).</summary>
-        private struct Steady
-        {
-            public Vector3 X, Speed; public bool Set;
-            public Vector3 Step(Vector3 x, float dt)
-            {
-                if (!Set) { X = x; Speed = Vector3.zero; Set = true; return X; }
-                if (dt <= 0) return X;
-                Speed = Vector3.Lerp(Speed, (x - X) / dt, Alpha(dt, 1f));
-                X = Vector3.Lerp(X, x, Alpha(dt, 1.2f + 30 * Speed.magnitude));
-                return X;
-            }
-            private static float Alpha(float dt, float cutoff) => 1 / (1 + 1 / (2 * Mathf.PI * cutoff * dt));
         }
         private readonly Dictionary<int, Pair> pairs = new Dictionary<int, Pair>();
         private readonly System.Random rnd = new System.Random(77);
@@ -115,6 +100,9 @@ namespace GravityBox.Venom
             foreach (var p in pairs.Values) p.Seen = false;
             state.Clear();
             var cam = game.Owner.View.transform;
+            // a hat sits on the biggest piece's crown: its eyes move a little lower, under the brim
+            var wear = surface.GetComponent<COgheAccessories>(); float hat = wear != null ? wear.HatShown : 0; int biggest = 0;
+            for (int k = 1; k < pieces; k++) if (counts[k] > counts[biggest]) biggest = k;
             for (int k = 0, drawn = 0; k < pieces && drawn < MaxPieces; k++)
             {
                 int g = groups[k], count = counts[k]; Vector3 body = bodies[k] / Mathf.Max(1, count);
@@ -147,7 +135,7 @@ namespace GravityBox.Venom
                 float size = Mathf.Clamp(width / .04f, .5f, 1.3f);
                 pair.Size = pair.Size < 0 ? size : Mathf.Lerp(pair.Size, size, 1 - Mathf.Exp(-dt * 3));
                 float scale = pair.Size * Mathf.SmoothStep(0, 1, pair.Shown) * (celebrating ? 1.15f : 1);
-                DrawPair(g, centre, body, cam, look, pair, blink, scale, dt, now);
+                DrawPair(g, centre, body, cam, look, pair, blink, scale, dt, now, k == biggest ? hat : 0);
                 drawn++;
             }
             if (Trace) LastState = state.ToString();
@@ -159,11 +147,11 @@ namespace GravityBox.Venom
             mesh.SetVertices(v); for (int t = 0; t < tri.Length; t++) mesh.SetTriangles(tri[t], t, false); mesh.RecalculateBounds();
         }
 
-        private void DrawPair(int group, Vector3 centre, Vector3 body, Transform cam, Vector3? look, Pair pair, float blink, float scale, float dt, float now)
+        private void DrawPair(int group, Vector3 centre, Vector3 body, Transform cam, Vector3? look, Pair pair, float blink, float scale, float dt, float now, float hat)
         {
             Vector3 up = game.Root != null ? game.Root.up : Vector3.up;
             Vector3 toCam = (cam.position - centre).normalized;
-            Vector3 face = (toCam + up * .3f).normalized;
+            Vector3 face = (toCam + up * Mathf.Lerp(.3f, 0, hat)).normalized;
             if (!surface.SkinToward(group, centre, face, out var p0, out var n0)) return;
             Vector3 right = Vector3.ProjectOnPlane(cam.right, n0).normalized;
             float w = .0071f * scale, h = .0092f * scale, spacing = .0108f * scale;

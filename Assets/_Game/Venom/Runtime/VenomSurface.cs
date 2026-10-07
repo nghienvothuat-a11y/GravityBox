@@ -118,24 +118,38 @@ namespace GravityBox.Venom
             Rebuilt?.Invoke(this);
         }
 
-        /// <summary>The highest point of a fragment's skin within <paramref name="radius"/> (across <paramref name="up"/>)
-        /// of <paramref name="near"/>, and its normal, world space: where an accessory sits.</summary>
-        public bool SkinTop(int group, Vector3 near, Vector3 up, float radius, out Vector3 top, out Vector3 normal)
+        /// <summary>The crown of a fragment's skin around <paramref name="near"/> (within about <paramref name="reach"/>
+        /// across <paramref name="up"/>), and its normal, world space: where a hat sits. A soft top: the skin weighted by
+        /// its area and by how close it comes to the highest (within a few <paramref name="softness"/>), so it is the same
+        /// however the skin was cut into triangles this frame (it is rebuilt every frame) and slides between two bumps
+        /// instead of jumping. On a dome the weighted height sits one softness under the peak; it is lifted by that.</summary>
+        public bool SkinCrown(int group, Vector3 near, Vector3 up, float reach, float softness, out Vector3 top, out Vector3 normal)
         {
             top = near; normal = up;
             for (int f = 0; f < fragmentCount; f++)
             {
                 if (fragmentRanges[f].x != group) continue;
-                Vector3 localNear = transform.InverseTransformPoint(near), localUp = transform.InverseTransformDirection(up).normalized;
-                float best = float.NegativeInfinity, r2 = radius * radius; int found = -1;
+                float scale = Mathf.Max(1e-4f, transform.lossyScale.x), soft = softness / scale, spread = 2 * reach * reach / (scale * scale);
+                Vector3 o = transform.InverseTransformPoint(near), u = transform.InverseTransformDirection(up).normalized;
+                float best = float.NegativeInfinity;
                 for (int v = fragmentRanges[f].y; v < fragmentRanges[f].z; v++)
                 {
-                    Vector3 d = vertices[v] - localNear; float h = Vector3.Dot(d, localUp);
-                    if ((d - localUp * h).sqrMagnitude > r2 || h <= best) continue;
-                    best = h; found = v;
+                    Vector3 d = vertices[v] - o; float h = Vector3.Dot(d, u);
+                    if (h > best && (d - u * h).sqrMagnitude < spread * 4.5f) best = h;
                 }
-                if (found < 0) return false;
-                top = transform.TransformPoint(vertices[found]); normal = transform.TransformDirection(normals[found]).normalized;
+                if (float.IsNegativeInfinity(best)) return false;
+                Vector3 sum = Vector3.zero, sumN = Vector3.zero; float weights = 0;
+                for (int v = fragmentRanges[f].y; v + 2 < fragmentRanges[f].z; v += 3)
+                {
+                    Vector3 a = vertices[v], b = vertices[v + 1], c = vertices[v + 2], m = (a + b + c) / 3, d = m - o;
+                    float h = Vector3.Dot(d, u); if (h < best - soft * 6) continue;
+                    float across = (d - u * h).sqrMagnitude; if (across > spread * 4.5f) continue;
+                    float w = Vector3.Cross(b - a, c - a).magnitude * Mathf.Exp((h - best) / soft - across / spread);
+                    sum += m * w; sumN += (normals[v] + normals[v + 1] + normals[v + 2]) * w; weights += w;
+                }
+                if (weights <= 0) return false;
+                top = transform.TransformPoint(sum / weights) + up * softness;
+                normal = transform.TransformDirection(sumN.sqrMagnitude > 1e-12f ? sumN : u).normalized;
                 return true;
             }
             return false;

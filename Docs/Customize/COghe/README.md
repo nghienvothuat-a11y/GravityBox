@@ -48,6 +48,13 @@ phụ kiện, lưu và giao diện Unity do Claude làm. Mrk đồng ý đổi q
   chỉ là phần nhìn.
 - **Phụ kiện** (`COgheAccessories`): đọc vị trí da sau mỗi lần dựng lại; mũ trên đỉnh khối lớn nhất (rơi khỏi mảnh nhỏ,
   ống, lối ra), đồ bên trong vẽ dưới da (màu trong thì thấy). Không collider, không rigidbody.
+- **Mũ không giật** (Mrk 07/10: "cái mũ khi đội nó cũng bị giật giật sang bên này rồi sang bên kia giống con mắt hồi
+  đầu"): trước đây mũ đặt vào đỉnh da cao nhất, mà da dựng lại mỗi khung và lúc đứng yên COghe đẩy một bướu thăm dò lúc
+  bên này lúc bên kia, nên mũ nhảy theo (rung 1,4 mm mỗi khung, cứ 20 khung có cú trên 10 mm). Giờ vị trí ngang theo đỉnh
+  mềm của các hạt; độ cao theo đỉnh mềm của da (`VenomSurface.SkinCrown`: da quanh đỉnh, tính theo diện tích và độ gần
+  đỉnh, nên không phụ thuộc cách da chia tam giác mỗi khung); rồi lọc one-euro theo thân (`COgheSteady`, chung với mắt)
+  và theo đồng hồ mô phỏng. Còn 0,3 mm, cú lớn nhất ~1,6 mm, ít hơn chính đỉnh thân (`TheHatSitsStillOnARestingCOghe`).
+  Đội mũ thì mắt hạ xuống dưới vành. Clip trước/sau: `OUTBOX/COGHE_HAT_STEADY_2026_10_07` (workspace Buzz).
 - **Lưu:** `COgheStyle` (PlayerPrefs `coghe.style.v1`, JSON) — 4 mực, vân của từng hạt, seed, mũ, đồ bên trong. Áp vào
   COghe ở mọi màn khi scene mở (`COgheProductUI.Start`). Không ghi khi test (`VenomCampaignSave.PersistenceEnabled`).
 - **Build:** material tạo lúc chạy chỉ dùng shader trong `Resources` (`InkSkin`, `AccessoryFx`); biến thể trong suốt khai báo

@@ -7,7 +7,7 @@ namespace GravityBox.Venom
     /// <summary>
     /// What COghe wears (Mrk 01/10): one hat on its crest and up to two kinds of little things floating inside its body.
     /// Presentation only: nothing here touches particles, forces or puzzle state. It reads where the skin was drawn after
-    /// every rebuild (<see cref="VenomSurface.DrawnParticles"/>, <see cref="VenomSurface.SkinTop"/>), so acts, poses and
+    /// every rebuild (<see cref="VenomSurface.DrawnParticles"/>, <see cref="VenomSurface.SkinCrown"/>), so acts, poses and
     /// splits carry it. Hats pop off small pieces, tubes and the exit and back on when COghe is whole. Inside things are
     /// drawn under the skin: a clear ink shows them, COghe's own dark liquid hides them.
     /// </summary>
@@ -29,7 +29,11 @@ namespace GravityBox.Venom
         private Transform hat, spinner; private float sink;
         private Vector3 hatPosition, hatTarget, jiggle, jiggleVelocity; private Quaternion hatRotation = Quaternion.identity;
         private float hatShown; private bool hatPlaced;
+        // steadied like the eyes (Mrk 07/10/2026: the hat jerked side to side): where it sits on the body, and its tilt
+        private COgheSteady hatSeat; private Vector3 hatLean; private float clock = -1;
         public bool HatWorn => hat != null && hatShown > .5f;
+        /// <summary>How far the hat is on (0 off, 1 on): the eyes sit a little lower under it.</summary>
+        public float HatShown => hat != null ? hatShown : 0;
         public Vector3 HatPosition => hatPosition;
 
         // inside: each rides a blend of three central particles of its piece, re-anchoring now and then
@@ -78,7 +82,11 @@ namespace GravityBox.Venom
         {
             if (dirty) Build();
             float dt = Mathf.Min(Time.deltaTime, .05f);
-            if (hat != null) StepHat(dt);
+            // the hat keeps COghe's clock (still while paused, steady in a recording); Retry rewinds it: place it afresh
+            float now = game.Matter.SimulationTime, hatDt = clock < 0 ? 0 : Mathf.Clamp(now - clock, 0, .05f);
+            if (now < clock - .05f) hatPlaced = false;
+            clock = now;
+            if (hat != null) StepHat(hatDt);
             if (floaters.Count > 0) StepFloaters(dt);
         }
 
@@ -283,15 +291,26 @@ namespace GravityBox.Venom
         private void StepHat(float dt)
         {
             if (!Biggest(out int group, out int count, out bool leaving)) return;
-            var m = game.Matter; Vector3 up = Vector3.up, crest = Vector3.zero; float best = float.NegativeInfinity;
+            // across: over the soft top of the piece's particles (two of them trading the highest place does not move it),
+            // so the hat moves with the body and does not slide after a probing bump; up: the crown of the skin around
+            // there, so it sits on the crest (over the eyes, not on them) and across a heart's two lobes, and never jumps
+            // from one vertex of the skin (rebuilt every frame) to another
+            var m = game.Matter; Vector3 up = Vector3.up, crest = Vector3.zero, middle = Vector3.zero; float best = float.NegativeInfinity, weights = 0;
             for (int i = 0; i < CohesiveOrganism.ParticleCount; i++)
-                if (m.Groups[i] == group) { float h = Vector3.Dot(surface.DrawnParticles[i], up); if (h > best) { best = h; crest = surface.DrawnParticles[i]; } }
-            bool found = surface.SkinTop(group, crest, up, .035f, out var top, out var normal);
+                if (m.Groups[i] == group) { best = Mathf.Max(best, Vector3.Dot(surface.DrawnParticles[i], up)); middle += surface.DrawnParticles[i]; }
+            middle /= Mathf.Max(1, count);
+            for (int i = 0; i < CohesiveOrganism.ParticleCount; i++)
+                if (m.Groups[i] == group) { float w = Mathf.Exp((Vector3.Dot(surface.DrawnParticles[i], up) - best) / .008f); crest += surface.DrawnParticles[i] * w; weights += w; }
+            crest /= Mathf.Max(1e-6f, weights);
+            bool found = surface.SkinCrown(group, crest, up, .025f, .004f, out var crown, out var normal);
+            Vector3 top = crest + up * Vector3.Dot(crown - crest, up);
             // too small a piece, or on its way out / through a tube: the hat pops off and back on when COghe is whole again
             bool wear = found && count >= 12 && !leaving && !game.InTube;
             hatShown = Mathf.MoveTowards(hatShown, wear ? 1 : 0, dt * (wear ? 3.5f : 6));
-            Vector3 lean = Vector3.Slerp(up, normal, .45f);
-            Vector3 target = top - lean * sink;
+            if (!hatPlaced) { hatSeat = default; hatLean = Vector3.zero; }
+            hatLean = hatLean == Vector3.zero ? normal : Vector3.Slerp(hatLean, normal, 1 - Mathf.Exp(-dt * 8));
+            Vector3 lean = Vector3.Slerp(up, hatLean, .45f);
+            Vector3 target = middle + hatSeat.Step(top - lean * sink - middle, dt);
             if (!hatPlaced || (target - hatTarget).sqrMagnitude > .15f * .15f) { hatTarget = target; jiggle = jiggleVelocity = Vector3.zero; hatPlaced = true; }
             // attached to the skin; only a little inertia on top (it wobbles when the body hops or squashes, never trails)
             jiggle -= (target - hatTarget) * .35f; hatTarget = target;

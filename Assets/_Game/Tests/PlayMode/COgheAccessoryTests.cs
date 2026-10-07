@@ -25,6 +25,33 @@ namespace GravityBox.Tests
    Object.Destroy(a);
   }
 
+  // Mrk 07/10/2026: "cái mũ khi đội nó cũng bị giật giật sang bên này rồi sang bên kia giống con mắt hồi đầu". On a resting
+  // COghe the hat moves only as its body does: frame to frame (the second difference of its path) no more than the top of
+  // its particles, never the jumps of a skin vertex (before the fix: 1.4 mm typical, 10 mm in one frame of twenty).
+  [UnityTest] public IEnumerator TheHatSitsStillOnARestingCOghe()
+  {
+   yield return Load(1);yield return Frames(30);
+   var a=COgheAccessories.Attach(game);a.Dress("HAT_BEANIE",new string[0]);yield return Frames(30);
+   var surface=game.Matter.GetComponent<VenomSurface>();
+   var hat=new System.Collections.Generic.List<float>();var body=new System.Collections.Generic.List<float>();
+   Vector3 h0=default,h1=default,b0=default,b1=default;
+   for(int f=0;f<120;f++)
+   {
+    yield return Frames(1);
+    float best=float.NegativeInfinity;foreach(var q in surface.DrawnParticles)best=Mathf.Max(best,q.y);
+    Vector3 crest=Vector3.zero;float ws=0;foreach(var q in surface.DrawnParticles){float w=Mathf.Exp((q.y-best)/.008f);crest+=q*w;ws+=w;}crest/=ws;
+    if(f>=2){hat.Add((a.HatPosition-2*h1+h0).magnitude);body.Add((crest-2*b1+b0).magnitude);}
+    h0=h1;h1=a.HatPosition;b0=b1;b1=crest;
+   }
+   hat.Sort();body.Sort();
+   float Median(System.Collections.Generic.List<float> v)=>v[v.Count/2];float Worst(System.Collections.Generic.List<float> v)=>v[(int)(v.Count*.95f)];
+   Debug.Log($"HAT SHAKE median {Median(hat)*1000:F3} mm, p95 {Worst(hat)*1000:F3} mm; its body's top median {Median(body)*1000:F3} mm, p95 {Worst(body)*1000:F3} mm");
+   Assert.IsTrue(a.HatWorn);
+   Assert.Less(Median(hat),Mathf.Max(.0004f,Median(body)*1.3f),"The hat does not shake more than COghe's body moves");
+   Assert.Less(Worst(hat),Mathf.Max(.0015f,Worst(body)*2f),"nor jump now and then");
+   Object.Destroy(a);
+  }
+
   // Comparison reels: Artifacts/Accessories/<hats|inclusions>/frame_#####.png + sounds.txt.
   [Explicit("Renders the accessory comparison reels")]
   [UnityTest] public IEnumerator RenderAccessoryReels()
