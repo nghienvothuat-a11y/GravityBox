@@ -20,9 +20,9 @@ namespace GravityBox.Tests
   {
    try
    {
-    yield return EnterFurnishedHome(14);
+    yield return EnterFurnishedHome(17);
     var room=game.HomeRoom;Assert.AreEqual(14,room.Items.Count);
-    foreach(var item in room.Items)Assert.AreEqual(item.UnlockLevel<=14,item.Root.activeSelf,item.Id+" shows only once earned");
+    foreach(var item in room.Items)Assert.AreEqual(item.UnlockLevel<=17,item.Root.activeSelf,item.Id+" shows only once earned");
     var mirror=room.Find("MIRROR");room.ShowGhost(mirror);
     Assert.IsTrue(mirror.Root.activeSelf,"A locked item can be previewed");
     foreach(var r in mirror.Root.GetComponentsInChildren<Renderer>())Assert.AreEqual("Home ghost",r.sharedMaterial.name);
@@ -35,7 +35,7 @@ namespace GravityBox.Tests
   {
    try
    {
-    yield return EnterFurnishedHome(50);
+    yield return EnterFurnishedHome(60);
     var p=game.Personality;var room=game.HomeRoom;bool played=false,moved=false;var start=game.Motion.Centre(0);
     for(int f=0;f<30*45;f++)   // 45 s of life
     {
@@ -53,7 +53,7 @@ namespace GravityBox.Tests
   {
    try
    {
-    yield return EnterFurnishedHome(10);yield return Frames(20);
+    yield return EnterFurnishedHome(12);yield return Frames(20);
     var p=game.Personality;
     p.TouchedInHome(game.Motion.Centre(0)+Vector3.right*.02f);yield return Frames(2);
     Assert.AreEqual(COgheAct.Home,p.Act,"A touch gets a reaction");
@@ -67,14 +67,14 @@ namespace GravityBox.Tests
    finally{COgheHomeRoom.UnlockedLevelOverride=null;}
   }
 
-  // Mrk: the ball is the first toy (level 10), the bed comes at 14.
+  // Mrk: the ball is the first toy, the bed comes next but one (levels 10 and 14, ×1.2 for 60 levels on 06/10: 12 and 17).
   [UnityTest] public IEnumerator HomeOpensWithTheBall()
   {
-   Assert.AreEqual("BALL",COgheHomeItems.Catalog[0].id);Assert.AreEqual(10,COgheHomeItems.Catalog[0].level);
-   Assert.AreEqual(14,System.Array.Find(COgheHomeItems.Catalog,c=>c.id=="BED").level);
+   Assert.AreEqual("BALL",COgheHomeItems.Catalog[0].id);Assert.AreEqual(12,COgheHomeItems.Catalog[0].level);
+   Assert.AreEqual(17,System.Array.Find(COgheHomeItems.Catalog,c=>c.id=="BED").level);
    try
    {
-    yield return EnterFurnishedHome(10);
+    yield return EnterFurnishedHome(12);
     foreach(var item in game.HomeRoom.Items)Assert.AreEqual(item.Id=="BALL",item.Root.activeSelf,item.Id);
    }
    finally{COgheHomeRoom.UnlockedLevelOverride=null;}
@@ -86,7 +86,7 @@ namespace GravityBox.Tests
    COgheFeedBalls.SeedForTests=4242;
    try
    {
-    yield return EnterFurnishedHome(50);yield return Frames(200);   // the furniture pops in first
+    yield return EnterFurnishedHome(60);yield return Frames(200);   // the furniture pops in first
     var p=game.Personality;var room=game.HomeRoom;var food=game.HomeFeedBalls;Assert.IsNotNull(food);
     for(int round=1;round<=3;round++)
     {
@@ -132,7 +132,7 @@ namespace GravityBox.Tests
   {
    try
    {
-    yield return EnterFurnishedHome(10);yield return Frames(60);
+    yield return EnterFurnishedHome(12);yield return Frames(60);
     var p=game.Personality;var item=game.HomeRoom.Find("BALL");var ball=item.Part("Ball");var rest=ball.position;
     p.PlayNow(item);Assert.AreSame(item,p.Playing);
     float high=0,wide=0;
@@ -159,7 +159,7 @@ namespace GravityBox.Tests
    try
    {
     COgheFeedBalls.SeedForTests=11;
-    yield return EnterFurnishedHome(26);yield return Frames(200);
+    yield return EnterFurnishedHome(31);yield return Frames(200);
     COgheAudio.Heard+=heard;
     cam=new GameObject("Reel camera").AddComponent<Camera>();cam.CopyFrom(game.Owner.View);cam.enabled=false;cam.orthographic=true;cam.aspect=540f/1170;
     var room=game.HomeRoom;var p=game.Personality;
@@ -206,7 +206,7 @@ namespace GravityBox.Tests
    var rt=RenderTexture.GetTemporary(540,1170,24);var tex=new Texture2D(540,1170,TextureFormat.RGB24,false);
    try
    {
-    yield return EnterFurnishedHome(50);   // loads the scene: make the camera afterwards
+    yield return EnterFurnishedHome(60);   // loads the scene: make the camera afterwards
     cam=new GameObject("Reel camera").AddComponent<Camera>();cam.CopyFrom(game.Owner.View);cam.enabled=false;cam.orthographic=true;cam.aspect=540f/1170;cam.transform.rotation=Quaternion.Euler(42,-6,0);
     var room=game.HomeRoom;var p=game.Personality;
     float overview=Mathf.Max((COgheHomeRoom.HalfWidth*2+.22f)*.5f/(540f/1170),1.08f);
@@ -248,7 +248,7 @@ namespace GravityBox.Tests
   {
    try
    {
-    yield return EnterFurnishedHome(50);yield return Frames(190);   // the new furniture pops in first
+    yield return EnterFurnishedHome(60);yield return Frames(190);   // the new furniture pops in first
     var room=game.HomeRoom;var p=game.Personality;
     string root="Artifacts/Home";if(Directory.Exists(root))Directory.Delete(root,true);Directory.CreateDirectory(root);
     var cam=new GameObject("Home preview camera").AddComponent<Camera>();cam.CopyFrom(game.Owner.View);cam.enabled=false;cam.orthographic=true;

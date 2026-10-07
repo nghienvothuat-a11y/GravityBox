@@ -16,7 +16,7 @@ namespace GravityBox.Venom
         private static readonly Dictionary<string, (int value, int min, int max)> schema = new()
         {
             ["drops_first_win"] = (10, 1, 1000), ["drops_clean_win"] = (0, 0, 100),
-            ["drops_triple_ad"] = (20, 1, 1000), ["drops_daily"] = (15, 1, 1000),
+            ["drops_triple_ad"] = (20, 1, 1000), ["drops_daily"] = (15, 1, 1000), ["drops_bonus"] = (100, 1, 1000), ["drops_bonus_round"] = (10, 1, 1000),
             ["drops_ad_shop"] = (15, 1, 1000), ["ad_shop_daily_cap"] = (3, 0, 10),
             ["ad_item_max_price"] = (60, 0, 200), ["interstitial_from_win"] = (6, 6, 1000),
             ["interstitial_min_wins"] = (2, 2, 100), ["interstitial_min_seconds"] = (90, 90, 86400),

@@ -4,7 +4,9 @@ Goal: the exit cell is free. BFS gives the minimum number of pulls, the forced o
 from collections import deque
 from dataclasses import dataclass, field
 
-W, H = 6, 5  # grid columns (x, left->right) and rows (z, front->back); one cell = 12 cm
+import os
+# Grid columns (x, left->right) and rows (z, front->back); one cell = 12 cm. CRATE_GRID=7x6 tries a larger floor.
+W, H = map(int, os.environ.get('CRATE_GRID', '6x5').split('x'))
 
 
 @dataclass

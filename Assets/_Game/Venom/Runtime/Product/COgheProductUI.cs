@@ -9,7 +9,7 @@ using UnityEngine.UI;
 namespace GravityBox.Venom
 {
     public enum COgheProductPage { MainMenu, Game, Home, Intro, Victory, Style }
-    public enum COgheProductPopup { None, Pause, Help, Restart, LeaveMenu, LeaveHome, Collection, Locked, Failure, Levels, StyleReplaceInk, StyleRinse, StyleReplaceInside, StyleLocked, StyleNeedsClear, StyleTryOn, Buy, Unlocks, Gift, Plus }
+    public enum COgheProductPopup { None, Pause, Help, Restart, LeaveMenu, LeaveHome, Collection, Locked, Failure, Levels, StyleReplaceInk, StyleRinse, StyleReplaceInside, StyleLocked, StyleNeedsClear, StyleTryOn, Buy, Unlocks, Gift, Plus, BonusOffer, BonusDone }
 
     /// <summary>Test-only tools (the level picker in Pause): compiled into development builds and the team's test builds
     /// (COGHE_TEST_TOOLS, added by the build scripts unless COGHE_STORE=1); absent from a store build.</summary>
@@ -105,6 +105,7 @@ namespace GravityBox.Venom
                     if(signature!=lastFragmentSignature){lastFragmentSignature=signature;BuildContextControls();}
                 }
             }
+            if(Page==COgheProductPage.Home&&bonusChapter>0)BonusTick();
             if(Page==COgheProductPage.Victory && Popup==COgheProductPopup.None && victoryNextRequested && VictoryReady())
             {
                 victoryNextRequested=false;
@@ -157,6 +158,7 @@ namespace GravityBox.Venom
         public void ShowMenu()
         {
             attempt.Abandon("menu");
+            if(bonusChapter>0)EndBonusSession();   // a bonus left for the menu waits in Home
             Popup=COgheProductPopup.None;Game.EnterShowcase();Page=COgheProductPage.MainMenu;
             Game.SetHabitatPresentation(true);MenuShadows(true);Rebuild();
         }

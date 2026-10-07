@@ -20,3 +20,15 @@ or right past its stop (pull). `search10.py <levels> <seed from> <seed to> [appe
 (backward BFS from the solved layouts over reversed pulls), requires the shapes each level introduces, and climbs for
 depth, then no dead layouts, then choice → `cand10.json`. `levels10.py` renders the chosen ten (`PICKS`, names in
 `names10.json`) into `out10/`.
+
+## Ten levels redone so they read true (06/10/2026)
+
+Mrk, on level 52: the red crate's slide looked clear but the order said otherwise. The hidden rule was the standing room.
+`logic.py` searches layouts in which, in every layout the player can reach, a crate with a clear slide always has room for
+COghe on one side (both cells of a two-cell face), COghe walks on the floor only (its piece of floor is part of the state),
+the red crate starts blocked by a crate and its pull is the last one, and there are no dead layouts.
+`python3 logic.py <levels> <seed from> <seed to> [append]` with `LOGIC_OUT=<file>`. Experiments switch rules off with
+`LOGIC_FAIR=0`, `LOGIC_REDLAST=0`, `LOGIC_REDBLOCKED=0`, and try other floors with `CRATE_GRID=7x6 CRATE_HOLE=3,3`.
+`levels_logic.py` renders the chosen ten (kept in `cand_logic.json`) into `out_logic/`: plates, the overview and
+`summary_logic.json` (spawn, and each pull's crate, push or pull, and stand cell). `export_unity.py` turns that summary into
+the C# layouts and routes of levels 51–60.

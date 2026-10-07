@@ -91,8 +91,13 @@ namespace GravityBox.Venom
             InitializeMechanisms();CameraRig=new VenomCampaignCamera(this);EnhancedTouchSupport.Enable();ResetLevel();
             if(COgheProductMode.Applies(this)){ProductUI=gameObject.AddComponent<COgheProductUI>();ProductUI.Initialize(this);}
         }
+        /// <summary>Taps a mechanism took and taps that switched the active part, since the level was reset (difficulty
+        /// metrics: the number of operations a solution needs; walking taps are not counted here).</summary>
+        public int MechanismTaps { get; private set; }
+        public int PartSelections { get; private set; }
         public void ResetLevel()
         {
+            MechanismTaps=0;PartSelections=0;
             ResetPointerInput();
             if(Owner==null||Matter==null)return;
             habitat?.Leave();Owner.Rotation.ResetState();Owner.ResetCampaignState();
@@ -609,14 +614,17 @@ namespace GravityBox.Venom
                 Vector3 p=Matter.Bodies[i].position;float d=Vector3.Cross(p-ray.origin,ray.direction).magnitude;
                 if(d<selection){chosen=i;selection=d;}
             }
-            if(Home&&chosen>=0){habitat?.Greet();if(Personality!=null&&habitat?.Room!=null)Personality.TouchedInHome(Matter.Bodies[chosen].position);return;}
+            // the bonus "Hiểu ra": a touch on the shape COghe holds up counts too, and floor taps do not send it walking
+            bool bonus=Home&&Personality!=null&&Personality.InBonus;
+            if(Home&&(chosen>=0||bonus&&Personality.BonusHit(ray))){habitat?.Greet();if(Personality!=null&&habitat?.Room!=null)Personality.TouchedInHome(chosen>=0?Matter.Bodies[chosen].position:Personality.SkinCentre);return;}
             if(Home&&Personality!=null&&habitat?.Room!=null){var item=habitat.Room.Pick(ray);if(item!=null){Personality.PlayWith(item);return;}}
+            if(bonus)return;
             bool selectedTissueHit=chosen>=0&&Matter.TotalFragmentCount>1;
             // Switching bodies still takes priority. Re-selecting the active
             // body must not hide its nearby handle after the idle release, or
             // swallow a push/pull command while it is holding that handle.
             if(!Definition.ViewOnly&&selectedTissueHit&&Matter.Groups[chosen]!=Matter.Groups[Motion.Selected])
-            {SelectFragment(chosen);return;}
+            {SelectFragment(chosen);PartSelections++;return;}
             foreach(var task in tapRails)
                 if(task.Owns(Motion.Selected)&&task.Phase==COgheTapRail.TaskPhase.Operating&&!task.CanInterrupt)return;
             // The passive sphere still acknowledges the nearest shell point.
@@ -649,7 +657,7 @@ namespace GravityBox.Venom
             if(Definition.ViewOnly&&selectedTissueHit)
             {
                 selectedTissueHit=Vector3.Dot(Matter.Bodies[chosen].position-ray.origin,ray.direction)<obstruction+.042f;
-                if(selectedTissueHit&&Matter.Groups[chosen]!=Matter.Groups[Motion.Selected]){SelectFragment(chosen);return;}
+                if(selectedTissueHit&&Matter.Groups[chosen]!=Matter.Groups[Motion.Selected]){SelectFragment(chosen);PartSelections++;return;}
             }
             // Assembly handles aim on their visible deck plane. A tall moving
             // front face must not swallow every command toward its socket.
@@ -660,7 +668,7 @@ namespace GravityBox.Venom
                 {var target=ray.GetPoint(distance);SetPropTarget(target);ShowMarker(target,plane.up,plane);}
                 return;
             }
-            if(TouchMechanism(ray,obstruction))return;
+            if(TouchMechanism(ray,obstruction)){MechanismTaps++;return;}
             if(!PrepareTapCommand(Motion.Selected))return;
             if(!Home&&Definition.Passive)
                 foreach(var surface in Surfaces)
@@ -770,7 +778,7 @@ namespace GravityBox.Venom
         public float Greeting=>Home?(habitat?.Greeting??0):0;
         public COgheHomeRoom HomeRoom=>Home?habitat?.Room:null;
         public COgheFeedBalls HomeFeedBalls=>Home?habitat?.FeedBalls:null;
-        public void FeedHome(){if(Home)habitat?.Feed();}
+        public void FeedHome(){if(!Home)return;if(Personality!=null&&Personality.InBonus){Personality.BonusFeed();return;}habitat?.Feed();}
         /// <summary>The habitat's greeting glow only (COghe just ate), without a touch reaction.</summary>
         internal void GreetHomeQuietly()=>habitat?.Greet();
         public void GreetHome()

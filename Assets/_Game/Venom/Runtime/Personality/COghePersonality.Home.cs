@@ -64,12 +64,13 @@ namespace GravityBox.Venom
             reveals.Clear(); revealClock = -.6f; revealVisit = false; revealPending = true;
             for (int i = 0; i < touches.Length; i++) touches[i] = -100;
         }
-        internal void LeaveHome() { room = null; home = HomeState.Rest; playing = target = null; eating = false; meal = null; EndAct(); }
+        internal void LeaveHome() { bonusPhase = BonusPhase.None; bonusRounds = null; room = null; home = HomeState.Rest; playing = target = null; eating = false; meal = null; EndAct(); }
 
         /// <summary>The player tapped COghe itself.</summary>
         public void TouchedInHome(Vector3 point)
         {
             if (room == null || Act == COgheAct.Monster) return;   // the monster finishes its show
+            if (InBonus) { BonusHeard(COgheBonusAnswer.Touch, null); return; }   // a touch is an answer, not a poke
             if (home == HomeState.Sulk) { COgheAudio.Instance?.Play("creature_hmph", .45f, 0, .6f); return; }   // it is not talking to you
             float now = game.Matter.SimulationTime;
             for (int i = touches.Length - 1; i > 0; i--) touches[i] = touches[i - 1];
@@ -85,6 +86,7 @@ namespace GravityBox.Venom
         public void PlayWith(COgheHomeItem item)
         {
             if (room == null || item == null || !room.Present(item)) return;
+            if (InBonus) { BonusHeard(COgheBonusAnswer.Item, item.Id); return; }
             StopPlaying(); GoTo(item);
         }
 
@@ -103,6 +105,7 @@ namespace GravityBox.Venom
             stateTime += dt;
             bool commanded = game.Feedback != null && game.Feedback.CommandCount != lastCommands;
             if (game.Feedback != null) lastCommands = game.Feedback.CommandCount;
+            if (bonusPhase != BonusPhase.None && UpdateBonus(dt)) return;   // the bonus "Hiểu ra" holds COghe
             if (commanded && home != HomeState.User) { StopPlaying(); home = HomeState.User; stateTime = 0; }   // the player steers: step aside
             else if (game.HomeFeeding && !Showcase && (home == HomeState.Rest || home == HomeState.Walk || home == HomeState.Play))
             { StopPlaying(); home = HomeState.Eat; stateTime = 0; meal = null; }                                          // food! off to eat it

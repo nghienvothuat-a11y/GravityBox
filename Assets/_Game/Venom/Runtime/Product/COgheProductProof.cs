@@ -86,7 +86,7 @@ namespace GravityBox.Venom
             if(game.Definition.Order!=2){Fail("Next Level did not load level 2");yield break;}
             yield return Capture("08-next-puzzle");
             // Home with the furniture earned up to level 26 (a fixture: no progress is written)
-            COgheHomeRoom.UnlockedLevelOverride=26;
+            COgheHomeRoom.UnlockedLevelOverride=31;
             ui.ShowMenu();game.Progress.HomeUnlocked=true;ui.OpenHome();yield return new WaitForSecondsRealtime(5);yield return Capture("09-home");
             ui.ShowPopup(COgheProductPopup.Collection);yield return Capture("10-collection");ui.Resume();
             var room=game.HomeRoom;
@@ -128,7 +128,7 @@ namespace GravityBox.Venom
                 yield return Capture((shot++)+"-guide-level"+n);
             }
             // Home: turned round, zoomed in on COghe, feeding (steel balls), the ball game
-            COgheHomeRoom.UnlockedLevelOverride=26;
+            COgheHomeRoom.UnlockedLevelOverride=31;
             ui.ShowMenu();game.Progress.HomeUnlocked=true;ui.OpenHome();yield return new WaitForSecondsRealtime(5);
             if(game.HomeRoom==null){Fail("Furnished Home missing");yield break;}
             ui.OrbitHome(-Screen.width*.5f);yield return new WaitForSecondsRealtime(1.5f);yield return Capture("26-home-turned");
@@ -140,7 +140,7 @@ namespace GravityBox.Venom
             game.Personality.PlayNow(game.HomeRoom.Find("BALL"));yield return new WaitForSecondsRealtime(3.45f);yield return Capture("29-home-ball-toss");
             ui.ShowPopup(COgheProductPopup.Pause);yield return Capture("47-home-pause");ui.Resume();
             // Style: inks held into COghe, the mix, a hat, things inside, a locked item, a fifth color's question, back home
-            COgheHomeRoom.UnlockedLevelOverride=30;COgheStyle.ResetForTests(new COgheStyle{Seed=4});COgheStyle.Current.ApplyTo(game);
+            COgheHomeRoom.UnlockedLevelOverride=36;COgheStyle.ResetForTests(new COgheStyle{Seed=4});COgheStyle.Current.ApplyTo(game);
             ui.OpenStyle();yield return new WaitForSecondsRealtime(1.5f);
             if(ui.Page!=COgheProductPage.Style){Fail("Style did not open");yield break;}
             yield return Capture("30-style");
@@ -158,12 +158,12 @@ namespace GravityBox.Venom
             COgheStyle.ResetForTests();
             // the shop (Mrk 02/10): Drops, prices, buying, what a win unlocks, Plus, trying on; test ads show the banner's place
             COgheShop.ResetForTests(new COgheShop.State{Migrated=true});COgheShop.TestsOwnUnlocked=false;COgheShop.Earn(null,150,"proof");
-            COgheHomeRoom.UnlockedLevelOverride=26;COgheAds.Provider=new COgheTestAds();
+            COgheHomeRoom.UnlockedLevelOverride=31;COgheAds.Provider=new COgheTestAds();
             ui.ShowMenu();yield return new WaitForSecondsRealtime(1.5f);yield return Capture("38-menu-shop");
             ui.OpenHome();yield return new WaitForSecondsRealtime(3);yield return Capture("39-home-shop");
             ui.ShowPopup(COgheProductPopup.Collection);yield return Capture("40-home-items-prices");
             ui.OfferItem("SWING",null);yield return Capture("41-buy");ui.Resume();
-            var level10=ui.Catalog.Levels[9];ui.ShowVictoryForTests(level10.Id,10);yield return new WaitForSecondsRealtime(.6f);yield return Capture("42-victory-drops");
+            var level12=ui.Catalog.Levels[11];ui.ShowVictoryForTests(level12.Id,12);yield return new WaitForSecondsRealtime(.6f);yield return Capture("42-victory-drops");
             yield return new WaitForSecondsRealtime(3.5f);ui.VictoryStepForTests();yield return Capture("43-unlocks");ui.Resume();
             ui.ShowShopPopup(COgheProductPopup.Plus);yield return Capture("44-plus");ui.Resume();
             ui.ShowMenu();ui.OpenHome();yield return new WaitForSecondsRealtime(2);ui.OpenStyle();yield return new WaitForSecondsRealtime(1.2f);

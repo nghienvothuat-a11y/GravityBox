@@ -5,7 +5,7 @@ Ngày chốt hướng sản phẩm: 14/09/2026; cập nhật 15/09/2026: thắng
 ## 1. Quyết định chính
 
 - Campaign là **giải đố thuần**. Không có phân điểm sức mạnh, nhanh nhẹn, trí tuệ hoặc cảm nhận làm thay đổi cách cân bằng level.
-- Sinh vật thông minh dần qua các màn: học kỹ năng và nhận ra cơ quan quen từ trải nghiệm. Người chơi tiếp tục quyết định mục tiêu, thứ tự và phân vai.
+- Sinh vật thông minh dần qua các màn, nhưng trí tuệ chỉ được *thể hiện*, không được *dùng* trong màn (Mrk 07/10/2026): ngoài màn giải đố, COghe "nói" bằng hình nặn đơn giản, có màn thưởng "Hiểu ra" bỏ qua được sau mỗi Boss, và phản ứng tình cảm nhiều hơn. Người chơi vẫn tự quyết định mục tiêu, thứ tự và phân vai.
 - Có Collection **“Nhà của sinh vật”**, mở sau khi thắng Boss 10; nơi người chơi bố trí đồ vật, cho ăn và tương tác.
 - Sinh vật phải hợp thể trước khi thoát qua lỗ cuối. Một phần ra trước khi nhập hết thì thua, hiện “bạn phải hợp thể trước khi chui ra”. Boss 10 không có tutorial, người chơi tự mày mò; luật và phản hồi vẫn rõ.
 - Người chơi có thể mua thêm đồ vật, đồ ăn và animation tương tác. Chưa chốt loại tiền, giá, phương thức mua hay lịch phát hành nội dung; không mặc định tất cả là mua bằng tiền thật.
@@ -31,7 +31,7 @@ Luồng học: gặp cơ quan → thử theo ý định người chơi → thự
 
 Level khai báo năng lực có thể thử, mục tiêu học và chính sách hướng dẫn. Không tự hiện hướng dẫn bù trong màn có `Hints=None`, kể cả save mới hoặc nhiều lần thua ở Boss. Không âm thầm tăng IQ theo số màn rồi đổi hành vi mà người chơi không biết. Nhận lệnh, giữ nhiệm vụ và dừng ở điểm chỉ phải đáng tin cậy từ đầu.
 
-Kỹ năng quen có thể giảm chỉ dẫn vụn trong một việc được giao. Nó không tự quyết đi tới dao, tự rời nút, tự gọi các phần bỏ nhiệm vụ để tìm nhau hoặc tự mở chuỗi cơ quan để giải cả màn. Các phần đã tới đủ gần thì tự kết dính theo điều kiện hiện có, không cần lệnh tụ riêng; giữ bảo vệ nhiệm vụ đang thực hiện. Các bước tự thực hiện có phản hồi về ý định; người chơi đổi lệnh được ở những thời điểm cho phép.
+Kỹ năng quen **không** giảm chỉ dẫn hay số chạm (Mrk 07/10/2026: "Bỏ những thứ ảnh hưởng tới việc giải đố"); một việc được giao cần đúng số lệnh như lần đầu. Nó không tự quyết đi tới dao, tự rời nút, tự gọi các phần bỏ nhiệm vụ để tìm nhau hoặc tự mở chuỗi cơ quan để giải cả màn. Các phần đã tới đủ gần thì tự kết dính theo điều kiện hiện có, không cần lệnh tụ riêng; giữ bảo vệ nhiệm vụ đang thực hiện. Các bước tự thực hiện có phản hồi về ý định; người chơi đổi lệnh được ở những thời điểm cho phép.
 
 Retry giữ kiến thức nhưng reset cơ quan và nhiệm vụ. Khi quay lại màn cũ, kỹ năng đã biết vẫn không được bỏ qua quyết định chính; công cụ kiểm chứng cần thử cả lần học đầu và sinh vật đã biết kỹ năng. Kiến thức do chơi campaign và ký ức tình cảm ở nhà được lưu riêng về ý nghĩa.
 

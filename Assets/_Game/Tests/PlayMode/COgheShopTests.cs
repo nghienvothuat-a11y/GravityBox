@@ -40,12 +40,12 @@ namespace GravityBox.Tests
         {
             try
             {
-                FreshShop(false); COgheHomeRoom.UnlockedLevelOverride = 20; game.Progress.HomeUnlocked = true;
+                FreshShop(false); COgheHomeRoom.UnlockedLevelOverride = 24; game.Progress.HomeUnlocked = true;
                 yield return Click("Home"); yield return new WaitForSecondsRealtime(.6f);
                 var room = game.HomeRoom; var swing = room.Find("SWING"); var ball = room.Find("BALL");
                 Assert.IsTrue(room.Present(ball), "The ball is a gift"); Assert.IsTrue(ball.Root.activeSelf);
                 Assert.IsTrue(room.ForSale(swing), "The swing's level is reached: it is for sale"); Assert.IsFalse(swing.Root.activeSelf, "and not in the room yet");
-                Assert.IsFalse(room.Available(room.Find("TV")), "The TV (level 23) is still locked");
+                Assert.IsFalse(room.Available(room.Find("TV")), "The TV (level 28) is still locked");
                 COgheShop.Earn(null, 200, "test"); int price = COgheEconomy.Price("SWING");
                 yield return Click("Items"); Assert.AreEqual(COgheProductPopup.Collection, ui.Popup);
                 Assert.IsTrue(ui.GetComponentsInChildren<Text>().Any(t => t.name == "State" && t.text == price.ToString()), "Its price on the card");
@@ -64,7 +64,7 @@ namespace GravityBox.Tests
             try
             {
                 FreshShop(false);
-                yield return EnterStyle(new COgheStyle(), 30);
+                yield return EnterStyle(new COgheStyle(), 36);
                 Assert.IsTrue(COgheShop.Owns("INK_OCEAN") && COgheShop.Owns("HAT_BEANIE") && COgheShop.Owns("FLOAT_STARS"), "First of each group: gifts");
                 Assert.IsFalse(COgheShop.Owns("INK_MINT"));
                 // try a hat on without Drops, then take it off on the way out
@@ -91,16 +91,16 @@ namespace GravityBox.Tests
             try
             {
                 FreshShop(false); yield return null;
-                var level10 = ui.Catalog.Levels[9];
-                ui.ShowVictoryForTests(level10.Id, 10); yield return null;
+                var level12 = ui.Catalog.Levels[11];
+                ui.ShowVictoryForTests(level12.Id, 12); yield return null;
                 Assert.AreEqual(COgheEconomy.FirstWin, ui.VictoryDrops); Assert.AreEqual(COgheEconomy.FirstWin, COgheShop.Drops);
-                CollectionAssert.IsSubsetOf(new[] { "BALL", "INK_OCEAN", "INK_MINT" }, ui.VictoryUnlocks.ToArray(), "Level 10: the ball, Ocean (gifts) and Mint");
+                CollectionAssert.IsSubsetOf(new[] { "BALL", "INK_OCEAN", "INK_MINT" }, ui.VictoryUnlocks.ToArray(), "Level 12 (first boss): the ball, Ocean (gifts) and Mint");
                 ui.VictoryStepForTests(); yield return null;
                 Assert.AreEqual(COgheProductPopup.Unlocks, ui.Popup, "What it unlocked, before the next level");
                 Assert.IsTrue(ui.GetComponentsInChildren<Text>().Any(t => t.text == "Gift ✓"), "gifts marked");
                 Assert.IsTrue(ui.GetComponentsInChildren<Button>().Any(b => b.name == "Buy INK_MINT"), "the rest for sale");
                 yield return Click("Continue"); Assert.AreEqual(COgheProductPopup.None, ui.Popup); Assert.IsEmpty(ui.VictoryUnlocks);
-                ui.ShowVictoryForTests(level10.Id, 10); yield return null;
+                ui.ShowVictoryForTests(level12.Id, 12); yield return null;
                 Assert.AreEqual(0, ui.VictoryDrops, "A level pays once"); Assert.AreEqual(COgheEconomy.FirstWin, COgheShop.Drops); Assert.IsEmpty(ui.VictoryUnlocks);
             }
             finally { EndShop(); ui.ShowMenu(); }
@@ -194,7 +194,7 @@ namespace GravityBox.Tests
             try
             {
                 COgheShop.ResetForTests(new COgheShop.State()); COgheShop.TestsOwnUnlocked = false;
-                game.Progress.Completed.Clear(); for (int i = 0; i < 20; i++) game.Progress.Completed.Add(ui.Catalog.Levels[i].Id);
+                game.Progress.Completed.Clear(); for (int i = 0; i < 24; i++) game.Progress.Completed.Add(ui.Catalog.Levels[i].Id);
                 COgheShop.Migrate(game);
                 Assert.IsTrue(COgheShop.Owns("SWING") && COgheShop.Owns("SLIDE") && COgheShop.Owns("INK_GOLD") && COgheShop.Owns("HAT_FLOWER"), "Everything their levels gave them");
                 Assert.IsFalse(COgheShop.Owns("TV"), "nothing beyond");

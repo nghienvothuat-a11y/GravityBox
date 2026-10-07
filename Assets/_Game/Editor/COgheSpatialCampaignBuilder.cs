@@ -16,23 +16,51 @@ namespace GravityBox.Editor
   // Chapter 1 as rebuilt for the hook plan (05/10/2026). Lessons say how a new mechanism works, never the answer.
   static readonly string[] SpatialNames={"Chạm để đi","Đi vòng mặt tím","Nhìn quanh vách","Kéo là mở","Mở nắp trước","Leo lên, mở hộp","Chìa khoá dưới hố","Lên, kéo, xuống","Cầu chắn giếng thang","Cỗ máy thân quen"};
   static readonly string[] SpatialLessons={"Chạm vòng xanh để chỉ đường.","COghe leo được mặt ngà, trượt khỏi mặt tím.","Kéo ngang để nhìn quanh vách.","Chạm tay nắm để COghe kéo nó.","Hộp màu khoá tay nắm bên trong: kéo cần cùng màu để mở hộp.","Tay nắm có thể ở trên cao.","Chốt chặn có cần riêng.","Nút thang bật lên lại khi tới nơi.","Một vật có thể làm hai việc.",""};
-  // The Spatial campaign in play order: 50 levels in five chapters, a boss every ten (proposal 29/09/2026, approved
-  // 30/09/2026). Chapter 2 rebuilt (Mrk, 05/10/2026): Q is taught first (16); N13, N15, N18 and N19 are new; "11"
-  // (Kê một bậc), E01 (Thang chở hàng), E02 (Hai ống, một đích) and E03 (Giữ cửa cho bạn) are retired. A key names the content: "01"…"30" are the scenes COgheSpatialNN (pilot 01–10, Spatial 11–30),
+  // The Spatial campaign in play order: 60 levels in five chapters of 12, each closed by its boss (50 levels proposed
+  // 29/09/2026 and approved 30/09/2026; the 10 crate levels interleaved 07/10/2026). A key names the content: "01"…"30" are the scenes COgheSpatialNN (pilot 01–10, Spatial 11–30),
   // "E01"…"E18", "B1", "B2" the Spatial Plus scenes COgheSpatialPlusKEY. Position = index + 1 = Definition.Order;
   // IDs, scene files and art folders follow the content, so reordering never touches saves or assets.
   public static readonly string[] SpatialOrder={
-   "01","02","03","04","05","06","07","08","09","10",
-   "16","12","N13","14","N15","15","17","N18","N19","20",
-   "E04","18","E05","19","21","E06","22","13","E07","B1",
-   "E08","23","E09","24","25","E10","E11","26","27","30",
-   "E12","E13","28","E14","29","E15","E16","E17","E18","B2"};
+   // Five chapters of 12 (Mrk, 06/10/2026: "thêm các level của 51-60 xen kẽ trong các chương. Xếp levels theo độ khó tăng
+   // dần"; applied 07/10/2026). Each chapter keeps its designed curve (teach, practise, combine, prepare, boss) and takes two
+   // crate levels (K01–K10, ordered easy to hard) where their decision count fits; the boss still closes the chapter.
+   // Chapter 1. K01 follows 04 (pull a handle) and 05.
+   "01","02","03","04","05","K01","06","07","08","K02","09","10",
+   // Chapter 2 rebuilt (Mrk, 05/10/2026): Q is taught first (16); N13, N15, N18 and N19 are new; "11" (Kê một bậc), E01
+   // (Thang chở hàng), E02 (Hai ống, một đích) and E03 (Giữ cửa cho bạn) are retired.
+   "16","12","N13","14","N15","K03","15","K04","17","N18","N19","20",
+   // Chapter 3 rebuilt (Mrk, 06/10/2026: "xây dựng Chương 3 theo kế hoạch"; PLANS/COGHE_LEVEL_HOOK_PLAN.md 5.3): rope taught
+   // first, the counterweight next; N22 and N29 add an order; N29 prepares the boss.
+   "18","N22","N23","21","N25","N26","K05","22","13","K06","N29","B1",
+   // Chapter 4 rebuilt (Mrk, 06/10/2026: "Sửa tiếp Chương 4 và 5"; plan 5.4): split to the right size. N31 teaches the
+   // quarter and the load gauge, N32 replaces 23 (a copy of 16), N33 replaces E09, N34 replaces 24 (a copy of 17), N35
+   // replaces 25; Xưởng lắp cầu (29) prepares the boss; Bốn trạm (27) is retired; boss N40 (Cân ba phần tư) replaces 30.
+   // E10 (a breather) follows the peak of N35 and K07.
+   "N31","N32","N33","N34","N35","K07","E10","E11","26","K08","29","N40",
+   // Chapter 5 rebuilt (plan 5.5: gears), all new: N41 merges E08 and E12 (the gear lesson); N42 two gear carts cross; N43 a
+   // gearbox sets the tube's branch (replaces 28); N44 an idler reverses the train; N45 the motor is as strong as its driver
+   // is heavy; N46 the turntable carries a crate; N47 one gear, two machines; N48 the floor layer lifts the upper layer's
+   // gear; N49 two motors add up; boss N50 (Hộp số: idler in for the stairs, out again for the heavy door). Retired: E08,
+   // E12, E13, E14, E15, E16, E17, E18, B2, 28. K09 follows the peak of N45, before the breather N46.
+   "N41","N42","N43","N44","N45","K09","N46","N47","N48","N49","K10","N50"};
   public static string SpatialContentPath(string key)=>char.IsDigit(key[0])?$"{SpatialFolder}/COgheSpatial{key}.unity":$"{SpatialFolder}/COgheSpatialPlus{key}.unity";
   public static string SpatialContentPath(int n)=>SpatialContentPath(n.ToString("00"));
   public static int SpatialPosition(string key){int i=Array.IndexOf(SpatialOrder,key);if(i<0)throw new ArgumentException("Not in the Spatial order: "+key);return i+1;}
   public static int SpatialPosition(int n)=>SpatialPosition(n.ToString("00"));
   public static string[] SpatialScenePaths()=>SpatialOrder.Select(SpatialContentPath).ToArray();
   public static string[] SpatialSceneNames()=>SpatialScenePaths().Select(Path.GetFileNameWithoutExtension).ToArray();
+  // Chapter 3 (06/10/2026): the line under the title names the situation, not the answer (audit L11–30, point 1). The
+  // Spatial 11–30 hints live in SpatialNextLessons; this writes them into the existing definitions without a rebuild.
+  public static void ApplySpatialNextHints()
+  {
+   foreach(var path in Directory.GetFiles(SpatialFolder+"/Definitions","Spatial*.asset"))
+   {
+    var def=AssetDatabase.LoadAssetAtPath<VenomCampaignDefinition>(path);if(def==null||def.Id==null||!def.Id.StartsWith("coghe.spatial.next."))continue;
+    int n=int.Parse(def.Id.Substring(def.Id.LastIndexOf('.')+1));if(n<11||n>30)continue;
+    string lesson=SpatialNextLessons[n-11];if(def.Lesson!=lesson){def.Lesson=lesson;EditorUtility.SetDirty(def);Debug.Log($"HINT {n}: {lesson}");}
+   }
+   AssetDatabase.SaveAssets();
+  }
   // Every existing Spatial definition gets the play order (scene sequence), its position and its numbered title.
   public static void ApplySpatialOrder()
   {

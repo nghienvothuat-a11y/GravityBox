@@ -137,7 +137,7 @@ namespace GravityBox.Tests
                 int before = problems; var scratch = new StringBuilder(); Audit("probe", AuditScreens[0], scratch, ref problems);
                 Assert.Greater(problems, before, "The audit catches overlapping text: " + scratch); problems = before;
                 COgheShop.ResetForTests(new COgheShop.State { Migrated = true, Drops = 1234 }); COgheShop.TestsOwnUnlocked = false;
-                COgheHomeRoom.UnlockedLevelOverride = 26; COgheAds.Provider = new CountingAds { Height = 0 };
+                COgheHomeRoom.UnlockedLevelOverride = 31; COgheAds.Provider = new CountingAds { Height = 0 };
                 foreach (var screen in AuditScreens)
                 {
                     COgheProductUI.LayoutAreaForTests = new Rect(0, 0, screen.x, screen.y);
@@ -163,7 +163,7 @@ namespace GravityBox.Tests
                     ui.SetStyleTab(1, 1); yield return null; Audit("Style inside", screen, report, ref problems);
                     ui.LeaveStyle(); yield return null; Audit("Style keep this look", screen, report, ref problems);
                     Press("Take it off"); yield return null;
-                    ui.ShowVictoryForTests(ui.Catalog.Levels[9].Id, 10); yield return null; Audit("Victory (banner)", screen, report, ref problems);
+                    ui.ShowVictoryForTests(ui.Catalog.Levels[11].Id, 12); yield return null; Audit("Victory (banner)", screen, report, ref problems);
                     ui.VictoryStepForTests(); yield return null; Audit("New for COghe", screen, report, ref problems); ui.Resume();
                     ui.ShowMenu(); ui.Play(); yield return new WaitForSecondsRealtime(.3f); Audit("Level", screen, report, ref problems);
                     foreach (var popup in new[] { COgheProductPopup.Pause, COgheProductPopup.Help, COgheProductPopup.Restart, COgheProductPopup.Failure, COgheProductPopup.Levels })

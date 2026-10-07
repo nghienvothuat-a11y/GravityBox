@@ -26,6 +26,10 @@ namespace GravityBox.Venom
         public static int FirstWin => Value("drops_first_win", 10);
         public static int TripleExtra => Value("drops_triple_ad", 20);
         public static int DailyGift => Value("drops_daily", 15);
+        /// <summary>The bonus "Hiểu ra" after a chapter's boss (Mrk 07/10: a large reward, paid once).</summary>
+        public static int BonusDrops => Value("drops_bonus", 100);
+        /// <summary>Each right answer in the bonus pays at once (Mrk 07/10): this × the question's number (10, 20, 30).</summary>
+        public static int BonusRoundDrops => Value("drops_bonus_round", 10);
         public static int AdForDrops => Value("drops_ad_shop", 15);
         public static int AdForDropsDailyCap => Value("ad_shop_daily_cap", 3);
         /// <summary>Items up to this price can also be taken for one rewarded ad.</summary>
@@ -76,7 +80,7 @@ namespace GravityBox.Venom
             int low = 40, high = 120;
             if (item.Group == COgheShopGroup.Hat) { low = 50; high = 110; }
             if (item.Group == COgheShopGroup.Inside) { low = 60; high = 120; }
-            float k = Mathf.InverseLerp(10, 50, item.Level);
+            float k = Mathf.InverseLerp(12, 60, item.Level);   // unlock levels ×1.2 for 60 levels (Mrk 06/10): same prices
             return Mathf.RoundToInt(Mathf.Lerp(low, high, k) / 5f) * 5;
         }
     }

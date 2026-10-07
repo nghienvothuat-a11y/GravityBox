@@ -6276,7 +6276,7 @@ GameObject:
   - component: {fileID: 569453920}
   - component: {fileID: 569453919}
   m_Layer: 0
-  m_Name: "Label \xB7 18"
+  m_Name: "Label \xB7 22"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6305,7 +6305,7 @@ TextMesh:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 569453917}
-  m_Text: 18
+  m_Text: 22
   m_OffsetZ: 0
   m_CharacterSize: 0.0056000003
   m_LineSpacing: 1
@@ -7728,7 +7728,7 @@ Light:
     m_Strength: 0.2
     m_Bias: 0.015
     m_NormalBias: 0.1
-    m_NearPlane: 0.05
+    m_NearPlane: 0.099999994
     m_CullingMatrixOverride:
       e00: 1
       e01: 0
@@ -12427,6 +12427,7 @@ MonoBehaviour:
   Label: C
   Speed: 0.09
   StallSeconds: 5
+  SeatAtStops: 0
   CompensateLoad: 1
   LoadShare: 1
   StrainSeconds: 1.5
@@ -12810,6 +12811,7 @@ MonoBehaviour:
   Label: B
   Speed: 0.09
   StallSeconds: 3
+  SeatAtStops: 0
   CompensateLoad: 0
   LoadShare: 0
   StrainSeconds: 1.5
@@ -16786,6 +16788,13 @@ MonoBehaviour:
   Cap: {fileID: 1759432994}
   Pin: {fileID: 0}
   Indicator: {fileID: 1626508404}
+  GaugeTiles: []
+  GaugeFull: 0
+  Column: 0
+  MaxLoad: 0
+  Overload: {fileID: 0}
+  Beam: {fileID: 0}
+  BeamTilt: 14
 --- !u!4 &1538687482
 Transform:
   m_ObjectHideFlags: 0

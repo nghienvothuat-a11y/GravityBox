@@ -56,7 +56,7 @@ bản Mac, có giao diện menu và tiếng), [`monster-menu.jpg`](monster-menu.
 - Camera menu: khung cả con quái vật, lại gần mặt một chút khi há miệng và nghiêng đầu (`COgheProductUI.FrameShowcase`).
 - Tiếng: chỉ tiếng chất lỏng (dâng lên, lưỡi trượt ra) và tiếng "pốc" khi tan.
 
-## Trong nhà (mở ở màn 10)
+## Trong nhà (mở khi thắng Boss đầu, màn 12)
 
 - **Phòng:** sàn 0,9 × 1,68 m, tường sau màu mint, vách kính hai bên như hộp màn chơi. Đồ cao đứng phía sau, đồ thấp phía
   trước để camera luôn thấy COghe chơi; lối đi ở giữa. Camera thấy cả phòng và nghiêng lại gần món đang chơi hoặc món đang
@@ -78,22 +78,59 @@ bản Mac, có giao diện menu và tiếng), [`monster-menu.jpg`](monster-menu.
   (chọn: hiện hình mờ của món đó ngay chỗ đặt, camera nghiêng tới).
 - **Món mới:** lần đầu vào nhà sau khi mở, các món mới lần lượt "bật" ra tại chỗ và COghe chạy tới chơi thử món mới nhất.
 
-| Màn | Món | COghe làm gì |
+| Màn (×1,2 cho 60 màn, Mrk 06/10/2026) | Món | COghe làm gì |
 | --- | --- | --- |
-| 10 | Bóng (món đầu tiên, Mrk đổi 01/10) | háo hức lắc lư, đẩy bóng lăn một vòng rồi về (bóng lăn đúng theo quãng đường), hai xúc tu ôm bóng tung lên cao, chạy vào đỡ, đội đầu hai lần, đánh đầu bóng ra sau, nhảy biến thành trái tim trong khi bóng lăn về chỗ |
-| 12 | Tạ | hai xúc tu nắm thanh, nâng ba lần, gồng |
-| 14 | Đệm ngủ | nhảy lên nệm, cuộn tròn ngủ, thở, bong bóng ngáy |
-| 16 | Gương | tạo dáng: biến hai hình trước gương |
-| 18 | Xích đu | ngồi lên, đu qua lại |
-| 20 | Cầu trượt | leo thang, trượt xuống về phía người chơi |
-| 23 | TV | ngồi xem (hình trên màn chuyển động), nhảy lên phấn khích |
-| 26 | Đàn gõ | xúc tu gõ một giai điệu 9 nốt |
-| 30 | Bạt nhún | nhún 4 lần cao dần, lần cuối lộn vòng |
-| 34 | Võng | nằm võng đung đưa, ngủ |
-| 38 | Bánh xe | chạy trong bánh xe quay |
-| 42 | Bể cá | áp vào kính ngắm cá bơi |
-| 46 | Đèn chiếu bóng | biến hình trước đèn |
-| 50 | Cúp | nhảy mừng quanh cúp |
+| 12 | Bóng (món đầu tiên, Mrk đổi 01/10) | háo hức lắc lư, đẩy bóng lăn một vòng rồi về (bóng lăn đúng theo quãng đường), hai xúc tu ôm bóng tung lên cao, chạy vào đỡ, đội đầu hai lần, đánh đầu bóng ra sau, nhảy biến thành trái tim trong khi bóng lăn về chỗ |
+| 14 | Tạ | hai xúc tu nắm thanh, nâng ba lần, gồng |
+| 17 | Đệm ngủ | nhảy lên nệm, cuộn tròn ngủ, thở, bong bóng ngáy |
+| 19 | Gương | tạo dáng: biến hai hình trước gương |
+| 22 | Xích đu | ngồi lên, đu qua lại |
+| 24 | Cầu trượt | leo thang, trượt xuống về phía người chơi |
+| 28 | TV | ngồi xem (hình trên màn chuyển động), nhảy lên phấn khích |
+| 31 | Đàn gõ | xúc tu gõ một giai điệu 9 nốt |
+| 36 | Bạt nhún | nhún 4 lần cao dần, lần cuối lộn vòng |
+| 41 | Võng | nằm võng đung đưa, ngủ |
+| 46 | Bánh xe | chạy trong bánh xe quay |
+| 50 | Bể cá | áp vào kính ngắm cá bơi |
+| 55 | Đèn chiếu bóng | biến hình trước đèn |
+| 60 | Cúp | nhảy mừng quanh cúp |
+
+## Màn thưởng "Hiểu ra" (07/10, Mrk)
+
+Mrk: sau mỗi chương có một màn thưởng "Hiểu ra" bỏ qua được; làm xong được thưởng lớn, COghe diễn cảnh thân thiện có tim
+bay để người chơi thấy có thành quả khi hiểu COghe. Chỉ nói bằng hình nặn (hình nào phức tạp thì bỏ), không sổ tay, bỏ
+mọi thứ ảnh hưởng tới giải đố, tăng hoạt cảnh tình cảm. Clip: `Artifacts/Clips/bonus1.mp4` (bản Mac, có tiếng).
+
+- **Khi nào:** sau khi thắng Boss của chương (vị trí 12, 24, 36, 48, 60). Thứ tự sau khi bấm "→ Level N": đồ mới mở →
+  lời mời màn thưởng (Play / Skip) → quảng cáo nếu đến lượt → màn sau. Skip thì đi tiếp ngay; màn thưởng chờ trong Nhà
+  (nút ✦ có chấm đỏ, góc trái phía trên nút quà). Không phạt, không khoá màn.
+- **Cách chơi (diễn trong Nhà):** COghe ra giữa phòng, nặn một hình và giữ, đung đưa, thỉnh thoảng nâng lên "hỏi" (kêu
+  khẽ). Người chơi đáp bằng việc làm: chạm COghe, chạm một món đồ, hoặc bấm Feed. Trong lúc đó COghe không đi lang thang và
+  chạm sàn không làm nó đi; chạm vào hình nó đang nặn (cao hơn thân) cũng tính là chạm COghe.
+  - Đúng (Mrk 07/10: thưởng ngay, cảm xúc ngay): ngay lúc đáp, COghe thu mình, bật nhảy xoay một vòng, nặn trái tim đập
+    hai nhịp. Ở đỉnh cú nhảy, "+10" hiện lên, tim nhỏ bay ra, Giọt bay từ COghe vào ô Giọt (ô đếm lên và nảy theo từng giọt).
+    Thưởng câu tăng dần: 10, 20, 30 Giọt (`drops_bonus_round` × số câu). Sau đó nó làm luôn việc đó: chơi bóng, ăn viên bi
+    (một viên, thả ngay trước mặt nó), rồi câu tiếp.
+  - Sai: hình tan, thân lắc qua lại "không phải", rồi hỏi lại. Feed sai không ném bi. Sai 2 lần thì dòng chữ dưới tiêu đề
+    gợi ý ("It wants a cuddle: tap COghe.").
+- **Chương 1 (đã làm):** tim → chạm COghe; quả bóng nảy (hình `Ball` mới) → chạm quả bóng; nấm → Feed. Chỉ dùng thứ ai
+  cũng có ở màn 12: chạm, đồ ăn, quả bóng (quà). Chương 2–5 (hai hình, đúng thứ tự, đúng số lượng, ghép) chưa định nghĩa;
+  chưa có thì không mời.
+- **Cảm ơn (6,2 s, phần thưởng lớn nhất):** hiểu hết thì COghe ra chỗ trống nhất của phòng (`StageSpot`), camera lại
+  gần. Nó áp bẹp vào màn hình rồi bật ra, nhảy cao xoay một vòng, nặn trái tim lớn đập nhịp, tim bay lên từ đó
+  (`COgheHearts`). Sau đó tim chuyển thành ngôi sao có pháo giấy (`COgheConfetti`). Nó nhảy múa qua lại trong khi "+100" và
+  một chùm Giọt bay vào ô Giọt (`COgheDropsFly`). Cuối cùng hiện hộp "You understood COghe!": "+100 Drops" đếm lên từ 0,
+  dưới là tổng cả màn thưởng ("+160 Drops in all").
+- **Thưởng:** câu 1–3 trả ngay lúc đúng (10/20/30, khoá `bonus:<chương>:<câu>`); xong cả màn trả `drops_bonus` (mặc
+  định 100, khoá `bonus:<chương>`). Tất cả ×2 với Plus, mỗi khoá trả một lần (vào lại sau khi bỏ dở không trả lại câu đã
+  trả).
+- **Ranh giới:** chỉ là phần nhìn và trong Nhà; không đổi vật lý, hạt hay lời giải màn nào. Tài liệu Nhà
+  (`VENOM_PURE_PUZZLE_AND_HOME.md` mục 3) đã bỏ "kỹ năng quen giảm chỉ dẫn vụn".
+- **File:** `Home/COgheBonus.cs` (câu hỏi từng chương, đã xong/đang chờ), `Personality/COghePersonality.Bonus.cs` (hỏi,
+  lắc, mừng, cảm ơn), `Product/COgheProductUI.Bonus.cs` (lời mời, màn trong Nhà, hộp thưởng), `Product/COgheHearts.cs`,
+  quay clip `Product/COgheBonusReel.cs` (`-coghe-bonus-reel <thư mục>`, bản phát triển).
+- **Test:** `COgheBonusTests` (lời mời sau Boss rồi Skip, màn thưởng chờ trong Nhà; chơi đủ 3 câu kể cả trả lời sai, chạm
+  sàn không làm nó đi, thưởng một lần; Play từ lời mời rồi "Later" sang màn 13).
 
 ## File
 

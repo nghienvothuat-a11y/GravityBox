@@ -39,6 +39,9 @@ namespace GravityBox.Venom
         public string Label = "Cơ quan";
         public float Speed = .09f;
         public float StallSeconds = 3;
+        /// <summary>A finished journey sets the carriage exactly on its stop. The pull eases off inside the catch, a few
+        /// millimetres short; crates that slide past each other 2 mm apart (crate levels 51–60) must sit on their cells.</summary>
+        public bool SeatAtStops;
         public bool CompensateLoad;
         /// <summary>Optional: the share of the whole COghe this load needs (.5 = half). Presentation only.</summary>
         public float LoadShare;
@@ -134,7 +137,8 @@ namespace GravityBox.Venom
             }
             Vector3 primary=Handle!=null?Handle.position:Rail.Body.position;
             bool hit=Visible(PickHandleOnly?primary:Rail.Body.position+WorkingSurface.Normal*.023f,PickHandleOnly?primary:Rail.Body.position+WorkingSurface.Normal*.037f);
-            if(!hit&&(AlternateHandle==null||!Visible(AlternateHandle.position,AlternateHandle.position)))return false;
+            // A whole-carriage pick box already covers both handles; a TouchSize box around the far handle would reach past the carriage.
+            if(!hit&&(!PickHandleOnly||AlternateHandle==null||!Visible(AlternateHandle.position,AlternateHandle.position)))return false;
             if (Request(game.Motion.Selected)) game.Feedback.ShowCommand(HandPoint, WorkingSurface.Normal, Rail.transform);
             return true;
         }
@@ -248,7 +252,10 @@ namespace GravityBox.Venom
             bool reached = remaining <= Rail.CatchTolerance;
             stableTime = reached && Mathf.Abs(velocity) < .025f ? stableTime + dt : 0;
             if (!HoldAtEnd && stableTime >= .10f)
-            { CompletedJourneys++; CancelTask(); game.Motion.BuildGraph(); return; }
+            {
+                if (SeatAtStops) { Rail.Body.position = Rail.Frame.TransformPoint(Rail.Start + Rail.Axis.normalized * target); Rail.Body.linearVelocity = Vector3.zero; }
+                CompletedJourneys++; CancelTask(); game.Motion.BuildGraph(); return;
+            }
             if (feet < 2 || Vector3.Distance(centre, HandPoint) > .145f)
             { CancelTask("Mất điểm bám — chạm lại để tiếp tục"); return; }
             if (RequiredGrip != null && !InterlockOpen) { lastProgressAt = now; return; }

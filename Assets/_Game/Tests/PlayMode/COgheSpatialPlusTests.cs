@@ -42,6 +42,41 @@ namespace GravityBox.Tests
   [UnityTest] public IEnumerator SpatialPlusN13Solve(){yield return SolvePlus("N13");}
   [UnityTest] public IEnumerator SpatialPlusN18Solve(){yield return SolvePlus("N18");}
   [UnityTest] public IEnumerator SpatialPlusN15Solve(){yield return SolvePlus("N15");}
+  // Crate levels 51–60 (06/10/2026).
+  [UnityTest] public IEnumerator SpatialPlusK01Solve(){yield return SolvePlus("K01");}
+  [UnityTest] public IEnumerator SpatialPlusK02Solve(){yield return SolvePlus("K02");}
+  [UnityTest] public IEnumerator SpatialPlusK03Solve(){yield return SolvePlus("K03");}
+  [UnityTest] public IEnumerator SpatialPlusK04Solve(){yield return SolvePlus("K04");}
+  [UnityTest] public IEnumerator SpatialPlusK05Solve(){yield return SolvePlus("K05");}
+  [UnityTest] public IEnumerator SpatialPlusK06Solve(){yield return SolvePlus("K06");}
+  [UnityTest] public IEnumerator SpatialPlusK07Solve(){yield return SolvePlus("K07");}
+  [UnityTest] public IEnumerator SpatialPlusK08Solve(){yield return SolvePlus("K08");}
+  [UnityTest] public IEnumerator SpatialPlusK09Solve(){yield return SolvePlus("K09");}
+  [UnityTest] public IEnumerator SpatialPlusK10Solve(){yield return SolvePlus("K10");}
   [UnityTest] public IEnumerator SpatialPlusN19Solve(){yield return SolvePlus("N19");}
+  // Chapter 3 rebuilt (06/10/2026).
+  [UnityTest] public IEnumerator SpatialPlusN22Solve(){yield return SolvePlus("N22");}
+  [UnityTest] public IEnumerator SpatialPlusN29Solve(){yield return SolvePlus("N29");}
+  [UnityTest] public IEnumerator SpatialPlusN23Solve(){yield return SolvePlus("N23");}
+  [UnityTest] public IEnumerator SpatialPlusN25Solve(){yield return SolvePlus("N25");}
+  [UnityTest] public IEnumerator SpatialPlusN26Solve(){yield return SolvePlus("N26");}
+  [UnityTest] public IEnumerator SpatialPlusN31Solve(){yield return SolvePlus("N31");}
+  [UnityTest] public IEnumerator SpatialPlusN33Solve(){yield return SolvePlus("N33");}
+  [UnityTest] public IEnumerator SpatialPlusN35Solve(){yield return SolvePlus("N35");}
+  [UnityTest] public IEnumerator SpatialPlusN32Solve(){yield return SolvePlus("N32");}
+  [UnityTest] public IEnumerator SpatialPlusN40Solve(){yield return SolvePlus("N40");}
+  [UnityTest] public IEnumerator SpatialPlusN34Solve(){yield return SolvePlus("N34");}
+  [UnityTest] public IEnumerator SpatialPlusN44Solve(){yield return SolvePlus("N44");}
+  [UnityTest] public IEnumerator SpatialPlusN45Solve(){yield return SolvePlus("N45");}
+  // Chapter 5, part 2 (06/10/2026). N49HalfStalls: the wrong split (half on the lock pad) stalls the door part way.
+  [UnityTest] public IEnumerator SpatialPlusN41Solve(){yield return SolvePlus("N41");}
+  [UnityTest] public IEnumerator SpatialPlusN42Solve(){yield return SolvePlus("N42");}
+  [UnityTest] public IEnumerator SpatialPlusN47Solve(){yield return SolvePlus("N47");}
+  [UnityTest] public IEnumerator SpatialPlusN49Solve(){yield return SolvePlus("N49");}
+  [UnityTest] public IEnumerator SpatialPlusN50Solve(){yield return SolvePlus("N50");}
+  [UnityTest] public IEnumerator SpatialPlusN48Solve(){yield return SolvePlus("N48");}
+  [UnityTest] public IEnumerator SpatialPlusN46Solve(){yield return SolvePlus("N46");}
+  [UnityTest] public IEnumerator SpatialPlusN43Solve(){yield return SolvePlus("N43");}
+  [UnityTest] public IEnumerator SpatialPlusN49HalfStalls(){yield return LoadPlus("N49");yield return new COgheSpatialPlusScenario(game,Tap,Until).N49HalfStalls();}
  }
 }

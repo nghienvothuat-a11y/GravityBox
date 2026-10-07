@@ -55,6 +55,15 @@ namespace GravityBox.Tests
      targets.Add(p);
     }
    }
+   // Crate levels (51–60): the floor is one face with the exit cut in it, so walk its free 12 cm cells instead.
+   if(Array.Exists(tasks,t=>t.Rail.name=="Red crate"))
+    for(int cx=0;cx<6;cx++)for(int cz=0;cz<5;cz++)
+    {
+     var p=game.Root.TransformPoint(new Vector3(GravityBox.Venom.ChapterProof.COgheCrateRoutes.GridX+(cx+.5f)*GravityBox.Venom.ChapterProof.COgheCrateRoutes.Cell,-.30f,GravityBox.Venom.ChapterProof.COgheCrateRoutes.GridZ+(cz+.5f)*GravityBox.Venom.ChapterProof.COgheCrateRoutes.Cell));
+     if(Array.Exists(tasks,t=>Array.Exists(t.Rail.Body.GetComponentsInChildren<Collider>(),c=>c.bounds.Contains(p+Vector3.up*.01f))))continue;
+     if(Vector2.Distance(new Vector2(Local(p).x,Local(p).z),new Vector2(outlet.x,outlet.z))<.12f)continue;
+     targets.Add(p);
+    }
    int reached=0,walked=0;var at=home;
    while(targets.Count>0)
    {
@@ -142,7 +151,39 @@ namespace GravityBox.Tests
   [UnityTest] public IEnumerator SpatialPlusN13Wander(){yield return WanderPlus("N13");}
   [UnityTest] public IEnumerator SpatialPlusN18Wander(){yield return WanderPlus("N18");}
   [UnityTest] public IEnumerator SpatialPlusN15Wander(){yield return WanderPlus("N15");}
+  [UnityTest] public IEnumerator SpatialPlusK01Wander(){yield return WanderPlus("K01");}
+  [UnityTest] public IEnumerator SpatialPlusK02Wander(){yield return WanderPlus("K02");}
+  [UnityTest] public IEnumerator SpatialPlusK03Wander(){yield return WanderPlus("K03");}
+  [UnityTest] public IEnumerator SpatialPlusK04Wander(){yield return WanderPlus("K04");}
+  [UnityTest] public IEnumerator SpatialPlusK05Wander(){yield return WanderPlus("K05");}
+  [UnityTest] public IEnumerator SpatialPlusK06Wander(){yield return WanderPlus("K06");}
+  [UnityTest] public IEnumerator SpatialPlusK07Wander(){yield return WanderPlus("K07");}
+  [UnityTest] public IEnumerator SpatialPlusK08Wander(){yield return WanderPlus("K08");}
+  [UnityTest] public IEnumerator SpatialPlusK09Wander(){yield return WanderPlus("K09");}
+  [UnityTest] public IEnumerator SpatialPlusK10Wander(){yield return WanderPlus("K10");}
   [UnityTest] public IEnumerator SpatialPlusN19Wander(){yield return WanderPlus("N19");}
+  // Chapter 3 rebuilt (06/10/2026).
+  [UnityTest] public IEnumerator SpatialPlusN22Wander(){yield return WanderPlus("N22");}
+  [UnityTest] public IEnumerator SpatialPlusN23Wander(){yield return WanderPlus("N23");}
+  [UnityTest] public IEnumerator SpatialPlusN25Wander(){yield return WanderPlus("N25");}
+  [UnityTest] public IEnumerator SpatialPlusN26Wander(){yield return WanderPlus("N26");}
+  [UnityTest] public IEnumerator SpatialPlusN31Wander(){yield return WanderPlus("N31");}
+  [UnityTest] public IEnumerator SpatialPlusN33Wander(){yield return WanderPlus("N33");}
+  [UnityTest] public IEnumerator SpatialPlusN35Wander(){yield return WanderPlus("N35");}
+  [UnityTest] public IEnumerator SpatialPlusN32Wander(){yield return WanderPlus("N32");}
+  [UnityTest] public IEnumerator SpatialPlusN40Wander(){yield return WanderPlus("N40");}
+  [UnityTest] public IEnumerator SpatialPlusN34Wander(){yield return WanderPlus("N34");}
+  [UnityTest] public IEnumerator SpatialPlusN44Wander(){yield return WanderPlus("N44");}
+  [UnityTest] public IEnumerator SpatialPlusN45Wander(){yield return WanderPlus("N45");}
+  [UnityTest] public IEnumerator SpatialPlusN41Wander(){yield return WanderPlus("N41");}
+  [UnityTest] public IEnumerator SpatialPlusN42Wander(){yield return WanderPlus("N42");}
+  [UnityTest] public IEnumerator SpatialPlusN47Wander(){yield return WanderPlus("N47");}
+  [UnityTest] public IEnumerator SpatialPlusN49Wander(){yield return WanderPlus("N49");}
+  [UnityTest] public IEnumerator SpatialPlusN50Wander(){yield return WanderPlus("N50");}
+  [UnityTest] public IEnumerator SpatialPlusN48Wander(){yield return WanderPlus("N48");}
+  [UnityTest] public IEnumerator SpatialPlusN46Wander(){yield return WanderPlus("N46");}
+  [UnityTest] public IEnumerator SpatialPlusN43Wander(){yield return WanderPlus("N43");}
+  [UnityTest] public IEnumerator SpatialPlusN29Wander(){yield return WanderPlus("N29");}
 
   // On the way to a handle another tap takes the body elsewhere and nothing moves. Once the hand is on the handle a
   // tap elsewhere is refused (the pull is not interruptible) and the pull finishes; pulling again runs it back.

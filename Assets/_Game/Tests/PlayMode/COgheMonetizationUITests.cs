@@ -59,7 +59,7 @@ namespace GravityBox.Tests
             try
             {
                 FreshShop(false);
-                ui.ShowVictoryForTests("manual-unlocks", 10); yield return new WaitForSecondsRealtime(5);
+                ui.ShowVictoryForTests("manual-unlocks", 13); yield return new WaitForSecondsRealtime(5);   // 13 unlocks the beanie; 12 (a boss) would offer the bonus first
                 Assert.AreEqual(COgheProductPopup.None, ui.Popup);
                 Assert.IsNotEmpty(ui.VictoryUnlocks); Assert.AreEqual(1, game.Definition.Order);
                 yield return Click("Next level"); Assert.AreEqual(COgheProductPopup.Unlocks, ui.Popup);

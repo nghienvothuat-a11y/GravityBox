@@ -13,6 +13,7 @@ namespace GravityBox.Venom
     {
         private Sprite dropSprite;
         private Text dropsLabel; private int dropsShown = -1;
+        private RectTransform dropsBox; private int dropsPending; private float dropsBumpAt = -10;   // Drops still flying in (the bonus)
         private string offerId; private System.Action offerBought;
         private float fullHeight; private bool bannerDirty;
         // the victory screen
@@ -46,15 +47,19 @@ namespace GravityBox.Venom
         private void DropsCounter(Transform parent, Rect r)
         {
             var box = art.Box(parent, "Drops", r, COgheUIArt.Paper, true); box.pixelsPerUnitMultiplier = 2.2f;
+            dropsBox = box.rectTransform; dropsBox.pivot = Vector2.one * .5f; dropsBox.anchoredPosition += new Vector2(r.width * .5f, -r.height * .5f);   // pulses from its middle
             var b = box.gameObject.AddComponent<Button>(); b.targetGraphic = box;
             b.onClick.AddListener(() => { COgheAudio.UiTap(); offerId = null; Popup = COgheProductPopup.Buy; Rebuild(); });
             DropIcon(box.transform, new Rect(8, (r.height - 26) * .5f, 26, 26));
-            dropsLabel = art.Label(box.transform, "Balance", COgheShop.Drops.ToString(), new Rect(38, 0, r.width - 44, r.height), 15, null, TextAnchor.MiddleLeft);
-            dropsLabel.font = art.BoldFont; dropsShown = COgheShop.Drops;
+            int balance = COgheShop.Drops - dropsPending;
+            dropsLabel = art.Label(box.transform, "Balance", balance.ToString(), new Rect(38, 0, r.width - 44, r.height), 15, null, TextAnchor.MiddleLeft);
+            dropsLabel.font = art.BoldFont; dropsShown = balance;
         }
         private void TickShop()
         {
-            if (dropsLabel != null && dropsShown != COgheShop.Drops) { dropsShown = COgheShop.Drops; dropsLabel.text = dropsShown.ToString(); }
+            int balance = COgheShop.Drops - dropsPending;
+            if (dropsLabel != null && dropsShown != balance) { dropsShown = balance; dropsLabel.text = dropsShown.ToString(); }
+            if (dropsBox != null) { float k = Time.time - dropsBumpAt; dropsBox.localScale = Vector3.one * (1 + (k >= 0 && k < .5f ? .16f * Mathf.Exp(-k * 9) : 0)); }
             if (bannerDirty && !injecting) { bannerDirty = false; Rebuild(); }
             if (Page == COgheProductPage.Victory && tripleUntil > 0 && Time.unscaledTime >= tripleUntil && !COgheAds.Showing)
             {
@@ -197,12 +202,14 @@ namespace GravityBox.Venom
                 if (victoryHome) COgheAnalytics.Log("feature_unlock", "feature", "home_style");
             }
             tripleUntil = victoryDrops > 0 && COgheAds.RewardedAvailable ? Time.unscaledTime + COgheEconomy.TripleWindow : 0;
+            OfferBonusAfter(order);
         }
         /// <summary>After Next Level: finish unlocks and any eligible ad before loading once.</summary>
         private bool VictoryReady()
         {
             if (COgheAds.Showing) return false;
             if (victoryUnlocks.Count > 0 || victoryHome) { Popup = COgheProductPopup.Unlocks; Rebuild(); return false; }
+            if (victoryBonus > 0) { Popup = COgheProductPopup.BonusOffer; Rebuild(); return false; }   // after a boss: the bonus "Hiểu ra"
             if (!victoryAdChecked)
             {
                 victoryAdChecked = true;

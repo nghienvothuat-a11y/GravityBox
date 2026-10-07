@@ -23,22 +23,22 @@ phụ kiện, lưu và giao diện Unity do Claude làm. Mrk đồng ý đổi q
   thay món nào. Thân tối thì đồ bên trong không thấy: báo "Needs clear ink" (Keep this look / Colors), không tự đổi màu.
 - Món chưa mở: xem trước, "Complete level N to unlock …", không đeo được.
 
-## Danh mục (mở theo màn đã hoàn thành)
+## Danh mục (mở theo màn đã hoàn thành; mốc ×1,2 cho 60 màn, Mrk 06/10/2026)
 
 | Màu | Màn | | Mũ | Màn | | Bên trong | Màn |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Ocean (trong) | 10 | | Beanie | 11 | | Star bits | 25 |
-| Mint | 10 | | Party hat | 15 | | Little fish | 27 |
-| Coral | 13 | | Flower crown | 17 | | Bubbles | 31 |
-| Firefly (phát sáng, hơi trong) | 16 | | Cap | 21 | | Baby jellyfish | 39 |
-| Gold (kim loại) | 19 | | Straw hat | 24 | | Tiny pearls | 40 |
-| Sakura (ánh nhũ) | 22 | | Propeller cap | 29 | | Tiny planet | 47 |
-| Stardust (sao lấp lánh) | 25 | | Crown | 35 | | | |
-| Aurora (óng ánh, hơi trong) | 28 | | Space helmet | 45 | | | |
-| Lava (vân phát sáng) | 32 | | | | | | |
-| Pearl (xà cừ) | 36 | | | | | | |
-| Galaxy (tinh vân, trong) | 42 | | | | | | |
-| Prism (cầu vồng, hơi trong) | 50 | | | | | | |
+| Ocean (trong) | 12 | | Beanie | 13 | | Star bits | 30 |
+| Mint | 12 | | Party hat | 18 | | Little fish | 32 |
+| Coral | 16 | | Flower crown | 20 | | Bubbles | 37 |
+| Firefly (phát sáng, hơi trong) | 19 | | Cap | 25 | | Baby jellyfish | 47 |
+| Gold (kim loại) | 23 | | Straw hat | 29 | | Tiny pearls | 48 |
+| Sakura (ánh nhũ) | 26 | | Propeller cap | 35 | | Tiny planet | 56 |
+| Stardust (sao lấp lánh) | 30 | | Crown | 42 | | | |
+| Aurora (óng ánh, hơi trong) | 34 | | Space helmet | 54 | | | |
+| Lava (vân phát sáng) | 38 | | | | | | |
+| Pearl (xà cừ) | 43 | | | | | | |
+| Galaxy (tinh vân, trong) | 50 | | | | | | |
+| Prism (cầu vồng, hơi trong) | 60 | | | | | | |
 
 ## Kỹ thuật
 

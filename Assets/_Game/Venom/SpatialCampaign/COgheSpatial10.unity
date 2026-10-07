@@ -2883,6 +2883,7 @@ MonoBehaviour:
   Label: D
   Speed: 0.09
   StallSeconds: 3
+  SeatAtStops: 0
   CompensateLoad: 0
   LoadShare: 0
   StrainSeconds: 1.5
@@ -6945,6 +6946,7 @@ MonoBehaviour:
   Label: C
   Speed: 0.09
   StallSeconds: 3
+  SeatAtStops: 0
   CompensateLoad: 0
   LoadShare: 0
   StrainSeconds: 1.5
@@ -10506,7 +10508,7 @@ GameObject:
   - component: {fileID: 1037775232}
   - component: {fileID: 1037775231}
   m_Layer: 0
-  m_Name: "Label \xB7 10"
+  m_Name: "Label \xB7 12"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10535,7 +10537,7 @@ TextMesh:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1037775229}
-  m_Text: 10
+  m_Text: 12
   m_OffsetZ: 0
   m_CharacterSize: 0.0056000003
   m_LineSpacing: 1
@@ -14143,7 +14145,7 @@ Light:
     m_Strength: 0.2
     m_Bias: 0.015
     m_NormalBias: 0.1
-    m_NearPlane: 0.05
+    m_NearPlane: 0.099999994
     m_CullingMatrixOverride:
       e00: 1
       e01: 0
@@ -15390,6 +15392,7 @@ MonoBehaviour:
   Label: A
   Speed: 0.09
   StallSeconds: 3
+  SeatAtStops: 0
   CompensateLoad: 0
   LoadShare: 0
   StrainSeconds: 1.5

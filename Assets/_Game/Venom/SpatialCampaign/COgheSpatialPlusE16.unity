@@ -1023,7 +1023,7 @@ GameObject:
   - component: {fileID: 231151700}
   - component: {fileID: 231151699}
   m_Layer: 0
-  m_Name: "Label \xB7 47"
+  m_Name: "Label \xB7 46"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1052,7 +1052,7 @@ TextMesh:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 231151697}
-  m_Text: 47
+  m_Text: 46
   m_OffsetZ: 0
   m_CharacterSize: 0.0056000003
   m_LineSpacing: 1
@@ -3002,6 +3002,10 @@ MonoBehaviour:
   ShaftLinks: 
   ExtraClutches: []
   GatesExit: 0
+  Reversible: 0
+  ForwardSign: 1
+  ForcePerLoad: 0
+  RackSpring: 0
 --- !u!4 &614613438
 Transform:
   m_ObjectHideFlags: 0
@@ -7637,6 +7641,13 @@ MonoBehaviour:
   Cap: {fileID: 155560587}
   Pin: {fileID: 0}
   Indicator: {fileID: 1087945851}
+  GaugeTiles: []
+  GaugeFull: 0
+  Column: 0
+  MaxLoad: 0
+  Overload: {fileID: 0}
+  Beam: {fileID: 0}
+  BeamTilt: 14
 --- !u!4 &1491491184
 Transform:
   m_ObjectHideFlags: 0

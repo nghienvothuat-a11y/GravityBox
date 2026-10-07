@@ -252,6 +252,16 @@ namespace GravityBox.Venom
                     LimbQ(new Vector3(0, 2.15f, 0), new Vector3(0, 1.4f, 0), new Vector3(0, .9f, 0), new Vector3(0, .42f, 0), .13f, .13f);
                     LimbQ(new Vector3(0, .42f, 0), new Vector3(0, .05f, 0), new Vector3(.42f, .02f, 0), new Vector3(.42f, .32f, 0), .13f, .12f);
                     break;
+                case COgheShape.Ball:
+                    // a round ball off the floor (the bonus "let's play ball"; COghe bounces it, see COghePersonality.Bonus)
+                    // one big round core, evenly ringed so the field stays a sphere (no lumps)
+                    Src(0, 1.35f, 0, 1.4f, 1.5f); Src(0, 1.82f, 0, 1f); Src(0, .88f, 0, 1f);
+                    for (int i = 0; i < 8; i++)
+                    {
+                        float a = i * Mathf.PI * 2 / 8;
+                        Src(Mathf.Cos(a) * .47f, 1.35f, Mathf.Sin(a) * .47f, 1f);
+                    }
+                    break;
             }
         }
 

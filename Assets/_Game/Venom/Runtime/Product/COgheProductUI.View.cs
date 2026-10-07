@@ -111,6 +111,7 @@ namespace GravityBox.Venom
         }
         private void HomeView()
         {
+            if(bonusChapter>0){BonusHomeView();return;}
             Top(true);float x=width*.5f-148,y=height-152;
             MenuEntry(x,y,"Feed",COgheIcon.Food,()=>{Game.FeedHome();COgheAudio.Happy();});
             MenuEntry(x+80,y,"Play",COgheIcon.Heart,()=>{Game.GreetHome();COgheAudio.Happy();});
@@ -120,6 +121,9 @@ namespace GravityBox.Venom
             art.Button(pageRoot,homeZoom?"Zoom out":"Zoom in",new Rect(width-72,y-64,48,48),homeZoom?COgheIcon.Overview:COgheIcon.Pinch,ToggleHomeZoom);
             GiftButton(y-64);DropsCounter(pageRoot,new Rect(width-124,88,100,40));   // under Pause, clear of the title
             if(COgheEntitlements.HasPlus)art.Button(pageRoot,"Monster",new Rect(width-72,y-120,48,48),COgheIcon.Sparkles,()=>Game.Personality?.Force(COgheAct.Monster));
+            // a skipped bonus "Hiểu ra" waits here
+            int waiting=COgheBonus.Waiting(Catalog,Game.Progress);
+            if(waiting>0){var b=art.Button(pageRoot,"Bonus",new Rect(24,y-120,48,48),COgheIcon.Sparkles,()=>StartBonus(waiting,false));art.Box(b.transform,"Ready",new Rect(34,2,12,12),new Color(.86f,.36f,.3f)).pixelsPerUnitMultiplier=6;}
         }
         /// <summary>Uncovered space for the real victory dance, in screen pixels. The safe-area
         /// inset and optional banner affect the composition, never the tissue simulation.</summary>
@@ -167,7 +171,7 @@ namespace GravityBox.Venom
         {
             popupRoot=art.Rect(safe,"Popup "+Popup,new Rect(0,0,width,height));
             var veil=art.Box(popupRoot,"Input shield",new Rect(-width,-height,width*3,height*3),new Color(.13f,.23f,.21f,.36f),true);veil.sprite=null;
-            if(StylePopup()||ShopPopup())return;
+            if(StylePopup()||ShopPopup()||BonusPopup())return;
             float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?(InHome?324:COgheTestTools.LevelSelect?482:430):Popup==COgheProductPopup.Levels?Mathf.Min(560,height-90):Popup==COgheProductPopup.Help?450:Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null?Mathf.Min(560,height-90):260;
             bool privacy=Popup==COgheProductPopup.Pause&&COgheAds.PrivacyRequired?.Invoke()==true;
             if(privacy)h+=56;
@@ -209,7 +213,7 @@ namespace GravityBox.Venom
                 {
                     case COgheProductPopup.Restart:title="Restart this puzzle?";message="Start this level again.";break;
                     case COgheProductPopup.Failure:title="Let's try again";message=Game.Failure==VenomCampaign.MergeFailure?"Merge every part before\ngoing through the exit.":"Guide COghe safely to the exit.";break;
-                    case COgheProductPopup.Locked:title="A home for COghe";message="Complete level 10\nto unlock Home.";break;
+                    case COgheProductPopup.Locked:title="A home for COghe";message=$"Complete level {System.Array.FindIndex(Catalog.Levels,l=>l!=null&&l.Boss)+1}\nto unlock Home.";break;   // the first boss opens Home
                     case COgheProductPopup.Collection:title="Collection";message="Your first home is ready.\nMore furnishings are coming.";break;
                 }
                 PopupTitle(panel,w,title);art.Label(panel,"Message",message,new Rect(24,93,w-48,64),14,COgheUIArt.Muted);

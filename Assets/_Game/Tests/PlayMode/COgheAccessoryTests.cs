@@ -52,7 +52,7 @@ namespace GravityBox.Tests
       }
      }
      // Home: life, acts and touches
-     yield return EnterFurnishedHome(26);yield return Frames(200);
+     yield return EnterFurnishedHome(31);yield return Frames(200);
      COgheAudio.Heard+=heard;
      cam=new GameObject("Accessory reel camera").AddComponent<Camera>();cam.CopyFrom(game.Owner.View);cam.enabled=false;cam.orthographic=true;cam.aspect=540f/1170;cam.nearClipPlane=.01f;cam.farClipPlane=30;
      var home=Quaternion.Euler(30,-12,0);var room=game.HomeRoom;var pers=game.Personality;

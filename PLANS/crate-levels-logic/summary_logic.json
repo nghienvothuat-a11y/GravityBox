@@ -1,0 +1,2072 @@
+[
+ {
+  "key": "K01",
+  "level": 51,
+  "title": "Một thùng chắn",
+  "idea": "Thùng đỏ trượt được, nhưng một thùng đứng ngay trên đường trượt.",
+  "pulls": 2,
+  "crates": 3,
+  "returns": 0,
+  "reach": 9,
+  "spawn": [
+   1,
+   0
+  ],
+  "path": [
+   1,
+   0
+  ],
+  "moves": [
+   {
+    "crate": 1,
+    "side": "push",
+    "stand": [
+     1,
+     0
+    ]
+   },
+   {
+    "crate": 0,
+    "side": "push",
+    "stand": [
+     5,
+     2
+    ]
+   }
+  ],
+  "steps": [
+   "1. Thùng dài 2 ô (giữa–trái) vào trong 2 ô",
+   "2. Thùng đỏ sang trái 2 ô"
+  ],
+  "source": {
+   "level": 1,
+   "seed": 0
+  },
+  "crates_def": [
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -2
+    ],
+    "anchor": [
+     3,
+     2
+    ],
+    "red": true
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     1,
+     1
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     0,
+     0
+    ],
+    "red": false
+   }
+  ]
+ },
+ {
+  "key": "K02",
+  "level": 52,
+  "title": "Chuỗi ba thùng",
+  "idea": "Thùng chắn thùng đỏ lại bị thùng khác chắn: gỡ từ ngoài vào.",
+  "pulls": 3,
+  "crates": 4,
+  "returns": 0,
+  "reach": 14,
+  "spawn": [
+   0,
+   0
+  ],
+  "path": [
+   2,
+   3,
+   0
+  ],
+  "moves": [
+   {
+    "crate": 2,
+    "side": "pull",
+    "stand": [
+     2,
+     2
+    ]
+   },
+   {
+    "crate": 3,
+    "side": "push",
+    "stand": [
+     5,
+     4
+    ]
+   },
+   {
+    "crate": 0,
+    "side": "push",
+    "stand": [
+     3,
+     1
+    ]
+   }
+  ],
+  "steps": [
+   "1. Thùng dài 2 ô (sau–giữa) ra phía trước 1 ô",
+   "2. Thùng dài 2 ô (sau–giữa) sang trái 3 ô",
+   "3. Thùng đỏ vào trong 1 ô"
+  ],
+  "source": {
+   "level": 2,
+   "seed": 5
+  },
+  "crates_def": [
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     1
+    ],
+    "anchor": [
+     3,
+     2
+    ],
+    "red": true
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     1
+    ],
+    "anchor": [
+     1,
+     0
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     2,
+     3
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -3
+    ],
+    "anchor": [
+     3,
+     4
+    ],
+    "red": false
+   }
+  ]
+ },
+ {
+  "key": "K03",
+  "level": 53,
+  "title": "Thùng dài",
+  "idea": "Thùng dài 3 ô cần một khoảng trống dài mới trượt hết.",
+  "pulls": 4,
+  "crates": 4,
+  "returns": 0,
+  "reach": 10,
+  "spawn": [
+   0,
+   0
+  ],
+  "path": [
+   1,
+   2,
+   3,
+   0
+  ],
+  "moves": [
+   {
+    "crate": 1,
+    "side": "push",
+    "stand": [
+     5,
+     0
+    ]
+   },
+   {
+    "crate": 2,
+    "side": "pull",
+    "stand": [
+     2,
+     3
+    ]
+   },
+   {
+    "crate": 3,
+    "side": "push",
+    "stand": [
+     5,
+     1
+    ]
+   },
+   {
+    "crate": 0,
+    "side": "push",
+    "stand": [
+     3,
+     4
+    ]
+   }
+  ],
+  "steps": [
+   "1. Thùng dài 3 ô (trước–giữa) sang trái 2 ô",
+   "2. Thùng dài 2 ô (giữa) vào trong 1 ô",
+   "3. Thùng dài 2 ô (trước–giữa) sang trái 3 ô",
+   "4. Thùng đỏ ra phía trước 2 ô"
+  ],
+  "source": {
+   "level": 3,
+   "seed": 19
+  },
+  "crates_def": [
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -2
+    ],
+    "anchor": [
+     3,
+     2
+    ],
+    "red": true
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -2
+    ],
+    "anchor": [
+     2,
+     0
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     1
+    ],
+    "anchor": [
+     2,
+     1
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -3
+    ],
+    "anchor": [
+     3,
+     1
+    ],
+    "red": false
+   }
+  ]
+ },
+ {
+  "key": "K04",
+  "level": 54,
+  "title": "Gỡ từng lớp",
+  "idea": "Năm thùng chắn nhau thành chuỗi: gỡ đúng thứ tự.",
+  "pulls": 5,
+  "crates": 5,
+  "returns": 0,
+  "reach": 13,
+  "spawn": [
+   5,
+   4
+  ],
+  "path": [
+   3,
+   4,
+   1,
+   2,
+   0
+  ],
+  "moves": [
+   {
+    "crate": 3,
+    "side": "push",
+    "stand": [
+     5,
+     4
+    ]
+   },
+   {
+    "crate": 4,
+    "side": "pull",
+    "stand": [
+     0,
+     1
+    ]
+   },
+   {
+    "crate": 1,
+    "side": "push",
+    "stand": [
+     5,
+     4
+    ]
+   },
+   {
+    "crate": 2,
+    "side": "push",
+    "stand": [
+     1,
+     3
+    ]
+   },
+   {
+    "crate": 0,
+    "side": "push",
+    "stand": [
+     3,
+     0
+    ]
+   }
+  ],
+  "steps": [
+   "1. Thùng dài 2 ô (giữa–phải) ra phía trước 1 ô",
+   "2. Thùng dài 3 ô (giữa–trái) ra phía trước 1 ô",
+   "3. Thùng dài 3 ô (sau–giữa) sang trái 2 ô",
+   "4. Thùng dài 2 ô (sau–giữa) sang phải 2 ô",
+   "5. Thùng đỏ vào trong 2 ô"
+  ],
+  "source": {
+   "level": 4,
+   "seed": 124
+  },
+  "crates_def": [
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     3,
+     1
+    ],
+    "red": true
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -2
+    ],
+    "anchor": [
+     2,
+     4
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     2,
+     3
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     5,
+     2
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      0,
+      2
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     0,
+     2
+    ],
+    "red": false
+   }
+  ]
+ },
+ {
+  "key": "K05",
+  "level": 55,
+  "title": "Thùng vuông",
+  "idea": "Thùng vuông lớn; một thùng phải dời đi rồi trả về.",
+  "pulls": 6,
+  "crates": 5,
+  "returns": 1,
+  "reach": 14,
+  "spawn": [
+   0,
+   0
+  ],
+  "path": [
+   1,
+   3,
+   2,
+   3,
+   4,
+   0
+  ],
+  "moves": [
+   {
+    "crate": 1,
+    "side": "push",
+    "stand": [
+     1,
+     0
+    ]
+   },
+   {
+    "crate": 3,
+    "side": "pull",
+    "stand": [
+     2,
+     2
+    ]
+   },
+   {
+    "crate": 2,
+    "side": "pull",
+    "stand": [
+     2,
+     4
+    ]
+   },
+   {
+    "crate": 3,
+    "side": "push",
+    "stand": [
+     2,
+     1
+    ]
+   },
+   {
+    "crate": 4,
+    "side": "push",
+    "stand": [
+     1,
+     0
+    ]
+   },
+   {
+    "crate": 0,
+    "side": "push",
+    "stand": [
+     5,
+     2
+    ]
+   }
+  ],
+  "steps": [
+   "1. Thùng dài 3 ô (trước–giữa) sang phải 1 ô",
+   "2. Thùng dài 2 ô (sau–giữa) ra phía trước 1 ô",
+   "3. Thùng dài 2 ô (sau–trái) sang phải 3 ô",
+   "4. Thùng dài 2 ô (sau–giữa) vào trong 1 ô (lần 2: trả về)",
+   "5. Thùng vuông lớn (giữa–trái) vào trong 2 ô",
+   "6. Thùng đỏ sang trái 3 ô"
+  ],
+  "source": {
+   "level": 5,
+   "seed": 292
+  },
+  "crates_def": [
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -3
+    ],
+    "anchor": [
+     3,
+     2
+    ],
+    "red": true
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     1
+    ],
+    "anchor": [
+     2,
+     0
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     3
+    ],
+    "anchor": [
+     0,
+     4
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     2,
+     3
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     0,
+     1
+    ],
+    "red": false
+   }
+  ]
+ },
+ {
+  "key": "K06",
+  "level": 56,
+  "title": "Dây chuyền",
+  "idea": "Sáu thùng chắn nhau thành một chuỗi; không lần kéo nào thừa.",
+  "pulls": 6,
+  "crates": 6,
+  "returns": 0,
+  "reach": 17,
+  "spawn": [
+   0,
+   0
+  ],
+  "path": [
+   1,
+   3,
+   4,
+   2,
+   5,
+   0
+  ],
+  "moves": [
+   {
+    "crate": 1,
+    "side": "push",
+    "stand": [
+     1,
+     0
+    ]
+   },
+   {
+    "crate": 3,
+    "side": "pull",
+    "stand": [
+     5,
+     3
+    ]
+   },
+   {
+    "crate": 4,
+    "side": "pull",
+    "stand": [
+     4,
+     2
+    ]
+   },
+   {
+    "crate": 2,
+    "side": "push",
+    "stand": [
+     1,
+     0
+    ]
+   },
+   {
+    "crate": 5,
+    "side": "pull",
+    "stand": [
+     1,
+     1
+    ]
+   },
+   {
+    "crate": 0,
+    "side": "push",
+    "stand": [
+     3,
+     4
+    ]
+   }
+  ],
+  "steps": [
+   "1. Thùng vuông lớn (giữa–trái) vào trong 2 ô",
+   "2. Thùng dài 3 ô (giữa–phải) vào trong 1 ô",
+   "3. Thùng dài 2 ô (trước–phải) vào trong 2 ô",
+   "4. Thùng dài 2 ô (trước–giữa) sang phải 2 ô",
+   "5. Thùng dài 2 ô (trước–giữa) sang trái 1 ô",
+   "6. Thùng đỏ ra phía trước 2 ô"
+  ],
+  "source": {
+   "level": 6,
+   "seed": 135
+  },
+  "crates_def": [
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -2
+    ],
+    "anchor": [
+     3,
+     2
+    ],
+    "red": true
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     0,
+     1
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     2,
+     0
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      0,
+      2
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     1
+    ],
+    "anchor": [
+     5,
+     0
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     4,
+     0
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     2,
+     1
+    ],
+    "red": false
+   }
+  ]
+ },
+ {
+  "key": "K07",
+  "level": 57,
+  "title": "Mở lối cho COghe",
+  "idea": "COghe bị thùng vây trong góc: mở lối cho nó trước.",
+  "pulls": 7,
+  "crates": 6,
+  "returns": 1,
+  "reach": 10,
+  "spawn": [
+   0,
+   0
+  ],
+  "path": [
+   2,
+   4,
+   2,
+   3,
+   1,
+   5,
+   0
+  ],
+  "moves": [
+   {
+    "crate": 2,
+    "side": "push",
+    "stand": [
+     1,
+     0
+    ]
+   },
+   {
+    "crate": 4,
+    "side": "pull",
+    "stand": [
+     3,
+     4
+    ]
+   },
+   {
+    "crate": 2,
+    "side": "pull",
+    "stand": [
+     3,
+     0
+    ]
+   },
+   {
+    "crate": 3,
+    "side": "push",
+    "stand": [
+     1,
+     0
+    ]
+   },
+   {
+    "crate": 1,
+    "side": "pull",
+    "stand": [
+     2,
+     1
+    ]
+   },
+   {
+    "crate": 5,
+    "side": "push",
+    "stand": [
+     5,
+     4
+    ]
+   },
+   {
+    "crate": 0,
+    "side": "push",
+    "stand": [
+     2,
+     2
+    ]
+   }
+  ],
+  "steps": [
+   "1. Thùng dài 2 ô (trước–giữa) sang phải 2 ô",
+   "2. Thùng dài 2 ô (sau–giữa) sang phải 1 ô",
+   "3. Thùng dài 2 ô (trước–giữa) sang trái 2 ô (lần 2: trả về)",
+   "4. Thùng vuông lớn (giữa–trái) vào trong 2 ô",
+   "5. Thùng dài 3 ô (trước–giữa) sang trái 2 ô",
+   "6. Thùng dài 2 ô (giữa–phải) ra phía trước 2 ô",
+   "7. Thùng đỏ sang phải 1 ô"
+  ],
+  "source": {
+   "level": 6,
+   "seed": 48
+  },
+  "crates_def": [
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     1
+    ],
+    "anchor": [
+     3,
+     2
+    ],
+    "red": true
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -2
+    ],
+    "anchor": [
+     3,
+     1
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     2,
+     0
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     0,
+     1
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     1
+    ],
+    "anchor": [
+     1,
+     4
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -2
+    ],
+    "anchor": [
+     5,
+     2
+    ],
+    "red": false
+   }
+  ]
+ },
+ {
+  "key": "K08",
+  "level": 58,
+  "title": "Đi rồi trả lại",
+  "idea": "Hai thùng phải dời tạm rồi trả về chỗ cũ.",
+  "pulls": 8,
+  "crates": 6,
+  "returns": 2,
+  "reach": 32,
+  "spawn": [
+   0,
+   4
+  ],
+  "path": [
+   2,
+   1,
+   2,
+   1,
+   3,
+   4,
+   5,
+   0
+  ],
+  "moves": [
+   {
+    "crate": 2,
+    "side": "push",
+    "stand": [
+     0,
+     4
+    ]
+   },
+   {
+    "crate": 1,
+    "side": "push",
+    "stand": [
+     1,
+     4
+    ]
+   },
+   {
+    "crate": 2,
+    "side": "pull",
+    "stand": [
+     1,
+     4
+    ]
+   },
+   {
+    "crate": 1,
+    "side": "push",
+    "stand": [
+     1,
+     0
+    ]
+   },
+   {
+    "crate": 3,
+    "side": "pull",
+    "stand": [
+     2,
+     0
+    ]
+   },
+   {
+    "crate": 4,
+    "side": "pull",
+    "stand": [
+     3,
+     1
+    ]
+   },
+   {
+    "crate": 5,
+    "side": "push",
+    "stand": [
+     5,
+     4
+    ]
+   },
+   {
+    "crate": 0,
+    "side": "push",
+    "stand": [
+     2,
+     2
+    ]
+   }
+  ],
+  "steps": [
+   "1. Thùng dài 3 ô (sau–giữa) sang phải 1 ô",
+   "2. Thùng vuông lớn (giữa–trái) ra phía trước 1 ô",
+   "3. Thùng dài 3 ô (sau–giữa) sang trái 1 ô (lần 2: trả về)",
+   "4. Thùng vuông lớn (giữa–trái) vào trong 1 ô (lần 2: trả về)",
+   "5. Thùng dài 3 ô (trước–giữa) sang trái 1 ô",
+   "6. Thùng dài 2 ô (trước–phải) sang trái 1 ô",
+   "7. Thùng dài 2 ô (giữa–phải) ra phía trước 2 ô",
+   "8. Thùng đỏ sang phải 1 ô"
+  ],
+  "source": {
+   "level": 6,
+   "seed": 182
+  },
+  "crates_def": [
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     1
+    ],
+    "anchor": [
+     3,
+     2
+    ],
+    "red": true
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     0,
+     2
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     1
+    ],
+    "anchor": [
+     1,
+     4
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     3,
+     0
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     4,
+     1
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -2
+    ],
+    "anchor": [
+     5,
+     2
+    ],
+    "red": false
+   }
+  ]
+ },
+ {
+  "key": "K09",
+  "level": 59,
+  "title": "Kho chật",
+  "idea": "Chín lần kéo; một thùng phải dời qua lại ba lần.",
+  "pulls": 9,
+  "crates": 6,
+  "returns": 3,
+  "reach": 37,
+  "spawn": [
+   0,
+   0
+  ],
+  "path": [
+   4,
+   3,
+   4,
+   1,
+   3,
+   4,
+   5,
+   2,
+   0
+  ],
+  "moves": [
+   {
+    "crate": 4,
+    "side": "push",
+    "stand": [
+     1,
+     0
+    ]
+   },
+   {
+    "crate": 3,
+    "side": "pull",
+    "stand": [
+     5,
+     2
+    ]
+   },
+   {
+    "crate": 4,
+    "side": "push",
+    "stand": [
+     5,
+     0
+    ]
+   },
+   {
+    "crate": 1,
+    "side": "pull",
+    "stand": [
+     4,
+     4
+    ]
+   },
+   {
+    "crate": 3,
+    "side": "push",
+    "stand": [
+     5,
+     0
+    ]
+   },
+   {
+    "crate": 4,
+    "side": "pull",
+    "stand": [
+     4,
+     0
+    ]
+   },
+   {
+    "crate": 5,
+    "side": "pull",
+    "stand": [
+     2,
+     3
+    ]
+   },
+   {
+    "crate": 2,
+    "side": "push",
+    "stand": [
+     1,
+     0
+    ]
+   },
+   {
+    "crate": 0,
+    "side": "pull",
+    "stand": [
+     1,
+     2
+    ]
+   }
+  ],
+  "steps": [
+   "1. Thùng dài 2 ô (trước–giữa) sang phải 1 ô",
+   "2. Thùng dài 2 ô (sau–phải) ra phía trước 2 ô",
+   "3. Thùng dài 2 ô (trước–giữa) sang trái 1 ô (lần 2: trả về)",
+   "4. Thùng dài 3 ô (sau–giữa) sang phải 1 ô",
+   "5. Thùng dài 2 ô (sau–phải) vào trong 2 ô (lần 2: trả về)",
+   "6. Thùng dài 2 ô (trước–giữa) sang phải 1 ô (lần 3)",
+   "7. Thùng dài 2 ô (sau–trái) sang phải 2 ô",
+   "8. Thùng vuông lớn (giữa–trái) vào trong 2 ô",
+   "9. Thùng đỏ sang trái 1 ô"
+  ],
+  "source": {
+   "level": 6,
+   "seed": 167
+  },
+  "crates_def": [
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     2,
+     2
+    ],
+    "red": true
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     1
+    ],
+    "anchor": [
+     1,
+     4
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     0,
+     1
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -2
+    ],
+    "anchor": [
+     5,
+     3
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     1
+    ],
+    "anchor": [
+     2,
+     0
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     0,
+     3
+    ],
+    "red": false
+   }
+  ]
+ },
+ {
+  "key": "K10",
+  "level": 60,
+  "title": "Mê cung thùng",
+  "idea": "Mười lần kéo, bài cuối của bộ.",
+  "pulls": 10,
+  "crates": 6,
+  "returns": 4,
+  "reach": 38,
+  "spawn": [
+   0,
+   4
+  ],
+  "path": [
+   1,
+   3,
+   5,
+   1,
+   4,
+   1,
+   5,
+   2,
+   5,
+   0
+  ],
+  "moves": [
+   {
+    "crate": 1,
+    "side": "push",
+    "stand": [
+     0,
+     4
+    ]
+   },
+   {
+    "crate": 3,
+    "side": "push",
+    "stand": [
+     1,
+     4
+    ]
+   },
+   {
+    "crate": 5,
+    "side": "push",
+    "stand": [
+     0,
+     3
+    ]
+   },
+   {
+    "crate": 1,
+    "side": "pull",
+    "stand": [
+     0,
+     3
+    ]
+   },
+   {
+    "crate": 4,
+    "side": "pull",
+    "stand": [
+     1,
+     0
+    ]
+   },
+   {
+    "crate": 1,
+    "side": "push",
+    "stand": [
+     0,
+     4
+    ]
+   },
+   {
+    "crate": 5,
+    "side": "pull",
+    "stand": [
+     1,
+     3
+    ]
+   },
+   {
+    "crate": 2,
+    "side": "push",
+    "stand": [
+     5,
+     3
+    ]
+   },
+   {
+    "crate": 5,
+    "side": "push",
+    "stand": [
+     0,
+     3
+    ]
+   },
+   {
+    "crate": 0,
+    "side": "push",
+    "stand": [
+     1,
+     2
+    ]
+   }
+  ],
+  "steps": [
+   "1. Thùng dài 2 ô (giữa–trái) ra phía trước 1 ô",
+   "2. Thùng dài 2 ô (sau–giữa) sang phải 2 ô",
+   "3. Thùng dài 2 ô (sau–giữa) sang phải 1 ô",
+   "4. Thùng dài 2 ô (giữa–trái) vào trong 1 ô (lần 2: trả về)",
+   "5. Thùng dài 3 ô (trước–giữa) sang trái 1 ô",
+   "6. Thùng dài 2 ô (giữa–trái) ra phía trước 1 ô (lần 3)",
+   "7. Thùng dài 2 ô (sau–giữa) sang trái 1 ô (lần 2: trả về)",
+   "8. Thùng vuông lớn (giữa–phải) ra phía trước 1 ô",
+   "9. Thùng dài 2 ô (sau–giữa) sang phải 1 ô (lần 3)",
+   "10. Thùng đỏ sang phải 2 ô"
+  ],
+  "source": {
+   "level": 6,
+   "seed": 187
+  },
+  "crates_def": [
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     2,
+     2
+    ],
+    "red": true
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     0,
+     2
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     4,
+     1
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     2
+    ],
+    "anchor": [
+     2,
+     4
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     2,
+     0
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     1
+    ],
+    "anchor": [
+     1,
+     3
+    ],
+    "red": false
+   }
+  ]
+ }
+]

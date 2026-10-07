@@ -17,6 +17,7 @@ MINT = (36, 168, 128)
 HANDLE = (57, 127, 173)
 CELL = .12  # metres
 BOX = (.80, .60)
+LOW_H, TALL_H = .045, .06   # crate heights in the 3D view (metres)
 
 
 def font(size):
@@ -81,7 +82,7 @@ def draw_iso(img, puzzle, state, cam, cogh=None, show_hole=True):
     # Crates: unit cubes, far to near.
     cubes = []
     for i, c in enumerate(puzzle.crates):
-        h = .06 if c.tall else .045
+        h = TALL_H if c.tall else LOW_H
         cols = (RED_TOP, RED_FRONT, RED_SIDE) if c.red else (TALL_TOP, TALL_FRONT, TALL_SIDE) if c.tall else (IVORY_TOP, IVORY_FRONT, IVORY_SIDE)
         cells = c.cells(state[i])
         for (x, z) in cells:
@@ -113,7 +114,7 @@ def draw_iso(img, puzzle, state, cam, cogh=None, show_hole=True):
     # Handles: a short coloured bar on the face the crate is pulled from (its rail's first end).
     for i, c in enumerate(puzzle.crates):
         cells = c.cells(state[i])
-        h = .06 if c.tall else .045
+        h = TALL_H if c.tall else LOW_H
         sign = 1 if c.stops[1 if state[i] == 0 else 0] > c.stops[state[i]] else -1
         if c.axis == 'x':
             edge = max(cells) if sign > 0 else min(cells)
@@ -134,7 +135,7 @@ def draw_iso(img, puzzle, state, cam, cogh=None, show_hole=True):
     if show_hole:
         red = puzzle.crates[0]
         if puzzle.hole in red.cells(state[0]):
-            top = (.06 if red.tall else .045) + .001
+            top = (TALL_H if red.tall else LOW_H) + .001
             for k in range(0, 48, 2):
                 a0, a1 = k * math.pi / 24, (k + 1) * math.pi / 24
                 d.line([cam.pt((hx + .046 * math.cos(a0), top, hz + .046 * math.sin(a0))), cam.pt((hx + .046 * math.cos(a1), top, hz + .046 * math.sin(a1)))], fill=(255, 255, 255, 230), width=4)
@@ -155,8 +156,9 @@ def draw_iso(img, puzzle, state, cam, cogh=None, show_hole=True):
         d.line([cam.pt(a), cam.pt(b)], fill=(170, 186, 190), width=2)
 
 
-def draw_plan(img, puzzle, path, ox, oy, cs):
-    """Top view: front row at the bottom. Each crate shows its slide (arrow to a dashed ghost) and when it is pulled."""
+def draw_plan(img, puzzle, path, ox, oy, cs, cogh=None):
+    """Top view: front row at the bottom. Each crate shows its slide (arrow to a dashed ghost) and when it is pulled.
+    cogh: COghe's start cell (a dark dot), when the plan should show where it begins."""
     d = ImageDraw.Draw(img, 'RGBA')
     def rect(x, z):
         return (ox + x * cs, oy + (H - 1 - z) * cs, ox + (x + 1) * cs, oy + (H - z) * cs)
@@ -212,6 +214,9 @@ def draw_plan(img, puzzle, path, ox, oy, cs):
         r = max(tw / 2 + 10, cs * .19)
         d.rounded_rectangle([bxp - r, byp - cs * .19, bxp + r, byp + cs * .19], radius=int(cs * .19), fill=(255, 255, 255, 235), outline=col, width=3)
         d.text((bxp - tw / 2, byp - cs * .17), label, font=f, fill=INK)
+    if cogh is not None:
+        x0, y0, x1, y1 = rect(*cogh); mx, my = (x0 + x1) / 2, (y0 + y1) / 2
+        d.ellipse([mx - cs * .22, my - cs * .19, mx + cs * .22, my + cs * .19], fill=(28, 30, 34))
     # The exit, drawn over the red crate that hides it.
     x0, y0, x1, y1 = rect(*puzzle.hole)
     for k in range(0, 36, 2):
@@ -220,7 +225,7 @@ def draw_plan(img, puzzle, path, ox, oy, cs):
         d.line([mx + rr * math.cos(a0), my + rr * math.sin(a0), mx + rr * math.cos(a1), my + rr * math.sin(a1)], fill=MINT, width=5)
 
 
-def plate(puzzle, path, title, subtitle, steps, notes, out, cogh=(0, 0)):
+def plate(puzzle, path, title, subtitle, steps, notes, out, cogh=(0, 0), plan_cogh=False):
     size = 21 if len(steps) <= 8 else 19 if len(steps) <= 11 else 18
     height = max(1100, 660 + 42 + len(steps) * (size + 9) + 8 + len(notes) * 26 + 40)
     img = Image.new('RGB', (1800, height), BG)
@@ -231,7 +236,7 @@ def plate(puzzle, path, title, subtitle, steps, notes, out, cogh=(0, 0)):
     start = tuple(0 for _ in puzzle.crates)
     draw_iso(img, puzzle, start, cam, cogh=cogh)
     d.text((70, height - 90), 'Trong game: thùng ngà, tay nắm xanh ở đầu kéo; thùng đỏ che lỗ thoát (vòng xanh bạc hà).', font=font(22), fill=MUTED)
-    draw_plan(img, puzzle, path, 1150, 200, 86)
+    draw_plan(img, puzzle, path, 1150, 200, 86, cogh=cogh if plan_cogh else None)
     d.text((1150, 160), 'Nhìn từ trên (hàng dưới = phía trước). Số = lần kéo thứ mấy.', font=font(19), fill=MUTED)
     y = 660
     d.text((1150, y), 'Lời giải ngắn nhất', font=font(28), fill=INK); y += 42

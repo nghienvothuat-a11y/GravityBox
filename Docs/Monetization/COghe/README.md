@@ -15,7 +15,7 @@ Cập nhật 04/10: Android đã nối Google Mobile Ads + UMP, Firebase Analyti
     - bonus +20 nếu xem quảng cáo ở Victory;
     - quà mỗi ngày ở Home (+15, ×2 bằng quảng cáo);
     - xem quảng cáo +15 (tối đa 3 lần / ngày).
-- **Tặng:** quả bóng (mở Home, màn 10), Ocean, Beanie, Star bits (món đầu mỗi nhóm Style).
+- **Tặng:** quả bóng (mở Home, màn 12: Boss đầu), Ocean, Beanie, Star bits (món đầu mỗi nhóm Style).
 - **Đồ Home:**
   - Tới màn thì mở bán; mua xong mới xuất hiện trong nhà và "bật ra", COghe chạy tới chơi.
   - Trong menu Items: giá kèm giọt; chọn món chưa mua thì hiện hình mờ của nó trong phòng và hộp mua.
@@ -26,7 +26,7 @@ Cập nhật 04/10: Android đã nối Google Mobile Ads + UMP, Firebase Analyti
   - Rời bằng cách khác (Pause → Menu, tắt app): tự trả về diện mạo đã sở hữu.
 - **Sau mỗi màn thắng:**
   - +Giọt; nút +20 khoảng 3,5 s;
-  - popup **"New for COghe!"** với các món vừa mở (quà ghi "Gift ✓", món bán có nút giá, màn 10 có nút "Visit Home");
+  - popup **"New for COghe!"** với các món vừa mở (quà ghi "Gift ✓", món bán có nút giá, màn 12 có nút "Visit Home");
   - quảng cáo xen kẽ nếu đến lượt;
   - sang màn.
   - Màn thắng giữ nguyên tới khi bấm Next Level; sau đó popup mở khóa chờ Continue.
@@ -88,7 +88,7 @@ Cập nhật 04/10: Android đã nối Google Mobile Ads + UMP, Firebase Analyti
 `COgheShopTests`:
 - đồ Home chỉ hiện khi đã mua (mua qua menu Items, món bật ra);
 - Style mặc thử không giữ nếu bỏ, mua thì giữ;
-- thắng màn trả Giọt một lần, hiện đúng món mở (màn 10: Ball, Ocean, Mint);
+- thắng màn trả Giọt một lần, hiện đúng món mở (màn 12: Ball, Ocean, Mint);
 - nhịp quảng cáo xen kẽ và giới hạn mỗi phiên;
 - Plus bỏ quảng cáo, nhận thưởng ngay, ×2;
 - banner không đè nút ở Menu / Home và không có trong Style / lúc chơi;

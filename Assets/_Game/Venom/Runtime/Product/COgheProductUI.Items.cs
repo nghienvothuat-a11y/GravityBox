@@ -110,6 +110,14 @@ namespace GravityBox.Venom
                 var b = room.BoundsOf(focus);
                 target = Vector3.Lerp(b.center, Game.Motion.Centre(0), .35f); targetSize = Mathf.Max(.3f, size * .45f);
             }
+            else if (bonusChapter > 0 && Game.Personality != null)
+            {
+                // the bonus: COghe and the aisle (the ball behind it) while it asks; close on it as it says thank you
+                var p = Game.Personality;
+                if (p.BonusCloseUp) { target = p.SkinCentre + Vector3.up * .03f; targetSize = .2f; rate = 2.6f; }
+                else if (p.BonusBusy || p.BonusThanking) { target = p.SkinCentre; targetSize = Mathf.Min(size, .36f); }
+                else { target = Vector3.Lerp(room.Root.TransformPoint(new Vector3(0, .03f, .3f)), p.SkinCentre, .55f); targetSize = Mathf.Min(size, .44f); }
+            }
             else if (homeZoom)
             {
                 target = (Game.Personality != null ? Game.Personality.SkinCentre : Game.Motion.Centre(0)) + Vector3.up * .02f;

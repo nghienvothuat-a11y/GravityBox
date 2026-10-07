@@ -1,5 +1,6 @@
 using System.Linq;
 using GravityBox.Venom;
+using UnityEditor;
 using UnityEngine;
 
 namespace GravityBox.Editor
@@ -396,7 +397,7 @@ namespace GravityBox.Editor
   // Mid deck M (18 cm, slick sides) left of the column, with stairs along its front face rising toward the left wall
   // (6, 12, 18 cm). Treads and the right-facing risers are ivory; everything else is slick, so the stairs are climbed
   // only from their low end, where a slick gate stands until its rack lifts it.
-  static COgheRailSlider PlusMidDeck(ExpansionContext c,out VenomSurfacePatch mid)
+  static COgheRailSlider PlusMidDeck(ExpansionContext c,out VenomSurfacePatch mid,bool gated=true)
   {
    mid=Top(NextPlinth(c,"Mid deck",new Vector3(-.245f,-.21f,.10f),new Vector3(.31f,.18f,.40f)));
    for(int i=0;i<3;i++)
@@ -409,6 +410,7 @@ namespace GravityBox.Editor
    // straight back up. Both sit behind the stairs, so the gate still guards the way up.
    Panel(c.Root,"Mid deck stair face",new Vector3(-.25f,-.18f,-.1004f),Vector3.back,new Vector2(.06f,.12f),stone,false,Vector2.zero,0,c.Surfaces);
    Panel(c.Root,"Mid deck stair face",new Vector3(-.31f,-.15f,-.1004f),Vector3.back,new Vector2(.06f,.06f),stone,false,Vector2.zero,0,c.Surfaces);
+   if(!gated)return null;
    var gate=PlusGate(c,"Stair gate",new Vector3(-.21f,-.25f,-.16f),Vector3.up,.17f,new Vector3(.012f,.10f,.11f));gate.LatchAtEnd=true; // open, 11 cm over the first tread: at 12 cm travel a body on the tread wedged under it
    foreach(var f in gate.GetComponentsInChildren<VenomSurfacePatch>(true))f.Slippery=true;
    return gate;
@@ -443,12 +445,14 @@ namespace GravityBox.Editor
 
   // E15 · 46 · Người chạy máy. A gear lift that runs only while pad P is loaded. One half stands on P (the lift rises
   // with the other aboard); up top the rider pulls C, which raises the last stair step; the driver leaves P, climbs.
-  static void PlusE15(ExpansionContext c)
+  static void PlusE15(ExpansionContext c)=>PlusE15(c,.03f);
+  // deck: the lift deck's thickness (its edge is the step onto it); its top always rises to the high deck (-.12).
+  static void PlusE15(ExpansionContext c,float deck)
   {
    c.Exit=new Vector3(.40f,-.075f,.20f);c.Outward=Vector3.right;c.Spawn=new Vector3(0,-.25f,-.262f);c.Definition.CameraEuler=new Vector3(40,20,0);NextShell(c,.30f,true);var floor=c.Surfaces[0];
    NextQuantum(c,new Vector3(0,-.30f,-.20f));
    var high=Top(NextPlinth(c,"High deck",new Vector3(.25f,-.21f,.16f),new Vector3(.30f,.18f,.28f)));
-   var lift=PlusRisingDeck(c,"Gear lift",new Vector3(-.01f,-.285f,.16f),new Vector3(.20f,.03f,.20f),.15f);lift.LatchAtEnd=false;
+   var lift=PlusRisingDeck(c,"Gear lift",new Vector3(-.01f,-.30f+deck*.5f,.16f),new Vector3(.20f,deck,.20f),.18f-deck);lift.LatchAtEnd=false;
    foreach(var f in lift.GetComponentsInChildren<VenomSurfacePatch>())f.MotionFrame=lift.Body;
    float y=PlusGearTable(c,"Gear table",new Vector3(-.25f,0,.10f),new Vector2(.12f,.26f));
    var pad=ExpansionPad(c,"P",new Vector3(-.30f,-.298f,-.20f),.009f,.10f);
@@ -680,6 +684,708 @@ namespace GravityBox.Editor
   // not look alike. One half holds pad A (door up) while the other goes through and latches the door with B: that
   // frees the holder for its second job. The step D is blocked by bolt C, whose spring handle is only in Q's room: the
   // freed holder holds C (the bolt pulls back) while the other half pushes D to the shelf. Let go, merge, climb, out.
+  // ---- chapter 3, rebuilt (PLANS/COGHE_LEVEL_HOOK_PLAN.md 5.3; Mrk, 06/10/2026: "xây dựng Chương 3 theo kế hoạch") -----
+  // N22 · 22 · Chất hàng trước (E04 with an order). Once cart A docks at the shelf, a pin on the shelf edge locks crate B on
+  // the cart: slide B across the cart first, then pull the cart. Pulled in the wrong order, the pin shows the lock and B
+  // refuses; pull the cart back to free it.
+  static void PlusN22(ExpansionContext c)
+  {
+   PlusE04(c);
+   var tasks=c.Root.GetComponentsInChildren<COgheTapRail>(true);
+   var cart=tasks.First(t=>t.Label=="A");var crate=tasks.First(t=>t.Label=="B");
+   crate.RequiredRail=cart.Rail;crate.RequiredEnd=false;   // B slides only while the cart is away from the shelf
+   var pin=new Vector3(.125f,-.168f,.055f);
+   crate.InterlockPin=MechanismVisual(c.Root,"B locking pin",pin,new Vector3(.014f,.040f,.014f),metal);
+   TapLink(c.Root,"Lock linkage",new Vector3(.125f,-.296f,.02f),pin);
+  }
+
+  // N29 · 29 · Xếp tầng trên trước (E07 with an order). Block B rides block A; once A docks at the shelf a pin on the
+  // shelf edge locks B. Climb A where it stands, push B to A's far end first, then pull A over and climb the stack.
+  static void PlusN29(ExpansionContext c)
+  {
+   PlusE07(c);
+   var tasks=c.Root.GetComponentsInChildren<COgheTapRail>(true);
+   var low=tasks.First(t=>t.Label=="A");var high=tasks.First(t=>t.Label=="B");
+   high.RequiredRail=low.Rail;high.RequiredEnd=false;
+   // B is pushed while A still stands at its start: the pusher stands on A's own (moving) top, not on its docked copy.
+   high.WorkingSurface=low.Rail.GetComponentsInChildren<VenomSurfacePatch>(true).First(f=>f.Normal.y>.9f);
+   var pin=new Vector3(.125f,-.105f,.09f);
+   high.InterlockPin=MechanismVisual(c.Root,"B locking pin",pin,new Vector3(.014f,.040f,.014f),metal);
+   TapLink(c.Root,"Lock linkage",new Vector3(.125f,-.296f,.05f),pin);
+  }
+
+  // N23 · 23 · Đưa bến lại gần (level 19, deeper; plan 5.3): lever B moved from beside the start to the far front-right,
+  // under the landing's side. The way up the stairs passes nowhere near it: a player swings first, falls short (the floor
+  // and the stairs bring the body back), then finds B, brings the landing into the arc, and swings again.
+  static void PlusN23(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.215f,-.132f,.30f);c.Outward=Vector3.forward;c.Spawn=new Vector3(-.10f,-.25f,-.20f);NextShell(c,.30f,true);var floor=c.Surfaces[0];
+   var left=NextPlinth(c,"Start bank",new Vector3(-.28f,-.23f,.10f),new Vector3(.24f,.14f,.40f),false); // ivory: climbable back from the floor
+   NextStairs(c,"Start stairs",new Vector3(-.30f,0,-.10f),Vector3.back,-.16f,.12f,3,.06f); // the fixed way up from the floor
+   var tray=ExpansionRail(c,"B landing tray",new Vector3(.295f,-.215f,.13f),Vector3.left,.08f,0,new Vector3(.20f,.03f,.32f),.05f,.01f,false,false);
+   tray.GetComponent<VenomMovableProp>().Manipulable=false;tray.LatchAtEnd=true;TrimSideSlabs(tray);
+   foreach(var face in tray.GetComponentsInChildren<VenomSurfacePatch>())if(face.Normal.y<.9f)face.Slippery=true;
+   int first=c.Surfaces.Count;var dockedTop=Panel(c.Root,"B landing tray docked",new Vector3(.215f,-.20f,.13f),Vector3.up,new Vector2(.20f,.32f),stone,false,Vector2.zero,0,c.Surfaces);
+   dockedTop.gameObject.SetActive(false);
+   var deck=tray.gameObject.AddComponent<COgheDockedBridgeDeck>();deck.Rail=tray;deck.MovingSurfaces=tray.GetComponentsInChildren<VenomSurfacePatch>(true);deck.DockedSurfaces=new[]{dockedTop};
+   foreach(float z in new[]{-.03f,.29f})MechanismVisual(c.Root,"B tray rail",new Vector3(.255f,-.232f,z),new Vector3(.30f,.006f,.008f),metal);
+   foreach(float x in new[]{.12f,.39f})MechanismVisual(c.Root,"B tray rail post",new Vector3(x,-.266f,-.03f),new Vector3(.008f,.068f,.008f),metal);
+   var b=ViewTask(c,"B",new Vector3(.32f,-.277f,-.21f),Vector3.left,.08f,floor);   // far front-right, under the landing's side: not on the way up
+   ViewLink(c,b.Rail,tray,false,null);
+   var landing=tray.GetComponentsInChildren<VenomSurfacePatch>(true).First(f=>f.Normal.y>.9f);
+   NextSwing(c,"A",new Vector3(0,.14f,.12f),.28f,40f,new Vector3(-.23f,-.14f,.12f),Top(left),new[]{landing,dockedTop},new[]{new Vector3(.25f,-.18f,.13f),new Vector3(.25f,-.18f,.13f)},floor);
+   NextTrace("B",new Vector3(.26f,-.2992f,-.17f),new Vector3(.26f,-.2992f,-.03f));
+  }
+  // N25 · 25 · Chưa đủ nặng (level 21's counterweight, then not enough of it). The crate is light and the plank's axle has a
+  // return spring: on the tray the crate alone lifts the plank only part way. COghe climbs onto the loaded tray; with its
+  // weight added the plank comes level and the pawl catches. Then out of the pit and across.
+  static void PlusN25(ExpansionContext c)
+  {
+   PlusN25Room(c);
+   c.Props.Last(p=>p.name=="A crate").Body.mass=PinCrateMass;
+   var hinge=c.Props.Last(p=>p.name=="Seesaw plank").GetComponent<HingeJoint>();
+   hinge.useSpring=true;hinge.spring=new JointSpring{spring=PlankSpring,damper=PlankSpring*.05f,targetPosition=0};
+  }
+  const float PinCrateMass=.02f,PlankSpring=.10f;
+  // Level 21's room with a long tray (24 cm pit): the crate takes its near end, COghe fits on the far end.
+  static void PlusN25Room(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.40f,-.132f,.12f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.30f,-.15f,-.18f);NextShell(c,.30f,true);var floor=c.Surfaces[0];
+   var deck=NextDeckWithPit(c,"Load deck",new Rect(-.40f,-.30f,.25f,.60f),-.20f,new Rect(-.34f,.02f,.12f,.24f));
+   NextPlinth(c,"Exit platform",new Vector3(.275f,-.25f,.125f),new Vector3(.25f,.10f,.35f));
+   NextStairs(c,"Gap recovery stairs",new Vector3(-.15f,0,-.26f),Vector3.right,-.20f,.08f,2,.06f);
+   var tray=ExpansionRail(c,"Load tray",new Vector3(-.28f,-.215f,.14f),Vector3.down,.066f,0,new Vector3(.115f,.026f,.235f),.01f,.004f,true,false);
+   tray.GetComponent<VenomMovableProp>().Manipulable=false;TrimSideSlabs(tray);foreach(var f in tray.GetComponentsInChildren<VenomSurfacePatch>())f.MotionFrame=tray.Body;
+   NextLooseCrate(c,"A crate",new Vector3(-.28f,-.185f,-.10f),new Vector3(.09f,.03f,.09f),.04f,Vector3.back);
+   // Plank: level pose authored, then tilted 22 degrees (far end down) by rotating about the axle.
+   const float tilt=22f;var pivot=new Vector3(0,-.21f,.10f);
+   var plank=Prop(c.Root,"Seesaw plank",pivot,new Vector3(.28f,.02f,.12f),false,plastic,c.Surfaces);c.Props.Add(plank);plank.Body.mass=.05f;plank.Body.centerOfMass=new Vector3(.04f,0,0);
+   foreach(var f in plank.GetComponentsInChildren<VenomSurfacePatch>())if(f.Normal.y<.9f)f.Slippery=true;
+   int first=c.Surfaces.Count;ViewBlock(c,"Seesaw plank level",pivot,new Vector3(.28f,.02f,.12f));var docked=c.Surfaces.GetRange(first,c.Surfaces.Count-first).ToArray();foreach(var d in docked){d.gameObject.SetActive(false);if(d.Normal.y<.9f)d.Slippery=true;}
+   plank.transform.localRotation=Quaternion.Euler(0,0,-tilt);
+   var hinge=plank.gameObject.AddComponent<HingeJoint>();hinge.connectedBody=c.Root.GetComponent<Rigidbody>();hinge.autoConfigureConnectedAnchor=false;hinge.anchor=Vector3.zero;hinge.connectedAnchor=pivot;hinge.axis=Vector3.forward;
+   hinge.useLimits=true;hinge.limits=new JointLimits{min=-tilt-3,max=tilt+3};hinge.enableCollision=true;
+   var anchor=new GameObject("Seesaw rope anchor").transform;anchor.SetParent(plank.transform,false);anchor.localPosition=new Vector3(.13f,.01f,0);
+   ViewBlock(c,"Seesaw bearer",new Vector3(-.13f,-.26f,.10f),new Vector3(.02f,.08f,.10f));
+   ViewBlock(c,"Seesaw rest",new Vector3(.13f,-.29f,.10f),new Vector3(.02f,.02f,.10f));
+   MechanismVisual(c.Root,"Seesaw axle stand",new Vector3(0,-.255f,.10f),new Vector3(.03f,.09f,.03f),metal);
+   var seesaw=new GameObject("A counterweight rope",typeof(COgheSeesawBridge)).GetComponent<COgheSeesawBridge>();seesaw.transform.SetParent(c.Root,false);
+   seesaw.Plank=plank.Body;seesaw.Hinge=hinge;seesaw.Anchor=anchor;seesaw.Tray=tray;seesaw.LevelLocalRotation=Quaternion.identity;
+   seesaw.MovingSurfaces=plank.GetComponentsInChildren<VenomSurfacePatch>(true);seesaw.DockedSurfaces=docked;
+   seesaw.Guides=new[]{NextMarker(c,"Rope pulley over tray",new Vector3(-.28f,.12f,.14f)),NextMarker(c,"Rope pulley over plank",new Vector3(.13f,.12f,.10f))};
+   foreach(var g in seesaw.Guides){var wheel=MechanismVisual(c.Root,"A pulley wheel",g.localPosition,new Vector3(.05f,.014f,.05f),metal,PrimitiveType.Cylinder);wheel.localRotation=Quaternion.Euler(90,0,0);}
+   seesaw.Rope=seesaw.gameObject.AddComponent<LineRenderer>();seesaw.Rope.useWorldSpace=true;seesaw.Rope.startWidth=seesaw.Rope.endWidth=.0028f;seesaw.Rope.sharedMaterial=metal;
+   seesaw.Pawl=MechanismVisual(c.Root,"Seesaw pawl",new Vector3(-.13f,-.215f,.155f),new Vector3(.01f,.012f,.01f),metal);
+   NextOutline(c,"Load tray outline",new Vector3(-.28f,-.1995f,.14f),new Vector2(.125f,.245f));
+  }
+
+  // N26 · 26 · Nhẹ quá không nghiêng. Two pads A, far apart, open the door into the seesaw room (a split: one half on each;
+  // once both have pressed, it stays open). Past the axle half a body only makes the heavy plank creak; merged, the whole
+  // body tips it down into the exit room.
+  static void PlusN26(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.40f,-.255f,.10f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.21f,-.25f,-.17f);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   NextPlinth(c,"Partition wall",new Vector3(.02f,-.20f,.0775f),new Vector3(.03f,.20f,.435f));
+   NextPlinth(c,"Partition wall",new Vector3(.02f,-.20f,-.2775f),new Vector3(.03f,.20f,.035f));
+   var door=PlusGate(c,"A door",new Vector3(.02f,-.20f,-.20f),Vector3.up,.20f,new Vector3(.012f,.20f,.114f));
+   NextQuantum(c,new Vector3(-.21f,-.30f,-.02f),.025f,.13f);   // as in N18: its trays 6 cm from the wall, 9 cm from the partition
+   var front=ExpansionPad(c,"A",new Vector3(-.34f,-.298f,-.21f),.009f,.10f);
+   var back=ExpansionPad(c,"A",new Vector3(-.34f,-.298f,.21f),.009f,.10f);
+   // Once both pads have pressed, the door stays open (Retain): no safety zone is needed, it never closes on a body.
+   var both=new GameObject("Both A pads open the door",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();both.transform.SetParent(c.Root,false);
+   both.Inputs=new[]{front,back};both.Rails=new COgheRailSlider[0];both.Output=door;both.Any=false;both.Retain=true;
+   // The low wall and a short heavy seesaw into the exit room. Its weight sits 3 cm on the foot side: it holds half a body
+   // anywhere past the axle (.048 kg × 14 cm < .26 kg × 3 cm) but tips under a whole one past 8 cm.
+   NextPlinth(c,"Low wall",new Vector3(.21f,-.26f,0),new Vector3(.03f,.08f,.59f));
+   PlusSeesaw(c,"B",new Vector3(.21f,-.20f,.14f),.17f,27f);
+   var plank=c.Props.Last(p=>p.name=="B seesaw plank");plank.Body.mass=.26f;
+   NextTrace("A",new Vector3(-.34f,-.2992f,-.16f),new Vector3(-.34f,-.2992f,-.27f),new Vector3(0,-.2992f,-.27f));
+   NextTrace("A",new Vector3(-.34f,-.2992f,.16f),new Vector3(-.34f,-.2992f,.27f),new Vector3(-.02f,-.2992f,.27f),new Vector3(-.02f,-.2992f,-.15f));
+  }
+
+  // ---- chapter 4 (plan 5.4: split to the right size) ------------------------------------------------------------
+  // A half body measures .033–.042 kg on a pad, a quarter .021–.024 (only tissue near the pad counts).
+  const float HalfLoad=.028f;
+  // Load gauge in front of a pad (plan 3.6): one tile per quarter body the pad needs, lit by the load on it. A quarter on a
+  // two-tile pad lights one tile of two. Tiles take the pad's circuit colour (NextSpatialArt).
+  static void PadGauge(COgheTissueSensor pad,int quarters)
+  {
+   float z=-(pad.Size.y*.5f+.014f),pitch=.022f;var tiles=new Renderer[quarters];
+   for(int i=0;i<quarters;i++)
+   {
+    float x=(i-(quarters-1)*.5f)*pitch;
+    MechanismVisual(pad.transform,"Gauge slot",new Vector3(x,-.0012f,z),new Vector3(.017f,.0014f,.017f),plastic);
+    tiles[i]=MechanismVisual(pad.transform,"Gauge light",new Vector3(x,-.0004f,z),new Vector3(.014f,.0012f,.014f),plastic).GetComponent<Renderer>();
+   }
+   pad.GaugeTiles=tiles;
+  }
+  static COgheLoadLatch PlusLatch(ExpansionContext c,string name,COgheTissueSensor[] pads,COgheRailSlider output,bool any,bool retain)
+  {
+   var latch=new GameObject(name,typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();latch.transform.SetParent(c.Root,false);
+   latch.Inputs=pads;latch.Rails=new COgheRailSlider[0];latch.Output=output;latch.Any=any;latch.Retain=retain;return latch;
+  }
+  // E09's two rooms: partition at x .05, door A at the front. The shell cuts the exit hole, so the exit is set here.
+  static COgheRailSlider PlusTwoRooms(ExpansionContext c,Vector3? exit=null,Vector3? outward=null)
+  {
+   c.Exit=exit??new Vector3(.40f,-.225f,.22f);c.Outward=outward??Vector3.right;c.Definition.CameraEuler=new Vector3(44,20,0);NextShell(c,.10f,true);
+   NextPlinth(c,"Partition wall",new Vector3(.05f,-.20f,.0775f),new Vector3(.03f,.20f,.435f));
+   NextPlinth(c,"Partition wall",new Vector3(.05f,-.20f,-.2775f),new Vector3(.03f,.20f,.035f));
+   NextQuantum(c,new Vector3(-.18f,-.30f,-.02f),.025f,.14f);
+   return PlusGate(c,"A door",new Vector3(.05f,-.20f,-.20f),Vector3.up,.20f,new Vector3(.012f,.20f,.114f));
+  }
+
+  // N31 · 31 · Cân ở cửa (plan 5.4, teaches the quarter split and the gauge). Three pads must be loaded at once to open the
+  // door for good: the one at the door needs half a body (two tiles), the two at the back a quarter each. A quarter on
+  // the door pad lights one tile of two. Split, half at the door; split the other half, a quarter on each back pad.
+  static void PlusN31(ExpansionContext c)
+  {
+   var door=PlusTwoRooms(c);c.Spawn=new Vector3(-.20f,-.25f,-.215f);
+   var heavy=ExpansionPad(c,"A",new Vector3(-.06f,-.298f,-.21f),HalfLoad,.10f);PadGauge(heavy,2);
+   var left=ExpansionPad(c,"A",new Vector3(-.34f,-.298f,.21f),.009f,.10f);PadGauge(left,1);
+   var right=ExpansionPad(c,"A",new Vector3(-.06f,-.298f,.21f),.009f,.10f);PadGauge(right,1);
+   PlusLatch(c,"Three pads open the door",new[]{heavy,left,right},door,false,true); // stays open: it never closes on a body
+   NextTrace("A",new Vector3(-.01f,-.2992f,-.21f),new Vector3(.03f,-.2992f,-.21f));
+   NextTrace("A",new Vector3(-.34f,-.2992f,.26f),new Vector3(-.34f,-.2992f,.28f),new Vector3(.02f,-.2992f,.28f),new Vector3(.02f,-.2992f,-.14f));
+   NextTrace("A",new Vector3(-.01f,-.2992f,.21f),new Vector3(.02f,-.2992f,.21f));
+  }
+
+  // N32 · 32 · Nặng đi trước (plan 5.4, level 12's crossing). Low block B parks in the crossing and needs the whole body
+  // (100 %); tall block A is bolted until pad A is loaded, so it needs a split: one part on the pad, one pushing. Push B
+  // aside while whole, then split; merged again, push B back as the low step and climb B, A, the island. Split first and
+  // the half strains at B and lets go; merging back fixes it.
+  static void PlusN32(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.27f,-.142f,.30f);c.Spawn=new Vector3(-.18f,-.25f,-.22f);c.Definition.CameraEuler=new Vector3(44,20,0);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   NextPlinth(c,"Exit island",new Vector3(.27f,-.255f,.175f),new Vector3(.22f,.09f,.23f));
+   NextQuantum(c,new Vector3(.25f,-.30f,-.17f),.025f,.12f);
+   var a=NextCrate(c,"A",new Vector3(-.20f,-.27f,.14f),Vector3.right,.296f,new Vector3(.12f,.06f,.14f),floor,new Vector3(0,0,-.078f),new Vector3(0,0,-.052f),.05f,.012f,0,true);
+   // B holds back .45 N: a whole body pushes .67 N at most, a half .34 N.
+   var b=NextCrate(c,"B",new Vector3(-.028f,-.285f,-.14f),Vector3.forward,.28f,new Vector3(.12f,.03f,.14f),floor,new Vector3(0,0,-.078f),new Vector3(0,0,-.052f),.08f,.45f,.28f,true);
+   b.CompensateLoad=true;b.LoadShare=1;
+   TapLabel(c.Root,"100%",new Vector3(-.028f,-.2985f,-.235f));
+   var pad=ExpansionPad(c,"A",new Vector3(-.33f,-.298f,-.03f),.009f,.09f);PadGauge(pad,1);
+   var bolt=PlusGate(c,"A lock bolt",new Vector3(-.285f,-.285f,.14f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
+   PlusLatch(c,"Pad A draws the bolt",new[]{pad},bolt,false,false);
+   a.RequiredRail=bolt;a.RequiredEnd=true;
+   NextTrace("A",new Vector3(-.33f,-.2992f,.015f),new Vector3(-.33f,-.2992f,.14f),new Vector3(-.30f,-.2992f,.14f));
+   NextOutline(c,"A parking outline",new Vector3(.096f,-.2995f,.14f),new Vector2(.125f,.145f));
+   NextOutline(c,"B waiting bay outline",new Vector3(-.028f,-.2995f,-.14f),new Vector2(.125f,.145f));
+  }
+
+  // N34 · 34 · Bập bênh nâng bạn (plan 5.4). A balance lift: the tray by the slick high bank and the counter tray on the floor
+  // hang from one beam. The heavier side goes down: half a body on the counter tray lifts a quarter to the bank, where it
+  // pulls B (the exit step slides out). Half with half, or quarter with quarter, balances and nothing moves. The quarter
+  // rides back down once the counterweight steps off; all merge and climb to the exit.
+  static void PlusN34(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.23f,-.172f,.30f);c.Spawn=new Vector3(-.30f,-.25f,-.20f);c.Definition.CameraEuler=new Vector3(44,20,0);NextShell(c,.10f,true);
+   var bank=Top(NextPlinth(c,"High bank",new Vector3(.27f,-.24f,-.16f),new Vector3(.26f,.12f,.28f)));
+   var bridge=NextDrawerPlatform(c,.23f,.13f,.17f,.26f);
+   NextQuantum(c,new Vector3(-.22f,-.30f,.12f),.025f,.13f);
+   // B only moves its own handle (a quarter pulls .17 N at most); once it is home a latch drives the step out.
+   var b=ViewTask(c,"B",new Vector3(.25f,-.157f,-.10f),Vector3.right,.05f,bank);b.OneWay=true;
+   var step=PlusLatch(c,"B slides the exit step out",new COgheTissueSensor[0],bridge,false,true);step.Rails=new[]{b.Rail};
+   // Lift tray: from the floor up to 2 mm above the bank top, 2 cm off its face (a flush tray's side panel rubbed the bank).
+   var rail=ExpansionRail(c,"A lift tray",new Vector3(.06f,-.292f,-.16f),Vector3.up,.108f,0,new Vector3(.12f,.012f,.12f),.03f,.004f,false,false);
+   rail.GetComponent<VenomMovableProp>().Manipulable=false;TrimSideSlabs(rail);
+   // A 1.2 cm deck with ivory sides: a quarter could not board over a 2 cm slick edge. Raised, it hangs 11 cm up: no ladder.
+   foreach(var f in rail.GetComponentsInChildren<VenomSurfacePatch>())f.MotionFrame=rail.Body;
+   var rider=new GameObject("A lift rider weight",typeof(COgheTissueSensor)).GetComponent<COgheTissueSensor>();rider.transform.SetParent(rail.transform,false);rider.transform.localPosition=new Vector3(0,.007f,0);rider.Size=new Vector2(.12f,.12f);rider.Column=.10f;
+   // A wide counter tray: a half standing off-centre still weighs whole (on a 12 cm tray it read .036 against .024: "balanced").
+   var counter=ExpansionPad(c,"A",new Vector3(-.12f,-.298f,-.16f),.009f,.14f);counter.Column=.10f;
+   var lift=new GameObject("A balance lift",typeof(COgheBalanceLift)).GetComponent<COgheBalanceLift>();lift.transform.SetParent(c.Root,false);
+   lift.Rising=rail;lift.RisingLoad=rider;lift.CounterLoad=counter;lift.Margin=.008f;
+   // Beam on a post in front of the trays; one rope from the counter tray over the beam down to the lift tray.
+   var blue=COgheDayLabBuilder.Circuit(c.Game,"A").body;
+   MechanismVisual(c.Root,"Balance post",new Vector3(-.03f,-.18f,-.25f),new Vector3(.012f,.24f,.012f),plastic);
+   lift.Beam=new GameObject("Balance beam").transform;lift.Beam.SetParent(c.Root,false);lift.Beam.localPosition=new Vector3(-.03f,-.06f,-.25f);
+   MechanismVisual(lift.Beam,"Balance beam bar",Vector3.zero,new Vector3(.21f,.008f,.014f),blue);
+   Transform Mark(Transform parent,string name,Vector3 at){var t=new GameObject(name).transform;t.SetParent(parent,false);t.localPosition=at;return t;}
+   lift.CounterEnd=Mark(lift.Beam,"Beam counter end",new Vector3(-.09f,0,0));lift.RisingEnd=Mark(lift.Beam,"Beam lift end",new Vector3(.09f,0,0));
+   lift.CounterAnchor=Mark(c.Root,"Counter tray rope",new Vector3(-.12f,-.296f,-.225f));lift.RisingAnchor=Mark(rail.transform,"Lift tray rope",new Vector3(0,.007f,-.065f));
+   lift.Rope=lift.gameObject.AddComponent<LineRenderer>();lift.Rope.useWorldSpace=true;lift.Rope.startWidth=lift.Rope.endWidth=.0028f;lift.Rope.sharedMaterial=metal;
+   NextOutline(c,"Counter tray outline",new Vector3(-.12f,-.2995f,-.16f),new Vector2(.15f,.15f));
+   NextTrace("B",new Vector3(.33f,-.1792f,-.10f),new Vector3(.385f,-.1792f,-.10f),new Vector3(.385f,-.1792f,-.04f));
+  }
+
+  // N33 · 33 · Hai phần tư thành một nửa (E09 reworked, plan 5.4). Half a body on A holds the door up. Beyond it, B1 and B2
+  // together lift the cover off pad C for good; C needs half a body as well and slides the pin in the door frame (the door
+  // then stays up). Three parts are needed at once (50 + 25 + 25), and C needs the two quarters merged back into a half.
+  static void PlusN33(ExpansionContext c)
+  {
+   var door=PlusTwoRooms(c);c.Spawn=new Vector3(-.18f,-.25f,-.215f);
+   var heavy=ExpansionPad(c,"A",new Vector3(-.32f,-.298f,-.20f),HalfLoad,.10f);PadGauge(heavy,2);
+   var b1=ExpansionPad(c,"B1",new Vector3(.14f,-.298f,.22f),.009f,.09f);PadGauge(b1,1);
+   var b2=ExpansionPad(c,"B2",new Vector3(.32f,-.298f,-.22f),.009f,.09f);PadGauge(b2,1);
+   var pc=ExpansionPad(c,"C",new Vector3(.32f,-.298f,.02f),HalfLoad,.10f);PadGauge(pc,2);
+   var cover=PlusGate(c,"B cover",new Vector3(.32f,-.27f,.02f),Vector3.up,.13f,new Vector3(.11f,.05f,.11f));
+   PlusLatch(c,"B1 and B2 lift the cover",new[]{b1,b2},cover,false,true);
+   // The pin sits in the door frame on the near side, at the top of the doorway; C slides it under the raised door.
+   var pin=PlusGate(c,"C door pin",new Vector3(.022f,-.115f,-.275f),Vector3.forward,.03f,new Vector3(.02f,.016f,.03f));
+   PlusLatch(c,"C pins the door",new[]{pc},pin,false,true);
+   var safe=new GameObject("Door safety",typeof(COgheTissueClearance)).GetComponent<COgheTissueClearance>();safe.transform.SetParent(c.Root,false);safe.transform.localPosition=new Vector3(.05f,-.25f,-.20f);safe.Size=new Vector3(.06f,.10f,.12f);
+   var hold=PlusLatch(c,"A holds, the pin keeps the door",new[]{heavy},door,true,false);hold.Rails=new[]{pin};hold.Clearance=safe;
+   NextTrace("A",new Vector3(-.27f,-.2992f,-.20f),new Vector3(-.05f,-.2992f,-.27f),new Vector3(.03f,-.2992f,-.27f));
+   NextTrace("B",new Vector3(.185f,-.2992f,.22f),new Vector3(.32f,-.2992f,.22f),new Vector3(.32f,-.2992f,.085f));
+   NextTrace("B",new Vector3(.32f,-.2992f,-.175f),new Vector3(.32f,-.2992f,-.045f));
+   NextTrace("C",new Vector3(.265f,-.2992f,.02f),new Vector3(.09f,-.2992f,.02f),new Vector3(.09f,-.2992f,-.275f),new Vector3(.07f,-.2992f,-.275f));
+  }
+
+  // N35 · 35 · Ba phần tư (plan 5.4). Next 25's room with one pad: a quarter on A1 draws the bolt from heavy block B, and B
+  // needs three quarters (75 %): half a body strains and lets go. Q only halves, so split, split one half again, a quarter
+  // on A1, and the other quarter joins the half to push B into its socket. Then all merge and climb B.
+  static void PlusN35(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.31f,-.142f,.30f);c.Spawn=new Vector3(-.185f,-.25f,-.262f);c.Definition.CameraEuler=new Vector3(44,20,0);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   NextQuantum(c,new Vector3(-.185f,-.30f,-.18f),.025f,.13f);
+   NextPlinth(c,"Exit platform",new Vector3(.3125f,-.255f,.15f),new Vector3(.175f,.09f,.30f));
+   NextPlinth(c,"Fixed low step",new Vector3(.17f,-.285f,.0125f),new Vector3(.10f,.03f,.085f));
+   // .42 N of dry friction: half a body pushes .34 N at most, three quarters .50 N.
+   var b=NextCrate(c,"B",new Vector3(-.02f,-.27f,.12f),Vector3.right,.19f,new Vector3(.10f,.06f,.12f),floor,new Vector3(-.058f,-.015f,0),new Vector3(-.052f,0,0),.08f,.42f,0,true);
+   b.Handle.localRotation=Quaternion.Euler(0,90,0);b.StallSeconds=4;b.CompensateLoad=true;b.LoadShare=.75f;
+   TapLabel(c.Root,"75%",new Vector3(-.02f,-.2985f,.035f));
+   var a1=ExpansionPad(c,"A1",new Vector3(-.31f,-.298f,.16f),.009f,.09f);PadGauge(a1,1);
+   var bolt=ViewGate(c,"A lock bolt",new Vector3(.05f,-.285f,.195f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
+   PlusLatch(c,"A1 draws the bolt",new[]{a1},bolt,false,false);
+   b.RequiredRail=bolt;b.RequiredEnd=true;
+   NextTrace("A",new Vector3(-.31f,-.2992f,.21f),new Vector3(-.31f,-.2992f,.25f),new Vector3(.05f,-.2992f,.25f),new Vector3(.05f,-.2992f,.205f));
+   NextOutline(c,"B socket",new Vector3(.17f,-.2995f,.12f),new Vector2(.105f,.125f));
+  }
+
+  // N40 · 40 · BOSS Cân ba phần tư (plan 5.4). The scale in the start room accepts exactly three quarters: a whole body tips
+  // its pan down (too heavy, a red tile lights), half a body leaves the counterweight down. Its axle pin is drawn only while
+  // a part stands on pad B in the side room, behind door A (half a body on A holds it; from inside, any part on the pad by
+  // the door). The scale slides out the step of the exit platform in the side room for good, and with it opens the door. Split; half holds A; split
+  // the other half; a quarter goes to B; the half leaves A for the pan and the other quarter joins it. Holder pads stand off
+  // every way a part walks: parts that touch fuse.
+  static void PlusN40(ExpansionContext c)
+  {
+   var door=PlusTwoRooms(c,new Vector3(.23f,-.172f,.30f),Vector3.forward);c.Spawn=new Vector3(-.18f,-.25f,-.215f);var coral=COgheDayLabBuilder.Circuit(c.Game,"B").body;
+   var bridge=NextDrawerPlatform(c,.23f,.13f,.17f,.26f);
+   var heavy=ExpansionPad(c,"A",new Vector3(-.32f,-.298f,-.20f),HalfLoad,.10f);PadGauge(heavy,2);
+   // The pan weighs the whole part (a 10 cm column): exactly 24 of 32 particles (.072 kg) sits in the window.
+   var scale=ExpansionPad(c,"B",new Vector3(-.30f,-.298f,.20f),.060f,.12f);scale.Column=.10f;scale.MaxLoad=.084f;PadGauge(scale,3);
+   scale.Overload=MechanismVisual(scale.transform,"Gauge overload",new Vector3(.044f,-.0004f,-.074f),new Vector3(.014f,.0012f,.014f),SpatialMaterial("Scale overload red",new Color(.86f,.24f,.20f))).GetComponent<Renderer>();
+   MechanismVisual(scale.transform,"Gauge slot",new Vector3(.044f,-.0012f,-.074f),new Vector3(.017f,.0014f,.017f),plastic);
+   TapLabel(c.Root,"75%",new Vector3(-.30f,-.2985f,.10f));
+   // Beam behind the pan: pan end left, the three-quarter counterweight right.
+   MechanismVisual(c.Root,"Scale post",new Vector3(-.30f,-.24f,.28f),new Vector3(.012f,.12f,.012f),plastic);
+   var beam=new GameObject("Scale beam").transform;beam.SetParent(c.Root,false);beam.localPosition=new Vector3(-.30f,-.18f,.28f);scale.Beam=beam;
+   MechanismVisual(beam,"Scale beam bar",Vector3.zero,new Vector3(.16f,.008f,.014f),coral);
+   MechanismVisual(beam,"Scale pan hanger",new Vector3(-.075f,-.014f,0),new Vector3(.02f,.02f,.02f),plastic);
+   MechanismVisual(beam,"Scale counterweight",new Vector3(.072f,-.016f,0),new Vector3(.03f,.026f,.024f),coral);
+   var pin=MechanismVisual(c.Root,"B axle pin",new Vector3(-.30f,-.18f,.265f),new Vector3(.012f,.012f,.012f),coral,PrimitiveType.Cylinder);pin.localRotation=Quaternion.Euler(90,0,0);
+   // Side room: pad B (any part) draws the axle pin; the pad inside the door lets any part out again.
+   var axle=ExpansionPad(c,"B",new Vector3(.32f,-.298f,-.22f),.009f,.09f);PadGauge(axle,1);
+   var inside=ExpansionPad(c,"A",new Vector3(.12f,-.298f,-.07f),.009f,.09f);PadGauge(inside,1);
+   var weigh=PlusLatch(c,"Exactly three quarters, axle pin drawn",new[]{scale,axle},bridge,false,true);weigh.Pins=new Transform[]{null,pin};
+   var safe=new GameObject("Door safety",typeof(COgheTissueClearance)).GetComponent<COgheTissueClearance>();safe.transform.SetParent(c.Root,false);safe.transform.localPosition=new Vector3(.05f,-.25f,-.20f);safe.Size=new Vector3(.06f,.10f,.12f);
+   var hold=PlusLatch(c,"A holds the door; the open exit keeps it",new[]{heavy,inside},door,true,false);hold.Rails=new[]{bridge};hold.Clearance=safe;
+   NextTrace("A",new Vector3(-.27f,-.2992f,-.20f),new Vector3(-.05f,-.2992f,-.27f),new Vector3(.03f,-.2992f,-.27f));
+   NextTrace("A",new Vector3(.075f,-.2992f,-.07f),new Vector3(.068f,-.2992f,-.07f));
+   NextTrace("B",new Vector3(.32f,-.2992f,-.175f),new Vector3(.32f,-.2992f,.02f),new Vector3(.23f,-.2992f,.02f));
+   NextTrace("B",new Vector3(-.30f,-.2992f,.26f),new Vector3(-.30f,-.2992f,.275f));
+  }
+
+  // ---- chapter 5 rebuilt (plan 5.5: gears) ---------------------------------------------------------------------
+  // N44 · 44 · Bánh đệm đổi chiều. The motor gear and the step's output gear stand 16 cm apart. Straight gear A (already in
+  // the gap) makes a three-wheel train: on P the step runs back into the platform. The idler pair B (two gears in a zigzag)
+  // makes four wheels and the step runs out. Both in at once jam. So: see it run back, draw A out, push B in, P, climb.
+  static void PlusN44(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.20f,-.172f,.30f);c.Spawn=new Vector3(-.28f,-.25f,-.22f);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   var drawer=NextDrawerPlatform(c,.20f,.12f,.17f,.26f);
+   // The step starts 3 cm out (not yet a step): the wrong way it visibly runs back in.
+   drawer.InitialTravel=.03f;drawer.transform.localPosition=drawer.Start+drawer.Axis.normalized*.03f;
+   // The table carries the gear row only: B's carriage stops just behind it. 5 cm tall: a 3 cm slick table is a step, and
+   // the way to B ran over it into the gears.
+   float y=PlusGearTable(c,"Gear table",new Vector3(-.18f,0,0),new Vector2(.26f,.10f),-.25f);
+   var pad=ExpansionPad(c,"P",new Vector3(-.32f,-.298f,-.16f),.009f,.10f);
+   var m=PlusGear(c.Root,"Motor gear",new Vector3(-.26f,y,0));var o=PlusGear(c.Root,"Output gear",new Vector3(-.10f,y,0));
+   var shaft=new GameObject("Motor gear shaft").transform;shaft.SetParent(c.Root,false);shaft.localPosition=m.localPosition;shaft.localRotation=m.localRotation;
+   MechanismVisual(c.Root,"Drawer drive shaft",new Vector3(-.015f,-.266f,0),new Vector3(.17f,.006f,.012f),metal);
+   // A: one gear straight into the gap, in from the start.
+   var a=PlusGearCarriage(c,"A",new Vector3(-.18f,-.277f,-.19f),Vector3.forward,.10f,floor,y,.09f,out var ga);
+   a.Rail.InitialTravel=a.Rail.Travel;a.Rail.transform.localPosition=a.Rail.Start+a.Rail.Axis.normalized*a.Rail.Travel;
+   // B: the idler pair, in from the back; its gears land 6.93 cm behind the row, 8 cm from each other and from both ends.
+   // Pushed from behind its block: in front of it is the gear table.
+   var b=ViewTask(c,"B",new Vector3(-.18f,-.277f,.17f),Vector3.back,.07f,floor);b.StandOffset=new Vector3(0,0,.095f);
+   const float zig=.0693f;float arm=.17f-.07f-zig;
+   var gb1=PlusGear(b.Rail.transform,"B idler gear",new Vector3(-.04f,y+.277f,-arm));var gb2=PlusGear(b.Rail.transform,"B idler gear",new Vector3(.04f,y+.277f,-arm));
+   MechanismVisual(b.Rail.transform,"B gear arm",new Vector3(0,y+.277f-.004f,-arm*.5f),new Vector3(.088f,.006f,arm+.008f),metal);
+   foreach(var f in b.Rail.GetComponentsInChildren<VenomSurfacePatch>(true))f.Slippery=true;b.Rail.LatchAtEnd=true;
+   var straight=PlusTrain(c,"A runs the step back",pad,drawer,false,null,m,ga,o);
+   var idler=PlusTrain(c,"B runs the step out",pad,drawer,false,null,shaft,gb1,gb2,o);
+   foreach(var t in new[]{straight,idler}){t.Reversible=true;t.LatchOutput=false;}
+   NextTrace("P",new Vector3(-.32f,-.2992f,-.11f),new Vector3(-.32f,-.2992f,0),new Vector3(-.30f,-.2992f,0));
+  }
+
+  // N45 · 45 · Ai chạy máy (E15 reworked, plan 5.5). The motor pulls with twice the driver's weight (weighed whole, shown in
+  // quarters on P's gauge) and a spring holds the lift back. Half drives half: the lift stalls half way. Half drives a
+  // quarter: three quarters of the way. Three quarters drive a quarter: to the top. Then the rider raises the top step
+  // with C and the driver climbs.
+  static void PlusN45(ExpansionContext c)
+  {
+   PlusE15(c,.012f); // a 1.2 cm deck: a quarter could not board over a 3 cm edge (as in N34)
+   var pad=c.Root.GetComponentsInChildren<COgheTissueSensor>().First(p=>p.name.StartsWith("P "));pad.Column=.10f;pad.GaugeFull=.096f;PadGauge(pad,4);
+   var train=c.Root.GetComponentsInChildren<COgheGearTrain>().First();
+   // At the top (16.8 cm) the spring holds back 1.05 N: 2 × .072 kg × g = 1.41 N lifts a quarter (.24 N) past it.
+   train.ForcePerLoad=2*9.81f;train.RackSpring=6.28f;
+   // Ivory deck sides, as N34's tray. Raised, the deck hangs clear of the floor.
+   foreach(var f in train.Rack.GetComponentsInChildren<VenomSurfacePatch>())if(f.Normal.y<.9f)f.Slippery=false;
+  }
+
+  // ---- chapter 5, part 2 ------------------------------------------------------------------------------------------
+  // A lamp beside a train: dark until every link meshes, then lit (plan 5.5: "đèn khớp").
+  static void PlusMeshLamp(ExpansionContext c,COgheGearTrain train,Vector3 at)
+  {
+   MechanismVisual(c.Root,train.name+" lamp base",at+Vector3.down*.005f,new Vector3(.024f,.003f,.024f),metal,PrimitiveType.Cylinder);
+   train.MeshLamp=MechanismVisual(c.Root,train.name+" mesh lamp",at,new Vector3(.016f,.008f,.016f),plastic,PrimitiveType.Sphere).GetComponent<Renderer>();
+   train.MeshLampOn=SpatialMaterial("Mesh lamp lit",new Color(.40f,.86f,.58f));train.MeshLampOff=SpatialMaterial("Mesh lamp dark",new Color(.34f,.35f,.37f));
+   train.MeshLamp.sharedMaterial=train.MeshLampOff;
+  }
+  // The empty slot a gear goes into: a thin ring on the table (plan 5.5: "vòng khe trống").
+  static void PlusSlotRing(ExpansionContext c,string name,Vector3 at,float radius)
+  {
+   var t=new GameObject(name).transform;t.SetParent(c.Root,false);t.localPosition=at;t.localRotation=Quaternion.Euler(-90,0,0);
+   Ring(t,Vector2.zero,radius,.0025f,metal);
+  }
+  static Transform PlusSmallGear(Transform parent,string name,Vector3 local){var g=MeshingStationWheel(parent,name,local,.03f,14,0);g.localRotation=Quaternion.Euler(90,0,0);return g;}
+  // A pad that weighs the whole part on it and shows it in quarters (N45's motor pad).
+  static COgheTissueSensor PlusWeighPad(ExpansionContext c,string name,Vector3 at)
+  {
+   var pad=ExpansionPad(c,name,at,.009f,.10f);pad.Column=.10f;pad.GaugeFull=.096f;PadGauge(pad,4);return pad;
+  }
+
+  // N41 · 41 · Bánh răng đầu tiên (E08 and E12 merged, plan 5.5: teaches gears). On P with the gap open only the motor gear
+  // turns; the gap is a ring on the table and the lamp beside the train stays dark. Pull A: its carriage brings G into the
+  // ring and the lamp lights; on P the output gear draws the step out of the exit platform.
+  static void PlusN41(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.20f,-.172f,.30f);c.Spawn=new Vector3(-.28f,-.25f,-.22f);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   var drawer=NextDrawerPlatform(c,.20f,.12f,.17f,.26f);
+   // E12's table, 4 cm longer on the right for the lamp.
+   float y=PlusGearTable(c,"Gear table",new Vector3(-.12f,0,.08f),new Vector2(.30f,.10f));
+   var pad=ExpansionPad(c,"P",new Vector3(-.32f,-.298f,-.16f),.009f,.10f);
+   var g0=PlusGear(c.Root,"Motor gear",new Vector3(-.22f,y,.08f));var g2=PlusGear(c.Root,"Output gear",new Vector3(-.06f,y,.08f));
+   PlusGearCarriage(c,"A",new Vector3(-.14f,-.277f,-.20f),Vector3.forward,.19f,floor,y,.09f,out var gear);
+   MechanismVisual(c.Root,"Drawer drive shaft",new Vector3(.085f,-.266f,.08f),new Vector3(.11f,.006f,.012f),metal);
+   var train=PlusTrain(c,"G completes the train",pad,drawer,false,null,g0,gear,g2);
+   PlusSlotRing(c,"G slot ring",new Vector3(-.14f,y-.0075f,.08f),.047f);
+   PlusMeshLamp(c,train,new Vector3(.005f,y,.05f));
+   NextTrace("A",new Vector3(-.32f,-.2992f,-.11f),new Vector3(-.32f,-.2992f,.08f),new Vector3(-.27f,-.2992f,.08f));
+   PlusStep(1,new Vector3(-.32f,-.29f,-.16f));PlusStep(2,new Vector3(-.14f,-.29f,-.24f));PlusStep(3,new Vector3(-.32f,-.29f,-.16f));PlusStep(4,new Vector3(.20f,-.27f,.07f));PlusStep(5,new Vector3(.20f,-.24f,.21f));
+   PlusGhost("G",new Vector3(-.14f,y,.08f));
+  }
+
+  // N42 · 42 · Hai xe chéo nhau (plan 5.5: level 12's crossing with gear carts). The train runs motor M → A's slot → B's slot
+  // → output O in an L. Cart A comes in from the front: its small gear (3 cm) passes through B's slot on the way to its own,
+  // on a low arm that runs under B's gear. Cart B comes in from the left. B starts in its slot, in A's way: A refuses. So
+  // B out, A in, B back in; on P the step runs out.
+  static void PlusN42(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.20f,-.172f,.30f);c.Spawn=new Vector3(.05f,-.25f,-.20f);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   var drawer=NextDrawerPlatform(c,.20f,.12f,.17f,.26f);
+   // A 5 cm table (a 3 cm slick table is a step); gears ride 1.4 cm over it so A's arm passes under B's gear.
+   float y=PlusGearTable(c,"Gear table",new Vector3(-.12f,0,.05f),new Vector2(.19f,.24f),-.25f)+.006f;
+   const float xc=-.16f;
+   var m=PlusGear(c.Root,"Motor gear",new Vector3(xc,y,.12f));var o=PlusGear(c.Root,"Output gear",new Vector3(-.08f,y,-.02f));
+   var pad=ExpansionPad(c,"P",new Vector3(-.33f,-.298f,-.20f),.009f,.10f);
+   // Cart A: the 3 cm gear 15 cm behind its body; in, it meshes the motor behind it and B's gear in front. Pushed from
+   // its right side (behind it is the front glass).
+   var a=ViewTask(c,"A",new Vector3(xc,-.277f,-.25f),Vector3.forward,.15f,floor);a.StandOffset=new Vector3(.065f,0,0);
+   var ga=PlusSmallGear(a.Rail.transform,"A carried gear",new Vector3(0,y+.277f,.15f));
+   MechanismVisual(a.Rail.transform,"A low gear arm",new Vector3(0,y+.277f-.010f,.087f),new Vector3(.010f,.004f,.126f),metal);
+   MechanismVisual(a.Rail.transform,"A gear post",new Vector3(0,y+.277f-.0065f,.15f),new Vector3(.008f,.0035f,.008f),metal,PrimitiveType.Cylinder);
+   foreach(var f in a.Rail.GetComponentsInChildren<VenomSurfacePatch>(true))f.Slippery=true;
+   // Cart B: in from the left; it starts in its slot.
+   var b=PlusGearCarriage(c,"B",new Vector3(-.345f,-.277f,-.02f),Vector3.right,.09f,floor,y,.095f,out var gb);
+   b.Rail.InitialTravel=b.Rail.Travel;b.Rail.transform.localPosition=b.Rail.Start+b.Rail.Axis.normalized*b.Rail.Travel;
+   a.RequiredRail=b.Rail;a.RequiredEnd=false; // B's gear sits in A's lane
+   var train=PlusTrain(c,"A and B close the train",pad,drawer,false,null,m,ga,gb,o);train.PitchRadii[1]=.03f;train.ToothCounts[1]=14;
+   PlusSlotRing(c,"A slot ring",new Vector3(xc,-.2495f,.05f),.036f);
+   PlusMeshLamp(c,train,new Vector3(-.06f,y,.10f));
+   MechanismVisual(c.Root,"Drawer drive shaft",new Vector3(.05f,-.296f,-.02f),new Vector3(.18f,.006f,.012f),metal);
+   MechanismVisual(c.Root,"Drawer drive shaft",new Vector3(.14f,-.296f,.05f),new Vector3(.012f,.006f,.15f),metal);
+   NextTrace("P",new Vector3(-.33f,-.2992f,-.15f),new Vector3(-.33f,-.2992f,.12f),new Vector3(-.215f,-.2992f,.12f));
+   PlusStep(1,new Vector3(xc,-.29f,-.25f));PlusStep(2,new Vector3(-.30f,-.29f,-.07f));PlusStep(3,new Vector3(xc,-.29f,-.25f));PlusStep(4,new Vector3(-.30f,-.29f,-.07f));
+   PlusStep(5,new Vector3(-.33f,-.29f,-.20f));PlusStep(6,new Vector3(.20f,-.27f,.07f));PlusStep(7,new Vector3(.20f,-.24f,.21f));
+   PlusLabel("K1",new Vector3(xc,-.26f,-.20f));PlusLabel("K2",new Vector3(-.30f,-.26f,-.02f));
+  }
+
+  // N47 · 47 · Mượn bánh (plan 5.5). One gear G, two machines. G's cart starts in machine 1 (front row); a gate across its
+  // lane keeps it there. Machine 1 (pad P1) lifts the gate, which latches up. Then G is free to go back to machine 2 (back
+  // row, pad P2), which draws the step out of the exit platform. Machine 2 first: nothing turns (its slot is an empty ring).
+  static void PlusN47(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.20f,-.172f,.30f);c.Spawn=new Vector3(.10f,-.25f,-.20f);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   var drawer=NextDrawerPlatform(c,.20f,.12f,.17f,.26f);
+   float y=PlusGearTable(c,"Gear table",new Vector3(-.10f,0,.045f),new Vector2(.27f,.225f),-.25f);
+   var p1=ExpansionPad(c,"P1",new Vector3(-.33f,-.298f,-.10f),.009f,.10f);var p2=ExpansionPad(c,"P2",new Vector3(-.33f,-.298f,.12f),.009f,.10f);
+   var m1=PlusGear(c.Root,"Machine 1 motor",new Vector3(-.18f,y,-.02f));var o1=PlusGear(c.Root,"Machine 1 output",new Vector3(-.02f,y,-.02f));
+   var m2=PlusGear(c.Root,"Machine 2 motor",new Vector3(-.18f,y,.10f));var o2=PlusGear(c.Root,"Machine 2 output",new Vector3(-.02f,y,.10f));
+   // G's cart: on the floor in front of the table, the gear 20 cm behind it on an arm. Start: machine 1; end: machine 2.
+   var g=ViewTask(c,"G",new Vector3(-.10f,-.277f,-.22f),Vector3.forward,.12f,floor);
+   var gear=PlusGear(g.Rail.transform,"G carried gear",new Vector3(0,y+.277f,.20f));
+   MechanismVisual(g.Rail.transform,"G gear arm",new Vector3(0,y+.277f-.004f,.1135f),new Vector3(.010f,.006f,.181f),metal);
+   foreach(var f in g.Rail.GetComponentsInChildren<VenomSurfacePatch>(true))f.Slippery=true;
+   // The gate: a 5 cm bar across G's lane just behind the cart (G's arm passes 1 mm over it, its gear beyond it). Machine 1
+   // lifts it 8 cm and it latches up.
+   var gate=PlusGate(c,"A gate",new Vector3(-.10f,-.275f,-.18f),Vector3.up,.08f,new Vector3(.08f,.05f,.012f));gate.LatchAtEnd=true;
+   foreach(float x in new[]{-.15f,-.05f})MechanismVisual(c.Root,"A gate post",new Vector3(x,-.25f,-.18f),new Vector3(.010f,.10f,.010f),metal);
+   g.RequiredRail=gate;g.RequiredEnd=true;
+   var t1=PlusTrain(c,"Machine 1 lifts the gate",p1,gate,false,null,m1,gear,o1);
+   var t2=PlusTrain(c,"Machine 2 draws the step",p2,drawer,false,null,m2,gear,o2);
+   PlusSlotRing(c,"Machine 2 slot ring",new Vector3(-.10f,-.2495f,.10f),.047f);
+   PlusMeshLamp(c,t1,new Vector3(.02f,y,-.06f));PlusMeshLamp(c,t2,new Vector3(.02f,y,.145f));
+   MechanismVisual(c.Root,"Gate drive shaft",new Vector3(.045f,-.296f,-.10f),new Vector3(.012f,.006f,.16f),metal);
+   MechanismVisual(c.Root,"Gate drive shaft",new Vector3(-.0075f,-.296f,-.18f),new Vector3(.105f,.006f,.012f),metal);
+   MechanismVisual(c.Root,"Drawer drive shaft",new Vector3(.0875f,-.266f,.10f),new Vector3(.105f,.006f,.012f),metal);
+   NextTrace("A",new Vector3(-.28f,-.2992f,-.10f),new Vector3(-.255f,-.2992f,-.10f),new Vector3(-.255f,-.2992f,-.02f),new Vector3(-.235f,-.2992f,-.02f));
+   NextTrace("B",new Vector3(-.28f,-.2992f,.12f),new Vector3(-.255f,-.2992f,.12f),new Vector3(-.255f,-.2992f,.10f),new Vector3(-.235f,-.2992f,.10f));
+   PlusLabel("máy 1",new Vector3(-.10f,-.23f,-.07f));PlusLabel("máy 2",new Vector3(-.10f,-.23f,.16f));
+   PlusStep(1,new Vector3(-.33f,-.29f,-.10f));PlusStep(2,new Vector3(-.10f,-.29f,-.27f));PlusStep(3,new Vector3(-.33f,-.29f,.12f));PlusStep(4,new Vector3(.20f,-.27f,.07f));PlusStep(5,new Vector3(.20f,-.24f,.21f));
+  }
+
+  // N49 · 49 · Hai động cơ một cửa (plan 5.5, prepares the boss). Two motors in one train both drive the exit door; each runs
+  // only while its pad is loaded and pulls with twice the weight on it, and the pulls add. A spring with a preload holds the
+  // door down: three quarters on the motors open it, half stalls it half way, a quarter does not move it. Pad C (any part)
+  // draws the lock bolt out of the output gear. Three pads at once from a body Q only halves: 50 + 25 on the motors, 25 on C.
+  static void PlusN49(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.40f,-.252f,.15f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.20f,-.25f,-.262f);c.Definition.CameraEuler=new Vector3(42,20,0);NextShell(c,.10f,true);
+   NextQuantum(c,new Vector3(-.20f,-.30f,-.20f),.025f,.13f);
+   float y=PlusGearTable(c,"Gear table",new Vector3(.02f,0,.15f),new Vector2(.32f,.08f),-.25f);
+   var m1=PlusGear(c.Root,"Motor 1",new Vector3(-.08f,y,.15f));var m2=PlusGear(c.Root,"Motor 2",new Vector3(0,y,.15f));var o=PlusGear(c.Root,"Door gear",new Vector3(.08f,y,.15f));
+   var p1=PlusWeighPad(c,"P1",new Vector3(-.10f,-.298f,.04f));var p2=PlusWeighPad(c,"P2",new Vector3(.10f,-.298f,.04f));
+   var pc=ExpansionPad(c,"C",new Vector3(.30f,-.298f,-.20f),.009f,.10f);PadGauge(pc,1);
+   // A heavy door (.25 kg): on a 22 g shutter the motor's speed control switched on and off every step and delivered half
+   // its pull (the door stuck at 1 cm under three quarters).
+   var door=PlusGate(c,"Exit door",new Vector3(.392f,-.249f,.15f),Vector3.up,.10f,new Vector3(.012f,.10f,.11f));door.Body.mass=.25f;
+   var bolt=PlusGate(c,"C gear lock",new Vector3(.135f,y,.15f),Vector3.right,.03f,new Vector3(.03f,.01f,.012f));
+   PlusLatch(c,"C draws the lock",new[]{pc},bolt,false,false);
+   var train=PlusTrain(c,"Two motors open the door",p1,door,true,null,m1,m2,o);train.ExtraClutches=new[]{p2};train.PowerRail=bolt;
+   // .072 kg × 2g = 1.41 N against .65 N + 6 N/m × .10 m = 1.25 N at the top; half (.94 N) stalls at 4.8 cm; a quarter
+   // (.47 N) does not lift it.
+   train.ForcePerLoad=2*9.81f;train.RackSpring=6f;train.RackPreload=.65f;train.ReturnWhenDisconnected=true;
+   TapLabel(c.Root,"75%",new Vector3(.30f,-.2985f,.15f));
+   MechanismVisual(c.Root,"Door drive shaft",new Vector3(.285f,-.266f,.15f),new Vector3(.21f,.006f,.012f),metal);
+   NextTrace("A",new Vector3(-.10f,-.2992f,.09f),new Vector3(-.10f,-.2992f,.11f));
+   NextTrace("A",new Vector3(.10f,-.2992f,.09f),new Vector3(.10f,-.2992f,.10f),new Vector3(0,-.2992f,.10f),new Vector3(0,-.2992f,.11f));
+   NextTrace("C",new Vector3(.30f,-.2992f,-.15f),new Vector3(.22f,-.2992f,-.15f),new Vector3(.22f,-.2992f,.11f));
+   PlusStep(1,new Vector3(-.20f,-.27f,-.17f));PlusStep(2,new Vector3(-.10f,-.29f,.04f));PlusStep(3,new Vector3(.30f,-.29f,-.20f));PlusStep(4,new Vector3(.10f,-.29f,.04f));PlusStep(5,new Vector3(.34f,-.29f,.15f));
+   PlusGhost("50%",new Vector3(-.10f,-.28f,.04f));PlusGhost("25%",new Vector3(.10f,-.28f,.04f));PlusGhost("25%",new Vector3(.30f,-.28f,-.20f));
+  }
+
+  // A tube wall tinted with a route's circuit colour (plan 5.5: "ống tô màu theo tuyến").
+  static Material PlusTubeTint(string name,Color tint)
+  {
+   string path=SpatialFolder+"/"+name+".mat";var m=AssetDatabase.LoadAssetAtPath<Material>(path);
+   if(m==null){m=new Material(glass);AssetDatabase.CreateAsset(m,path);}
+   m.CopyPropertiesFromMaterial(glass);var a=glass.HasProperty("_BaseColor")?glass.GetColor("_BaseColor").a:.3f;
+   var c=new Color(tint.r,tint.g,tint.b,Mathf.Max(a,.32f));if(m.HasProperty("_BaseColor"))m.SetColor("_BaseColor",c);m.color=c;EditorUtility.SetDirty(m);return m;
+  }
+
+  // N43 · 43 · Ống theo hộp số (plan 5.5; 15's Y network, the branch chosen by a gearbox). A switch at junction Y lets the
+  // tube take either the left branch (to the balcony) or the right one (to the exit landing), never both. One pad P runs two
+  // motors; gear G, on a cart between the two rows, closes one of them: G in the left row turns the switch to the balcony,
+  // in the right row to the landing. The exit shutter on the landing opens from handle C on the balcony. G and the switch
+  // start on the right: the first trip ends at a shut exit. So: G left, P, tube to the balcony, C, back down the tube,
+  // G right, P, tube to the landing, out. The route is set before going in.
+  static void PlusN43(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.40f,-.052f,.19f);c.Outward=Vector3.right;c.Spawn=new Vector3(.20f,-.25f,-.27f);NextShell(c,.30f,true);var floor=c.Surfaces[0];
+   var balcony=Top(NextPlinth(c,"Left balcony",new Vector3(-.28f,-.21f,.085f),new Vector3(.22f,.18f,.33f)));
+   NextPlinth(c,"Right landing",new Vector3(.27f,-.21f,.12f),new Vector3(.24f,.18f,.34f));
+   var nodes=new[]{new COgheTubeNetwork.Node("Vào",new Vector3(-.08f,-.255f,-.16f),COgheTubeNetwork.TerminalKind.Entry), // left of the gearbox, 14 cm from the glass: a body comes out of it too
+    new COgheTubeNetwork.Node("Y",new Vector3(0,-.10f,.02f)),
+    new COgheTubeNetwork.Node("Ban công",new Vector3(-.215f,-.075f,.10f),COgheTubeNetwork.TerminalKind.Entry),
+    new COgheTubeNetwork.Node("Bến phải",new Vector3(.168f,-.078f,.12f),COgheTubeNetwork.TerminalKind.Entry)};
+   var edges=new[]{Edge("Vào–Y",0,1,nodes,new Vector3(-.075f,-.225f,-.09f),new Vector3(-.04f,-.16f,-.03f)),
+    Edge("Y–Ban công",1,2,nodes,new Vector3(-.08f,-.085f,.06f),new Vector3(-.15f,-.075f,.10f)),
+    Edge("Y–Bến phải",1,3,nodes,new Vector3(.07f,-.09f,.07f),new Vector3(.12f,-.08f,.12f))};
+   var tube=TubeNetwork(c.Root,"Y transfer tube",nodes,edges,.038f,glass);tube.CaptureSurfaceCommandsWhileInside=true;
+   // Where the rising foot is 1–9 cm off the floor a body walking past wedged under it (as E13): slick underfill follows the
+   // tube's underside 6 mm below it.
+   foreach(var p in COgheTubeNetwork.SampleCurve(edges[0].ControlPoints,14))
+   {
+    float top=p.y-.038f-.006f,gap=top+.30f;if(gap<.012f||gap>.09f)continue;
+    foreach(var f in NextPlinth(c,"Tube underfill",new Vector3(p.x,(top-.30f)*.5f,p.z),new Vector3(.05f,gap,.016f)))f.Slippery=true;
+   }
+   edges[1].Geometry.GetComponent<MeshRenderer>().sharedMaterial=PlusTubeTint("Tube tint A blue",new Color(.224f,.498f,.678f));
+   edges[2].Geometry.GetComponent<MeshRenderer>().sharedMaterial=PlusTubeTint("Tube tint B coral",new Color(.784f,.424f,.345f));
+   // The switch in front of Y: at its start the left branch is open, at its end the right one. It starts right.
+   var sw=ViewGate(c,"Y switch",new Vector3(-.015f,-.088f,-.06f),Vector3.right,.03f,new Vector3(.02f,.02f,.02f)); // clear of Y's bowl
+   sw.InitialTravel=sw.Travel;sw.transform.localPosition=sw.Start+sw.Axis.normalized*sw.Travel;
+   edges[1].AccessGate=sw;edges[1].GateAtEnd=false;edges[2].AccessGate=sw;edges[2].GateAtEnd=true;
+   // The exit shutter on the landing, raised for good by handle C on the balcony.
+   var shutter=PlusGate(c,"C exit shutter",new Vector3(.392f,-.052f,.19f),Vector3.up,.10f,new Vector3(.012f,.10f,.10f));
+   var handle=ViewTask(c,"C",new Vector3(-.34f,-.097f,.02f),Vector3.right,.08f,balcony);handle.OneWay=true;
+   ViewLink(c,handle.Rail,shutter,true,ViewExitSurface(c));
+   // The gearbox, front right (right of the tube, as P and the start: crossing the tube's rising foot, a body climbed it): two
+   // rows front to back (motor, slot, output), 16 cm apart; G's cart runs between their slots. G (3.5 cm) between 4 cm
+   // gears on 4.4 cm slick pedestals: the lane between the pedestals is 10.6 cm wide, and the body works the cart from 7.5 cm
+   // beside it (at 6 cm and an 8 cm lane it was pinched between the cart and a pedestal).
+   const float s0=-.18f,xl=.12f,xr=.28f,gy=-.252f,dz=.075f;
+   Transform Wheel(Transform parent,string name,Vector3 local){var w=MeshingStationWheel(parent,name,local,.035f,16,0);w.localRotation=Quaternion.Euler(90,0,0);return w;}
+   foreach(float x in new[]{xl,xr})foreach(float z in new[]{s0-dz,s0+dz})
+    foreach(var f in NextPlinth(c,"Gear pedestal",new Vector3(x,-.28f,z),new Vector3(.044f,.04f,.044f)))f.Slippery=true;
+   var ml=PlusGear(c.Root,"Left motor",new Vector3(xl,gy,s0-dz));var ol=PlusGear(c.Root,"Left output",new Vector3(xl,gy,s0+dz));
+   var mr=PlusGear(c.Root,"Right motor",new Vector3(xr,gy,s0-dz));var ro=PlusGear(c.Root,"Right output",new Vector3(xr,gy,s0+dz));
+   var g=ViewTask(c,"G",new Vector3(xl,-.277f,s0),Vector3.right,xr-xl,floor);g.StandOffset=new Vector3(-.075f,0,0);g.TwoSided=true;
+   g.Rail.InitialTravel=g.Rail.Travel;g.Rail.transform.localPosition=g.Rail.Start+g.Rail.Axis.normalized*g.Rail.Travel;
+   var gear=Wheel(g.Rail.transform,"G carried gear",new Vector3(0,gy+.277f,0));
+   // The knob stands on a post above the gear: at the cart's front it hid behind the front pedestals.
+   MechanismVisual(g.Rail.transform,"G gear post",new Vector3(0,.030f,0),new Vector3(.008f,.017f,.008f),metal,PrimitiveType.Cylinder);
+   g.Handle.localPosition=new Vector3(0,.047f,0);
+   foreach(var f in g.Rail.GetComponentsInChildren<VenomSurfacePatch>(true))f.Slippery=true;
+   var pad=ExpansionPad(c,"P",new Vector3(.04f,-.298f,-.04f),.009f,.08f); // under the tube's top end, 16 cm clear
+   var left=PlusTrain(c,"G left: the switch to the balcony",pad,sw,false,null,ml,gear,ol);
+   var right=PlusTrain(c,"G right: the switch to the landing",pad,sw,false,null,mr,gear,ro);
+   foreach(var t in new[]{left,right}){t.PitchRadii=new[]{.04f,.035f,.04f};t.ToothCounts=new[]{18,16,18};t.Reversible=true;t.LatchOutput=false;}
+   left.ForwardSign=1;right.ForwardSign=-1;
+   // Each row's slot ring takes its branch's colour: G in the blue ring opens the blue branch, in the coral ring the coral one.
+   foreach(var (x,colour) in new[]{(xl,"Circuit A blue"),(xr,"Circuit B coral")})
+   {
+    var t=new GameObject("Slot ring "+colour).transform;t.SetParent(c.Root,false);t.localPosition=new Vector3(x,-.2995f,s0);t.localRotation=Quaternion.Euler(-90,0,0);
+    Ring(t,Vector2.zero,.045f,.004f,AssetDatabase.LoadAssetAtPath<Material>(SpatialFolder+"/"+colour+".mat")??metal);
+   }
+   NextTrace("A",new Vector3(.055f,-.2992f,-.08f),new Vector3(.055f,-.2992f,-.295f),new Vector3(xr,-.2992f,-.295f));
+   PlusLabel("trái",new Vector3(xl,-.24f,s0));PlusLabel("phải",new Vector3(xr,-.24f,s0));
+   PlusStep(1,new Vector3(xr+.06f,-.29f,s0));PlusStep(2,new Vector3(.04f,-.29f,-.04f));PlusStep(3,new Vector3(-.08f,-.255f,-.16f));PlusStep(4,new Vector3(-.34f,-.10f,.07f));
+   PlusStep(5,new Vector3(-.215f,-.075f,.10f));PlusStep(6,new Vector3(xl-.06f,-.29f,s0));PlusStep(7,new Vector3(.04f,-.29f,-.04f));PlusStep(8,new Vector3(.30f,-.10f,.19f));
+  }
+
+  // N46 · 46 · Bàn xoay chở hàng (plan 5.5, a breather). A floor-level turntable (3 cm deck, pointing front to back) carries
+  // crate A on its own rail along the deck. The exit ledge (9 cm, slick) is as high as deck and crate together. Push the crate
+  // to the deck's far end, step off, stand on P: the table turns a quarter and brings the crate against the ledge as the step.
+  // Turned first, the crate lands at the near end; it still slides along the deck to the ledge.
+  static void PlusN46(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.40f,-.165f,.10f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.08f,-.25f,-.22f);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   NextPlinth(c,"Exit ledge",new Vector3(.30f,-.255f,.10f),new Vector3(.20f,.09f,.30f));
+   // The gear train and the table first: on Retry the table returns before the crate is set back on it. The gear table sits
+   // in the front-right corner: in front of the turntable a 7 cm gap to it wedged the body stepping off the deck.
+   float y=PlusGearTable(c,"Gear table",new Vector3(.18f,0,-.22f),new Vector2(.20f,.08f),-.25f);
+   var pad=ExpansionPad(c,"P",new Vector3(-.25f,-.298f,-.24f),.009f,.10f);
+   var g0=PlusGear(c.Root,"Motor gear",new Vector3(.14f,y,-.22f));var g1=PlusGear(c.Root,"Turntable gear",new Vector3(.22f,y,-.22f));
+   MechanismVisual(c.Root,"Turntable drive shaft",new Vector3(.11f,-.296f,-.15f),new Vector3(.22f,.006f,.012f),metal);
+   var train=PlusTrain(c,"P turns the table",pad,null,false,null,g0,g1);
+   MechanismVisual(c.Root,"Turntable pedestal",new Vector3(0,-.2995f,.10f),new Vector3(.12f,.0005f,.12f),metal,PrimitiveType.Cylinder);
+   // 38 cm: its corners sweep 19.9 cm round the axle, clear of the ledge 20 cm away.
+   var deck=Prop(c.Root,"Turntable deck",new Vector3(0,-.284f,.10f),new Vector3(.38f,.03f,.12f),false,plastic,c.Surfaces);c.Props.Add(deck);
+   deck.transform.localRotation=Quaternion.Euler(0,90,0);deck.Body.isKinematic=true;
+   foreach(var f in deck.GetComponentsInChildren<VenomSurfacePatch>()){f.MotionFrame=deck.Body;if(f.Normal.y<.9f)f.Slippery=true;}
+   var top=deck.GetComponentsInChildren<VenomSurfacePatch>().First(f=>f.Normal.y>.9f);
+   var safe=new GameObject("Turntable clearance",typeof(COgheTissueClearance)).GetComponent<COgheTissueClearance>();safe.transform.SetParent(c.Root,false);safe.transform.localPosition=new Vector3(0,-.25f,.10f);safe.Size=new Vector3(.40f,.08f,.40f);
+   var table=new GameObject("Turntable",typeof(COgheTurntable)).GetComponent<COgheTurntable>();table.transform.SetParent(c.Root,false);table.Deck=deck.Body;table.Train=train;table.Clearance=safe;
+   // Crate A on the deck (deck local +x points to the front): from 6 cm in front of the middle to the back end, pushed from
+   // the deck behind it. Its rail rides the deck (as 29's frame), so it turns with it.
+   var crate=NextCrate(c,"A",new Vector3(0,-.237f,.04f),Vector3.forward,.20f,new Vector3(.10f,.06f,.10f),top,new Vector3(0,0,-.058f),new Vector3(0,0,-.05f));
+   MountOnCarrier(c,crate,deck);
+   crate.StandOffset=new Vector3(.05f,0,0); // in the deck's frame (its +x points to the front): behind the crate
+   NextTrace("A",new Vector3(-.20f,-.2992f,-.24f),new Vector3(.08f,-.2992f,-.24f));
+   PlusStep(1,new Vector3(0,-.27f,-.05f));PlusStep(2,new Vector3(-.25f,-.29f,-.24f));PlusStep(3,new Vector3(-.25f,-.29f,-.24f));PlusStep(4,new Vector3(.14f,-.21f,.10f));PlusStep(5,new Vector3(.30f,-.21f,.10f));
+   PlusGhost("90°",new Vector3(0,-.25f,.10f));
+  }
+
+  // N48 · 48 · Hai tầng trục (plan 5.5: E14's column, without walking back). The floor layer (motor M on pad P, the gap A
+  // fills, column gear S0) turns a screw that lifts gear C up the column's side into the upper layer's gap; then the column
+  // carries the turn up (S0 → S1 on one shaft) through C to the bridge gear, and the bridge rises between the mid deck and
+  // the exit ledge. One body: A, P, watch the upper layer close itself, climb the stairs, cross.
+  static void PlusN48(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.40f,-.075f,.20f);c.Outward=Vector3.right;c.Spawn=new Vector3(.20f,-.25f,-.24f);NextShell(c,.30f,true);var floor=c.Surfaces[0];
+   PlusMidDeck(c,out var mid,false);
+   NextPlinth(c,"Exit ledge",new Vector3(.27f,-.21f,.20f),new Vector3(.26f,.18f,.20f));
+   var bridge=PlusRisingDeck(c,"Upper bridge",new Vector3(.025f,-.285f,.20f),new Vector3(.21f,.03f,.18f),.15f);
+   float y0=PlusGearTable(c,"Floor gear table",new Vector3(-.04f,0,-.04f),new Vector2(.10f,.26f),-.25f);
+   PlusGearTable(c,"Screw gear table",new Vector3(.04f,0,.06f),new Vector2(.08f,.08f),-.25f);
+   var pad=ExpansionPad(c,"P",new Vector3(-.12f,-.298f,-.25f),.009f,.09f);
+   var m=PlusGear(c.Root,"Motor gear",new Vector3(-.05f,y0,-.10f));var s0=PlusGear(c.Root,"Column gear, floor",new Vector3(-.05f,y0,.06f));
+   var kf=PlusGear(c.Root,"Screw gear",new Vector3(.03f,y0,.06f));
+   PlusGearCarriage(c,"A",new Vector3(.13f,-.277f,-.02f),Vector3.left,.08f,floor,y0,.10f,out var ga);
+   PlusShaft(c,"Gear column",PlusColumn,-.25f,PlusMidGear+.01f);
+   var s1=PlusGear(c.Root,"Column gear, upper",new Vector3(-.05f,PlusMidGear,.06f));
+   // The screw: a rod up from the screw gear; C rides it, 6 cm under the upper layer until the floor layer turns it up.
+   PlusShaft(c,"C screw",new Vector3(.03f,0,.06f),-.25f,PlusMidGear-.004f);
+   var lift=ExpansionRail(c,"C screw lift",new Vector3(.03f,PlusMidGear-.06f-.012f,.06f),Vector3.up,.06f,0,new Vector3(.024f,.012f,.024f),.05f,.004f,false,false);
+   lift.GetComponent<VenomMovableProp>().Manipulable=false;lift.LatchAtEnd=true;
+   foreach(var f in lift.GetComponentsInChildren<VenomSurfacePatch>(true))f.Slippery=true;
+   var gc=PlusGear(lift.transform,"C lifted gear",new Vector3(0,.012f,0));
+   // The bridge gear beside C on the upper layer, clear of the bridge and the exit ledge.
+   var u=PlusGear(c.Root,"Bridge gear",new Vector3(.0993f,PlusMidGear,.02f));
+   PlusShaft(c,"Bridge drive shaft",new Vector3(.0993f,0,.02f),-.30f,PlusMidGear-.004f);
+   Transform Copy(Transform w,string name){var t=new GameObject(name).transform;t.SetParent(w.parent,false);t.localPosition=w.localPosition;t.localRotation=w.localRotation;return t;}
+   var screw=PlusTrain(c,"The floor layer lifts C",pad,lift,false,null,m,ga,s0,kf);
+   var upper=PlusTrain(c,"The column turns the bridge",pad,bridge,false,new[]{2},Copy(m,"Motor shaft"),Copy(ga,"A gear shaft"),Copy(s0,"Column shaft"),s1,gc,u);
+   upper.SharedWheels=new[]{m,ga,s0};
+   PlusSlotRing(c,"A slot ring",new Vector3(-.05f,-.2495f,-.02f),.047f);
+   PlusMeshLamp(c,upper,new Vector3(-.10f,PlusMidGear-.006f,.02f));
+   NextTrace("A",new Vector3(-.12f,-.2992f,-.205f),new Vector3(-.12f,-.2992f,-.10f),new Vector3(-.09f,-.2992f,-.10f));
+   PlusStep(1,new Vector3(-.12f,-.29f,-.25f));PlusStep(2,new Vector3(.13f,-.29f,-.07f));PlusStep(3,new Vector3(-.12f,-.29f,-.25f));PlusStep(4,new Vector3(-.37f,-.12f,-.16f));PlusStep(5,new Vector3(.025f,-.12f,.20f));PlusStep(6,new Vector3(.30f,-.12f,.20f));
+   PlusLabel("tầng 1",new Vector3(-.05f,-.23f,-.19f));PlusLabel("tầng 2",new Vector3(.03f,-.09f,.06f));
+  }
+
+  // ---- BOSS · 50 · Hộp số (plan 5.5) -----------------------------------------------------------------------------
+  // The gearbox: motor M (weigh pad P: it pulls with twice the weight on P), a gap that straight gear A (in from the start,
+  // from the right) or the idler pair B (from the left) fills, then hub X0. Two outputs share it. The stair gate up to the
+  // mid deck opens with the idler in (reversed); it starts 3 cm up, so the first, wrong direction visibly drops it. The exit
+  // door on the mid deck opens with A in (the first direction), but it is heavy (three quarters on P; half stalls it) and
+  // bolted: pad C beside it draws the bolt only while loaded. So: idler in for the stairs, out again for the door; split so a
+  // quarter holds C up on the deck while three quarters drive. Four trains (two outputs × A or B) share the wheels: each
+  // has its own hidden motor shaft and the visible motor follows the one that turns.
+  static void PlusN50(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.40f,-.075f,.20f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.20f,-.25f,.058f);NextShell(c,.30f,true);var floor=c.Surfaces[0];
+   NextQuantum(c,new Vector3(-.20f,-.30f,.12f),.025f,.13f);
+   // Mid deck (18 cm) at the back right; three stairs in front of it rise toward the right wall (PlusMidDeck mirrored).
+   var mid=Top(NextPlinth(c,"Mid deck",new Vector3(.26f,-.21f,.16f),new Vector3(.28f,.18f,.28f)));
+   for(int i=0;i<3;i++)
+   {
+    float h=.06f*(i+1),x=.25f+.06f*i;
+    NextPlinth(c,"Mid deck stair",new Vector3(x,-.30f+h*.5f,-.04f),new Vector3(.06f,h,.12f)).First(f=>f.Normal.x<-.9f).Slippery=false;
+   }
+   Panel(c.Root,"Mid deck stair face",new Vector3(.25f,-.18f,.0196f),Vector3.back,new Vector2(.06f,.12f),stone,false,Vector2.zero,0,c.Surfaces);
+   Panel(c.Root,"Mid deck stair face",new Vector3(.31f,-.15f,.0196f),Vector3.back,new Vector2(.06f,.06f),stone,false,Vector2.zero,0,c.Surfaces);
+   var gate=PlusGate(c,"Stair gate",new Vector3(.21f,-.25f,-.04f),Vector3.up,.17f,new Vector3(.012f,.10f,.11f));gate.LatchAtEnd=true;
+   gate.InitialTravel=.03f;gate.transform.localPosition=gate.Start+gate.Axis.normalized*.03f;
+   // The exit door over the exit hole, and its bolt beside it on the deck; pad C draws the bolt while loaded.
+   var door=PlusGate(c,"Exit door",new Vector3(.392f,-.0685f,.20f),Vector3.up,.10f,new Vector3(.012f,.10f,.11f));door.Body.mass=.25f; // heavy: see N49
+   var bolt=PlusGate(c,"C door bolt",new Vector3(.388f,-.111f,.268f),Vector3.forward,.02f,new Vector3(.02f,.016f,.02f));
+   var pc=ExpansionPad(c,"C",new Vector3(.22f,-.118f,.24f),.009f,.09f);PadGauge(pc,1);
+   PlusLatch(c,"C draws the door bolt",new[]{pc},bolt,false,false);
+   TapLabel(c.Root,"75%",new Vector3(.34f,-.1195f,.10f));
+   // The gearbox on the floor, a row front to back: motor, the gap, hub X0. A in from the right, B in from the left.
+   float y=PlusGearTable(c,"Gear table",new Vector3(-.05f,0,-.17f),new Vector2(.10f,.26f),-.25f);
+   var m=PlusGear(c.Root,"Motor gear",new Vector3(-.05f,y,-.25f));var x0=PlusGear(c.Root,"Hub gear",new Vector3(-.05f,y,-.09f));
+   Transform Shaft(string name){var t=new GameObject(name).transform;t.SetParent(c.Root,false);t.localPosition=m.localPosition;t.localRotation=m.localRotation;return t;}
+   // Stand points on open floor: A is worked from behind it (right), B from its front side (the table runs to the front
+   // glass, so the strip in front of A, and the gap between B and pad P, were too tight to reach).
+   var a=PlusGearCarriage(c,"A",new Vector3(.14f,-.277f,-.17f),Vector3.left,.10f,floor,y,.09f,out var ga);a.StandOffset=new Vector3(.065f,0,0);
+   a.Rail.InitialTravel=a.Rail.Travel;a.Rail.transform.localPosition=a.Rail.Start+a.Rail.Axis.normalized*a.Rail.Travel;
+   // B: the idler pair, 6.93 cm left of the row, 8 cm from each other and from M and X0 (N44's pair, turned a quarter).
+   var b=ViewTask(c,"B",new Vector3(-.22f,-.277f,-.17f),Vector3.right,.07f,floor);b.StandOffset=new Vector3(0,0,-.055f);
+   const float zig=.0693f;float arm=.17f-.07f-zig;
+   var gb1=PlusGear(b.Rail.transform,"B idler gear",new Vector3(arm,y+.277f,-.04f));var gb2=PlusGear(b.Rail.transform,"B idler gear",new Vector3(arm,y+.277f,.04f));
+   MechanismVisual(b.Rail.transform,"B gear arm",new Vector3(arm*.5f,y+.277f-.004f,0),new Vector3(arm+.008f,.006f,.088f),metal);
+   foreach(var f in b.Rail.GetComponentsInChildren<VenomSurfacePatch>(true))f.Slippery=true;b.Rail.LatchAtEnd=true;
+   var pad=PlusWeighPad(c,"P",new Vector3(-.32f,-.298f,-.04f));
+   var stairsA=PlusTrain(c,"A drops the stair gate",pad,gate,false,null,Shaft("Motor shaft 1"),ga,x0);
+   var stairsB=PlusTrain(c,"B lifts the stair gate",pad,gate,false,null,Shaft("Motor shaft 2"),gb1,gb2,x0);
+   var doorA=PlusTrain(c,"A opens the exit door",pad,door,true,null,Shaft("Motor shaft 3"),ga,x0);
+   var doorB=PlusTrain(c,"B shuts the exit door",pad,door,true,null,Shaft("Motor shaft 4"),gb1,gb2,x0);
+   foreach(var t in new[]{stairsA,stairsB,doorA,doorB}){t.Reversible=true;t.ForcePerLoad=2*9.81f;t.SharedWheels=new[]{m};}
+   // The door: as N49's (.65 N + 6 N/m: three quarters open it, half stalls it), and only while the bolt is drawn.
+   foreach(var t in new[]{doorA,doorB}){t.ForwardSign=-1;t.RackSpring=6f;t.RackPreload=.65f;t.ReturnWhenDisconnected=true;t.PowerRail=bolt;}
+   MechanismVisual(c.Root,"Stair gate drive shaft",new Vector3(.08f,-.296f,-.06f),new Vector3(.26f,.006f,.012f),metal);
+   NextTrace("A",new Vector3(-.32f,-.2992f,-.09f),new Vector3(-.32f,-.2992f,-.25f),new Vector3(-.10f,-.2992f,-.25f));
+   NextTrace("C",new Vector3(.265f,-.1192f,.24f),new Vector3(.37f,-.1192f,.24f),new Vector3(.37f,-.1192f,.258f));
+   PlusStep(1,new Vector3(-.32f,-.29f,-.04f));PlusStep(2,new Vector3(.10f,-.29f,-.22f));PlusStep(3,new Vector3(-.25f,-.29f,-.22f));PlusStep(4,new Vector3(-.32f,-.29f,-.04f));
+   PlusStep(5,new Vector3(.37f,-.12f,-.04f));PlusStep(6,new Vector3(.22f,-.12f,.24f));PlusStep(7,new Vector3(-.20f,-.27f,.03f));PlusStep(8,new Vector3(.36f,-.08f,.20f));
+   PlusGhost("75%",new Vector3(-.32f,-.28f,-.04f));PlusGhost("25%",new Vector3(.22f,-.10f,.24f));
+  }
+
   static void PlusN19(ExpansionContext c)
   {
    c.Exit=new Vector3(-.40f,-.163f,.20f);c.Outward=Vector3.left;c.Spawn=new Vector3(.18f,-.25f,-.215f);c.Definition.CameraEuler=new Vector3(44,20,0);NextShell(c,.10f,true);var floor=c.Surfaces[0];

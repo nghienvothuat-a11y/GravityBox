@@ -14,7 +14,7 @@ namespace GravityBox.Tests
     // Style (Mrk 01/10, screen by Codex): inks held into COghe, a hat and things inside, saved and worn everywhere.
     public partial class COgheProductUITests
     {
-        private IEnumerator EnterStyle(COgheStyle look,int level=50)
+        private IEnumerator EnterStyle(COgheStyle look,int level=60)
         {
             COgheStyle.ResetForTests(look);COgheStyle.Current.ApplyTo(game);
             game.Progress.HomeUnlocked=true;COgheHomeRoom.UnlockedLevelOverride=level;
@@ -136,7 +136,7 @@ namespace GravityBox.Tests
         {
             try
             {
-                yield return EnterStyle(new COgheStyle(),35);
+                yield return EnterStyle(new COgheStyle(),42);
                 yield return Click("Accessories");Assert.AreEqual(1,ui.StyleTab);
                 yield return Card("HAT_CAP");Assert.AreEqual("HAT_CAP",COgheStyle.Current.Hat);
                 var wear=game.Matter.GetComponent<COgheAccessories>();Assert.IsNotNull(wear);Assert.AreEqual("HAT_CAP",wear.Hat);
@@ -144,7 +144,7 @@ namespace GravityBox.Tests
                 yield return Card("NONE");Assert.AreEqual("",COgheStyle.Current.Hat);
                 // locked: a preview, nothing worn
                 yield return Card("HAT_ASTRO");Assert.AreEqual(COgheProductPopup.StyleLocked,ui.Popup);
-                Assert.IsTrue(ui.GetComponentsInChildren<Text>().Any(t=>t.text=="Complete level 45 to unlock Space helmet."));
+                Assert.IsTrue(ui.GetComponentsInChildren<Text>().Any(t=>t.text=="Complete level 54 to unlock Space helmet."));
                 yield return Click("Close preview");Assert.AreEqual("",COgheStyle.Current.Hat);
                 // inside: a black body hides them, so say so (and keep the choice)
                 yield return Click("Inside");

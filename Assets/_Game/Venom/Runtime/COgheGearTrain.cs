@@ -24,6 +24,27 @@ namespace GravityBox.Venom
         public COgheTissueSensor[] ExtraClutches = System.Array.Empty<COgheTissueSensor>();
         // False for a rack that is not the exit (a step, a lift, a bridge): the final exit then does not wait for it.
         public bool GatesExit = true;
+        // Chapter 5: the rack runs the way the last wheel turns, toward its end when that is ForwardSign and back to its start
+        // otherwise, so an idler (one more meshing pair) reverses it. Several reversible trains may share one rack: only a
+        // meshed train drives it (two meshed at once push against each other: a jam). Off: the older one-way racks.
+        public bool Reversible;
+        public float ForwardSign = 1;
+        // Chapter 5 ("Ai chạy máy"): above zero, the motor's pull at the rack follows the weight on its pads (N per kg of tissue,
+        // summed over every clutch: two motors add), and RackSpring (N/m) holds the rack back toward its start, so a light
+        // driver lifts a load only part of the way.
+        public float ForcePerLoad, RackSpring;
+        // A constant pull back to the start on top of RackSpring (N): a light driver does not lift the load at all and a
+        // middling one stalls part way ("Hai động cơ một cửa"). Zero: the spring alone.
+        public float RackPreload;
+        // A lamp that lights while every link of the train meshes (chapter 5: "đèn khớp"). Null: no lamp.
+        public Renderer MeshLamp;
+        public Material MeshLampOn, MeshLampOff;
+        // Several trains through the same wheels (the boss gearbox: two outputs, each through the straight gear or the idler;
+        // "Hai tầng trục": a lift and the upper layer): where SharedWheels[i] is set, Wheels[i] is this train's own hidden copy
+        // of that visible wheel, and the visible wheel follows the train that is meshed and turning. Empty: Wheels are drawn.
+        public Transform[] SharedWheels = System.Array.Empty<Transform>();
+        private Quaternion[] sharedRest;
+        private Transform Shared(int i) => SharedWheels != null && i < SharedWheels.Length ? SharedWheels[i] : null;
         public bool Meshed { get; private set; }
         public bool ClutchesActive
         {
@@ -44,6 +65,8 @@ namespace GravityBox.Venom
         {
             initialRotations = new Quaternion[Wheels.Length];
             for (int i = 0; i < Wheels.Length; i++) initialRotations[i] = Wheels[i].localRotation;
+            sharedRest = new Quaternion[Wheels.Length];
+            for (int i = 0; i < Wheels.Length; i++) if (Shared(i) != null) sharedRest[i] = Shared(i).localRotation;
         }
         public override void ResetMechanism(VenomCampaign game)
         {
@@ -51,6 +74,14 @@ namespace GravityBox.Venom
             AngularSpeeds = new float[Wheels.Length]; Meshed = false; HasOutputLoad = false; OutputSpeed = 0;
             outputLatched=false;
             for (int i = 0; i < Wheels.Length; i++) Wheels[i].localRotation = initialRotations[i];
+            for (int i = 0; i < Wheels.Length; i++) if (Shared(i) != null) Shared(i).localRotation = sharedRest[i];
+            ShowMeshLamp();
+        }
+        private void ShowMeshLamp()
+        {
+            if (MeshLamp == null) return;
+            var m = Meshed ? MeshLampOn : MeshLampOff;
+            if (m != null && MeshLamp.sharedMaterial != m) MeshLamp.sharedMaterial = m;
         }
         public static bool PitchContact(Vector3 a, Vector3 b, Vector3 axle, float ra, float rb, float tolerance)
         {
@@ -68,8 +99,11 @@ namespace GravityBox.Venom
         public override void StepMechanism(VenomCampaign game, float dt)
         {
             if (AngularSpeeds == null) ResetMechanism(game);
+            for (int i = 0; i < Wheels.Length; i++) if (Shared(i) != null) Wheels[i].localRotation = Shared(i).localRotation;
             bool powered = ClutchesActive && (PowerRail == null || PowerRail.AtEnd);
-            bool stopped = Rack != null && Rack.AtEnd;
+            float direction = 1;
+            if (Reversible) { direction = -ForwardSign; for (int i = 1; i < Wheels.Length; i++) direction *= Mathf.Sign(Ratio(i)); }
+            bool stopped = Rack != null && (direction > 0 ? Rack.AtEnd : Rack.Position <= Rack.CatchTolerance);
             AngularSpeeds[0] = powered && !stopped ? -MotorSpeed : 0;
             Meshed = true;
             for (int i = 1; i < Wheels.Length; i++)
@@ -78,7 +112,8 @@ namespace GravityBox.Venom
                 Meshed &= contact;
                 AngularSpeeds[i] = contact ? AngularSpeeds[i - 1] * Ratio(i) : 0;
             }
-            if (Rack != null)
+            ShowMeshLamp();
+            if (Rack != null && (!Reversible || Meshed))
             {
                 if(LatchOutput&&Rack.AtEnd)outputLatched=true;
                 Rack.Locked = !Powered || stopped;
@@ -95,12 +130,22 @@ namespace GravityBox.Venom
                     }
                 }
                 if(outputLatched)Rack.Locked=true;
+                if((RackSpring>0||RackPreload>0)&&!Rack.Locked)Rack.ApplyEffort(-Rack.WorldAxis*(RackSpring*Rack.Position+RackPreload));
                 if (Powered && !stopped)
                 {
                     float radius = PitchRadii[PitchRadii.Length - 1];
                     float speed = Vector3.Dot(Rack.Body.linearVelocity, Rack.WorldAxis);
-                    float desired = Mathf.Abs(AngularSpeeds[AngularSpeeds.Length - 1]) * radius;
-                    Rack.ApplyEffort(Rack.WorldAxis * Mathf.Clamp((desired - speed) * 8, 0, MotorTorque / radius));
+                    float desired = Mathf.Abs(AngularSpeeds[AngularSpeeds.Length - 1]) * radius * direction;
+                    float cap = MotorTorque / radius;
+                    if (ForcePerLoad > 0)
+                    {
+                        float load = InputClutch != null ? InputClutch.Load : 0;
+                        foreach (var extra in ExtraClutches) if (extra != null) load += extra.Load;
+                        cap = ForcePerLoad * load;
+                    }
+                    // A load-driven motor reaches its full pull at a stall (the usual gain of 8 alone capped it near 1 N).
+                    float gain = ForcePerLoad > 0 ? 40 : 8;
+                    Rack.ApplyEffort(Rack.WorldAxis * Mathf.Clamp((desired - speed) * gain, direction > 0 ? 0 : -cap, direction > 0 ? cap : 0));
                     // Loaded train phase follows the measured rack travel. A blocked rack stalls all connected wheels.
                     int end = Wheels.Length - 1;
                     AngularSpeeds[end] = speed / PitchRadii[end];
@@ -132,6 +177,8 @@ namespace GravityBox.Venom
                 float correction = Mathf.Repeat(ideal - current + pitch * .5f, pitch) - pitch * .5f;
                 Wheels[i].Rotate(Vector3.forward, correction, Space.Self);
             }
+            if (Meshed && AngularSpeeds[0] != 0)
+                for (int i = 0; i < Wheels.Length; i++) if (Shared(i) != null) Shared(i).localRotation = Wheels[i].localRotation;
         }
     }
 }

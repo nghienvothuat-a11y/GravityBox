@@ -40,7 +40,7 @@ namespace GravityBox.Tests
      string root="Artifacts/Inks/"+reel;if(Directory.Exists(root))Directory.Delete(root,true);Directory.CreateDirectory(root);
      var sounds=new System.Text.StringBuilder();int frame=0;
      System.Action<string,float> heard=(clip,volume)=>sounds.AppendLine($"{frame/30f:F3} {clip} {volume:F2}");
-     yield return EnterFurnishedHome(10);yield return Frames(120);
+     yield return EnterFurnishedHome(12);yield return Frames(120);
      COgheAudio.Heard+=heard;
      var cam=new GameObject("Ink reel camera").AddComponent<Camera>();cam.CopyFrom(game.Owner.View);cam.enabled=false;cam.orthographic=true;cam.aspect=540f/1170;cam.nearClipPlane=.01f;cam.farClipPlane=30;
      var rt=RenderTexture.GetTemporary(540,1170,24);var tex=new Texture2D(540,1170,TextureFormat.RGB24,false);

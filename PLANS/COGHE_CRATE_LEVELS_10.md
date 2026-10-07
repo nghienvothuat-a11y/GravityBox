@@ -1,5 +1,8 @@
 # Mười màn kéo hộp (thiết kế, 06/10/2026)
 
+> Đã thay (06/10/2026): Mrk thấy thứ tự kéo vô lý (luật chỗ đứng ngầm). Bộ dựng trong game là
+> [COGHE_CRATE_LEVELS_LOGIC.md](COGHE_CRATE_LEVELS_LOGIC.md). Phần dưới giữ lại làm lịch sử.
+
 Mrk (06/10/2026): "mày tạo ra 10 màn kéo hộp như này có độ khó tăng dần" và "gửi tao thiết kế trước khi xây dựng màn chơi
 trong unity". Đây là bản thiết kế để duyệt; chưa dựng trong Unity. Bộ này thay bộ 5 màn ở `COGHE_CRATE_PUZZLES.md`: thêm
 luật chỗ đứng cho COghe để dựng được trong game.
@@ -76,3 +79,45 @@ Hai màn mỗi chương, độ khó vẫn tăng trong từng chương (tổng 60
   leo được. Vị trí, hướng, điểm dừng lấy đúng từ `crate-levels-10/summary10.json`. Lỗ thoát: cửa sập sàn như màn 7.
 - Tay nắm ở cả hai đầu thùng theo hướng trượt: COghe chọn đẩy hay kéo tuỳ chỗ đứng còn trống.
 - Lời giải mẫu theo đúng thứ tự trong bảng; test giải và test đi lang thang cho từng màn.
+
+## Đã dựng trong Unity — màn 51–60 (06/10/2026, đang làm dở)
+
+Mrk (06/10/2026): "triển khai làm 10 màn mới - từ 51 đến 60 theo thiết kế này. Tao sẽ sắp xếp level xen kẽ sau".
+
+- `SpatialOrder` thêm `K01`…`K10` sau Boss 50 (`B2`) → màn 51–60. Cảnh `COgheSpatialPlusK01…K10.unity`.
+- Bố cục và lời giải mẫu sinh từ dữ liệu thiết kế bằng `Tools/crate_puzzles/export_unity.py` →
+  `Assets/_Game/Editor/COgheSpatialCrateDesigns.cs` (bố cục) và `Assets/_Game/Venom/Runtime/ChapterProof/COgheCrateRoutes.cs`
+  (thứ tự kéo + ô COghe đứng). Dựng cảnh: `Assets/_Game/Editor/COgheSpatialCrateLevels.cs`.
+- Mỗi thùng là một rail hai điểm dừng (`COgheTapRail.Stops`), chạm vào mặt thùng thì thùng trượt sang điểm dừng kia; tay nắm ở
+  cả hai đầu, COghe đẩy (đứng sau) hoặc kéo (đứng trước) tuỳ chỗ trống. Thùng cao 3 cm (vuông 3,5 cm) thay vì 4,5/6 cm như dự
+  kiến: với ô 12 cm, COghe phải trèo qua thùng (xem dưới); mặt trên và hông thùng dùng vật liệu bám như sàn.
+- Sửa chung trong `COgheTapRail.TryTouch`: hộp chạm quanh tay nắm phụ (`AlternateHandle`) chỉ dùng khi `PickHandleOnly`; trước đó
+  hộp này lấn ra sàn sau thùng và "nuốt" lệnh đi tới ô đó. Chỉ màn View 07 có tay nắm phụ khác, và nó dùng `PickHandleOnly`.
+
+### Kiểm tra (bộ PlayMode đầy đủ, 06/10/2026: 739/765 qua, 15 bỏ qua như trước, 11 trượt = 3 test đếm số màn (đã sửa, chạy lại riêng: qua) + 8 test màn thùng)
+
+| Màn | Test giải | Test lang thang | Ghi chú |
+|-----|-----------|-----------------|---------|
+| 51 Thùng chặn đường | qua | qua | |
+| 52 Hai lớp chặn | qua | qua | |
+| 53 Thùng dài | qua | qua | |
+| 54 Gỡ từ ngoài vào | trượt | qua | chập chờn: thùng đỏ bị đẩy về tường trước, COghe đứng mép lỗ — lúc rơi xuống lỗ (thắng), lúc đứng lại và thùng kẹt |
+| 55 Thùng vuông | trượt | trượt | COghe kẹt khi trèo qua thùng đỏ (kéo 1) |
+| 56 Đi rồi trả lại | trượt | trượt | kẹt khi trèo qua thùng (kéo 6) |
+| 57 Mượn chỗ | qua | qua | |
+| 58 Ngõ hẹp | qua | qua | |
+| 59 Kho chật | trượt | trượt | kẹt khi trèo qua thùng (kéo 4) |
+| 60 Mê cung thùng | qua | trượt | chập chờn: có lần thùng vuông dừng thiếu > 6 mm trước điểm dừng, lần kéo không kết thúc |
+
+Danh mục sản phẩm (`Resources/COgheUI/Catalog.asset`) dựng lại: 60 màn; ba test đếm số màn sửa 50 → 60.
+
+Clip các màn qua: `Artifacts/Clips/crates/crates-51-58.mp4` (51, 52, 53, 57, 58).
+
+### Vấn đề mở: COghe trèo qua thùng
+
+Kiểm theo lưới (BFS trên ô trống, `Tools/crate_puzzles`): chỉ màn 51 và 53 giải được mà COghe luôn đi trên sàn; tám màn còn lại
+có bước mà ô cần đứng bị thùng vây kín, COghe phải trèo qua thùng. Trèo qua thùng 3 cm lúc được lúc không ("Bò / leo" không tới
+nơi). Đã thử: thùng 2 cm, thùng 6 cm, chạm từng đoạn đường sàn — không cải thiện rõ. Hai hướng:
+
+1. Sửa cho COghe trèo qua bậc thấp ổn định (điều hướng/leo bậc) — giữ nguyên mười thiết kế đã duyệt.
+2. Tìm lại thiết kế với luật "COghe luôn có đường sàn tới chỗ đứng" — đổi bố cục, cần Mrk duyệt lại.

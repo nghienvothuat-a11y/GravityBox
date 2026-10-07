@@ -22,7 +22,8 @@ namespace GravityBox.Venom
         public Transform Pawl;
         public bool Caught { get; private set; }
         public float Tension { get; private set; }
-        public override string Activity => !Caught && Tension > .05f ? "Đối trọng đang kéo cầu" : null;
+        // Only a loaded tray pulls: the empty tray's own sag (about .1 N) is not reported (it read "pulling" at level start).
+        public override string Activity => !Caught && Tension > .15f ? "Đối trọng đang kéo cầu" : null;
         public float AngleToLevel => Quaternion.Angle(Quaternion.Inverse(Plank.transform.parent.rotation) * Plank.rotation, LevelLocalRotation);
         private Vector3 anchorRest, pawlRest;
         private float trayRest, stable;

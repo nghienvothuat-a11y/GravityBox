@@ -30,7 +30,11 @@ namespace GravityBox.Venom.ChapterProof
     case "E08":yield return E08();break;case "E09":yield return E09();break;case "E10":yield return E10();break;case "E11":yield return E11();break;
     case "E12":yield return E12();break;case "E13":yield return E13();break;case "E14":yield return E14();break;case "E15":yield return E15();break;
     case "E16":yield return E16();break;case "E17":yield return E17();break;case "E18":yield return E18();break;case "B2":yield return B2();break;
+    case "K01":case "K02":case "K03":case "K04":case "K05":case "K06":case "K07":case "K08":case "K09":case "K10":yield return Crates(COgheSpatialNextScenario.ContentKey(game));break;
+    case "N22":yield return N22();break;case "N29":yield return N29();break;case "N26":yield return N26();break;case "N25":yield return N25();break;case "N23":yield return N23();break;
     case "N13":yield return N13();break;case "N15":yield return N15();break;case "N18":yield return N18();break;case "N19":yield return N19();break;
+    case "N31":yield return N31();break;case "N33":yield return N33();break;case "N35":yield return N35();break;case "N32":yield return N32();break;case "N40":yield return N40();break;case "N34":yield return N34();break;case "N44":yield return N44();break;case "N45":yield return N45();break;
+    case "N41":yield return N41();break;case "N42":yield return N42();break;case "N47":yield return N47();break;case "N49":yield return N49();break;case "N50":yield return N50();break;case "N48":yield return N48();break;case "N46":yield return N46();break;case "N43":yield return N43();break;
     default:throw new NotImplementedException("Spatial Plus route "+COgheSpatialNextScenario.ContentKey(game));
    }
    yield return s.Exit();
@@ -91,6 +95,51 @@ namespace GravityBox.Venom.ChapterProof
    yield return s.Go(W(.096f,-.24f,.14f),"Mount the tall block");
    yield return s.Go(W(.27f,-.21f,.20f),"Reach the exit island");
   }
+  // Crate levels 51–60: the shortest route (Tools/crate_puzzles/logic.py). Before each pull COghe walks to the floor cell
+  // behind the crate (push) or at its face inside the slide (pull), then taps the crate; it slides to its other stop and
+  // COghe follows or backs off. Last, the red crate leaves the exit.
+  IEnumerator Crates(string key)
+  {
+   var tasks=game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>();
+   COgheTapRail Crate(int i)=>Array.Find(tasks,t=>t.Rail.name==(i==0?"Red crate":"Crate "+i))??throw new InvalidOperationException("Missing crate "+i);
+   Vector3 Cell(int x,int z)=>W(COgheCrateRoutes.GridX+(x+.5f)*COgheCrateRoutes.Cell,-.30f,COgheCrateRoutes.GridZ+(z+.5f)*COgheCrateRoutes.Cell);
+   int n=0;
+   foreach(var (index,x,z) in COgheCrateRoutes.Steps[key])
+   {
+    n++;var t=Crate(index);float goal=t.Rail.Position<=t.Rail.CatchTolerance?t.Rail.Travel:0;int before=t.CompletedJourneys;
+    // Done when the pull itself has finished (the crate seated at its stop and COghe let go), so the next tap is not
+    // swallowed by a pull still closing its last millimetres. The red crate is the last pull: once the exit is open,
+    // COghe may already be dropping through it.
+    bool Done()=>t.CompletedJourneys>before||index==0&&(game.Owner.Completed||game.Root.InverseTransformPoint(game.Motion.Centre(0)).y<-.32f||!t.Busy&&Mathf.Abs(t.Rail.Position-goal)<.012f);
+    for(int attempt=0;attempt<3&&!Done();attempt++)
+    {
+     // The back-right part of the cell: from the camera (front-left, above) that tap does not pass over a crate.
+     yield return s.Go(Cell(x,z)+game.Root.TransformDirection(new Vector3(.025f,0,.025f)),$"Pull {n}: stand beside crate {index}",.07f);
+     // Tap the crate's top away from COghe (a tap through COghe's own body selects it instead).
+     Vector3 body=t.Rail.Body.position,me=game.Motion.Centre(Selected),along=t.Rail.WorldAxis;
+     float reach=Mathf.Max(0,Mathf.Abs(Vector3.Dot(t.TouchSize*.5f,t.Rail.Frame.InverseTransformDirection(along)))-.04f);
+     float side=Vector3.Dot(body-me,along)>=0?1:-1;
+     var spots=new[]{body+along*side*reach,body,body-along*side*reach};
+     for(int k=0;k<spots.Length&&!t.Busy;k++)yield return this.tap(spots[k]+Vector3.up*.02f);
+     if(!t.Busy)
+     {
+      // Diagnose: what does a ray from the camera to the crate's middle hit first?
+      var cam=game.Owner.View;var ray=cam.ScreenPointToRay(cam.WorldToScreenPoint(body+Vector3.up*.02f));
+      var hits=Physics.RaycastAll(ray,10);System.Array.Sort(hits,(a,b2)=>a.distance.CompareTo(b2.distance));
+      string first=string.Join(" | ",System.Array.ConvertAll(hits,h=>$"{h.collider.name}@{h.distance:F3}{(h.collider.isTrigger?"(trig)":"")}"));
+      string rails=string.Join(" ",System.Array.ConvertAll(tasks,r=>$"{r.Rail.name}:{r.Phase}/{(r.Busy?"busy":"-")}/pos{r.Rail.Position:F4}/lat{r.Rail.Latched}"));
+      bool direct=t.TryTouch(game,ray,100f);
+      first+=$" | canControl={game.Owner.CanControl} selected={Selected} home={game.Home} rails: {rails}";
+      throw new InvalidOperationException($"Crate {index} refused pull {n}: {t.LastFailure} {t.LastRefusal}; direct={direct} busy={t.Busy} body={game.Root.InverseTransformPoint(body):F3} me={game.Root.InverseTransformPoint(me):F3} hits: {first}");
+     }
+     // A pull that loses its footing stops; the player taps again from beside the crate.
+     yield return until(40,()=>Done()||!t.Busy,$"Pull {n}: crate {index} slides");
+     // A pull that opens the exit can end with COghe dropping into it: give the fall a moment before trying again.
+     if(index==0&&!Done()){float t0=game.Matter.SimulationTime;yield return until(5,()=>Done()||game.Matter.SimulationTime-t0>2,"settle");}
+    }
+    yield return until(5,Done,$"Pull {n}: crate {index} reaches its other stop");
+   }
+  }
   // N15: push the step through the slot from this side first, then take the tube; climb the step to the shelf.
   IEnumerator N15()
   {
@@ -150,6 +199,434 @@ namespace GravityBox.Venom.ChapterProof
    yield return Pull("B","Crate B across the cart beside the shelf");
    yield return s.Go(W(.05f,-.18f,.18f),"Climb the crate");
    yield return s.Go(W(.26f,-.18f,.17f),"Onto the exit shelf");
+  }
+  // N22: load first. B across the cart while the cart is still away; then the cart to the shelf; climb the crate.
+  IEnumerator N22()
+  {
+   yield return Pull("B","Crate B across the cart before it sails");
+   yield return Pull("A","Cart A, loaded, against the shelf");
+   yield return s.Go(W(.05f,-.18f,.18f),"Climb the crate");
+   yield return s.Go(W(.26f,-.18f,.17f),"Onto the exit shelf");
+  }
+  // N29: top tier first. Climb A where it stands, push B to A's far end, then pull A over and climb the stack.
+  IEnumerator N29()
+  {
+   yield return s.Go(W(-.30f,-.21f,.14f),"Climb block A at its start");
+   yield return Pull("B","Block B to A's far end");
+   yield return Pull("A","Block A, with B, against the shelf");
+   yield return s.Go(W(-.10f,-.21f,.14f),"Climb block A");
+   yield return s.Go(W(.07f,-.12f,.14f),"Climb block B");
+   yield return s.Go(W(.26f,-.12f,.17f),"Onto the shelf");
+  }
+  // N26: split, one half on each pad A: the door opens and stays open. Half a body past the axle: the heavy plank only
+  // creaks. Back, merge, and the whole body tips it down into the exit room.
+  // N23: lever B, far at the front-right, brings the landing into the rope's arc; up the stairs, grip, swing across.
+  IEnumerator N23()
+  {
+   var swing=Find<COgheSwingTransfer>();var tray=s.Slider("B landing tray");
+   yield return s.Operate("B");yield return until(10,()=>tray.AtEnd,"B brings the landing tray into the arc");
+   yield return s.Go(W(-.28f,-.16f,.05f),"Climb the stairs onto the start bank");
+   yield return s.Grip(swing);
+   yield return s.Swing(swing,1);
+  }
+  // N25: the light crate onto the tray lifts the plank only part way; COghe climbs onto the loaded tray, the plank comes
+  // level and the pawl catches; out of the pit and across.
+  IEnumerator N25()
+  {
+   var seesaw=Find<COgheSeesawBridge>();var crate=Prop("A crate");
+   yield return s.Push(crate,W(-.28f,-.187f,.075f),.012f);
+   float t0=game.Matter.SimulationTime;yield return until(8,()=>game.Matter.SimulationTime-t0>4,"The crate's weight settles");
+   Debug.Log($"N25 crate alone: plank {seesaw.AngleToLevel:F1} degrees from level, caught={seesaw.Caught}, tension={seesaw.Tension:F3}");
+   if(seesaw.Caught)throw new InvalidOperationException("The crate alone levelled the plank");
+   yield return s.Go(W(-.28f,-.215f,.20f),"COghe climbs onto the far end of the loaded tray",.08f);
+   yield return until(20,()=>seesaw.Caught,"With COghe on the tray the plank comes level; the pawl catches");
+   yield return s.Go(W(-.19f,-.20f,.10f),"Out of the pit");
+   yield return s.Go(W(0,-.20f,.10f),"Onto the level plank");
+   yield return s.Go(W(.25f,-.20f,.12f),"Across to the exit platform");
+  }
+  IEnumerator N26()
+  {
+   var q=Find<COgheQuantumSplitter>();var door=s.Slider("A door");var plank=Prop("B seesaw plank");
+   bool Tipped()=>plank.transform.TransformPoint(Vector3.right*.17f).y<plank.transform.position.y;
+   yield return s.Split(q,Selected);int one=q.LastLeft,two=q.LastRight;
+   yield return s.Walk(one,W(-.34f,-.298f,-.21f),"One half on the front pad A");
+   // Round the Q by the partition and the back wall (a straight tap sends it over the Q's slick casing).
+   yield return s.Walk(two,W(-.06f,-.30f,.20f),"The other half along the partition");
+   yield return s.Walk(two,W(-.34f,-.298f,.21f),"The other half on the back pad A");
+   yield return until(10,()=>door.AtEnd,"Both pads open the door");
+   yield return s.Walk(one,W(.08f,-.30f,-.20f),"Through the door");
+   yield return s.Walk(one,plank.transform.TransformPoint(new Vector3(-.12f,.011f,0)),"Half a body onto the plank's foot",.07f);
+   yield return s.Walk(one,plank.transform.TransformPoint(new Vector3(.10f,.011f,0)),"Half a body past the axle",.08f);
+   float t0=game.Matter.SimulationTime;yield return until(5,()=>game.Matter.SimulationTime-t0>2||Tipped(),"The plank creaks");
+   if(Tipped())throw new InvalidOperationException("Half a body tipped the heavy plank");
+   yield return s.Walk(one,W(.08f,-.30f,-.10f),"Back off the plank");
+   yield return s.Walk(two,W(.08f,-.30f,-.22f),"The other half through the door");
+   yield return s.Merge(W(.08f,-.30f,-.15f));
+   yield return s.Go(plank.transform.TransformPoint(new Vector3(-.12f,.011f,0)),"The whole body onto the plank's foot",.07f);
+   yield return tap(plank.transform.TransformPoint(new Vector3(.12f,.011f,0)));
+   yield return until(25,Tipped,"The whole body tips the plank");
+   // Tipped, the plank can carry the body straight down and out through the low exit.
+   float t1=game.Matter.SimulationTime;yield return until(5,()=>game.Owner.Completed||game.Matter.SimulationTime-t1>1.5f,"Down the plank");
+   if(!game.Owner.Completed&&game.Root.InverseTransformPoint(game.Motion.Centre(0)).x<.40f)
+   {
+    // The body may roll on through the low exit while walking down: done either way.
+    var foot=W(.33f,-.30f,-.06f);yield return tap(foot);
+    yield return until(15,()=>game.Owner.Completed||game.Root.InverseTransformPoint(game.Motion.Centre(0)).x>.40f||Vector3.Distance(game.Motion.Centre(0),foot+Vector3.up*.02f)<.08f,"Down the plank into the exit room");
+   }
+  }
+  string Gauges()=>string.Join(", ",Array.ConvertAll(game.Owner.Apparatus.GetComponentsInChildren<COgheTissueSensor>(),
+   p=>$"{p.name.Split(' ')[0]}@{p.transform.localPosition.x:F2},{p.transform.localPosition.z:F2}={p.Load:F3}/{p.Threshold:F3} lit {(p.GaugeTiles==null?0:Array.FindAll(p.GaugeTiles,t=>t.enabled).Length)}/{p.GaugeTiles?.Length??0}"));
+  // N31: split; the half takes the pad at the door (two tiles), the other half splits again and its quarters take the two
+  // back pads (one tile each). The door opens for good; all merge and go through.
+  IEnumerator N31()
+  {
+   var q=Find<COgheQuantumSplitter>();var door=s.Slider("A door");
+   yield return s.Split(q,Selected);int half=q.LastRight,other=q.LastLeft;
+   yield return s.Walk(half,W(-.06f,-.298f,-.21f),"Half onto the pad at the door");
+   yield return s.Split(q,other);int q1=q.LastLeft,q2=q.LastRight;
+   yield return s.Walk(q1,W(-.34f,-.298f,.21f),"Quarter onto the back-left pad");
+   yield return s.Walk(q2,W(-.06f,-.298f,.21f),"Quarter onto the back-right pad");
+   yield return until(10,()=>door.AtEnd,"Three loaded pads open the door");
+   Debug.Log("N31 GAUGES "+Gauges());
+   yield return s.Merge(W(-.04f,-.30f,-.11f));
+   yield return s.Go(W(.20f,-.30f,-.10f),"Through the door");
+  }
+  // N32: the whole body pushes heavy B aside first; then split: one half on pad A (A's bolt drawn), the other pushes A to its
+  // parking place; merged, the whole body pushes B back into the crossing and climbs B, A, the island.
+  IEnumerator N32()
+  {
+   var q=Find<COgheQuantumSplitter>();var a=s.Task("A");var b=s.Task("B");var bolt=s.Slider("A lock bolt");
+   yield return s.Operate("B");yield return until(8,()=>b.Rail.Position<=b.Rail.CatchTolerance,"The whole body pushes heavy B aside");
+   yield return s.Split(q,Selected);int holder=q.LastLeft,worker=q.LastRight;
+   yield return s.Walk(holder,W(-.33f,-.298f,-.03f),"Half onto pad A");
+   yield return until(10,()=>bolt.AtEnd,"Pad A draws A's bolt");
+   game.SelectFragment(worker);yield return Pull("A","Half a body pushes A to its parking place");
+   yield return s.Merge(W(-.12f,-.30f,-.02f));
+   yield return Pull("B","The whole body pushes B back into the crossing");
+   yield return s.Go(W(-.028f,-.27f,.14f),"Mount the low block");
+   yield return s.Go(W(.096f,-.24f,.14f),"Mount the tall block");
+   yield return s.Go(W(.27f,-.21f,.20f),"Reach the exit island");
+  }
+  // N40 (boss): the whole body on the pan is too heavy; split; half holds door pad A; the other half splits, a quarter walks
+  // to pad B in the side room (axle pin drawn); the half alone on the pan is too light; the last quarter joins it: three
+  // quarters level the beam, the exit step slides out and the door stays open; all merge in the side room and climb.
+  IEnumerator N40()
+  {
+   var q=Find<COgheQuantumSplitter>();var door=s.Slider("A door");var shutter=s.Slider("Step bridge");
+   var scale=Array.Find(game.Owner.Apparatus.GetComponentsInChildren<COgheTissueSensor>(),p=>p.Column>0);
+   Vector3 pan=W(-.30f,-.298f,.20f);
+   yield return s.Go(pan,"The whole body onto the pan");
+   float t0=game.Matter.SimulationTime;yield return until(4,()=>game.Matter.SimulationTime-t0>1.5f,"The scale weighs the whole body");
+   Debug.Log("N40 GAUGES whole on the pan: "+Gauges());
+   if(!scale.TooHeavy)throw new InvalidOperationException("The whole body did not tip the scale too far");
+   yield return s.Go(W(-.18f,-.30f,-.16f),"Back round to Q's mouth"); // from behind, a route into Q runs up a tray lane and stalls
+   yield return s.Split(q,Selected);int half=q.LastLeft,other=q.LastRight;
+   yield return s.Walk(half,W(-.32f,-.298f,-.20f),"Half onto door pad A");
+   yield return until(10,()=>door.AtEnd,"Half a body raises the door");
+   yield return s.Split(q,other);int q1=q.LastRight,q2=q.LastLeft;
+   yield return s.Walk(q1,W(.32f,-.298f,-.22f),"A quarter to pad B in the side room");
+   yield return s.Walk(q2,W(-.12f,-.30f,.22f),"The other quarter waits clear of the pan");
+   yield return s.Walk(half,pan,"The half leaves A for the pan");
+   t0=game.Matter.SimulationTime;yield return until(4,()=>game.Matter.SimulationTime-t0>1.5f,"The scale weighs half a body");
+   Debug.Log("N40 GAUGES half on the pan: "+Gauges());
+   if(scale.Active)throw new InvalidOperationException("Half a body balanced the scale");
+   yield return s.MergeParts(new List<int>{q2,half},pan,2);
+   t0=game.Matter.SimulationTime;yield return until(8,()=>shutter.AtEnd||game.Matter.SimulationTime-t0>4,"Three quarters settle on the pan");
+   Debug.Log("N40 GAUGES merged by the pan: "+Gauges());
+   // Merged off-centre: nudge the part onto the pan (a tap on the part itself would only select it).
+   if(!shutter.AtEnd)yield return s.CommandAny(half,new List<Vector3>{W(-.30f,-.298f,.23f),W(-.33f,-.298f,.20f),W(-.30f,-.298f,.17f)});
+   yield return until(15,()=>shutter.AtEnd,"Three quarters level the beam; the exit step slides out");
+   Debug.Log("N40 GAUGES three quarters on the pan: "+Gauges());
+   yield return until(10,()=>door.AtEnd,"The door stays open");
+   yield return s.Walk(half,W(.16f,-.30f,-.20f),"Three quarters through the door");
+   yield return s.Merge(W(.24f,-.30f,-.06f));
+   yield return s.Go(W(.23f,-.27f,.08f),"Onto the exit step");
+   yield return s.Go(W(.23f,-.24f,.22f),"Onto the exit platform");
+  }
+  // N34: half with half balances (nothing moves); then a quarter rides the lift, the half on the counter tray lifts it to
+  // the bank; it pulls B (exit step out), steps back on the raised tray and rides down when the counterweight steps off.
+  IEnumerator N34()
+  {
+   var q=Find<COgheQuantumSplitter>();var lift=Find<COgheBalanceLift>();var bridge=s.Slider("Step bridge");
+   Vector3 tray=W(.06f,-.286f,-.16f),counter=W(-.12f,-.298f,-.16f);
+   yield return s.Split(q,Selected);int weight=q.LastLeft,other=q.LastRight;
+   yield return s.Walk(other,tray,"Half onto the lift tray");
+   yield return s.Walk(weight,counter,"Half onto the counter tray");
+   float t0=game.Matter.SimulationTime;yield return until(5,()=>game.Matter.SimulationTime-t0>2,"Half with half");
+   Debug.Log($"N34 BALANCE half/half counter={lift.CounterLoad.Load:F3} rider={lift.RisingLoad.Load:F3} lift={lift.Rising.Position:F3}");
+   if(lift.Rising.Position>.01f)throw new InvalidOperationException("Half lifted half");
+   yield return s.Walk(other,W(.06f,-.30f,.04f),"The other half steps off the tray, backwards");
+   yield return s.Walk(weight,W(-.33f,-.30f,-.25f),"The counterweight steps off");
+   yield return s.Walk(other,W(-.22f,-.30f,-.02f),"The other half back to Q");
+   yield return s.Split(q,other);int q1=q.LastRight,q2=q.LastLeft;
+   yield return s.Command(q1,tray);yield return until(20,()=>lift.RisingLoad.Load>=.02f,"A quarter onto the lift tray");
+   yield return s.Walk(weight,counter,"Half onto the counter tray");
+   yield return until(10,()=>lift.Rising.AtEnd,"Half a body lifts the quarter to the bank");
+   Debug.Log($"N34 BALANCE half/quarter counter={lift.CounterLoad.Load:F3} rider={lift.RisingLoad.Load:F3} lift={lift.Rising.Position:F3}");
+   yield return s.Walk(q1,W(.19f,-.18f,-.23f),"The quarter onto the bank");
+   game.SelectFragment(q1);yield return Pull("B","The quarter pulls B home");
+   yield return until(10,()=>bridge.AtEnd,"B slides the exit step out");
+   yield return s.Walk(q1,W(.06f,-.178f,-.16f),"Back onto the raised tray");
+   yield return s.Walk(weight,W(-.33f,-.30f,-.25f),"The counterweight steps off");
+   yield return until(10,()=>lift.Rising.Position<.01f,"The quarter rides down");
+   yield return s.Merge(W(-.05f,-.30f,.0f));
+   yield return s.Go(W(.23f,-.27f,.08f),"Onto the exit step");
+   yield return s.Go(W(.23f,-.24f,.22f),"Onto the exit platform");
+  }
+  // N44: on P with straight gear A in, the step runs back; draw A out, push the idler pair B in; on P the step runs out.
+  IEnumerator N44()
+  {
+   var bridge=s.Slider("Step bridge");var a=s.Task("A");Vector3 pad=W(-.32f,-.298f,-.16f);
+   yield return s.Go(pad,"Onto P");
+   yield return until(10,()=>bridge.Position<=bridge.CatchTolerance,"Three wheels: the step runs back in");
+   yield return s.Operate("A");yield return until(8,()=>a.Rail.Position<=a.Rail.CatchTolerance,"Draw straight gear A out");
+   yield return Pull("B","Push the idler pair in");
+   yield return s.Go(pad,"Back onto P");
+   yield return until(15,()=>bridge.AtEnd,"Four wheels: the step runs out");
+   yield return s.Go(W(.20f,-.27f,.07f),"Onto the step");
+   yield return s.Go(W(.20f,-.24f,.21f),"Onto the exit platform");
+  }
+  // N45: half drives half: the lift stalls half way. The driver steps off (the lift comes down), the rider splits at Q:
+  // a quarter rides, the other quarter joins the driver on P (75 %): the lift reaches the top. Then as E15.
+  IEnumerator N45()
+  {
+   var q=Find<COgheQuantumSplitter>();var lift=s.Slider("Gear lift");var top=s.Slider("C top step");Vector3 pad=W(-.30f,-.298f,-.20f);
+   yield return s.Split(q,Selected);int driver=q.LastLeft,rider=q.LastRight;
+   yield return s.Walk(rider,W(.13f,-.30f,-.02f),"Rider steps wide of Q");
+   yield return s.Walk(rider,W(-.01f,-.288f,.16f),"Rider onto the lift");
+   yield return s.Walk(driver,pad,"Driver onto pad P");
+   float t0=game.Matter.SimulationTime;yield return until(15,()=>game.Matter.SimulationTime-t0>6,"Half drives half");
+   Debug.Log($"N45 LIFT half/half pos={lift.Position:F3} {Gauges()}");
+   if(lift.AtEnd||lift.Position<.02f)throw new InvalidOperationException($"Half a body should lift half a body part way: {lift.Position:F3}");
+   yield return s.Walk(driver,W(-.30f,-.30f,-.06f),"The driver steps off P");
+   yield return until(20,()=>lift.Position<.01f,"The lift comes back down");
+   yield return s.Walk(rider,W(.13f,-.30f,-.02f),"The rider round Q");
+   yield return s.Walk(rider,W(.10f,-.30f,-.27f),"The rider to Q's mouth");
+   yield return s.Split(q,rider);int r1=q.LastRight,r2=q.LastLeft;
+   yield return s.Walk(r1,W(-.01f,-.288f,.16f),"A quarter onto the lift");
+   yield return s.MergeParts(new List<int>{r2,driver},pad,2);
+   yield return s.Walk(driver,pad,"Three quarters on P");
+   yield return until(30,()=>lift.AtEnd,"Three quarters lift a quarter to the top");
+   Debug.Log($"N45 LIFT 75/25 pos={lift.Position:F3} {Gauges()}");
+   yield return s.Walk(r1,W(.18f,-.12f,.20f),"The quarter onto the high deck");
+   game.SelectFragment(r1);yield return s.Operate("C");yield return until(10,()=>top.AtEnd,"C raises the top stair step");
+   yield return s.Walk(driver,W(.25f,-.24f,-.07f),"The driver leaves P for the stair");
+   yield return s.Walk(driver,W(.25f,-.12f,.045f),"The driver climbs to the high deck");
+   yield return s.Merge(W(.25f,-.12f,.20f));
+  }
+  // N41: on P with the gap open only the motor turns and the lamp stays dark; A brings G into the ring (the lamp lights);
+  // back on P the step runs out.
+  IEnumerator N41()
+  {
+   var drawer=s.Slider("Step bridge");var train=Find<COgheGearTrain>();Vector3 pad=W(-.32f,-.298f,-.16f);
+   yield return s.Go(pad,"Onto P");
+   float t0=game.Matter.SimulationTime;yield return until(5,()=>game.Matter.SimulationTime-t0>1.5f,"Only the motor turns");
+   if(train.Meshed||drawer.Position>.005f)throw new InvalidOperationException("The train ran with the gap open");
+   yield return Pull("A","Gear G into the ring");
+   yield return until(5,()=>train.Meshed,"Every gear meshes");
+   if(train.MeshLamp.sharedMaterial!=train.MeshLampOn)throw new InvalidOperationException("The mesh lamp did not light");
+   yield return s.Go(pad,"Back onto P");
+   yield return until(20,()=>drawer.AtEnd,"The train draws the step out");
+   yield return s.Go(W(.20f,-.27f,.07f),"Onto the step");yield return s.Go(W(.20f,-.24f,.21f),"Onto the exit platform");
+  }
+  // N42: B's gear sits in A's lane, so A refuses. Draw B out, push A in (its gear passes B's slot), push B back; P.
+  IEnumerator N42()
+  {
+   var a=s.Task("A");var b=s.Task("B");var drawer=s.Slider("Step bridge");var train=Find<COgheGearTrain>();
+   yield return tap(a.HandPoint+Vector3.up*.004f);
+   if(a.Busy)throw new InvalidOperationException("A set off with B's gear in its lane");
+   Debug.Log("N42 A refused: "+a.LastFailure);
+   yield return s.Operate("B");yield return until(8,()=>b.Rail.Position<=b.Rail.CatchTolerance,"Draw B out of A's lane");
+   yield return Pull("A","A's gear through B's slot into its own");
+   yield return Pull("B","B back into its slot");
+   yield return until(5,()=>train.Meshed,"Every gear meshes");
+   yield return s.Go(W(-.33f,-.298f,-.20f),"Onto P");
+   yield return until(20,()=>drawer.AtEnd,"The train draws the step out");
+   yield return s.Go(W(.20f,-.27f,.07f),"Onto the step");yield return s.Go(W(.20f,-.24f,.21f),"Onto the exit platform");
+  }
+  // N47: G refuses (the gate is down). P1: machine 1 lifts the gate, which latches. G to machine 2; P2: the step runs out.
+  IEnumerator N47()
+  {
+   var g=s.Task("G");var gate=s.Slider("A gate");var drawer=s.Slider("Step bridge");
+   yield return tap(g.HandPoint+Vector3.up*.004f);
+   if(g.Busy)throw new InvalidOperationException("G left machine 1 through the closed gate");
+   Debug.Log("N47 G refused: "+g.LastFailure);
+   yield return s.Go(W(-.33f,-.298f,-.10f),"Onto P1");
+   yield return until(15,()=>gate.AtEnd,"Machine 1 lifts the gate");
+   yield return Pull("G","G borrowed for machine 2");
+   if(!gate.AtEnd)throw new InvalidOperationException("The gate dropped when G left machine 1");
+   yield return s.Go(W(-.33f,-.298f,.12f),"Onto P2");
+   yield return until(20,()=>drawer.AtEnd,"Machine 2 draws the step out");
+   yield return s.Go(W(.20f,-.27f,.07f),"Onto the step");
+   // Tap the platform beside the body: from this framing a tap straight behind it passes over the body (a selection).
+   yield return s.Go(W(.16f,-.24f,.22f),"Onto the exit platform");
+  }
+  // N49: half on P2, a quarter on C (the lock bolt slides out), a quarter on P1: 75 % on the motors opens the door.
+  IEnumerator N49()
+  {
+   var q=Find<COgheQuantumSplitter>();var door=s.Slider("Exit door");var bolt=s.Slider("C gear lock");
+   yield return s.Split(q,Selected);int half=q.LastLeft,other=q.LastRight;
+   // Out of Q's tray lanes by its left side first: from a lane, a route round Q stalls (see N40, N45).
+   yield return s.Walk(half,W(-.36f,-.30f,-.05f),"Half out past Q's left side");
+   yield return s.Walk(half,W(.10f,-.298f,.04f),"Half round Q onto motor pad P2");
+   yield return s.Split(q,other);int q1=q.LastLeft,q2=q.LastRight;
+   yield return s.Walk(q2,W(.30f,-.298f,-.20f),"A quarter onto C");
+   yield return until(10,()=>bolt.AtEnd,"C draws the lock bolt");
+   yield return s.Walk(q1,W(-.36f,-.30f,-.05f),"A quarter out past Q's left side");
+   yield return s.Walk(q1,W(-.10f,-.298f,.04f),"A quarter onto motor pad P1");
+   yield return until(20,()=>door.AtEnd,"Three quarters on the motors open the door");
+   Debug.Log($"N49 DOOR 50+25 pos={door.Position:F3} {Gauges()}");
+   yield return s.Merge(W(.15f,-.30f,-.05f));
+  }
+  // N49, the wrong split: half on C, a quarter on each motor. Half a body's pull stalls the door part way.
+  public IEnumerator N49HalfStalls()
+  {
+   var q=Find<COgheQuantumSplitter>();var door=s.Slider("Exit door");
+   yield return s.Split(q,Selected);int half=q.LastLeft,other=q.LastRight;
+   yield return s.Walk(half,W(.30f,-.298f,-.20f),"Half round Q onto C");
+   yield return s.Split(q,other);int q1=q.LastLeft,q2=q.LastRight;
+   yield return s.Walk(q1,W(-.36f,-.30f,-.05f),"A quarter out past Q's left side");
+   yield return s.Walk(q1,W(-.10f,-.298f,.04f),"A quarter onto P1");
+   yield return s.Walk(q2,W(.03f,-.30f,-.14f),"A quarter out past Q's right side");
+   yield return s.Walk(q2,W(.10f,-.298f,.04f),"A quarter onto P2");
+   float t0=game.Matter.SimulationTime;yield return until(15,()=>game.Matter.SimulationTime-t0>6,"Half a body pulls");
+   Debug.Log($"N49 DOOR 25+25 pos={door.Position:F3} {Gauges()}");
+   if(door.AtEnd||door.Position<.01f||door.Position>.08f)throw new InvalidOperationException($"Half a body should stall the door part way: {door.Position:F3}");
+  }
+  // N43: the route starts on the right branch (to a shut exit). G to the left row, P: the switch turns to the balcony. Up the
+  // tube to the balcony, C opens the exit shutter; back down the tube. G to the right row, P: the switch turns to the
+  // landing; up the tube to the landing and out.
+  IEnumerator N43()
+  {
+   var tube=Find<COgheTubeNetwork>();var shutter=s.Slider("C exit shutter");var g=s.Task("G");Vector3 pad=W(.04f,-.298f,-.04f);
+   if(!tube.Edges[2].Open||tube.Edges[1].Open)throw new InvalidOperationException("The route should start on the right branch only");
+   yield return s.Operate("G");yield return until(8,()=>g.Rail.Position<=g.Rail.CatchTolerance,"G into the left row");
+   yield return s.Go(pad,"Onto P");
+   yield return until(10,()=>tube.Edges[1].Open&&!tube.Edges[2].Open,"The left row turns the switch to the balcony");
+   yield return s.EnterTube(tube,0);yield return s.Choose(tube,1,1);yield return s.LeaveTube(tube);
+   yield return s.Operate("C");yield return until(8,()=>shutter.AtEnd,"C raises the exit shutter");
+   yield return s.EnterTube(tube,2);yield return s.Choose(tube,1,0);yield return s.LeaveTube(tube);
+   yield return s.Go(W(-.04f,-.30f,-.25f),"Out from the tube's floor mouth");
+   yield return Pull("G","G back into the right row");
+   yield return s.Go(pad,"Onto P");
+   yield return until(10,()=>tube.Edges[2].Open&&!tube.Edges[1].Open,"The right row turns the switch to the landing");
+   yield return s.EnterTube(tube,0);yield return s.Choose(tube,1,2);yield return s.LeaveTube(tube);
+  }
+  // N46: push the crate to the deck's far end, step off, P: the table turns the crate against the ledge; deck, crate, ledge.
+  IEnumerator N46()
+  {
+   var table=Find<COgheTurntable>();
+   yield return Pull("A","Push the crate to the deck's far end");
+   yield return s.Go(W(-.25f,-.298f,-.24f),"Off the table onto P");
+   yield return until(20,()=>table.Caught,"The table turns a quarter, crate and all");
+   yield return s.Go(W(-.12f,-.27f,.10f),"Onto the deck");
+   yield return s.Go(W(.14f,-.207f,.10f),"Onto the crate");
+   yield return s.Go(W(.30f,-.21f,.10f),"Onto the exit ledge");
+  }
+  // N48: on P with A's gap open nothing turns; A in, P: the floor layer screws C up into the upper layer, the column turns
+  // it and the bridge rises; up the stairs, across the mid deck and the bridge.
+  IEnumerator N48()
+  {
+   var lift=s.Slider("C screw lift");var bridge=s.Slider("Upper bridge");Vector3 pad=W(-.12f,-.298f,-.25f);
+   yield return s.Go(pad,"Onto P");
+   float t0=game.Matter.SimulationTime;yield return until(5,()=>game.Matter.SimulationTime-t0>1.5f,"Only the motor turns");
+   if(lift.Position>.005f)throw new InvalidOperationException("The screw turned with A's gap open");
+   yield return Pull("A","Gear A into the floor gap");
+   yield return s.Go(pad,"Back onto P");
+   yield return until(20,()=>lift.AtEnd,"The floor layer screws C up into the upper layer");
+   yield return until(20,()=>bridge.AtEnd,"The column turns the upper layer: the bridge rises");
+   yield return s.Go(W(-.37f,-.12f,-.16f),"Up the stairs");yield return s.Go(W(-.20f,-.12f,.20f),"Across the mid deck");
+   yield return s.Go(W(.025f,-.12f,.20f),"Onto the bridge");yield return s.Go(W(.28f,-.12f,.20f),"Onto the exit ledge");
+  }
+  // N50 (boss): A in, P: the stair gate drops back. A out, B in, P: the gate rises for good. B out, A in. Split: a half
+  // up the stairs onto C (the door bolt slides out), a half on P: the door strains half way and drops back. The half on C
+  // comes down to Q and splits: a quarter back up to C, a quarter joins the driver: three quarters open the door. All up.
+  IEnumerator N50()
+  {
+   var q=Find<COgheQuantumSplitter>();var gate=s.Slider("Stair gate");var door=s.Slider("Exit door");var bolt=s.Slider("C door bolt");var a=s.Task("A");var b=s.Task("B");
+   Vector3 pad=W(-.32f,-.298f,-.04f),foot=W(.16f,-.30f,-.04f),top=W(.37f,-.12f,-.04f),pc=W(.22f,-.118f,.24f);
+   yield return s.Go(pad,"The whole body onto P");
+   yield return until(10,()=>gate.Position<=gate.CatchTolerance,"Straight gear A: the stair gate drops back");
+   yield return s.Operate("A");yield return until(8,()=>a.Rail.Position<=a.Rail.CatchTolerance,"Draw A out");
+   yield return Pull("B","Push the idler pair in");
+   yield return s.Go(pad,"Back onto P");
+   yield return until(20,()=>gate.AtEnd,"The idler reverses the train: the stair gate rises");
+   yield return s.Operate("B");yield return until(8,()=>b.Rail.Position<=b.Rail.CatchTolerance,"Draw the idler out again");
+   yield return Pull("A","A back in");
+   yield return s.Split(q,Selected);int climber=q.LastRight,driver=q.LastLeft;
+   yield return s.Walk(climber,foot,"A half to the foot of the stairs");
+   yield return s.Walk(climber,top,"Up the stairs");
+   yield return s.Walk(climber,pc,"Onto C: the door bolt slides out");
+   yield return until(10,()=>bolt.AtEnd,"C draws the door bolt");
+   yield return s.Walk(driver,W(-.36f,-.30f,.02f),"The other half out past Q's left side");
+   yield return s.Walk(driver,pad,"The other half onto P");
+   float t0=game.Matter.SimulationTime;yield return until(15,()=>game.Matter.SimulationTime-t0>6,"Half a body drives");
+   Debug.Log($"N50 DOOR half/half pos={door.Position:F3} {Gauges()}");
+   if(door.AtEnd||door.Position<.01f||door.Position>.08f)throw new InvalidOperationException($"Half a body should stall the door part way: {door.Position:F3}");
+   yield return s.Walk(climber,top,"The climber leaves C");
+   yield return s.Walk(climber,foot,"Down the stairs");
+   yield return s.Walk(climber,W(-.20f,-.30f,-.01f),"In front of Q");
+   yield return s.Split(q,climber);int q1=q.LastRight,q2=q.LastLeft;
+   yield return s.Walk(q1,foot,"A quarter to the stairs");
+   yield return s.Walk(q1,top,"Up the stairs");
+   yield return s.Walk(q1,pc,"The quarter onto C");
+   yield return until(10,()=>bolt.AtEnd,"C draws the bolt again");
+   yield return s.Walk(q2,W(-.36f,-.30f,.02f),"The other quarter out past Q's left side");
+   yield return s.MergeParts(new List<int>{q2,driver},pad,2);
+   yield return s.Walk(driver,pad,"Three quarters on P");
+   yield return until(20,()=>door.AtEnd,"Three quarters open the exit door");
+   Debug.Log($"N50 DOOR 75/25 pos={door.Position:F3} {Gauges()}");
+   yield return s.Walk(driver,foot,"The driver to the stairs");
+   yield return s.Walk(driver,top,"Up the stairs");
+   yield return s.Merge(W(.28f,-.12f,.14f));
+  }
+  // N33: half on A holds the door; the quarters load B1 and B2 (C's cover lifts for good); one quarter alone on C lights one
+  // tile of two and the pin stays put; the quarters merge on C, the pin slides, the holder follows, all merge.
+  IEnumerator N33()
+  {
+   var q=Find<COgheQuantumSplitter>();var door=s.Slider("A door");var cover=s.Slider("B cover");var pin=s.Slider("C door pin");
+   yield return s.Split(q,Selected);int half=q.LastLeft,other=q.LastRight;
+   yield return s.Walk(half,W(-.32f,-.298f,-.20f),"Half onto the heavy pad A");
+   yield return until(10,()=>door.AtEnd,"Half a body raises the door");
+   yield return s.Split(q,other);int q1=q.LastLeft,q2=q.LastRight;
+   yield return s.Walk(q2,W(.14f,-.298f,.22f),"Quarter onto B1");
+   yield return s.Walk(q1,W(.32f,-.298f,-.22f),"Quarter onto B2");
+   yield return until(10,()=>cover.AtEnd,"B1 and B2 lift the cover off C");
+   yield return s.Walk(q1,W(.32f,-.298f,.02f),"One quarter onto C");
+   float t0=game.Matter.SimulationTime;yield return until(4,()=>game.Matter.SimulationTime-t0>1.5f,"C weighs one quarter");
+   Debug.Log("N33 GAUGES quarter on C: "+Gauges());
+   if(pin.Position>.005f)throw new InvalidOperationException("A quarter slid the door pin");
+   yield return s.MergeParts(new List<int>{q1,q2},W(.32f,-.298f,.02f),2);
+   yield return s.Walk(q1,W(.32f,-.298f,.02f),"The merged half onto C");
+   yield return until(10,()=>pin.AtEnd,"Half a body on C slides the pin");
+   Debug.Log("N33 GAUGES half on C: "+Gauges());
+   yield return s.Walk(half,W(.14f,-.30f,-.20f),"The holder leaves A and follows");
+   yield return s.Merge(W(.20f,-.30f,-.02f));
+  }
+  // N35: a half holds A1 and the other half strains at B (75 %) and lets go; the holder splits again: one quarter takes A1,
+  // the other joins the half. Three quarters push B into its socket; all merge and climb.
+  IEnumerator N35()
+  {
+   var q=Find<COgheQuantumSplitter>();var bolt=s.Slider("A lock bolt");var b=s.Task("B");
+   yield return s.Split(q,Selected);int holder=q.LastLeft,big=q.LastRight;
+   yield return s.Walk(big,W(.12f,-.30f,-.06f),"Half waits off the tray");
+   yield return s.Walk(holder,W(-.31f,-.298f,.16f),"Half onto A1");
+   yield return until(10,()=>bolt.AtEnd,"A1 draws the bolt");
+   int gave=b.GaveUp;game.SelectFragment(big);
+   for(int attempt=0;attempt<3&&!b.Busy;attempt++){yield return tap(b.HandPoint+Vector3.up*.004f);if(!b.Busy){yield return tap(b.StandPoint);yield return until(20,()=>Vector3.Distance(game.Motion.Centre(big),b.StandPoint)<.06f,"Half beside B");}}
+   yield return until(30,()=>b.GaveUp>gave,"Half a body strains at the 75% block and lets go");
+   if(b.Rail.Position>.01f)throw new InvalidOperationException("Half a body moved the 75% block");
+   // Back round to Q's mouth (from behind, a route into Q runs up a tray lane and stalls at its gate).
+   yield return s.Walk(holder,W(-.185f,-.30f,-.275f),"The holder back in front of Q");
+   yield return s.Split(q,holder);int s1=q.LastLeft,s2=q.LastRight;
+   yield return s.Walk(s1,W(-.31f,-.298f,.16f),"Quarter onto A1");
+   yield return until(10,()=>bolt.AtEnd,"A1 draws the bolt again");
+   yield return s.MergeParts(new List<int>{s2,big},game.Motion.Centre(big),2);
+   game.SelectFragment(big);yield return Pull("B","Three quarters push B into its socket");
+   yield return s.Merge(W(-.05f,-.30f,-.02f));
+   yield return s.Go(W(.17f,-.27f,.005f),"Onto the fixed step");
+   yield return s.Go(W(.17f,-.24f,.12f),"Onto block B");
+   yield return s.Go(W(.31f,-.21f,.15f),"Onto the exit platform");
   }
   IEnumerator E05()
   {

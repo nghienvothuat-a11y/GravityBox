@@ -107,7 +107,11 @@ namespace GravityBox.Venom
         private void Ignore(Collider c) { foreach (var body in game.Matter.Bodies) { var t = body.GetComponent<Collider>(); if (t != null) Physics.IgnoreCollision(c, t); } }
 
         /// <summary>Feed: three more balls on their way (a few at a time; the room holds nine).</summary>
-        public void Feed() { pending = Mathf.Min(pending + PerFeed, MaxBalls - balls.Count); nextThrow = Mathf.Min(nextThrow, 0); }
+        public void Feed() => Feed(PerFeed);
+        /// <summary>A given number of balls (the bonus "Hiểu ra" asks for one at a time), tossed gently to land near
+        /// <paramref name="near"/> when given (COghe is waiting for it) instead of anywhere in the aisle.</summary>
+        public void Feed(int count, Vector3? near = null) { pending = Mathf.Min(pending + count, MaxBalls - balls.Count); nextThrow = Mathf.Min(nextThrow, 0); toward = near; }
+        private Vector3? toward;
 
         public void Step(float dt)
         {
@@ -138,6 +142,13 @@ namespace GravityBox.Venom
             Vector3 from = room.Root.TransformPoint(new Vector3(R(-.2f, .2f), .3f, -COgheHomeRoom.HalfDepth - .04f));
             Vector3 to = room.Root.TransformPoint(new Vector3(R(-.16f, .16f), COgheFeedBall.Radius, R(-.5f, .55f)));
             float time = R(.42f, .55f);
+            if (toward.HasValue)
+            {   // a short, low lob from the player's side to just in front of whoever asked for it: it lands close and soon rests
+                var local = room.Root.InverseTransformPoint(toward.Value);
+                to = room.Root.TransformPoint(new Vector3(local.x + R(-.015f, .015f), COgheFeedBall.Radius, local.z + R(-.015f, .015f)));
+                from = room.Root.TransformPoint(new Vector3(local.x, .1f, local.z - .05f));   // nearly straight down: it hardly rolls
+                time = .3f; if (pending <= 1) toward = null;
+            }
             body.position = from; go.transform.position = from;
             body.linearVelocity = (to - from) / time + room.Root.up * (.5f * 9.81f * time);
             body.angularVelocity = new Vector3(R(-30, 30), R(-30, 30), R(-30, 30));

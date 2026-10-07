@@ -290,7 +290,7 @@ namespace GravityBox.Tests
         // Home view (Mrk): drag turns the room like a level; Zoom in follows COghe.
         [UnityTest] public IEnumerator HomeTurnsWithADragAndZoomFollowsCOghe()
         {
-            game.Progress.HomeUnlocked=true;COgheHomeRoom.UnlockedLevelOverride=26;
+            game.Progress.HomeUnlocked=true;COgheHomeRoom.UnlockedLevelOverride=31;
             try
             {
                 yield return Click("Home");Assert.AreEqual(COgheProductPage.Home,ui.Page);yield return new WaitForSecondsRealtime(.5f);
@@ -329,7 +329,7 @@ namespace GravityBox.Tests
         [UnityTest] public IEnumerator AllFiftyScenesExposeProductControlsInsideTheSafeArea()
         {
             string[] scenes=ui.Catalog.Levels[0].SceneSequence;
-            Assert.AreEqual(50,scenes.Length);
+            Assert.AreEqual(60,scenes.Length);   // 50 + the crate levels 51–60 (Mrk, 06/10/2026)
             for(int i=0;i<scenes.Length;i++)
             {
                 yield return SceneManager.LoadSceneAsync(scenes[i]);yield return null;

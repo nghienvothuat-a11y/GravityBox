@@ -16,9 +16,9 @@ namespace GravityBox.Editor
  {
   static readonly string[] SpatialNextNames={"Kê một bậc","Khối lớn đi trước","Thùng đi thang","Luồn một vòng","Gặp nhau ở ngã ba","Một thành hai","Bạn giữ, mình luồn","Bám dây sang bờ","Đưa bến lại gần","Hai nửa một máy",
    "Kéo đối trọng","Ba mảnh thành đường","Đổi tuyến trên vách","Hai rồi bốn","Giữ lại phần lớn","Đu và luồn","Bốn trạm tiếp sức","Đường ống ba chiều","Xưởng lắp cầu","Hộp cộng hưởng"};
-  static readonly string[] SpatialNextLessons={"Đẩy thùng A sát bệ để làm bậc.","Khối cao vào trước, khối thấp vào sau.","Đưa thùng lên khay, rồi cùng lên thang.","Kéo A mở ống, rồi chạm miệng ống.","Ở ngã ba, chạm nhánh muốn đi.",
+  static readonly string[] SpatialNextLessons={"Đẩy thùng A sát bệ để làm bậc.","Khối cao vào trước, khối thấp vào sau.","Thùng cần lên tầng trên.","Kéo A mở ống, rồi chạm miệng ống.","Ở ngã ba, chạm nhánh muốn đi.",
    "Vào máy Q để thành hai phần bằng nhau.","Một phần giữ A, phần kia luồn ống.","Chạm vòng A để bám, rồi chạm bến muốn tới.","Đưa bến vào tầm đu trước.","",
-   "Thùng trên khay kéo cầu hạ.","Nhịp xa vào trước.","Đổi tuyến rồi quay lại ngã ba.","Vào Q lần nữa để chia tiếp.","Phần lớn đẩy, phần nhỏ giữ.","Một nửa mở bến, nửa kia đu.","Bốn phần, bốn trạm.","Ngoài đổi tuyến, trong giữ chốt.","Ráp đủ khung rồi mới nâng.",""};
+   "Khay nặng thì dây căng.","Ba mảnh, một bãi chờ.","Đổi tuyến rồi quay lại ngã ba.","Vào Q lần nữa để chia tiếp.","Phần lớn đẩy, phần nhỏ giữ.","Một nửa mở bến, nửa kia đu.","Bốn phần, bốn trạm.","Ngoài đổi tuyến, trong giữ chốt.","Ráp đủ khung rồi mới nâng.",""};
   static int[] SpatialNextSelection()
   {
    var args=Environment.GetCommandLineArgs();int i=Array.IndexOf(args,"-coghe-spatial-levels");
@@ -102,7 +102,13 @@ namespace GravityBox.Editor
    var pearl=AssetDatabase.LoadAssetAtPath<Material>("Assets/_Game/Venom/Art/DayLab/Spatial pearl casing.mat")??ivory;
    // Pads wear their circuit's colour; handles already do (DecorateSpatialMechanisms). No letters (Mrk, 05/10/2026).
    foreach(var sensor in c.Root.GetComponentsInChildren<COgheTissueSensor>())
-    if(sensor.Cap!=null)sensor.Cap.GetComponent<Renderer>().sharedMaterial=COgheDayLabBuilder.Circuit(c.Game,sensor.name).body;
+   {
+    var circuit=COgheDayLabBuilder.Circuit(c.Game,sensor.name);
+    if(sensor.Cap!=null)sensor.Cap.GetComponent<Renderer>().sharedMaterial=circuit.body;
+    // Load gauge (chapter 4): an empty slot in the printed (muted) colour, a lit tile in the full one.
+    foreach(var r in sensor.GetComponentsInChildren<Renderer>(true))
+     if(r.name=="Gauge slot")r.sharedMaterial=circuit.trace;else if(r.name=="Gauge light")r.sharedMaterial=circuit.body;
+   }
    foreach(var q in c.Root.GetComponentsInChildren<COgheQuantumSplitter>())
     foreach(var r in q.GetComponentsInChildren<Renderer>(true))if(r.name.Contains("casing")||r.name.Contains("housing"))r.sharedMaterial=pearl;
    foreach(var p in c.Surfaces)if(p.name.StartsWith("Q casing")||p.name.StartsWith("Q rear housing"))p.GetComponent<Renderer>().sharedMaterial=pearl;
@@ -116,6 +122,14 @@ namespace GravityBox.Editor
      strip.GetComponent<Renderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
     }
    nextTraces.Clear();
+   // Crate levels: the red crate (it hides the exit) is coral; both handles of a crate share a colour.
+   foreach(var task in c.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())
+   {
+    var colour=COgheDayLabBuilder.Circuit(c.Game,task.Label).body;
+    if(task.AlternateHandle!=null)foreach(var r in task.AlternateHandle.GetComponentsInChildren<Renderer>())r.sharedMaterial=colour;
+    if(task.Rail.name!="Red crate")continue;
+    foreach(var r in task.Rail.GetComponentsInChildren<MeshRenderer>(true))if(r.GetComponent<TextMesh>()==null)r.sharedMaterial=colour;
+   }
    COgheDayLabBuilder.RetireLetters(c.Game);
    Debug.Log($"SPATIAL {c.Definition.Order:00}: {COgheDayLabBuilder.NoDarkParts(c.Game,metal)} dark parts now satin or circuit colour");
   }

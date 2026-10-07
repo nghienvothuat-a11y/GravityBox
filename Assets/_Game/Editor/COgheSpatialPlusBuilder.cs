@@ -47,7 +47,36 @@ namespace GravityBox.Editor
    NewPlus("N18","Nửa thân không đủ sức","Khối 100% cần cả thân COghe; một nửa chỉ gồng được.",PlusN18),
    NewPlus("N15","Chuẩn bị trước khi đi","Tay nắm chỉ ở phòng này: việc gì ở đây thì làm trước khi đi.",PlusN15),
    NewPlus("N19","Người giữ có việc thứ hai","Người giữ được thả ra thì còn làm được việc khác.",PlusN19),
-  };
+  }.Concat(CrateDesigns.Select((d,k)=>NewPlus(d.key,d.title,d.lesson,c=>PlusCrate(c,k))))   // crate levels 51–60
+   // New levels go at the END of this list: a level's generated meshes are numbered by its index here (BuildSpatialPlus,
+   // meshSerial), so an insertion shifts every later level onto another level's mesh files (chapter 3, 06/10/2026: the
+   // new N levels overwrote the meshes of crate levels 51–54).
+   .Concat(new[]{
+   NewPlus("N22","Chất hàng trước","Xe cập bờ thì thùng trên xe bị khoá.",PlusN22),
+   NewPlus("N23","Đưa bến lại gần","Bến xa quá thì đu không tới.",PlusN23),
+   NewPlus("N29","Xếp tầng trên trước","Khối dưới cập bờ thì khối trên bị khoá.",PlusN29),
+   NewPlus("N25","Chưa đủ nặng","Thùng nhẹ quá: ván chỉ nâng nửa chừng.",PlusN25),
+   NewPlus("N26","Nhẹ quá không nghiêng","Nửa thân không đủ nặng để nghiêng ván.",PlusN26),
+   // Chapter 4 (plan 5.4): split to the right size.
+   NewPlus("N31","Cân ở cửa","Mỗi ô trên đồng hồ là một phần tư thân.",PlusN31),
+   NewPlus("N33","Hai phần tư thành một nửa","Nút C cần nửa thân.",PlusN33),
+   NewPlus("N35","Ba phần tư","Khối B cần ba phần tư thân.",PlusN35),
+   NewPlus("N32","Nặng đi trước","Khối B cần cả thân COghe.",PlusN32),
+   NewPlus("N40","Cân ba phần tư","",PlusN40,true),
+   NewPlus("N34","Bập bênh nâng bạn","Bên nặng hơn đi xuống, bên nhẹ đi lên.",PlusN34),
+   // Chapter 5 (plan 5.5): gears.
+   NewPlus("N44","Bánh đệm đổi chiều","Thêm một bánh thì máy quay ngược lại.",PlusN44),
+   NewPlus("N45","Ai chạy máy","Người đứng máy càng nặng, máy càng khoẻ.",PlusN45),
+   // Chapter 5, part 2 (06/10/2026).
+   NewPlus("N41","Bánh răng đầu tiên","Bánh răng phải khớp liền nhau thì máy mới truyền lực.",PlusN41),
+   NewPlus("N42","Hai xe chéo nhau","Hai xe bánh răng dùng chung một ngã tư.",PlusN42),
+   NewPlus("N47","Mượn bánh","Hai máy, chỉ một bánh răng.",PlusN47),
+   NewPlus("N49","Hai động cơ một cửa","Cửa nặng: hai động cơ cộng sức kéo.",PlusN49),
+   NewPlus("N50","Hộp số","",PlusN50,true),
+   // Chapter 5, part 3.
+   NewPlus("N48","Hai tầng trục","Hai tầng bánh răng chung một trục.",PlusN48),
+   NewPlus("N46","Bàn xoay chở hàng","Bàn xoay mang theo cả thùng trên mặt bàn.",PlusN46),
+   NewPlus("N43","Ống theo hộp số","Bánh răng quyết định ống rẽ nhánh nào.",PlusN43)}).ToArray();
 
   // Design notes (root-local): numbered steps, labels and routes, projected onto renders for the design plates.
   static readonly List<string> plusNotes=new List<string>();
@@ -78,6 +107,17 @@ namespace GravityBox.Editor
   /// <summary>Chapter 2 rebuild (Mrk, 05/10/2026): builds the levels named by -coghe-plus-levels (only those), applies the
   /// play order, then renumbers the plaque of every level that moved. Other scenes are opened for the plaque only.</summary>
   public static void GenerateChapterTwoLevels(){GenerateSpatialPlus();RenumberSpatialPlaques();}
+  /// <summary>Chapter 3 (06/10/2026): on level 21 (content 18) the plaque hid rope ring A and the gripping body (audit
+  /// L11–30); mirror it to the top-right of the front glass.</summary>
+  public static void MoveChapterThreePlaques()
+  {
+   foreach(var key in new[]{"18","N44","N41","N42","N47","N48"}) // N44, N41, N42, N47, N48 (06/10/2026): the plaque hid the gear table
+   {
+    var scene=EditorSceneManager.OpenScene(SpatialContentPath(key));var game=Object.FindFirstObjectByType<VenomCampaign>();
+    var plate=game.GetComponent<VenomLevelController>().Rotation.transform.Find("COghe specimen number");var p=plate.localPosition;
+    if(p.x<0){plate.localPosition=new Vector3(-p.x,p.y,p.z);EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);Debug.Log("PLAQUE moved right "+key);}
+   }
+  }
   /// <summary>The plaque on the glass shows the play position; a level that moved in the order gets its new number.</summary>
   public static void RenumberSpatialPlaques()
   {
