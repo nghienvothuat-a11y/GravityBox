@@ -113,9 +113,17 @@ mọi thứ ảnh hưởng tới giải đố, tăng hoạt cảnh tình cảm. 
     (một viên, thả ngay trước mặt nó), rồi câu tiếp.
   - Sai: hình tan, thân lắc qua lại "không phải", rồi hỏi lại. Feed sai không ném bi. Sai 2 lần thì dòng chữ dưới tiêu đề
     gợi ý ("It wants a cuddle: tap COghe.").
-- **Chương 1 (đã làm):** tim → chạm COghe; quả bóng nảy (hình `Ball` mới) → chạm quả bóng; nấm → Feed. Chỉ dùng thứ ai
-  cũng có ở màn 12: chạm, đồ ăn, quả bóng (quà). Chương 2–5 (hai hình, đúng thứ tự, đúng số lượng, ghép) chưa định nghĩa;
-  chưa có thì không mời.
+- **Câu hỏi là một "câu" gồm các từ** (`COgheBonusRound`): mỗi từ là một hình và một việc, có thể kèm số (hình `One`–
+  `Three`: giơ chừng ấy xúc tu như ngón tay). COghe diễn lần lượt từng hình (mỗi hình ~1,25 s, nghỉ 0,7 s rồi lặp), chỉ diễn
+  những từ còn lại. Câu trả lời chỉ dùng thứ ai cũng có (chạm, Feed, quả bóng quà), nên không phụ thuộc đồ đã mua.
+  - Chương 1: một từ (tim → chạm; bóng nảy → chạm quả bóng; nấm → Feed).
+  - Chương 2: hai từ, thứ tự nào cũng được (tim + nấm, bóng + tim, nấm + bóng).
+  - Chương 3: đúng thứ tự (nấm → tim; tim → bóng → nấm; bóng → nấm → tim). Sai thứ tự = lắc nhẹ.
+  - Chương 4: đúng số lượng (2 nấm = cho ăn đúng 2 viên; 3 tim = chạm đúng 3 lần; 3 nấm). Mỗi lần đáp, COghe giơ số đã
+    nhận; đủ số thì nó nghiêng qua lại chờ một chút để "kiểm"; thêm một lần nữa là thừa: lắc, đếm lại.
+  - Chương 5: ghép (2 tim rồi bóng; nấm rồi 3 tim; 2 nấm, tim, rồi bóng).
+  - Xong một từ (chưa hết câu): nhảy nhẹ + hình ngón cái. Feed trong màn thưởng: một viên bi rơi ngay trước mặt, COghe
+    bắt bằng xúc tu và nuốt tại chỗ (không đi lại), nên đếm nhanh.
 - **Cảm ơn (6,2 s, phần thưởng lớn nhất):** hiểu hết thì COghe ra chỗ trống nhất của phòng (`StageSpot`), camera lại
   gần. Nó áp bẹp vào màn hình rồi bật ra, nhảy cao xoay một vòng, nặn trái tim lớn đập nhịp, tim bay lên từ đó
   (`COgheHearts`). Sau đó tim chuyển thành ngôi sao có pháo giấy (`COgheConfetti`). Nó nhảy múa qua lại trong khi "+100" và
@@ -124,13 +132,24 @@ mọi thứ ảnh hưởng tới giải đố, tăng hoạt cảnh tình cảm. 
 - **Thưởng:** câu 1–3 trả ngay lúc đúng (10/20/30, khoá `bonus:<chương>:<câu>`); xong cả màn trả `drops_bonus` (mặc
   định 100, khoá `bonus:<chương>`). Tất cả ×2 với Plus, mỗi khoá trả một lần (vào lại sau khi bỏ dở không trả lại câu đã
   trả).
+- **Tình cảm trong Nhà (07/10, Mrk: tăng hoạt cảnh tình cảm):**
+  - Chạm nhẹ liên tiếp (cách nhau dưới 6 s, không dồn dập) làm COghe "ấm" dần: lần 1 một phản ứng vui; lần 2 nó dụi vào
+    tay (nghiêng về phía người chơi, rung "rừ rừ") hoặc nặn tim có tim bay; lần 3 nó lao tới áp bẹp vào màn hình như ôm,
+    tim bay. Chạm dồn dập (4 lần / 3 s) vẫn là dỗi như cũ.
+  - Chơi một món người chơi chọn xong: nó nặn tim đáp lại, tim bay ("cảm ơn đã chơi cùng").
+  - Mỗi lần vào Nhà: nó chạy ra phía trước vẫy chào (sau khi đồ mới bật ra).
+  - Tim bay hiện cả ở menu chính (COghe ở menu cũng ôm được).
 - **Ranh giới:** chỉ là phần nhìn và trong Nhà; không đổi vật lý, hạt hay lời giải màn nào. Tài liệu Nhà
   (`VENOM_PURE_PUZZLE_AND_HOME.md` mục 3) đã bỏ "kỹ năng quen giảm chỉ dẫn vụn".
 - **File:** `Home/COgheBonus.cs` (câu hỏi từng chương, đã xong/đang chờ), `Personality/COghePersonality.Bonus.cs` (hỏi,
   lắc, mừng, cảm ơn), `Product/COgheProductUI.Bonus.cs` (lời mời, màn trong Nhà, hộp thưởng), `Product/COgheHearts.cs`,
   quay clip `Product/COgheBonusReel.cs` (`-coghe-bonus-reel <thư mục>`, bản phát triển).
 - **Test:** `COgheBonusTests` (lời mời sau Boss rồi Skip, màn thưởng chờ trong Nhà; chơi đủ 3 câu kể cả trả lời sai, chạm
-  sàn không làm nó đi, thưởng một lần; Play từ lời mời rồi "Later" sang màn 13).
+  sàn không làm nó đi, thưởng ngay từng câu và một lần; Play từ lời mời rồi "Later" sang màn 13), `COgheBonusChapterTests`
+  (chương nào cũng có 3 câu chỉ dùng chạm/Feed/bóng; hai việc thứ tự nào cũng được; sai thứ tự; đếm đúng và thừa một;
+  câu ghép số + bóng), `COgheAffectionTests` (ba lần chạm nhẹ thành cái ôm có tim, không dỗi; vào Nhà là chào).
+  Clip: `Artifacts/Clips/bonus1b.mp4` (chương 1 trọn vẹn), `bonus2.mp4` (tình cảm + câu đầu chương 2–5;
+  `-coghe-bonus-reel2 <thư mục>`).
 
 ## File
 

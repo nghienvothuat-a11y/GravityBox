@@ -107,11 +107,7 @@ namespace GravityBox.Venom
         private void Ignore(Collider c) { foreach (var body in game.Matter.Bodies) { var t = body.GetComponent<Collider>(); if (t != null) Physics.IgnoreCollision(c, t); } }
 
         /// <summary>Feed: three more balls on their way (a few at a time; the room holds nine).</summary>
-        public void Feed() => Feed(PerFeed);
-        /// <summary>A given number of balls (the bonus "Hiểu ra" asks for one at a time), tossed gently to land near
-        /// <paramref name="near"/> when given (COghe is waiting for it) instead of anywhere in the aisle.</summary>
-        public void Feed(int count, Vector3? near = null) { pending = Mathf.Min(pending + count, MaxBalls - balls.Count); nextThrow = Mathf.Min(nextThrow, 0); toward = near; }
-        private Vector3? toward;
+        public void Feed() { pending = Mathf.Min(pending + PerFeed, MaxBalls - balls.Count); nextThrow = Mathf.Min(nextThrow, 0); }
 
         public void Step(float dt)
         {
@@ -127,7 +123,7 @@ namespace GravityBox.Venom
         }
 
         private float R(float a, float b) => a + (float)rnd.NextDouble() * (b - a);
-        private void Throw()
+        private COgheFeedBall Make()
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere); go.name = "Feed ball " + (++Thrown); go.layer = IgnoreTaps;
             go.transform.SetParent(holder, false); go.transform.localScale = Vector3.one * COgheFeedBall.Radius * 2;
@@ -137,18 +133,25 @@ namespace GravityBox.Venom
             body.mass = .03f; body.useGravity = false; body.linearDamping = .2f; body.angularDamping = .9f; body.maxAngularVelocity = 200;
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic; body.interpolation = RigidbodyInterpolation.Interpolate;
             var ball = go.AddComponent<COgheFeedBall>(); ball.Initialize(body, shape, -room.Root.up);
+            return ball;
+        }
+
+        /// <summary>The bonus "Hiểu ra": one ball handed straight to COghe at <paramref name="at"/>, already taken (no physics):
+        /// its catch-and-gulp moves it and eats it.</summary>
+        public COgheFeedBall Serve(Vector3 at)
+        {
+            var ball = Make(); ball.Body.position = at; ball.transform.position = at; ball.Take(); balls.Add(ball);
+            return ball;
+        }
+
+        private void Throw()
+        {
+            var ball = Make(); var body = ball.Body; var go = ball.gameObject;
             // from the player's side, over the front lip, a low arc under the Home's gravity onto a random spot of the open
             // aisle; the bounces and the roll scatter it from there
             Vector3 from = room.Root.TransformPoint(new Vector3(R(-.2f, .2f), .3f, -COgheHomeRoom.HalfDepth - .04f));
             Vector3 to = room.Root.TransformPoint(new Vector3(R(-.16f, .16f), COgheFeedBall.Radius, R(-.5f, .55f)));
             float time = R(.42f, .55f);
-            if (toward.HasValue)
-            {   // a short, low lob from the player's side to just in front of whoever asked for it: it lands close and soon rests
-                var local = room.Root.InverseTransformPoint(toward.Value);
-                to = room.Root.TransformPoint(new Vector3(local.x + R(-.015f, .015f), COgheFeedBall.Radius, local.z + R(-.015f, .015f)));
-                from = room.Root.TransformPoint(new Vector3(local.x, .1f, local.z - .05f));   // nearly straight down: it hardly rolls
-                time = .3f; if (pending <= 1) toward = null;
-            }
             body.position = from; go.transform.position = from;
             body.linearVelocity = (to - from) / time + room.Root.up * (.5f * 9.81f * time);
             body.angularVelocity = new Vector3(R(-30, 30), R(-30, 30), R(-30, 30));

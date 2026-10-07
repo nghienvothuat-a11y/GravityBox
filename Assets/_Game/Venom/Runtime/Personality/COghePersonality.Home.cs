@@ -24,7 +24,7 @@ namespace GravityBox.Venom
     public sealed partial class COghePersonality
     {
         private enum HomeState { Rest, Walk, Play, React, Sulk, User, Eat }
-        private enum Reaction { Tickle, Hop, Heart, Roll, Flatten, Dodge }
+        private enum Reaction { Tickle, Hop, Heart, Roll, Flatten, Dodge, Nuzzle, Hug }
         private HomeState home;
         private COgheHomeRoom room;
         private COgheHomeItem target, playing;
@@ -37,6 +37,11 @@ namespace GravityBox.Venom
         private readonly List<COgheHomeItem> choices = new List<COgheHomeItem>(16);
         private COgheHomeItem lastPlayed;
         private Vector3 sulkCorner;
+        // affection (Mrk 07/10/2026: "tăng cường animation tương tác, thể hiện tình cảm"): gentle touches one after another
+        // warm it up, a toy the player chose ends in a thank-you, and it comes to say hello when the player visits
+        private int warmth; private float lastTouch = -100; private bool userPlay, affectionHearts, greetPending; private int greetStep;
+        /// <summary>True once when COghe's affection should send little hearts up (a hug, a thank-you): the UI shows them.</summary>
+        public bool TakeAffectionHearts() { bool due = affectionHearts; affectionHearts = false; return due; }
         public COgheSkinPose Pose;
         public COgheHomeItem Playing => playing;
         public bool Sulking => home == HomeState.Sulk;
@@ -63,6 +68,7 @@ namespace GravityBox.Venom
             room = homeRoom; home = HomeState.Rest; homeTimer = 0; homeNext = 1.2f; showcaseActs = 0; playing = target = null; eating = false; meal = null; EndAct();
             reveals.Clear(); revealClock = -.6f; revealVisit = false; revealPending = true;
             for (int i = 0; i < touches.Length; i++) touches[i] = -100;
+            warmth = 0; lastTouch = -100; userPlay = affectionHearts = false; greetPending = true; greetStep = 0;
         }
         internal void LeaveHome() { bonusPhase = BonusPhase.None; bonusRounds = null; room = null; home = HomeState.Rest; playing = target = null; eating = false; meal = null; EndAct(); }
 
@@ -78,16 +84,22 @@ namespace GravityBox.Venom
             StopPlaying();
             if (now - touches[touches.Length - 1] < 3f) { StartSulk(); return; }
             touchDirection = Vector3.ProjectOnPlane(centre - point, up).normalized;
-            reaction = (Reaction)rnd.Next(6);
-            home = HomeState.React; stateTime = 0; Begin(COgheAct.Home, reaction == Reaction.Heart ? 1.5f : 1.1f);
-            COgheAudio.Instance?.Play(reaction == Reaction.Tickle ? "creature_happy" : reaction == Reaction.Heart ? "creature_tada" : reaction == Reaction.Flatten ? "creature_pop" : "creature_hi", .5f, 0, .15f);
+            // gentle touches one after another (not a flurry: that is a sulk) warm it up: something playful, then it leans
+            // into the hand, then it hugs the player against the screen with hearts, and starts again
+            warmth = now - lastTouch < 6f ? warmth + 1 : 1; lastTouch = now;
+            reaction = warmth >= 3 ? Reaction.Hug : warmth == 2 ? (rnd.Next(2) == 0 ? Reaction.Nuzzle : Reaction.Heart) : (Reaction)rnd.Next(6);
+            if (reaction == Reaction.Hug) warmth = 0;
+            home = HomeState.React; stateTime = 0;
+            Begin(COgheAct.Home, reaction == Reaction.Hug ? 2.2f : reaction == Reaction.Nuzzle ? 1.7f : reaction == Reaction.Heart ? 1.5f : 1.1f);
+            COgheAudio.Instance?.Play(reaction == Reaction.Tickle || reaction == Reaction.Nuzzle ? "creature_happy" : reaction == Reaction.Heart ? "creature_tada" :
+                reaction == Reaction.Flatten ? "creature_pop" : reaction == Reaction.Hug ? "creature_splat" : "creature_hi", .5f, 0, .15f);
         }
         /// <summary>The player tapped a piece of furniture, or chose it in the item menu: go and play with it.</summary>
         public void PlayWith(COgheHomeItem item)
         {
             if (room == null || item == null || !room.Present(item)) return;
             if (InBonus) { BonusHeard(COgheBonusAnswer.Item, item.Id); return; }
-            StopPlaying(); GoTo(item);
+            StopPlaying(); GoTo(item); userPlay = true;   // chosen by the player: it thanks them after
         }
 
         /// <summary>Previews and tests: put COghe at the item and start its game now.</summary>
@@ -123,6 +135,7 @@ namespace GravityBox.Venom
                     break;
                 case HomeState.Rest:
                     homeTimer += dt;
+                    if (Greet(dt)) break;
                     if (revealVisit && !Showcase) { revealVisit = false; var newest = reveals[reveals.Count - 1]; reveals.Clear(); GoTo(newest); break; }
                     if (homeTimer < homeNext || !grounded) break;
                     ChooseHomeActivity();
@@ -209,6 +222,11 @@ namespace GravityBox.Venom
             if (playing != null) ResetParts(playing);
             if (playing != null && playing.Id == "SLIDE") TeleportBody(room.ApproachPoint(playing, true));   // it ends at the bottom of the chute
             playing = null; EndAct(); home = HomeState.Rest; homeTimer = 0; homeNext = 1.5f + (float)rnd.NextDouble() * 2;
+            if (userPlay && !InBonus)
+            {   // the player chose that game: a heart back at them, hearts flying
+                userPlay = false; reaction = Reaction.Heart; touchDirection = CameraFlat(); home = HomeState.React; stateTime = 0;
+                Begin(COgheAct.Home, 1.5f); affectionHearts = true; COgheAudio.Instance?.Play("creature_tada", .5f, 0, .15f);
+            }
         }
 
         private void StopPlaying()
@@ -248,6 +266,21 @@ namespace GravityBox.Venom
             else if (stateTime > 8) { home = HomeState.Rest; homeTimer = 0; }
         }
 
+        /// <summary>Saying hello when the player comes in: once a visit, it walks up to the front and waves (not in the menu,
+        /// the Style screen or a bonus, and after any new furniture has popped in). True while it does.</summary>
+        private bool Greet(float dt)
+        {
+            if (!greetPending || Showcase || OnStage || InBonus || reveals.Count > 0 || revealPending) return false;
+            if (greetStep == 0) { greetStep = 1; game.Motion.Move(0, room.Root.TransformPoint(new Vector3(0, COgheHomeRoom.BodyHeight, -.4f))); stateTime = 0; return true; }
+            if (greetStep == 1 && (game.Motion.Get(0) == null || stateTime > 5))
+            {
+                greetStep = 2; greetPending = false; game.Motion.StopAll();
+                Begin(COgheAct.Wave, 2.9f); COgheAudio.Instance?.Play("creature_hi", .55f, 0, .1f);
+                homeTimer = 0; homeNext = 3.5f; return true;
+            }
+            return greetStep == 1;
+        }
+
         // Touch reactions -------------------------------------------------------------------------------------------------------
         private void ReactPose(float t)
         {
@@ -258,9 +291,29 @@ namespace GravityBox.Venom
             {
                 case Reaction.Tickle: Pose.Squash = 1 + .18f * Mathf.Sin(t * 38) * e; Pose.Turn = Quaternion.AngleAxis(Mathf.Sin(t * 29) * 12 * e, CameraFlat()); break;
                 case Reaction.Hop: Pose.Centre = centre + up * (s * 1.5f * Mathf.Sin(u * Mathf.PI)); Pose.Squash = u < .15f ? 1 - .25f * Mathf.Sin(u / .15f * Mathf.PI) : 1 + .15f * e; break;
-                case Reaction.Heart: Pose.Morph = Smooth01(0, .3f, u) * (1 - Smooth01(.75f, 1, u)); Pose.Shape = COgheShape.Heart; break;
+                case Reaction.Heart:
+                    Pose.Morph = Smooth01(0, .3f, u) * (1 - Smooth01(.75f, 1, u)); Pose.Shape = COgheShape.Heart;
+                    if (warmth == 2 && Crossed(.45f, 100, t)) affectionHearts = true;   // warmed up: hearts too
+                    break;
                 case Reaction.Roll: Pose.Centre = centre + up * (s * .5f * e) + Vector3.Cross(up, CameraFlat()) * (s * .6f * e); Pose.Turn = Quaternion.AngleAxis(360 * Smooth01(0, 1, u), CameraFlat()); break;
                 case Reaction.Flatten: Pose.Squash = u < .5f ? 1 - .55f * Smooth01(0, .25f, u) : .45f + .75f * Smooth01(.5f, .75f, u) - .2f * Smooth01(.75f, 1, u); break;
+                case Reaction.Nuzzle:
+                {   // it leans into the hand, rubbing against it, and purrs (a fast shiver)
+                    var toCam = CameraFlat(); var side = Vector3.Cross(up, toCam);
+                    Pose.Centre = centre + toCam * (s * .55f * e) + side * (s * .25f * Mathf.Sin(t * 7) * e) + up * (s * .15f * e);
+                    Pose.Turn = Quaternion.AngleAxis(12 * Mathf.Sin(t * 7) * e, toCam) * Quaternion.AngleAxis(-10 * e, side);
+                    Pose.Squash = 1 + .045f * Mathf.Sin(t * 46) * e; break;
+                }
+                case Reaction.Hug:
+                {   // it rushes up and squashes itself flat against the screen, wobbling there: a hug; hearts fly
+                    var toCam = CameraFlat();
+                    float press = Smooth01(.08f, .3f, u) * (1 - Smooth01(.72f, .92f, u));
+                    float wobble = Mathf.Sin((t - .3f) * 17) * Mathf.Exp(-Mathf.Max(0, t - .3f) * 2.4f) * press;
+                    Pose.Centre = centre + toCam * (s * 1.4f * press) + up * (s * .35f * press);
+                    Pose.Axis = toCam; Pose.Squash = 1 - .42f * press + .06f * wobble;
+                    if (Crossed(.75f, 100, t)) { affectionHearts = true; COgheAudio.Instance?.Play("creature_happy", .5f, 0, .1f); }
+                    break;
+                }
                 case Reaction.Dodge: Pose.Centre = centre + (touchDirection.sqrMagnitude > .5f ? touchDirection : Vector3.Cross(up, CameraFlat())) * (s * 1.3f * e) + up * (s * .4f * e); Pose.Squash = 1 + .1f * e; break;
             }
         }

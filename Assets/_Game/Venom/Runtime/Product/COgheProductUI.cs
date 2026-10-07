@@ -106,6 +106,8 @@ namespace GravityBox.Venom
                 }
             }
             if(Page==COgheProductPage.Home&&bonusChapter>0)BonusTick();
+            else if((Page==COgheProductPage.Home||Page==COgheProductPage.MainMenu)&&Game.Personality!=null&&Game.Personality.TakeAffectionHearts())
+                COgheHearts.Burst(safe,BonusScreen(Game.Personality.SkinCentre+Vector3.up*.05f),Time.frameCount,10,.7f);   // a hug, a thank-you
             if(Page==COgheProductPage.Victory && Popup==COgheProductPopup.None && victoryNextRequested && VictoryReady())
             {
                 victoryNextRequested=false;

@@ -127,14 +127,22 @@ namespace GravityBox.Venom
                 art.Box(pageRoot, "Round " + (i + 1), new Rect(x, 86, 18, 18), done ? COgheUIArt.Teal : now ? COgheUIArt.Mint : new Color(.9f, .9f, .87f)).pixelsPerUnitMultiplier = 5;
             }
             DropsCounter(pageRoot, new Rect(width - 124, 88, 100, 40));   // the rewards fly in here
-            string line = bonusThanksShown || p == null || p.BonusFinished ? "" : "What does COghe want?";
+            string line = bonusThanksShown || p == null || p.BonusFinished ? "" : BonusPrompts[Mathf.Clamp(bonusChapter - 1, 0, BonusPrompts.Length - 1)];
             var ask = p?.BonusAsk;
-            if (ask.HasValue && bonusShownMisses >= 2 && !bonusThanksShown)
-                line = ask.Value.Answer == COgheBonusAnswer.Touch ? "It wants a cuddle: tap COghe." :
-                       ask.Value.Answer == COgheBonusAnswer.Feed ? "It is hungry: tap Feed." : "It wants to play: tap the ball.";
+            if (ask.HasValue && bonusShownMisses >= 2 && !bonusThanksShown) line = BonusHint(ask.Value);
             art.Label(pageRoot, "Bonus ask", line, new Rect(24, 136, width - 48, 26), 13, COgheUIArt.Muted);
             float y = height - 152;
             MenuEntry(width * .5f - 28, y, "Feed", COgheIcon.Food, () => { Game.FeedHome(); COgheAudio.UiTap(); });
+        }
+
+        // what each chapter's questions are like (COghe itself only speaks in shapes)
+        private static readonly string[] BonusPrompts = { "What does COghe want?", "COghe wants two things.", "Do them in COghe's order.", "How many does COghe want?", "Watch the whole sentence." };
+        /// <summary>After two misses: the next thing to do, said plainly.</summary>
+        private static string BonusHint(COgheBonusAsk word)
+        {
+            string times = word.Count > 1 ? " " + word.Count + " times, then wait" : "";
+            return word.Answer == COgheBonusAnswer.Touch ? "It wants a cuddle: tap COghe" + times + "." :
+                   word.Answer == COgheBonusAnswer.Feed ? "It is hungry: tap Feed" + times + "." : "It wants to play: tap the ball.";
         }
 
         // Popups --------------------------------------------------------------------------------------------------------------

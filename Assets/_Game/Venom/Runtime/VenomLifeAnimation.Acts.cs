@@ -262,6 +262,20 @@ namespace GravityBox.Venom
                         Src(Mathf.Cos(a) * .47f, 1.35f, Mathf.Sin(a) * .47f, 1f);
                     }
                     break;
+                case COgheShape.One:
+                case COgheShape.Two:
+                case COgheShape.Three:
+                {
+                    // a number, counted on raised tendrils like fingers, standing well apart so they can be counted
+                    int n = shape - COgheShape.One + 1;
+                    Puddle(.6f, .3f, 5, .74f); Src(0, .62f, 0, .66f);
+                    for (int f = 0; f < n; f++)
+                    {
+                        float x = (f - (n - 1) * .5f) * .62f;
+                        Straight(new Vector3(x * .8f, .7f, 0), new Vector3(x * 1.15f, 2.15f, 0), .26f, .2f);
+                    }
+                    break;
+                }
             }
         }
 

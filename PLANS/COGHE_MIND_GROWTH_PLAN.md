@@ -14,8 +14,9 @@ created: 2026-10-07
 > 4. Bỏ những thứ ảnh hưởng tới giải đố (đã bỏ câu "kỹ năng quen giảm chỉ dẫn vụn").
 > 5. Tăng hoạt cảnh tương tác, thể hiện tình cảm.
 >
-> Đã làm màn thưởng chương 1 (tim → chạm, bóng → chạm bóng, nấm → Feed): `Docs/Personality/COghe/README.md`,
-> mục "Màn thưởng Hiểu ra". Còn lại: màn thưởng chương 2–5, thêm hoạt cảnh tình cảm khi chạm và khi chơi cùng.
+> Đã làm (07/10/2026): màn thưởng chương 1–5 (một từ → hai từ bất kỳ thứ tự → đúng thứ tự → đúng số lượng → ghép),
+> thưởng ngay từng câu + thưởng lớn cuối bài, hoạt cảnh tình cảm trong Nhà (chạm nhẹ ấm dần thành cái ôm, cảm ơn sau khi
+> chơi, chào khi vào Nhà). Chi tiết: `Docs/Personality/COghe/README.md`, mục "Màn thưởng Hiểu ra".
 
 Mrk (06/10/2026, 17:14 UTC): "tao muốn COghe có sự phát triển về trí tuệ, cảm giác COghe phải thông minh hơn sau mỗi màn
 chơi nhưng lại không ảnh hưởng tới quá trình giải đố. Mức độ tương tác và đòi hỏi user tương tác cùng COghe cũng phải

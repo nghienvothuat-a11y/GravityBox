@@ -17,7 +17,8 @@ namespace GravityBox.Venom
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Boot()
         {
-            if (Array.IndexOf(Environment.GetCommandLineArgs(), "-coghe-bonus-reel") < 0) return;
+            var args = Environment.GetCommandLineArgs();
+            if (Array.IndexOf(args, "-coghe-bonus-reel") < 0 && Array.IndexOf(args, "-coghe-bonus-reel2") < 0) return;
             VenomCampaignSave.PersistenceEnabled = false; COgheProductMode.OverrideForTests = true;
             var go = new GameObject("Bonus reel"); DontDestroyOnLoad(go); go.AddComponent<COgheBonusReel>();
         }
@@ -27,7 +28,8 @@ namespace GravityBox.Venom
 
         private IEnumerator Start()
         {
-            var args = Environment.GetCommandLineArgs(); int at = Array.IndexOf(args, "-coghe-bonus-reel");
+            var args = Environment.GetCommandLineArgs(); bool second = Array.IndexOf(args, "-coghe-bonus-reel2") >= 0;
+            int at = Array.IndexOf(args, second ? "-coghe-bonus-reel2" : "-coghe-bonus-reel");
             output = at + 1 < args.Length && !args[at + 1].StartsWith("-") ? Path.GetFullPath(args[at + 1]) : Path.Combine(Application.persistentDataPath, "BonusReel");
             Directory.CreateDirectory(output);
             Screen.SetResolution(472, 1022, FullScreenMode.Windowed); Application.runInBackground = true;
@@ -37,6 +39,7 @@ namespace GravityBox.Venom
             yield return new WaitForSecondsRealtime(1.5f);
             var game = FindFirstObjectByType<VenomCampaign>();
             if (game == null || game.ProductUI == null) { Debug.LogError("Bonus reel: no menu"); Application.Quit(1); yield break; }
+            if (second) { yield return Second(game, heard, sounds); yield break; }
             // level 12, the first boss (its tour plays first, unrecorded)
             game.ProductUI.LoadForTest(12);
             for (int i = 0; i < 600 && (game == null || game.Definition.Order != 12 || game.ProductUI == null || game.ProductUI.Page != COgheProductPage.Game); i++)
@@ -71,6 +74,55 @@ namespace GravityBox.Venom
             yield return Press(ui, "Bonus continue");
             yield return Frames(60);
 
+            capturing = false; Time.captureFramerate = 0; COgheAudio.Heard -= heard;
+            File.WriteAllText(Path.Combine(output, "sounds.txt"), sounds.ToString());
+            File.WriteAllText(Path.Combine(output, "frames.txt"), frame.ToString());
+            Debug.Log("COGHE BONUS REEL DONE " + frame);
+            Application.Quit(0);
+        }
+
+        /// <summary>The second reel (-coghe-bonus-reel2): COghe's affection at Home (hello, gentle touches up to a hug, a
+        /// thank-you after a game), then the first question of the bonus of chapters 2–5 (with a wrong order and one too many).</summary>
+        private IEnumerator Second(VenomCampaign game, Action<string, float> heard, System.Text.StringBuilder sounds)
+        {
+            var ui = game.ProductUI;
+            COgheShop.ResetForTests(new COgheShop.State { Migrated = true }); COgheShop.TestsOwnUnlocked = false;
+            game.Progress.HomeUnlocked = true; game.Progress.Completed.Clear();
+            foreach (var level in ui.Catalog.Levels) if (level != null) game.Progress.Completed.Add(level.Id);
+            BuildRing(); ui.ShowMenu(); yield return new WaitForSecondsRealtime(.5f);
+            COgheAudio.Heard += heard; Time.captureFramerate = 30; capturing = true;
+            StartCoroutine(CaptureFrames());
+            ui.OpenHome();
+            var p = game.Personality;
+            yield return Until(() => p.Act == COgheAct.Wave, 600); yield return Frames(90);           // hello
+            for (int i = 0; i < 3; i++) { yield return Touch(game, p.SkinCentre + Vector3.up * .02f); yield return Frames(i < 2 ? 32 : 80); }   // warmer and warmer: a hug
+            yield return Frames(30);
+            yield return Touch(game, game.HomeRoom.BoundsOf(game.HomeRoom.Find("BALL")).center);  // a game together
+            yield return Until(() => p.Playing != null, 300); yield return Until(() => p.Playing == null, 600); yield return Frames(60);   // its thank-you
+            // chapter 2: two things, any order (food first)
+            ui.StartBonus(2, false); yield return Until(() => p.BonusAsking, 300); yield return Frames(110);
+            yield return Press(ui, "Feed"); yield return Until(() => p.BonusAsking && p.BonusWordsDone == 1, 300); yield return Frames(40);
+            yield return Touch(game, p.SkinCentre + Vector3.up * .04f); yield return Until(() => p.BonusRound == 1, 300); yield return Frames(10);
+            yield return Press(ui, "Bonus later"); yield return Frames(20);
+            // chapter 3: in order (a cuddle first is wrong: food, then a cuddle)
+            ui.StartBonus(3, false); yield return Until(() => p.BonusAsking, 300); yield return Frames(110);
+            yield return Touch(game, p.SkinCentre + Vector3.up * .04f); yield return Until(() => p.BonusAsking && p.BonusMisses == 1, 120); yield return Frames(30);
+            yield return Press(ui, "Feed"); yield return Until(() => p.BonusAsking && p.BonusWordsDone == 1, 300); yield return Frames(30);
+            yield return Touch(game, p.SkinCentre + Vector3.up * .04f); yield return Until(() => p.BonusRound == 1, 300); yield return Frames(10);
+            yield return Press(ui, "Bonus later"); yield return Frames(20);
+            // chapter 4: exactly two (three is one too many: a shake, again)
+            ui.StartBonus(4, false); yield return Until(() => p.BonusAsking, 300); yield return Frames(100);
+            yield return Press(ui, "Feed"); yield return Frames(8); yield return Press(ui, "Feed"); yield return Frames(8); yield return Press(ui, "Feed");
+            yield return Until(() => p.BonusAsking, 300); yield return Frames(40);
+            yield return Press(ui, "Feed"); yield return Frames(8); yield return Press(ui, "Feed");
+            yield return Until(() => p.BonusRound == 1, 400); yield return Frames(10);
+            yield return Press(ui, "Bonus later"); yield return Frames(20);
+            // chapter 5: two cuddles, then the ball
+            ui.StartBonus(5, false); yield return Until(() => p.BonusAsking, 300); yield return Frames(120);
+            yield return Touch(game, p.SkinCentre + Vector3.up * .04f); yield return Frames(12); yield return Touch(game, p.SkinCentre + Vector3.up * .04f);
+            yield return Until(() => p.BonusAsking && p.BonusWordsDone == 1, 300); yield return Frames(40);
+            yield return Touch(game, game.HomeRoom.BoundsOf(game.HomeRoom.Find("BALL")).center);
+            yield return Until(() => p.BonusRound == 1, 900); yield return Frames(30);
             capturing = false; Time.captureFramerate = 0; COgheAudio.Heard -= heard;
             File.WriteAllText(Path.Combine(output, "sounds.txt"), sounds.ToString());
             File.WriteAllText(Path.Combine(output, "frames.txt"), frame.ToString());

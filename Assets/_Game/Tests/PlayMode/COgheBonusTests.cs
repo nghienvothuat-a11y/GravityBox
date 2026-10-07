@@ -87,8 +87,9 @@ namespace GravityBox.Tests
                 Assert.AreEqual(COgheShape.Mushroom, p.BonusAsk.Value.Shape);
 
                 // a mushroom: food
+                int eaten = p.BallsEaten;
                 yield return Click("Feed");
-                yield return AwaitBonus(() => p.Eating, 8, "It eats");
+                yield return AwaitBonus(() => p.BallsEaten > eaten, 8, "It catches the food and eats it");
                 yield return AwaitBonus(() => ui.Popup == COgheProductPopup.BonusDone, 30, "It thanks the player; the reward");
                 int rounds = COgheBonus.RoundReward(1) + COgheBonus.RoundReward(2) + COgheBonus.RoundReward(3);
                 Assert.Greater(COgheBonus.Reward, COgheBonus.RoundReward(3), "The whole bonus pays the most");

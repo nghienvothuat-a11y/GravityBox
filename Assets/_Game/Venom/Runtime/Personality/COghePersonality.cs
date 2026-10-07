@@ -4,8 +4,9 @@ namespace GravityBox.Venom
 {
     public enum COgheAct { None, Tantrum, Wave, Shape, Melt, GlassTap, Doze, Home, Monster }
     /// <summary>Shapes COghe can make of itself, in the order they unlock (see <see cref="COghePersonality.ShapeUnlocks"/>).
-    /// Shapes after the unlock list (Ball) are words of the bonus "Hiểu ra" only, never picked at random.</summary>
-    public enum COgheShape { Heart, Star, Question, Mushroom, Snowman, ThumbsUp, Rocket, Umbrella, Ball }
+    /// Shapes after the unlock list (Ball, and One–Three: that many tendrils raised like fingers) are words of the bonus
+    /// "Hiểu ra" only, never picked at random.</summary>
+    public enum COgheShape { Heart, Star, Question, Mushroom, Snowman, ThumbsUp, Rocket, Umbrella, Ball, One, Two, Three }
 
     /// <summary>
     /// COghe's character in the Spatial levels: curious, cheerful, a little comic. It decides *when* the creature performs a
