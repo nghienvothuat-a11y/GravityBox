@@ -88,6 +88,7 @@ namespace GravityBox.Venom
         private void Update()
         {
             if (game == null || game.Owner == null || game.Matter == null) return;
+            EnsureEyes();
             if (!Enabled || (game.Home && room == null)) { if (Act != COgheAct.None || tantrumPending) EndAct(); return; }
             float now = game.Matter.SimulationTime, dt = lastSim < 0 ? 0 : now - lastSim;
             if (dt < -.05f) { ResetState(); lastSim = now; return; }   // Retry rewinds the simulation clock

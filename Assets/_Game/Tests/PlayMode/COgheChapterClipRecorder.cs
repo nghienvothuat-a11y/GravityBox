@@ -17,12 +17,41 @@ namespace GravityBox.Tests
  public sealed partial class COgheSpatialCampaignTests
  {
   private int clipFrame;private string clipDirectory;private int clipWidth=720,clipHeight=1280;
-  private System.Text.StringBuilder clipTaps,clipSounds;
+  private System.Text.StringBuilder clipTaps,clipSounds,clipTrack;
+  // COGHE_EYES=1: each frame is also saved without COghe's eyes in plain/ (the side-by-side review, Mrk 07/10/2026), the
+  // eyes' state goes to track.txt and the folders get "-eyes"; COGHE_EYES=0: no eyes
+  private bool clipEyes;
+  private void ClipEyesFromEnvironment()
+  {
+   string e=Environment.GetEnvironmentVariable("COGHE_EYES");clipEyes=e=="1";
+   if(e=="0")COgheEyes.Enabled=false;else if(clipEyes)COgheEyes.Enabled=true;
+   COgheEyes.Trace=clipEyes;
+  }private int clipCelebrateAt=-1;
+  private void ClipFolder(string name)
+  {
+   clipDirectory=$"Artifacts/Clips/{name}{(clipEyes?"-eyes":"")}";if(Directory.Exists(clipDirectory))Directory.Delete(clipDirectory,true);Directory.CreateDirectory(clipDirectory);clipFrame=0;
+   if(clipEyes)Directory.CreateDirectory(clipDirectory+"/plain");
+   clipCelebrateAt=-1;
+  }
   private IEnumerator Shot()
   {
-   yield return null;game.CameraRig.Frame(720,1280,0,true);   // after the frame's own camera fit, so the shot keeps 9:16
+   yield return null;
+   // after the frame's own camera fit, so the shot keeps 9:16; the victory dance has its own shot, as in the game
+   if(game.Owner.Celebration.Active){game.Owner.Celebration.Frame(720,1280);if(clipCelebrateAt<0){clipCelebrateAt=clipFrame;if(clipDirectory!=null)File.WriteAllText($"{clipDirectory}/celebrate.txt",clipFrame.ToString());}}
+   else game.CameraRig.Frame(720,1280,0,true);
    var camera=game.Owner.View;var target=RenderTexture.GetTemporary(clipWidth,clipHeight,24);target.antiAliasing=4;var previous=RenderTexture.active;var texture=new Texture2D(clipWidth,clipHeight,TextureFormat.RGB24,false);
-   try{camera.targetTexture=target;camera.Render();RenderTexture.active=target;texture.ReadPixels(new Rect(0,0,clipWidth,clipHeight),0,0);texture.Apply();File.WriteAllBytes($"{clipDirectory}/{clipFrame++:00000}.png",texture.EncodeToPNG());}
+   if(clipTrack!=null){var c=camera.WorldToViewportPoint(game.Motion.Centre(0));var eyes=clipEyes?game.Matter.GetComponent<COgheEyes>():null;clipTrack.AppendLine($"{clipFrame} {c.x*clipWidth:F0} {c.y*clipHeight:F0} {eyes?.LastState}");}   // where COghe is: an edit can follow it
+   try
+   {
+    camera.targetTexture=target;camera.Render();RenderTexture.active=target;texture.ReadPixels(new Rect(0,0,clipWidth,clipHeight),0,0);texture.Apply();File.WriteAllBytes($"{clipDirectory}/{clipFrame:00000}.png",texture.EncodeToPNG());
+    if(clipEyes)   // the same frame again without the eyes (plain/): a side-by-side shows the same moment
+    {
+     var eyesView=game.Matter.transform.Find("COghe eyes");bool shown=eyesView!=null&&eyesView.gameObject.activeSelf;
+     if(shown){eyesView.gameObject.SetActive(false);camera.Render();texture.ReadPixels(new Rect(0,0,clipWidth,clipHeight),0,0);texture.Apply();eyesView.gameObject.SetActive(true);}
+     File.WriteAllBytes($"{clipDirectory}/plain/{clipFrame:00000}.png",texture.EncodeToPNG());
+    }
+    clipFrame++;
+   }
    finally{camera.targetTexture=null;RenderTexture.active=previous;RenderTexture.ReleaseTemporary(target);Object.DestroyImmediate(texture);}
   }
   private IEnumerator Hold(float seconds){for(int i=0;i<seconds*30;i++){for(int k=0;k<4;k++)Tick();yield return Shot();}}
@@ -52,10 +81,12 @@ namespace GravityBox.Tests
    string size=Environment.GetEnvironmentVariable("COGHE_CLIP_SIZE");
    if(!string.IsNullOrEmpty(size)){var wh=size.Split('x');clipWidth=int.Parse(wh[0]);clipHeight=int.Parse(wh[1]);}
    string second=Environment.GetEnvironmentVariable("COGHE_CRATE_DEMO_SECOND");if(string.IsNullOrEmpty(second))second="K04";
-   foreach(var key in new[]{"K01",second})
+   bool eyesWere=COgheEyes.Enabled;ClipEyesFromEnvironment();
+   try{
+   foreach(var key in second=="NONE"?new[]{"K01"}:new[]{"K01",second})
    {
-    clipDirectory=$"Artifacts/Clips/crate-{key}";if(Directory.Exists(clipDirectory))Directory.Delete(clipDirectory,true);Directory.CreateDirectory(clipDirectory);clipFrame=0;
-    clipTaps=new System.Text.StringBuilder();var marks=new System.Text.StringBuilder();
+    ClipFolder("crate-"+key);
+    clipTaps=new System.Text.StringBuilder();var marks=new System.Text.StringBuilder();clipTrack=new System.Text.StringBuilder();
     yield return LoadScene("COgheSpatialPlus"+key);yield return Hold(1);
     if(key=="K01")
     {
@@ -82,9 +113,11 @@ namespace GravityBox.Tests
     marks.AppendLine($"{clipFrame} solve");
     yield return new COgheSpatialScenario(game,RecordTap,RecordUntil,RecordOrbit).Solve();
     marks.AppendLine($"{clipFrame} exit");
-    yield return Hold(1.2f);
+    yield return Hold(clipEyes?5.2f:1.2f);   // with the eyes: the whole victory dance
     File.WriteAllText($"{clipDirectory}/taps.txt",clipTaps.ToString());File.WriteAllText($"{clipDirectory}/marks.txt",marks.ToString());
+    File.WriteAllText($"{clipDirectory}/track.txt",clipTrack.ToString());clipTrack=null;
    }
+   }finally{COgheEyes.Enabled=eyesWere;COgheEyes.Trace=clipEyes=false;}
   }
 
   [UnityTest,Explicit,Timeout(3600000)] public IEnumerator RecordReviewClips()
@@ -92,20 +125,22 @@ namespace GravityBox.Tests
    string only=Environment.GetEnvironmentVariable("COGHE_CLIP_LEVELS"),size=Environment.GetEnvironmentVariable("COGHE_CLIP_SIZE");
    if(!string.IsNullOrEmpty(size)){var wh=size.Split('x');clipWidth=int.Parse(wh[0]);clipHeight=int.Parse(wh[1]);}
    System.Action<string,float> heard=(clip,volume)=>clipSounds?.AppendLine($"{clipFrame/30f:F3} {clip} {volume:F2}");COgheAudio.Heard+=heard;
+   bool eyesWere=COgheEyes.Enabled;ClipEyesFromEnvironment();
    try{
    var levels=string.IsNullOrEmpty(only)?new[]{1,2,3,4,5,6,7,8,9,10}:Array.ConvertAll(only.Split(','),int.Parse);
    // Levels are play positions 1–50: the catalog's scene sequence names each one's scene (pilot, 11–30 or Plus).
    yield return Load(1);var order=game.Definition.SceneSequence;
    foreach(int n in levels)
    {
-    clipDirectory=$"Artifacts/Clips/{n:00}";if(Directory.Exists(clipDirectory))Directory.Delete(clipDirectory,true);Directory.CreateDirectory(clipDirectory);clipFrame=0;
-    clipTaps=new System.Text.StringBuilder();clipSounds=new System.Text.StringBuilder();
+    ClipFolder($"{n:00}");
+    clipTaps=new System.Text.StringBuilder();clipSounds=new System.Text.StringBuilder();clipTrack=new System.Text.StringBuilder();
     yield return LoadScene(order[n-1]);yield return Hold(1);
     yield return new COgheSpatialScenario(game,RecordTap,RecordUntil,RecordOrbit).Solve();
-    yield return Hold(1.2f);
+    yield return Hold(clipEyes?5.2f:1.2f);   // with the eyes: the whole victory dance
     File.WriteAllText($"{clipDirectory}/taps.txt",clipTaps.ToString());File.WriteAllText($"{clipDirectory}/sounds.txt",clipSounds.ToString());
+    File.WriteAllText($"{clipDirectory}/track.txt",clipTrack.ToString());clipTrack=null;
    }
-   }finally{COgheAudio.Heard-=heard;}
+   }finally{COgheAudio.Heard-=heard;COgheEyes.Enabled=eyesWere;COgheEyes.Trace=clipEyes=false;}
   }
  }
 }

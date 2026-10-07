@@ -79,7 +79,19 @@ and [native Unity verification](../../Verification/COgheProductUI/README.md).
 - First read: COghe. Second: relevant mechanism, slippery surface and exit. Third:
   mounts, labels and the laboratory setting. Decoration must not hide actions.
 - Retain the existing dark, asymmetric liquid body, tendrils, transient lobes and
-  gravity response. Do not add eyes, teeth, ears or a permanent head.
+  gravity response. Do not add teeth, ears or a permanent head.
+- Eyes (approved by Mrk 07/10/2026, "tao chốt phương án có mắt", which removes the
+  earlier "no eyes" rule): COghe has two small cartoon eyes, white with a dark rim
+  so they read on the dark body and on light inks, sitting on the skin facing the
+  camera and riding its squash and hops. They blink, look at what COghe works on and
+  show its mood: smiling arcs when happy and through the whole victory dance, hearts
+  for a hug and a finished bonus, a drooping lid when sad or refused, a squint when
+  sulking, wide when surprised, closed asleep. Each split part has its own pair,
+  smaller for a smaller part. They are hidden while COghe holds a shape (the shape
+  is the message), while stretched thin, while leaving through the exit and for the
+  menu monster (which has its own face). Presentation only: no colliders, forces or
+  puzzle state. Older concept prompts and QA notes that say "no eyes" are history;
+  this rule supersedes them. See `Docs/Personality/COghe/README.md`.
 - Style (approved by Mrk 01/10/2026, which amends the earlier "dark body, no
   costumes" rule): the player may inject up to four inks into the liquid and
   dress COghe in one hat plus up to two little things floating inside. The default

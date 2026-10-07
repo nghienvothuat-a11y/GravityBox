@@ -51,10 +51,44 @@ bản Mac, có giao diện menu và tiếng), [`monster-menu.jpg`](monster-menu.
 | 6,3–7,2 s | Tan về COghe |
 
 - Như mọi vở diễn: chỉ là lớp da, không hạt nào di chuyển. Mắt, răng, miệng, lưỡi (`COgheMonsterFace`) nằm đúng trên mặt da
-  (tìm trong trường của lớp da mỗi khung) và chỉ có trong vở này — ngoại lệ Mrk cho với quy tắc "không mắt, không răng".
+  (tìm trong trường của lớp da mỗi khung) và chỉ có trong vở này — ngoại lệ Mrk cho với quy tắc "không răng". Trong vở này
+  đôi mắt thường của COghe tắt, mặt quái vật thay chỗ.
 - Hình lấy cảm hứng từ Venom nhưng là thiết kế riêng, không dùng logo hay chi tiết nhận diện của Marvel.
 - Camera menu: khung cả con quái vật, lại gần mặt một chút khi há miệng và nghiêng đầu (`COgheProductUI.FrameShowcase`).
 - Tiếng: chỉ tiếng chất lỏng (dâng lên, lưỡi trượt ra) và tiếng "pốc" khi tan.
+
+## Mắt (07/10, Mrk)
+
+Mrk hỏi "Nếu COghe có mắt để diễn tả cảm xúc thì có được không?", duyệt clip so sánh có mắt và không mắt, rồi chốt
+"tao chốt phương án có mắt" (bỏ luật "không mắt" trong `STYLE_RULES.md`). Sau lần duyệt đầu, Mrk yêu cầu "mắt đỡ rung" và
+"lúc chiến thắng phải cho nó có mắt thể hiện sự vui vẻ". Clip duyệt: `OUTBOX/COGHE_EYES_REVIEW_2026_10_07` (workspace Buzz).
+
+- Hai mắt hoạt hình trắng viền tối, nằm trên lớp da phía hướng về camera, nên co, dẹt, nhảy theo thân. Mỗi phần sau khi tách
+  có đôi mắt riêng (tối đa 4 phần, phần dưới 4 hạt thì không có). Cỡ mắt theo bề ngang phần đó.
+- Tự chớp mắt 2,2–5,7 s một lần, đưa mắt nhìn quanh, và nhìn vào thứ COghe đang làm: tay nắm, viên mồi, quả bóng, TV, bể cá,
+  chỗ bị chặn.
+- Cảm xúc (`COghePersonality.EyeMood`), đọc từ việc COghe đang làm, không thêm trạng thái mới:
+
+| Cảm xúc | Khi nào | Mắt |
+| --- | --- | --- |
+| Vui | Được chạm, ăn xong, trả lời bonus đúng, thắng màn và cả màn ăn mừng | Cười híp (∩), to hơn 15% lúc ăn mừng |
+| Yêu | Ôm, xong cả 3 câu bonus | Trái tim hồng |
+| Buồn | Trả lời bonus sai, lệnh bị từ chối (1,3 s, nhìn về chỗ bị chặn) | Cụp mí phía ngoài |
+| Dỗi | Dỗi trong nhà | Sụp nửa mí, lườm |
+| Giật mình | Bị dẹp, né | Mở to, con ngươi nhỏ |
+| Chăm chú | Kéo tay nắm, ăn, chơi bóng, xem TV | Mí hạ nhẹ, nhìn vào vật |
+| Ngủ | Ngủ gật, nằm giường, võng | Nhắm (‿) |
+
+- Mắt tắt khi: COghe nặn hình (hình là lời nói, nên câu hỏi bonus vẫn chỉ bằng hình), bị kéo dài mỏng để lách khe (cạnh dài
+  gấp 2,6 lần cạnh giữa trong 0,2 s), trong ống của cơ quan, khi ra cửa, và trong vở quái vật. Dẹt (nằm giường, bò sát
+  sàn) vẫn có mắt.
+- Chống rung: lớp da dựng lại mỗi khung, nên mắt không bám một đỉnh mà lấy trung bình lớp da ngoài quanh tia nhìn
+  (`VenomSurface.SkinToward`). Rồi mỗi mắt được lọc one-euro theo vị trí so với tâm các hạt của phần đó: đứng yên thì lọc
+  mạnh, chuyển động nhanh thì bám sát, nên đi theo thân không bị trễ. Đo trên clip duyệt: rung còn 0,2–0,5 mm mỗi khung,
+  đứng yên hơn 2,4–3,3 lần so với chưa lọc. Mắt nhấc 3 mm về phía camera (camera trực giao nên không thấy) để gợn da không
+  che mắt. Một khung thoáng nặn hình không làm mắt chớp tắt (phải ẩn đủ 0,08 s).
+- Chỉ là phần nhìn: một mesh không collider, vẽ sau lớp da (Transparent+22); không ghi vào hạt, lực hay trạng thái puzzle.
+  Chạy theo đồng hồ mô phỏng (dừng khi tạm dừng). `-coghe-no-eyes` hoặc `COgheEyes.Enabled = false` tắt mắt.
 
 ## Trong nhà (mở khi thắng Boss đầu, màn 12)
 
@@ -156,6 +190,8 @@ mọi thứ ảnh hưởng tới giải đố, tăng hoạt cảnh tình cảm. 
 - Tính cách: `Assets/_Game/Venom/Runtime/Personality/COghePersonality.cs` (trong màn), `COghePersonality.Home.cs` (trong nhà).
 - Vẽ vở diễn: `Assets/_Game/Venom/Runtime/VenomLifeAnimation.Acts.cs` (hình dạng, cơn bực, tư thế trong nhà),
   `VenomLifeAnimation.Monster.cs` (quái vật ở menu) và mặt của nó `Personality/COgheMonsterFace.cs`.
+- Mắt: `Personality/COgheEyes.cs` (vẽ, chớp, nhìn, chống rung), `Personality/COghePersonality.Eyes.cs` (cảm xúc),
+  `VenomSurface.FragmentShape` / `SkinToward` (chỗ đặt mắt trên da).
 - Nhà: `Assets/_Game/Venom/Runtime/Home/` — `COgheLowPoly` (bộ dựng mesh low-poly), `COgheHomeItems` (14 món theo
   `ITEMS.json` của Codex), `COgheHomeRoom` (phòng, bố trí, mở khóa, hình mờ). `VenomHabitat` dựng phòng khi vào nhà.
 - Menu đồ vật và camera nhà: `Assets/_Game/Venom/Runtime/Product/COgheProductUI.Items.cs`.
@@ -186,5 +222,9 @@ thêm ~14 món low-poly (vật liệu dùng chung). Chưa đo trên OPPO.
   dồn thì dỗi.
 - Quái vật: không đổi hạt nào; nghiêng mặt khi thè lưỡi, rồi nhìn camera nghiêng đầu; mặt mất khi xong
   (`MonsterGrowsAFaceAndLosesIt`); menu mở là quái vật, mặt nằm trong khung hình (`TheMenuOpensWithTheMonster`).
+- `COgheEyesTests`: mắt bật mặc định, có trên da lúc đứng yên, cười trong màn ăn mừng, tắt khi `Enabled = false`.
+- Mắt, Explicit: `RenderEyesStills` (ảnh từng cảm xúc, `Artifacts/Eyes`), `RecordEyesHome` (clip trong nhà, mỗi khung có
+  bản có mắt và không mắt). `COGHE_EYES=1` cho `RecordReviewClips` / `RecordCrateTapDemo` lưu thêm bản không mắt (`plain/`)
+  và độ rung vào `track.txt`; `COGHE_EYES=0` quay không mắt.
 - Explicit: `RenderPersonalityActs` (khung từng vở diễn), `RenderHome` (toàn cảnh, nhìn từ trên, từng trò chơi),
   `RenderMonsterStills`, `RenderMenuMonster`. Bản Mac: `-coghe-monster-reel <thư mục>` quay menu thật (PNG 30 khung/s + `sounds.txt`).

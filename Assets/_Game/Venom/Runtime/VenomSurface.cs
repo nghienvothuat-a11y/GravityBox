@@ -140,6 +140,66 @@ namespace GravityBox.Venom
             }
             return false;
         }
+        /// <summary>A fragment's skin, world space: its centre (the mean of its skin) and its half-size along the surface's axes.
+        /// False if the fragment has no skin this frame.</summary>
+        public bool FragmentShape(int group, out Vector3 centre, out Vector3 halfSize)
+        {
+            centre = halfSize = Vector3.zero;
+            for (int f = 0; f < fragmentCount; f++)
+            {
+                if (fragmentRanges[f].x != group || fragmentRanges[f].z <= fragmentRanges[f].y) continue;
+                Vector3 sum = Vector3.zero, min = Vector3.one * 1e6f, max = -Vector3.one * 1e6f; int n = 0;
+                for (int v = fragmentRanges[f].y; v < fragmentRanges[f].z; v += 3) { var p = vertices[v]; sum += p; min = Vector3.Min(min, p); max = Vector3.Max(max, p); n++; }
+                centre = transform.TransformPoint(sum / n); halfSize = Vector3.Scale(max - min, transform.lossyScale) * .5f;
+                return true;
+            }
+            return false;
+        }
+        /// <summary>Where a fragment's skin is, seen from <paramref name="from"/> along <paramref name="direction"/>, and its
+        /// normal; world space. Eyes sit on it. The skin is rebuilt every frame, so one vertex would jump about: this is the
+        /// outer layer of the skin around the ray, averaged (the vertex closest in direction if none is near the ray).</summary>
+        public bool SkinToward(int group, Vector3 from, Vector3 direction, out Vector3 point, out Vector3 normal)
+        {
+            point = from; normal = direction;
+            for (int f = 0; f < fragmentCount; f++)
+            {
+                if (fragmentRanges[f].x != group) continue;
+                Vector3 o = transform.InverseTransformPoint(from), d = transform.InverseTransformDirection(direction).normalized;
+                float radius = .006f / Mathf.Max(1e-4f, transform.lossyScale.x), r2 = radius * radius, far = 0;
+                for (int v = fragmentRanges[f].y; v < fragmentRanges[f].z; v++)
+                {
+                    Vector3 r = vertices[v] - o; float t = Vector3.Dot(r, d);
+                    if (t > far && r.sqrMagnitude - t * t < r2) far = t;
+                }
+                if (far > 0)
+                {
+                    float sumT = 0, sumW = 0; Vector3 sumN = Vector3.zero;
+                    for (int v = fragmentRanges[f].y; v < fragmentRanges[f].z; v++)
+                    {
+                        Vector3 r = vertices[v] - o; float t = Vector3.Dot(r, d); if (t < far - radius * 1.5f) continue;
+                        float off = r.sqrMagnitude - t * t; if (off >= r2) continue;
+                        float w = 1 - off / r2; sumT += w * t; sumN += w * normals[v]; sumW += w;
+                    }
+                    if (sumW > 0)
+                    {
+                        point = transform.TransformPoint(o + d * (sumT / sumW));
+                        normal = transform.TransformDirection(sumN.sqrMagnitude > 1e-12f ? sumN : d).normalized;
+                        return true;
+                    }
+                }
+                float best = float.NegativeInfinity; int found = -1;
+                for (int v = fragmentRanges[f].y; v < fragmentRanges[f].z; v++)
+                {
+                    Vector3 r = vertices[v] - o; float m = r.magnitude; if (m < 1e-5f) continue;
+                    float c = Vector3.Dot(r, d) / m; if (c > best) { best = c; found = v; }
+                }
+                if (found < 0) return false;
+                point = transform.TransformPoint(vertices[found]); normal = transform.TransformDirection(normals[found]).normalized;
+                return true;
+            }
+            return false;
+        }
+
         private void BuildFragment(int count)
         {
             sourceCount = count; allAboveFloor = true;
