@@ -108,3 +108,48 @@ Kiểm tra:
   - chạm mặt bên thì khối trượt; cùng một đầu chạm hai lần thì đẩy rồi kéo;
   - khối đỏ bị chắn thì bị từ chối ngay, không nhúc nhích, COghe không đi.
 - Clip review: `OUTBOX/COGHE_CRATE_TAPS_2026_10_07/` (màn 6 và 20; quay bằng test `RecordCrateTapDemo`).
+
+## Bám mọi mặt thùng, thùng cao hơn (08/10/2026)
+
+Mrk (08/10/2026) thử cho COghe trèo lên thùng rồi bỏ: "Rollback lại code cũ đi, tao thấy phương án trèo lên hộp như này không
+Ok. Tuy nhiên mày phải cho thùng cao lên và thể hiện rõ ràng là COghe không thể trèo được. Có 1 điểm nữa là lúc đẩy và kéo
+thùng, phải cho COghe mặt nào cũng đẩy bám được, cho thật hơn, chứ ko phải đi ra 1 mặt như hiện tại. Phải tính toán để cách
+này không ảnh hưởng tới độ khó levels hiện tại."
+
+Phần trèo chưa từng được commit. Code đã về commit 173cc295, và bản vá được giữ ngoài repo.
+
+**Luật mới.** COghe bám được mọi mặt thùng, có ba cách làm:
+- đẩy từ sau;
+- kéo từ trước;
+- bám một mặt dài rồi đi dọc theo thùng. Cách này cần dải ô cạnh cả đường trượt ở mặt đó trống trên sàn, vì COghe đi theo
+  thùng.
+
+COghe vẫn chỉ đi trên sàn, không trèo. Trong bộ tìm: `LOGIC_SIDES=1`.
+
+**Độ khó.** `check_sides.py` so số lần kéo ít nhất của 10 màn khi chỉ bám đầu thùng (như cũ) và khi bám được mọi mặt:
+
+| Màn (vị trí) | Chỉ bám đầu | Bám mọi mặt |
+| --- | --- | --- |
+| K01–K08 (6, 10, 18, 20, 31, 34, 42, 46) | 2, 3, 4, 5, 6, 6, 7, 8 | không đổi |
+| K09 (54), bài cũ | 9 | 6 |
+| K10 (59), bài cũ | 10 | 7 |
+
+Vì vậy K09 và K10 được tìm lại theo luật mới (`logic.py 31,33`, kết quả trong `cand_sides.json`). Hai bài mới vẫn 9 và 10
+lần kéo, vẫn 6 thùng, và vẫn có thùng phải dời đi rồi trả về:
+- K09 · Kho chật: một thùng dời qua lại bốn lần, 49 thế bày;
+- K10 · Mê cung thùng: 76 thế bày.
+
+8 màn đầu giữ nguyên bố cục và chỗ COghe bắt đầu. Lời giải mẫu giờ dùng cả cách bám mặt bên.
+
+**Trong Unity:**
+- **Thùng cao 10 cm** (thùng vuông 11 cm), gấp đôi COghe. Mọi mặt đều trơn và tô tím nhạt, nên nhìn là biết không trèo được.
+- **Tay nắm ở hai đầu thùng không còn được vẽ**, vì giờ mặt nào cũng bám được.
+- **`COgheTapRail.CrateFaces`:** chạm vào mặt nào thì COghe làm từ mặt đó. Nếu chạm lên nóc, mặt được chọn là mặt mà chỗ chạm
+  nằm gần mép (40% ngoài cùng). Chạm giữa nóc thì COghe chọn mặt gần nó nhất mà làm được. Mặt đã chọn không có chỗ thì
+  COghe thử mặt gần kế tiếp.
+- **Bám mặt bên:** điểm bám ở giữa mặt dài, chỗ đứng cách mặt đó 6,2 cm. COghe đi dọc theo thùng trong lúc thùng trượt.
+  `SideFree` kiểm dải ô cạnh cả đường trượt, `CanWorkAcross` và `WorkingAcross` dùng cho test.
+- **Lời giải mẫu** chạm lên nóc thùng, gần mép của mặt có ô đứng trên tuyến: đầu thùng hoặc mặt bên.
+- **Test mới** `ACrateTakenByALongSideSlidesWithCOgheBesideIt`: chạm gần mép dài, COghe bám đúng mặt đó, thùng trượt, và COghe
+  đứng cạnh thùng ở mặt đó.
+

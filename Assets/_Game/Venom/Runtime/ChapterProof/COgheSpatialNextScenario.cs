@@ -206,8 +206,32 @@ namespace GravityBox.Venom.ChapterProof
   public IEnumerator Exit()
   {
    yield return until(15,()=>game.FinalExitAvailable,"Exit physically unlocked");
-   yield return tap(game.Owner.Outlet.position);
+   // A tall crate (crate levels, 08/10/2026) can stand between the camera and the hole: tap a part of the hole the camera
+   // sees, as a player does, else turn the view a quarter and look again.
+   for(int turn=0;turn<4;turn++)
+   {
+    var spot=VisibleExitSpot();
+    if(spot.HasValue){yield return tap(spot.Value);break;}
+    game.CameraRig.Orbit(270,720);yield return null;
+   }
    yield return until(45,()=>game.Owner.Completed,"All tissue through the final exit");
+  }
+  Vector3? VisibleExitSpot()
+  {
+   var outlet=game.Owner.Outlet;var cam=game.Owner.View;float r=game.Owner.ApertureRadius*.6f;
+   foreach(var o in new[]{Vector2.zero,new Vector2(r,0),new Vector2(-r,0),new Vector2(0,r),new Vector2(0,-r)})
+   {
+    var p=outlet.position+outlet.right*o.x+outlet.up*o.y;var ray=cam.ScreenPointToRay(cam.WorldToScreenPoint(p));
+    bool covered=false;
+    foreach(var h in System.Linq.Enumerable.OrderBy(Physics.RaycastAll(ray,10),h=>h.distance))
+    {
+     var pane=h.collider.GetComponent<VenomSurfacePatch>();
+     if(h.collider.isTrigger||h.collider.GetComponent<VenomContact>()!=null||pane!=null&&pane.ExteriorGlass)continue;
+     covered=h.rigidbody!=null&&h.rigidbody.GetComponent<COgheTapRail>()!=null&&Vector3.Distance(h.point,p)>.01f;break;
+    }
+    if(!covered)return p;
+   }
+   return null;
   }
   // The level's content, from its ID ("coghe.spatial.next.29" → 29; "coghe.spatial.plus.e04" → "E04"): the campaign
   // order (Definition.Order) moves levels around, their author routes stay with the content.

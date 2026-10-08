@@ -43,12 +43,14 @@ namespace GravityBox.Venom
         /// millimetres short; crates that slide past each other 2 mm apart (crate levels 51–60) must sit on their cells.</summary>
         public bool SeatAtStops;
         /// <summary>A crate (crate levels, Mrk 07/10/2026: "Khi click vào mặt khối, COghe phải đẩy hoặc kéo, trừ khi bị kịch
-        /// đường"): a tap on any face of it is taken. An end face (or the top/side near an end) says which end COghe works
-        /// from: it pushes the crate away from that end, or pulls it toward that end, whichever way the crate can go, so the
-        /// same face tapped twice pushes and then pulls; if that end has no room, COghe works it from the other end. A tap in
-        /// the middle of the top or a side pushes if it can, else pulls. Before COghe sets off, the move is checked on the grid: the cells the crate slides through, and the cells
-        /// COghe needs (behind the face to push, just past the stop to pull) must be free floor; else the crate does not
-        /// move and the tap is refused at once, with the reason.</summary>
+        /// đường"; 08/10/2026: "mặt nào cũng đẩy bám được, cho thật hơn"): COghe takes it by any face. The face tapped (or,
+        /// for a tap on the top, the face whose edge it is near) is where COghe works: at an end it pushes the crate away or
+        /// pulls it toward itself, whichever way the crate can go (the same end tapped twice pushes, then pulls); at a long
+        /// side it grips the side and walks along with the crate. A tap in the middle of the top lets COghe take the face
+        /// nearest to it that works. If the chosen face has no room, the next nearest one does. Before COghe sets off, the
+        /// move is checked on the grid: the cells the crate slides through, and the cells COghe needs (behind the face to
+        /// push, just past the stop to pull, the strip beside the whole slide for a side) must be free floor; else the crate
+        /// does not move and the tap is refused at once, with the reason.</summary>
         public bool CrateFaces;
         /// <summary>The crate's size along the frame's axes, and the floor it lives on (frame x, z).</summary>
         public Vector3 CrateSize;
@@ -93,7 +95,10 @@ namespace GravityBox.Venom
         private bool AlsoOpen { get { if (AlsoRequired != null) foreach (var r in AlsoRequired) if (r != null && !r.AtEnd) return false; return true; } }
         public override string Activity => Busy ? Label + (Phase == TaskPhase.Approaching ? " · Đang tới" : Holding ? " · Đang giữ" : RequiredGrip != null && !InterlockOpen ? " · Chờ nhả phanh" : " · Đang chuyển") :
             owner != null && owner.Matter.SimulationTime < messageUntil ? LastFailure : null;
-        public Vector3 HandPoint => backSide&&AlternateHandle!=null?AlternateHandle.position:Handle != null ? Handle.position : Rail.Body.position;
+        public Vector3 HandPoint => across != 0 ? Rail.Body.position + Rail.Frame.TransformDirection(Across * across * (HalfAlong(Across) + .008f)) :
+            backSide&&AlternateHandle!=null?AlternateHandle.position:Handle != null ? Handle.position : Rail.Body.position;
+        /// <summary>The crate's long sides, square to its slide on the floor (frame space).</summary>
+        private Vector3 Across => Vector3.Cross(Rail.Frame.InverseTransformDirection(WorkingSurface.Normal), Rail.Axis.normalized).normalized;
         public Vector3 StandPoint => WorkingSurface.Closest(HandPoint + Rail.Frame.TransformDirection(stance)) + WorkingSurface.Normal * .022f;
         public bool Pulling => Vector3.Dot(Rail.WorldAxis * (target - Rail.Position), StandPoint - HandPoint) > 0;
         private VenomCampaign owner;
@@ -105,6 +110,7 @@ namespace GravityBox.Venom
         private Vector3 pinRest;
         private Vector3 stance;
         private bool backSide;
+        private int across;   // a crate taken by a long side: +1 / −1 (0: by an end, backSide)
 
         public override void InitializeMechanism(VenomCampaign game)
         {
@@ -118,7 +124,7 @@ namespace GravityBox.Venom
             accumulatedEffort=0;lastEffort=0;CompletedJourneys = 0; LastFailure = null; messageUntil = 0; stableTime = 0;
             targetStop = 0; target = 0;
             stance=StandOffset;
-            backSide=false;
+            backSide=false; across=0;
             Rail.Locked = false;
         }
         public bool Owns(int anchor) => Busy && Actor >= 0 && owner.Matter.Groups[anchor] == owner.Matter.Groups[Actor];
@@ -145,11 +151,15 @@ namespace GravityBox.Venom
             {
                 var local = new Ray(inverse * (ray.origin - Rail.Body.position), inverse * ray.direction);
                 if (!new Bounds(Vector3.zero, CrateSize + Vector3.one * .004f).IntersectRay(local, out float at) || at > nearestSolidDistance + .003f) return false;
-                Vector3 a = Rail.Axis.normalized, hitPoint = local.origin + local.direction * at;
-                float along = Vector3.Dot(hitPoint, a), halfLength = HalfAlong(a);
-                // an end face, or the top/a side in the end quarter: that end; the middle: whichever way works
-                int side = Mathf.Abs(along) >= halfLength * .5f ? (along > 0 ? 1 : -1) : 0;
-                if (RequestFrom(game.Motion.Selected, side)) game.Feedback.ShowCommand(HandPoint, WorkingSurface.Normal, Rail.transform);
+                Vector3 a = Rail.Axis.normalized, c = Across, hitPoint = local.origin + local.direction * at;
+                float u = Vector3.Dot(hitPoint, a) / HalfAlong(a), v = Vector3.Dot(hitPoint, c) / HalfAlong(c);
+                // the face hit; on the top, the face whose edge the tap is near (the outer 40%); the middle: COghe chooses
+                int side = 0, sideways = 0;
+                if (Mathf.Abs(u) >= .97f) side = u > 0 ? 1 : -1;
+                else if (Mathf.Abs(v) >= .97f) sideways = v > 0 ? 1 : -1;
+                else if (Mathf.Abs(u) >= .6f && Mathf.Abs(u) >= Mathf.Abs(v)) side = u > 0 ? 1 : -1;
+                else if (Mathf.Abs(v) >= .6f) sideways = v > 0 ? 1 : -1;
+                if (RequestFrom(game.Motion.Selected, side, sideways)) game.Feedback.ShowCommand(HandPoint, WorkingSurface.Normal, Rail.transform);
                 return true;   // a tap on a crate is never a walk onto it
             }
             bool Visible(Vector3 centre,Vector3 face)
@@ -168,8 +178,9 @@ namespace GravityBox.Venom
         private float HalfAlong(Vector3 a) => Mathf.Abs(a.x) * CrateSize.x * .5f + Mathf.Abs(a.y) * CrateSize.y * .5f + Mathf.Abs(a.z) * CrateSize.z * .5f;
 
         /// <summary>A crate taken by a tap: <paramref name="side"/> +1 / −1 is the end COghe works from (the +Axis end / the
-        /// other), 0 lets the crate choose (push if it can, else pull). Checked on the grid before anyone moves.</summary>
-        public bool RequestFrom(int anchor, int side)
+        /// other), <paramref name="sideways"/> +1 / −1 a long side; both 0 lets COghe take the nearest face that works. Checked
+        /// on the grid before anyone moves.</summary>
+        public bool RequestFrom(int anchor, int side, int sideways = 0)
         {
             if (!CrateFaces || !HasStops) return Request(anchor);
             if (!owner.Owner.CanControl || owner.Home || anchor < 0 || anchor >= CohesiveOrganism.ParticleCount || owner.Matter.Escaped[anchor]) return false;
@@ -181,14 +192,20 @@ namespace GravityBox.Venom
             if (!CrateCanSlide(goal)) why = "Khối bị chắn — có khối khác trên đường trượt";
             else
             {
-                // push from the end it moves away from, pull from the end it moves toward; the tapped end first, then the
-                // other (the crate still goes where it can: a tap on a crate that can move always moves it)
-                int push = -towards, pull = towards;
-                foreach (int s in side != 0 ? new[] { side, -side } : new[] { push, pull })
+                // The faces COghe can work from: the two ends (push from the one the crate moves away from, pull from the one
+                // it moves toward) and the two long sides (grip and walk along). The face tapped first, then the rest, nearest
+                // to COghe first (a tap on a crate that can move always moves it).
+                int pull = towards;
+                var faces = new List<(int end, int side)> { (1, 0), (-1, 0), (0, 1), (0, -1) };
+                Vector3 me = owner.Motion.Centre(anchor);
+                faces.Sort((f, g) => (FaceStand(f.end, f.side) - me).sqrMagnitude.CompareTo((FaceStand(g.end, g.side) - me).sqrMagnitude));
+                if (side != 0 || sideways != 0) { faces.Remove((side, sideways)); faces.Insert(0, (side, sideways)); }
+                foreach (var (e, sw) in faces)
                 {
-                    if (!StandFree(s, s == pull, goal)) { why = s == pull ? "Không kéo được — sau lưng COghe không có chỗ" : "Không đẩy được — sau khối không có chỗ đứng"; continue; }
+                    if (sw != 0 ? !SideFree(sw, goal) : !StandFree(e, e == pull, goal))
+                    { why = sw != 0 ? "Không bám được — cạnh khối không có chỗ" : e == pull ? "Không kéo được — sau lưng COghe không có chỗ" : "Không đẩy được — sau khối không có chỗ đứng"; continue; }
                     if (!owner.PrepareTapCommand(anchor)) return false;
-                    backSide = s < 0; stance = backSide ? -StandOffset : StandOffset;
+                    Hold(e, sw);
                     owner.Motion.BuildGraph();
                     if (!owner.Motion.FindPath(owner.Motion.Centre(anchor), StandPoint, route, true)) { why = "Đường tới khối đang bị chặn"; refusal = Refusal.Unreachable; continue; }
                     Actor = anchor; actorCount = CountActor(); targetStop = next; target = goal; replans = 0; LastFailure = null;
@@ -198,6 +215,18 @@ namespace GravityBox.Venom
             }
             Message(why ?? "Khối bị chắn"); Refuse(owner, refusal, side > 0 ? Handle.position : side < 0 && AlternateHandle != null ? AlternateHandle.position : Rail.Body.position);
             return false;
+        }
+        /// <summary>Take the crate by an end (+1 / −1) or a long side (<paramref name="sideways"/> +1 / −1).</summary>
+        private void Hold(int end, int sideways)
+        {
+            across = sideways; backSide = sideways == 0 && end < 0;
+            stance = sideways != 0 ? Across * sideways * StandOffset.magnitude : backSide ? -StandOffset : StandOffset;
+        }
+        /// <summary>Where COghe would stand to work the crate from that face (to rank the faces by how near they are).</summary>
+        private Vector3 FaceStand(int end, int sideways)
+        {
+            Vector3 dir = sideways != 0 ? Across * sideways : Rail.Axis.normalized * end;
+            return Rail.Body.position + Rail.Frame.TransformDirection(dir * (HalfAlong(dir) + StandOffset.magnitude));
         }
 
         /// <summary>The way the crate's next move goes (+1: along +Axis), and whether COghe has room to make it from the
@@ -210,8 +239,18 @@ namespace GravityBox.Venom
             float goal = Stops[(c + 1) % Stops.Length];
             return CrateCanSlide(goal) && StandFree(side, side == NextMoveDirection, goal);
         }
+        /// <summary>Whether COghe has room to take the crate by the <paramref name="sideways"/> long side (+1 / −1) for its next move.</summary>
+        public bool CanWorkAcross(int sideways)
+        {
+            if (!CrateFaces || !HasStops || Busy) return false;
+            int c = CurrentStop; if (c < 0) c = Mathf.Abs(Rail.Position - Stops[0]) < Mathf.Abs(Rail.Position - Stops[1]) ? 0 : 1;
+            float goal = Stops[(c + 1) % Stops.Length];
+            return CrateCanSlide(goal) && SideFree(sideways, goal);
+        }
         /// <summary>The end COghe works from in the current task (+1 / −1).</summary>
         public int WorkingSide => backSide ? -1 : 1;
+        /// <summary>The long side COghe holds in the current task (+1 / −1), or 0 if it works an end.</summary>
+        public int WorkingAcross => across;
 
         // The crate's footprint on the floor (frame x0, z0, x1, z1) at a rail position, shrunk a little: neighbours stand
         // 2 mm apart, and only a real overlap blocks.
@@ -241,6 +280,15 @@ namespace GravityBox.Venom
             Vector4 cell = a.x > .5f ? new Vector4(f.z + s, f.y + s, f.z + depth, f.w - s) : a.x < -.5f ? new Vector4(f.x - depth, f.y + s, f.x - s, f.w - s) :
                            a.z > .5f ? new Vector4(f.x + s, f.w + s, f.z - s, f.w + depth) : new Vector4(f.x + s, f.y - depth, f.z - s, f.y - s);
             return OnFloor(cell) && FreeOfCrates(cell);
+        }
+        /// <summary>Room for COghe along a long side: one cell deep beside the whole slide (it walks along with the crate).</summary>
+        private bool SideFree(int sideways, float goal)
+        {
+            var f = Union(Footprint(this, Rail.Position, 0), Footprint(this, goal, 0));
+            Vector3 c = Across * sideways; float depth = CrateCell - .006f, s = .003f;
+            Vector4 strip = c.x > .5f ? new Vector4(f.z + s, f.y + s, f.z + depth, f.w - s) : c.x < -.5f ? new Vector4(f.x - depth, f.y + s, f.x - s, f.w - s) :
+                            c.z > .5f ? new Vector4(f.x + s, f.w + s, f.z - s, f.w + depth) : new Vector4(f.x + s, f.y - depth, f.z - s, f.y - s);
+            return OnFloor(strip) && FreeOfCrates(strip);
         }
 
         public bool Request(int anchor)

@@ -8,10 +8,11 @@ namespace GravityBox.Editor
  /// Crate levels 51–60 (Mrk approved the redone designs, 06/10/2026: "triển khai levels 51-60 theo phương án này";
  /// PLANS/COGHE_CRATE_LEVELS_LOGIC.md). A 6 × 5 grid of 12 cm cells; the exit is a hole in the floor under the red crate.
  /// Each crate rides its own rail between two stops; a tap on any of its faces slides it to the other stop (Mrk 07/10/2026).
- /// It has a handle at both ends: the end tapped (or nearest the tap) is where COghe works from, pushing or pulling,
- /// and the move is checked on the grid before COghe sets off (COgheTapRail.CrateFaces). Crates stand taller than COghe and
- /// are not walked on: COghe goes round them on the floor, so a crate whose slide is clear is always one it can reach the
- /// moment a floor road leads there. Layouts and COghe's start cell come from CrateDesigns (generated from the design data).
+ /// COghe takes it by any face (Mrk 08/10/2026: "mặt nào cũng đẩy bám được, cho thật hơn"): at an end it pushes or pulls,
+ /// at a long side it grips and walks along with it; the move is checked on the grid before COghe sets off
+ /// (COgheTapRail.CrateFaces). Crates stand twice COghe's height, slick all over (lavender), so it plainly cannot climb
+ /// them (Mrk 08/10/2026: "cho thùng cao lên và thể hiện rõ ràng là COghe không thể trèo được"): COghe goes round them on
+ /// the floor. Layouts and COghe's start cell come from CrateDesigns (generated from the design data).
  /// </summary>
  public static partial class VenomCampaignBuilder
  {
@@ -36,8 +37,8 @@ namespace GravityBox.Editor
    {
     var cr = design.crates[i];
     bool square = cr.w == 2 && cr.h == 2;
-    // Taller than COghe (the design: it walks round crates, never over them).
-    float height = square ? .07f : .06f;
+    // Twice COghe's height: a wall it walks round, never a step (Mrk 08/10/2026).
+    float height = square ? .11f : .10f;
     // 1 mm clear of the cell edges: the rails keep neighbours apart, and the 2 mm between two crates is too narrow for a
     // route (the planner tests links with a 6 mm radius), so COghe is never sent into the seam between crates.
     var size = new Vector3(cr.w * CrateCell - .002f, height, cr.h * CrateCell - .002f);
@@ -57,10 +58,13 @@ namespace GravityBox.Editor
     // The pull stops pushing once the crate is within the catch, so it seats a few millimetres short: 6 mm counts as there.
     rail.CatchTolerance = .006f;
     var prop = rail.GetComponent<VenomMovableProp>(); prop.Manipulable = false;
-    // Handles at both ends of the slide: the far end (+axis) and the near end; COghe works the one on its side.
+    // Grip points at both ends of the slide (the long sides are worked from the crate's middle, COgheTapRail.HandPoint).
+    // No handles are drawn: COghe takes a crate by any face.
     float half = Mathf.Abs(Vector3.Dot(size * .5f, axis));
     var grip = prop.ManipulationGrip; grip.localPosition = axis * (half + .008f); grip.localRotation = Quaternion.LookRotation(axis);
     var other = MechanismVisual(prop.transform, name + " near handle", -axis * (half + .008f), grip.localScale, metal); other.localRotation = Quaternion.LookRotation(-axis);
+    foreach (var r in grip.GetComponentsInChildren<Renderer>(true)) r.enabled = false;
+    foreach (var r in other.GetComponentsInChildren<Renderer>(true)) r.enabled = false;
     var task = rail.gameObject.AddComponent<COgheTapRail>(); task.Rail = rail; task.Handle = grip; task.AlternateHandle = other; task.WorkingSurface = floor;
     task.Stops = new[] { 0f, travel }; task.SeatAtStops = true;
     task.Label = cr.red ? "B" : "A"; task.TwoSided = true; task.StandOffset = axis * .062f; task.TrackStandPoint = true; task.StallSeconds = 5;

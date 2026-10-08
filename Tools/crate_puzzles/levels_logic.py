@@ -1,6 +1,9 @@
 """The ten crate levels redone so they read true on screen (Mrk, 06/10/2026, on level 52: "sửa lại những màn kiểu này cho
 có tính logic"). Picks from cand_logic.json (logic.py), checks each again, writes plates and an overview into out_logic/.
-Run: uv run --with pillow python3 levels_logic.py"""
+Run: uv run --with pillow python3 levels_logic.py
+Any-face grips (Mrk 08/10/2026): COghe also takes a crate by a long side and walks along with it. Run with LOGIC_SIDES=1. K01–K08
+keep their layouts (their fewest pulls do not change); K09 and K10 were found again under the rule (cand_sides.json) so they
+stay at 9 and 10 pulls."""
 import json, os
 from PIL import Image, ImageDraw
 from puzzle import Crate, Puzzle
@@ -10,11 +13,11 @@ from render import plate, draw_plan, font, BG, INK, MUTED
 # Crates stand taller than COghe: they read as walls it walks around, not steps it climbs.
 render.LOW_H, render.TALL_H = .06, .07
 from levels10 import steps_text
-from logic import Logic, shortest, HOLE
+from logic import Logic, shortest, HOLE, SIDES
 
 CANDIDATES = 'cand_logic.json'   # the chosen ten (logic.py writes every candidate; trimmed to these)
 # (search level, seed): easy to hard by the number of pulls.
-PICKS = [(1, 0), (2, 5), (3, 19), (4, 124), (5, 292), (6, 135), (6, 48), (6, 182), (6, 167), (6, 187)]
+PICKS = [(1, 0), (2, 5), (3, 19), (4, 124), (5, 292), (6, 135), (6, 48), (6, 182), (31, 5, 'cand_sides.json'), (33, 49, 'cand_sides.json')]
 NAMES = [   # (title, idea)
     ('Một thùng chắn', 'Thùng đỏ trượt được, nhưng một thùng đứng ngay trên đường trượt.'),
     ('Chuỗi ba thùng', 'Thùng chắn thùng đỏ lại bị thùng khác chắn: gỡ từ ngoài vào.'),
@@ -24,13 +27,13 @@ NAMES = [   # (title, idea)
     ('Dây chuyền', 'Sáu thùng chắn nhau thành một chuỗi; không lần kéo nào thừa.'),
     ('Mở lối cho COghe', 'COghe bị thùng vây trong góc: mở lối cho nó trước.'),
     ('Đi rồi trả lại', 'Hai thùng phải dời tạm rồi trả về chỗ cũ.'),
-    ('Kho chật', 'Chín lần kéo; một thùng phải dời qua lại ba lần.'),
+    ('Kho chật', 'Chín lần kéo; một thùng phải dời qua lại bốn lần.'),
     ('Mê cung thùng', 'Mười lần kéo, bài cuối của bộ.'),
 ]
 
 
-def load(level, seed):
-    r = next(r for r in json.load(open(CANDIDATES)) if r['level'] == level and r['seed'] == seed)
+def load(level, seed, candidates=CANDIDATES):
+    r = next(r for r in json.load(open(candidates)) if r['level'] == level and r['seed'] == seed)
     cs = [Crate(c['name'], [tuple(t) for t in c['shape']], c['axis'], c['stops'], tuple(c['anchor']), c['red'], False, c['tall']) for c in r['crates']]
     return cs, tuple(r['spawn'])
 
@@ -45,8 +48,10 @@ def spawn_cell(lg, piece):
 def main():
     os.makedirs('out_logic', exist_ok=True)
     summary = []; tiles = []
-    for k, ((level, seed), (title, idea)) in enumerate(zip(PICKS, NAMES), 1):
-        cs, piece = load(level, seed)
+    assert SIDES, 'run with LOGIC_SIDES=1 (COghe grips any face)'
+    for k, (pick, (title, idea)) in enumerate(zip(PICKS, NAMES), 1):
+        level, seed = pick[:2]
+        cs, piece = load(level, seed, *pick[2:])
         lg = Logic(cs); s0 = tuple(0 for _ in cs); node = (s0, piece)
         path = shortest(lg, node)
         reach = lg.reach(node)
@@ -58,7 +63,8 @@ def main():
         notes = [idea,
                  'Thùng nào thấy đường trượt trống thì kéo được ngay;',
                  'chỉ thùng chắn đường mới giữ nó lại.',
-                 'COghe đi trên sàn, không trèo qua thùng (thùng cao hơn COghe).',
+                 'COghe đi trên sàn, không trèo qua thùng (thùng cao gấp đôi COghe);',
+                 'nó bám được mọi mặt thùng: đẩy, kéo, hoặc bám mặt bên đi dọc theo.',
                  'Kéo sai luôn kéo lại được: không có thế bày nào bị kẹt.']
         plate(p, path, f'Màn {50 + k} · {title}', sub, steps_text(p, path), notes, f'out_logic/K{k:02}.png', cogh=cogh, plan_cogh=True)
         moves = []

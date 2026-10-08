@@ -14,8 +14,8 @@ namespace GravityBox.Editor
    ("K06","Dây chuyền","Sáu thùng chắn nhau thành một chuỗi; không lần kéo nào thừa.",(0,0),new[]{(3,2,1,2,'z',-2,true),(0,1,2,2,'z',2,false),(2,0,2,1,'x',2,false),(5,0,1,3,'z',1,false),(4,0,1,2,'z',2,false),(2,1,2,1,'x',-1,false)}),
    ("K07","Mở lối cho COghe","COghe bị thùng vây trong góc: mở lối cho nó trước.",(0,0),new[]{(3,2,2,1,'x',1,true),(3,1,3,1,'x',-2,false),(2,0,2,1,'x',2,false),(0,1,2,2,'z',2,false),(1,4,2,1,'x',1,false),(5,2,1,2,'z',-2,false)}),
    ("K08","Đi rồi trả lại","Hai thùng phải dời tạm rồi trả về chỗ cũ.",(0,4),new[]{(3,2,2,1,'x',1,true),(0,2,2,2,'z',-1,false),(1,4,3,1,'x',1,false),(3,0,3,1,'x',-1,false),(4,1,2,1,'x',-1,false),(5,2,1,2,'z',-2,false)}),
-   ("K09","Kho chật","Chín lần kéo; một thùng phải dời qua lại ba lần.",(0,0),new[]{(2,2,2,1,'x',-1,true),(1,4,3,1,'x',1,false),(0,1,2,2,'z',2,false),(5,3,1,2,'z',-2,false),(2,0,2,1,'x',1,false),(0,3,2,1,'x',2,false)}),
-   ("K10","Mê cung thùng","Mười lần kéo, bài cuối của bộ.",(0,4),new[]{(2,2,2,1,'x',2,true),(0,2,1,2,'z',-1,false),(4,1,2,2,'z',-1,false),(2,4,2,1,'x',2,false),(2,0,3,1,'x',-1,false),(1,3,2,1,'x',1,false)}),
+   ("K09","Kho chật","Chín lần kéo; một thùng phải dời qua lại bốn lần.",(5,2),new[]{(3,2,2,1,'x',-3,true),(4,1,2,1,'x',-1,false),(0,1,2,2,'z',-1,false),(1,0,2,1,'x',2,false),(2,3,3,1,'x',1,false),(2,4,2,1,'x',-2,false)}),
+   ("K10","Mê cung thùng","Mười lần kéo, bài cuối của bộ.",(0,3),new[]{(3,1,1,2,'z',-1,true),(3,0,2,1,'x',-2,false),(1,4,2,1,'x',2,false),(5,1,1,3,'z',1,false),(0,1,2,2,'z',-1,false),(1,3,2,1,'x',-1,false)}),
   };
  }
 }

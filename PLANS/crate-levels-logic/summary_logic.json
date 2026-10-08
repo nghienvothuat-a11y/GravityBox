@@ -19,18 +19,18 @@
   "moves": [
    {
     "crate": 1,
-    "side": "push",
+    "side": "side+",
     "stand": [
-     1,
-     0
+     2,
+     2
     ]
    },
    {
     "crate": 0,
-    "side": "push",
+    "side": "side+",
     "stand": [
-     5,
-     2
+     4,
+     1
     ]
    }
   ],
@@ -148,10 +148,10 @@
    },
    {
     "crate": 0,
-    "side": "push",
+    "side": "side+",
     "stand": [
-     3,
-     1
+     4,
+     3
     ]
    }
   ],
@@ -285,10 +285,10 @@
    },
    {
     "crate": 2,
-    "side": "pull",
+    "side": "side-",
     "stand": [
-     2,
-     3
+     1,
+     2
     ]
    },
    {
@@ -301,10 +301,10 @@
    },
    {
     "crate": 0,
-    "side": "push",
+    "side": "side-",
     "stand": [
-     3,
-     4
+     4,
+     3
     ]
    }
   ],
@@ -444,10 +444,10 @@
    },
    {
     "crate": 4,
-    "side": "pull",
+    "side": "side-",
     "stand": [
-     0,
-     1
+     1,
+     3
     ]
    },
    {
@@ -615,7 +615,7 @@
   "pulls": 6,
   "crates": 5,
   "returns": 1,
-  "reach": 14,
+  "reach": 18,
   "spawn": [
    0,
    0
@@ -671,10 +671,10 @@
    },
    {
     "crate": 0,
-    "side": "push",
+    "side": "side+",
     "stand": [
-     5,
-     2
+     4,
+     1
     ]
    }
   ],
@@ -871,10 +871,10 @@
    },
    {
     "crate": 5,
-    "side": "pull",
+    "side": "side+",
     "stand": [
-     1,
-     1
+     3,
+     0
     ]
    },
    {
@@ -1078,10 +1078,10 @@
    },
    {
     "crate": 4,
-    "side": "pull",
+    "side": "side-",
     "stand": [
-     3,
-     4
+     2,
+     3
     ]
    },
    {
@@ -1118,10 +1118,10 @@
    },
    {
     "crate": 0,
-    "side": "push",
+    "side": "side+",
     "stand": [
-     2,
-     2
+     4,
+     3
     ]
    }
   ],
@@ -1293,7 +1293,7 @@
   "pulls": 8,
   "crates": 6,
   "returns": 2,
-  "reach": 32,
+  "reach": 48,
   "spawn": [
    0,
    4
@@ -1327,18 +1327,18 @@
    },
    {
     "crate": 2,
-    "side": "pull",
+    "side": "side+",
     "stand": [
-     1,
-     4
+     3,
+     3
     ]
    },
    {
     "crate": 1,
-    "side": "push",
+    "side": "side+",
     "stand": [
-     1,
-     0
+     2,
+     2
     ]
    },
    {
@@ -1367,10 +1367,10 @@
    },
    {
     "crate": 0,
-    "side": "push",
+    "side": "side+",
     "stand": [
-     2,
-     2
+     4,
+     3
     ]
    }
   ],
@@ -1543,54 +1543,54 @@
   "key": "K09",
   "level": 59,
   "title": "Kho chật",
-  "idea": "Chín lần kéo; một thùng phải dời qua lại ba lần.",
+  "idea": "Chín lần kéo; một thùng phải dời qua lại bốn lần.",
   "pulls": 9,
   "crates": 6,
   "returns": 3,
-  "reach": 37,
+  "reach": 49,
   "spawn": [
-   0,
-   0
+   5,
+   2
   ],
   "path": [
-   4,
-   3,
+   5,
    4,
    1,
+   4,
    3,
    4,
-   5,
    2,
+   4,
    0
   ],
   "moves": [
    {
-    "crate": 4,
+    "crate": 5,
     "side": "push",
     "stand": [
-     1,
-     0
-    ]
-   },
-   {
-    "crate": 3,
-    "side": "pull",
-    "stand": [
-     5,
-     2
+     4,
+     4
     ]
    },
    {
     "crate": 4,
-    "side": "push",
+    "side": "side+",
     "stand": [
-     5,
-     0
+     3,
+     4
     ]
    },
    {
     "crate": 1,
     "side": "pull",
+    "stand": [
+     3,
+     1
+    ]
+   },
+   {
+    "crate": 4,
+    "side": "side-",
     "stand": [
      4,
      4
@@ -1598,61 +1598,83 @@
    },
    {
     "crate": 3,
-    "side": "push",
+    "side": "pull",
     "stand": [
-     5,
+     3,
      0
     ]
    },
    {
     "crate": 4,
-    "side": "pull",
+    "side": "side+",
     "stand": [
-     4,
-     0
-    ]
-   },
-   {
-    "crate": 5,
-    "side": "pull",
-    "stand": [
-     2,
-     3
+     3,
+     4
     ]
    },
    {
     "crate": 2,
-    "side": "push",
+    "side": "side-",
     "stand": [
-     1,
-     0
+     2,
+     2
+    ]
+   },
+   {
+    "crate": 4,
+    "side": "side-",
+    "stand": [
+     4,
+     4
     ]
    },
    {
     "crate": 0,
-    "side": "pull",
+    "side": "push",
     "stand": [
-     1,
+     5,
      2
     ]
    }
   ],
   "steps": [
-   "1. Thùng dài 2 ô (trước–giữa) sang phải 1 ô",
-   "2. Thùng dài 2 ô (sau–phải) ra phía trước 2 ô",
-   "3. Thùng dài 2 ô (trước–giữa) sang trái 1 ô (lần 2: trả về)",
-   "4. Thùng dài 3 ô (sau–giữa) sang phải 1 ô",
-   "5. Thùng dài 2 ô (sau–phải) vào trong 2 ô (lần 2: trả về)",
-   "6. Thùng dài 2 ô (trước–giữa) sang phải 1 ô (lần 3)",
-   "7. Thùng dài 2 ô (sau–trái) sang phải 2 ô",
-   "8. Thùng vuông lớn (giữa–trái) vào trong 2 ô",
-   "9. Thùng đỏ sang trái 1 ô"
+   "1. Thùng dài 2 ô (sau–giữa) sang trái 2 ô",
+   "2. Thùng dài 3 ô (sau–giữa) sang phải 1 ô",
+   "3. Thùng dài 2 ô (trước–phải) sang trái 1 ô",
+   "4. Thùng dài 3 ô (sau–giữa) sang trái 1 ô (lần 2: trả về)",
+   "5. Thùng dài 2 ô (trước–giữa) sang phải 2 ô",
+   "6. Thùng dài 3 ô (sau–giữa) sang phải 1 ô (lần 3)",
+   "7. Thùng vuông lớn (giữa–trái) ra phía trước 1 ô",
+   "8. Thùng dài 3 ô (sau–giữa) sang trái 1 ô (lần 4: trả về)",
+   "9. Thùng đỏ sang trái 3 ô"
   ],
   "source": {
-   "level": 6,
-   "seed": 167
+   "level": 31,
+   "seed": 5
   },
   "crates_def": [
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -3
+    ],
+    "anchor": [
+     3,
+     2
+    ],
+    "red": true
+   },
    {
     "shape": [
      [
@@ -1670,10 +1692,62 @@
      -1
     ],
     "anchor": [
-     2,
+     4,
+     1
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     0,
+     1
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
      2
     ],
-    "red": true
+    "anchor": [
+     1,
+     0
+    ],
+    "red": false
    },
    {
     "shape": [
@@ -1696,8 +1770,8 @@
      1
     ],
     "anchor": [
-     1,
-     4
+     2,
+     3
     ],
     "red": false
    },
@@ -1710,90 +1784,16 @@
      [
       1,
       0
-     ],
-     [
-      0,
-      1
-     ],
-     [
-      1,
-      1
      ]
     ],
-    "axis": "z",
-    "stops": [
-     0,
-     2
-    ],
-    "anchor": [
-     0,
-     1
-    ],
-    "red": false
-   },
-   {
-    "shape": [
-     [
-      0,
-      0
-     ],
-     [
-      0,
-      1
-     ]
-    ],
-    "axis": "z",
+    "axis": "x",
     "stops": [
      0,
      -2
     ],
     "anchor": [
-     5,
-     3
-    ],
-    "red": false
-   },
-   {
-    "shape": [
-     [
-      0,
-      0
-     ],
-     [
-      1,
-      0
-     ]
-    ],
-    "axis": "x",
-    "stops": [
-     0,
-     1
-    ],
-    "anchor": [
      2,
-     0
-    ],
-    "red": false
-   },
-   {
-    "shape": [
-     [
-      0,
-      0
-     ],
-     [
-      1,
-      0
-     ]
-    ],
-    "axis": "x",
-    "stops": [
-     0,
-     2
-    ],
-    "anchor": [
-     0,
-     3
+     4
     ],
     "red": false
    }
@@ -1807,120 +1807,120 @@
   "pulls": 10,
   "crates": 6,
   "returns": 4,
-  "reach": 38,
+  "reach": 76,
   "spawn": [
    0,
-   4
+   3
   ],
   "path": [
-   1,
-   3,
+   2,
    5,
-   1,
    4,
-   1,
    5,
    2,
    5,
+   3,
+   4,
+   1,
    0
   ],
   "moves": [
    {
-    "crate": 1,
+    "crate": 2,
     "side": "push",
     "stand": [
      0,
-     4
-    ]
-   },
-   {
-    "crate": 3,
-    "side": "push",
-    "stand": [
-     1,
      4
     ]
    },
    {
     "crate": 5,
-    "side": "push",
+    "side": "side-",
     "stand": [
-     0,
-     3
-    ]
-   },
-   {
-    "crate": 1,
-    "side": "pull",
-    "stand": [
-     0,
-     3
+     2,
+     4
     ]
    },
    {
     "crate": 4,
-    "side": "pull",
+    "side": "side-",
+    "stand": [
+     2,
+     2
+    ]
+   },
+   {
+    "crate": 5,
+    "side": "side-",
     "stand": [
      1,
-     0
+     2
+    ]
+   },
+   {
+    "crate": 2,
+    "side": "pull",
+    "stand": [
+     2,
+     4
+    ]
+   },
+   {
+    "crate": 5,
+    "side": "side+",
+    "stand": [
+     2,
+     2
+    ]
+   },
+   {
+    "crate": 3,
+    "side": "side-",
+    "stand": [
+     4,
+     2
+    ]
+   },
+   {
+    "crate": 4,
+    "side": "side+",
+    "stand": [
+     2,
+     1
     ]
    },
    {
     "crate": 1,
     "side": "push",
     "stand": [
-     0,
-     4
-    ]
-   },
-   {
-    "crate": 5,
-    "side": "pull",
-    "stand": [
-     1,
-     3
-    ]
-   },
-   {
-    "crate": 2,
-    "side": "push",
-    "stand": [
      5,
-     3
-    ]
-   },
-   {
-    "crate": 5,
-    "side": "push",
-    "stand": [
-     0,
-     3
+     0
     ]
    },
    {
     "crate": 0,
-    "side": "push",
+    "side": "side-",
     "stand": [
-     1,
+     4,
      2
     ]
    }
   ],
   "steps": [
-   "1. Thùng dài 2 ô (giữa–trái) ra phía trước 1 ô",
-   "2. Thùng dài 2 ô (sau–giữa) sang phải 2 ô",
-   "3. Thùng dài 2 ô (sau–giữa) sang phải 1 ô",
-   "4. Thùng dài 2 ô (giữa–trái) vào trong 1 ô (lần 2: trả về)",
-   "5. Thùng dài 3 ô (trước–giữa) sang trái 1 ô",
-   "6. Thùng dài 2 ô (giữa–trái) ra phía trước 1 ô (lần 3)",
-   "7. Thùng dài 2 ô (sau–giữa) sang trái 1 ô (lần 2: trả về)",
-   "8. Thùng vuông lớn (giữa–phải) ra phía trước 1 ô",
-   "9. Thùng dài 2 ô (sau–giữa) sang phải 1 ô (lần 3)",
-   "10. Thùng đỏ sang phải 2 ô"
+   "1. Thùng dài 2 ô (sau–giữa) sang phải 2 ô",
+   "2. Thùng dài 2 ô (sau–giữa) sang trái 1 ô",
+   "3. Thùng vuông lớn (giữa–trái) ra phía trước 1 ô",
+   "4. Thùng dài 2 ô (sau–giữa) sang phải 1 ô (lần 2: trả về)",
+   "5. Thùng dài 2 ô (sau–giữa) sang trái 2 ô (lần 2: trả về)",
+   "6. Thùng dài 2 ô (sau–giữa) sang trái 1 ô (lần 3)",
+   "7. Thùng dài 3 ô (giữa–phải) vào trong 1 ô",
+   "8. Thùng vuông lớn (giữa–trái) vào trong 1 ô (lần 2: trả về)",
+   "9. Thùng dài 2 ô (trước–giữa) sang trái 2 ô",
+   "10. Thùng đỏ ra phía trước 1 ô"
   ],
   "source": {
-   "level": 6,
-   "seed": 187
+   "level": 33,
+   "seed": 49
   },
   "crates_def": [
    {
@@ -1930,18 +1930,18 @@
       0
      ],
      [
-      1,
-      0
+      0,
+      1
      ]
     ],
-    "axis": "x",
+    "axis": "z",
     "stops": [
      0,
-     2
+     -1
     ],
     "anchor": [
-     2,
-     2
+     3,
+     1
     ],
     "red": true
    },
@@ -1952,58 +1952,6 @@
       0
      ],
      [
-      0,
-      1
-     ]
-    ],
-    "axis": "z",
-    "stops": [
-     0,
-     -1
-    ],
-    "anchor": [
-     0,
-     2
-    ],
-    "red": false
-   },
-   {
-    "shape": [
-     [
-      0,
-      0
-     ],
-     [
-      1,
-      0
-     ],
-     [
-      0,
-      1
-     ],
-     [
-      1,
-      1
-     ]
-    ],
-    "axis": "z",
-    "stops": [
-     0,
-     -1
-    ],
-    "anchor": [
-     4,
-     1
-    ],
-    "red": false
-   },
-   {
-    "shape": [
-     [
-      0,
-      0
-     ],
-     [
       1,
       0
      ]
@@ -2011,36 +1959,10 @@
     "axis": "x",
     "stops": [
      0,
-     2
+     -2
     ],
     "anchor": [
-     2,
-     4
-    ],
-    "red": false
-   },
-   {
-    "shape": [
-     [
-      0,
-      0
-     ],
-     [
-      1,
-      0
-     ],
-     [
-      2,
-      0
-     ]
-    ],
-    "axis": "x",
-    "stops": [
-     0,
-     -1
-    ],
-    "anchor": [
-     2,
+     3,
      0
     ],
     "red": false
@@ -2059,7 +1981,85 @@
     "axis": "x",
     "stops": [
      0,
+     2
+    ],
+    "anchor": [
+     1,
+     4
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      0,
+      2
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
      1
+    ],
+    "anchor": [
+     5,
+     1
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      1
+     ]
+    ],
+    "axis": "z",
+    "stops": [
+     0,
+     -1
+    ],
+    "anchor": [
+     0,
+     1
+    ],
+    "red": false
+   },
+   {
+    "shape": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ]
+    ],
+    "axis": "x",
+    "stops": [
+     0,
+     -1
     ],
     "anchor": [
      1,

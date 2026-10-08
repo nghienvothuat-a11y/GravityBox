@@ -8,7 +8,8 @@ using UnityEngine.TestTools;
 namespace GravityBox.Tests
 {
  // Crate taps (Mrk 07/10/2026): "Khi click vào mặt khối, COghe phải đẩy hoặc kéo (trừ khi bị kịch đường). Ví dụ lần thứ
- // nhất đẩy thì lần thứ hai kéo". Played through real taps on the crates, as a player does.
+ // nhất đẩy thì lần thứ hai kéo"; 08/10/2026: any face, a long side too. Played through real taps on the crates, as a
+ // player does.
  public sealed partial class COgheSpatialCampaignTests
  {
   private COgheTapRail CrateTask(string name)=>Array.Find(game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>(),t=>t.Rail.name==name);
@@ -38,21 +39,9 @@ namespace GravityBox.Tests
    Assert.IsTrue(spot.HasValue,"The camera sees that end of "+t.Rail.name);return spot.Value;
   }
 
-  [UnityTest] public IEnumerator CrateASideTapMovesItAndTheSameEndTwicePushesThenPulls()
+  [UnityTest] public IEnumerator TheSameEndOfACrateTappedTwicePushesThenPulls()
   {
    yield return LoadPlus("K01");yield return Wait(.5f);
-   var crate=CrateTask("Crate 1");Assert.IsTrue(crate.CrateFaces);
-   // a tap on the middle of the side the camera sees: the crate goes to its other stop (COghe picks the end it can use)
-   Vector3 along=crate.Rail.WorldAxis,across=Vector3.Cross(game.Root.up,along).normalized;
-   if(Vector3.Dot(across,game.Owner.View.transform.forward)>0)across=-across;
-   Vector3 a=crate.Rail.Frame.InverseTransformDirection(across);
-   float width=Mathf.Abs(a.x)*crate.CrateSize.x*.5f+Mathf.Abs(a.z)*crate.CrateSize.z*.5f;
-   var side=CrateSpot(crate,crate.Rail.Body.position+across*width,crate.Rail.Body.position+across*width*.9f+game.Root.up*crate.CrateSize.y*.25f);
-   Assert.IsTrue(side.HasValue,"The camera sees the crate's side");
-   float start=crate.Rail.Position;
-   yield return Tap(side.Value);Assert.IsTrue(crate.Busy,"A tap on a crate's side face takes it: "+crate.LastFailure);
-   yield return Until(20,()=>crate.CompletedJourneys==1,"It slides to its other stop");
-   Assert.Greater(Mathf.Abs(crate.Rail.Position-start),crate.Rail.Travel*.9f);
    // the same end tapped twice: away from it a push, then toward it a pull (wherever COghe has room at that end; else
    // it works the crate from the other end). Find a crate and an end that allow both, and play it.
    bool alternated=false;
@@ -74,6 +63,38 @@ namespace GravityBox.Tests
     }
    }
    Assert.IsTrue(alternated,"Some crate shows the same end pushing then pulling");
+  }
+
+  // Mrk 08/10/2026: "lúc đẩy và kéo thùng, phải cho COghe mặt nào cũng đẩy bám được, cho thật hơn". A tap near a crate's
+  // long edge takes it by that side: COghe grips the side and walks along with the crate, and ends beside it.
+  [UnityTest] public IEnumerator ACrateTakenByALongSideSlidesWithCOgheBesideIt()
+  {
+   yield return LoadPlus("K01");yield return Wait(.5f);
+   bool shown=false;
+   foreach(var t in game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())
+   {
+    if(shown||!t.CrateFaces)continue;
+    Vector3 up=game.Root.up,along=t.Rail.WorldAxis,across=Vector3.Cross(up,along).normalized;
+    var l=t.Rail.Frame.InverseTransformDirection(across);float half=Mathf.Abs(l.x)*t.CrateSize.x*.5f+Mathf.Abs(l.z)*t.CrateSize.z*.5f;
+    foreach(int s in new[]{1,-1})
+    {
+     if(shown)continue;
+     var spot=CrateSpot(t,t.Rail.Body.position+across*s*half*.78f+up*t.CrateSize.y*.5f,t.Rail.Body.position+across*s*half*.66f+up*t.CrateSize.y*.5f);
+     if(!spot.HasValue)continue;
+     // the side the tap names, if that side has room (TapRail's across is up × axis in its frame, as here)
+     if(!t.CanWorkAcross(s))continue;
+     int done=t.CompletedJourneys;float before=t.Rail.Position;
+     yield return Tap(spot.Value);
+     Assert.IsTrue(t.Busy,"A tap near the long edge takes the crate: "+t.LastFailure);
+     Assert.AreEqual(s,t.WorkingAcross,"COghe holds the side that was tapped");
+     yield return Until(25,()=>t.CompletedJourneys==done+1,"It slides with COghe walking beside it");
+     Assert.Greater(Mathf.Abs(t.Rail.Position-before),t.Rail.Travel*.9f);
+     float beside=Vector3.Dot(game.Motion.Centre(0)-t.Rail.Body.position,across)*s;
+     Assert.Greater(beside,half,"COghe is beside the crate, on that side");
+     shown=true;
+    }
+   }
+   Assert.IsTrue(shown,"Some crate in level 6 can be taken by a long side");
   }
 
   [UnityTest] public IEnumerator ABlockedCrateIsRefusedAtOnce()

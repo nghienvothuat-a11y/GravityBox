@@ -113,13 +113,15 @@ namespace GravityBox.Venom.ChapterProof
     bool Done()=>t.CompletedJourneys>before||index==0&&(game.Owner.Completed||game.Root.InverseTransformPoint(game.Motion.Centre(0)).y<-.32f||!t.Busy&&Mathf.Abs(t.Rail.Position-goal)<.012f);
     for(int attempt=0;attempt<3&&!Done();attempt++)
     {
-     // The end COghe works from is the side of the crate its route cell is on; tap that end of the crate (its top near the
-     // end, else the end face), only where the camera's ray meets this crate first.
-     Vector3 body=t.Rail.Body.position,me=game.Motion.Centre(Selected),along=t.Rail.WorldAxis,up=game.Root.up;
-     float side=Vector3.Dot(Cell(x,z)-body,along)>=0?1:-1;
-     Vector3 size=t.CrateSize,local=t.Rail.Frame.InverseTransformDirection(along);
-     float half=Mathf.Abs(local.x)*size.x*.5f+Mathf.Abs(local.z)*size.z*.5f;
-     var spots=new[]{body+along*side*half*.78f+up*size.y*.5f,body+along*side*half*.62f+up*size.y*.5f,body+along*side*half+up*size.y*.1f};
+     // The face COghe works from is the side of the crate its route cell is on: an end (push or pull) or a long side
+     // (grip and walk along, Mrk 08/10/2026). Tap the crate's top near that face's edge, else the face itself, only where
+     // the camera's ray meets this crate first.
+     Vector3 body=t.Rail.Body.position,me=game.Motion.Centre(Selected),along=t.Rail.WorldAxis,up=game.Root.up,across=Vector3.Cross(up,along).normalized;
+     Vector3 size=t.CrateSize,toCell=Cell(x,z)-body;
+     float Half(Vector3 d){var l=t.Rail.Frame.InverseTransformDirection(d);return Mathf.Abs(l.x)*size.x*.5f+Mathf.Abs(l.z)*size.z*.5f;}
+     float onAxis=Vector3.Dot(toCell,along);bool byEnd=Mathf.Abs(onAxis)>=Half(along)-.01f;
+     Vector3 face=byEnd?along*Mathf.Sign(onAxis):across*Mathf.Sign(Vector3.Dot(toCell,across));float half=Half(face);
+     var spots=new[]{body+face*half*.78f+up*size.y*.5f,body+face*half*.66f+up*size.y*.5f,body+face*half+up*size.y*.1f};
      bool Hits(Vector3 p){var cam=game.Owner.View;var r=cam.ScreenPointToRay(cam.WorldToScreenPoint(p));
       foreach(var h in System.Linq.Enumerable.OrderBy(Physics.RaycastAll(r,10),h=>h.distance)){var pane=h.collider.GetComponent<VenomSurfacePatch>();if(h.collider.isTrigger||h.collider.GetComponent<VenomContact>()!=null||pane!=null&&pane.ExteriorGlass)continue;return h.rigidbody==t.Rail.Body;}return false;}   // a tap passes through the glass box
      for(int k=0;k<spots.Length&&!t.Busy;k++)if(Hits(spots[k]))yield return this.tap(spots[k]);

@@ -26,6 +26,10 @@ FAIR = os.environ.get('LOGIC_FAIR', '1') == '1'          # experiments: switch a
 CONNECT = os.environ.get('LOGIC_CONNECT', '1') == '1'
 REDLAST = os.environ.get('LOGIC_REDLAST', '1') == '1'
 REDBLOCKED = os.environ.get('LOGIC_REDBLOCKED', '1') == '1'
+# Mrk 08/10/2026: COghe grips a crate by any face. Besides pushing from behind and pulling from in front, it can take a long
+# side and walk along with the crate: the strip of cells beside the crate's whole slide on that side must be free floor.
+# LOGIC_SIDES=1 adds those moves.
+SIDES = os.environ.get('LOGIC_SIDES', '0') == '1'
 ALL = ['bar2', 'col2', 'bar3', 'col3', 'square']
 SPECS = {  # level: (other crates, target pulls, shapes, required: (crates 3 long, squares))
     1: (2, 2, ['bar2', 'col2'], (0, 0)), 2: (3, 3, ['bar2', 'col2'], (0, 0)), 3: (3, 4, ALL[:4], (1, 0)),
@@ -33,6 +37,8 @@ SPECS = {  # level: (other crates, target pulls, shapes, required: (crates 3 lon
     8: (6, 10, ALL, (2, 1)), 9: (6, 12, ALL, (2, 1)), 10: (7, 15, ALL, (1, 1)),
     # Five or six crates go deeper than seven on a 6 x 5 floor that COghe must still walk: the hard end of the ramp.
     11: (5, 12, ALL, (2, 1)), 12: (5, 15, ALL, (1, 1)), 13: (6, 15, ALL, (1, 1)),
+    # Any-face grips (Mrk 08/10/2026, LOGIC_SIDES=1): K09 and K10 found again so they stay at 9 and 10 pulls.
+    31: (5, 9, ALL, (1, 1)), 32: (6, 9, ALL, (1, 1)), 33: (5, 10, ALL, (1, 1)), 34: (6, 10, ALL, (1, 1)),
 }
 
 
@@ -53,7 +59,27 @@ def stand_cells(c, frm, to, others):
     behind = {(x - dx, z - dz) for x, z in cur} - cur
     beyond = {(x + dx, z + dz) for x, z in dst} - dst
     free = lambda cells: all(inside(t) and t not in others for t in cells)
-    return [side for side, cells in (('push', behind), ('pull', beyond)) if free(cells)]
+    out = [side for side, cells in (('push', behind), ('pull', beyond)) if free(cells)]
+    if SIDES:
+        for name, p in side_dirs(dx, dz):
+            if free(side_strip(c, frm, to, p)): out.append(name)
+    return out
+
+
+def side_dirs(dx, dz):
+    """The two directions across the slide: a crate's long sides."""
+    return [('side+', (dz, dx)), ('side-', (-dz, -dx))] if dx == 0 else [('side+', (dz, dx)), ('side-', (-dz, -dx))]
+
+
+def side_strip(c, frm, to, p):
+    """The cells beside the crate's whole slide on side p: where COghe walks along with it."""
+    swept = c.swept(frm, to)
+    return {(x + p[0], z + p[1]) for x, z in swept} - swept
+
+
+def side_cells(c, stop, p):
+    cells = c.cells(stop)
+    return sorted({(x + p[0], z + p[1]) for x, z in cells} - cells)
 
 
 def components(free):
@@ -103,7 +129,10 @@ class Logic:
                     dx, dz = direction(c, s[i], t); dist = abs(c.stops[t] - c.stops[s[i]])
                     cur, dst = c.cells(s[i]), c.cells(t)
                     for side in stand_cells(c, s[i], t, others):
-                        if side == 'push':
+                        if side.startswith('side'):
+                            p = dict(side_dirs(dx, dz))[side]
+                            stand = side_cells(c, s[i], p); end = side_cells(c, t, p)
+                        elif side == 'push':
                             stand = sorted({(x - dx, z - dz) for x, z in cur} - cur)
                             end = [(x + dx * dist, z + dz * dist) for x, z in stand]
                         else:

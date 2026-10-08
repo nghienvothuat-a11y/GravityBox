@@ -32,3 +32,13 @@ the red crate starts blocked by a crate and its pull is the last one, and there 
 `levels_logic.py` renders the chosen ten (kept in `cand_logic.json`) into `out_logic/`: plates, the overview and
 `summary_logic.json` (spawn, and each pull's crate, push or pull, and stand cell). `export_unity.py` turns that summary into
 the C# layouts and routes of levels 51–60.
+
+## Any-face grips (08/10/2026)
+
+COghe also takes a crate by a long side and walks along with it. That needs the strip of cells beside the whole slide on
+that side to be free floor. `LOGIC_SIDES=1` adds these moves.
+
+`check_sides.py` compares each level's fewest pulls with end grips only and with any-face grips: K01–K08 are unchanged,
+while the old K09 and K10 dropped to 6 and 7 pulls. They were found again with `LOGIC_SIDES=1 LOGIC_OUT=cand_sides.json
+python3 logic.py 31,32,33,34 0 54` and picked as 31/5 and 33/49. Render with `LOGIC_SIDES=1 uv run --with pillow python3
+levels_logic.py`, then run `export_unity.py`.
