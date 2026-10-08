@@ -1,0 +1,90 @@
+diff --git a/Assets/_Game/Tests/PlayMode/COgheAccessoryTests.cs b/Assets/_Game/Tests/PlayMode/COgheAccessoryTests.cs
+index 47be4947..01dcc3fb 100644
+--- a/Assets/_Game/Tests/PlayMode/COgheAccessoryTests.cs
++++ b/Assets/_Game/Tests/PlayMode/COgheAccessoryTests.cs
+@@ -61,7 +61,7 @@ namespace GravityBox.Tests
+     string root="Artifacts/Accessories/"+reel;if(Directory.Exists(root))Directory.Delete(root,true);Directory.CreateDirectory(root);
+     var sounds=new System.Text.StringBuilder();int frame=0;
+     System.Action<string,float> heard=(clip,volume)=>sounds.AppendLine($"{frame/30f:F3} {clip} {volume:F2}");
+-    Camera cam=null;var rt=RenderTexture.GetTemporary(540,1170,24);var tex=new Texture2D(540,1170,TextureFormat.RGB24,false);
++    int k=ClipScale();Camera cam=null;var rt=RenderTexture.GetTemporary(540*k,1170*k,24);var tex=new Texture2D(540*k,1170*k,TextureFormat.RGB24,false);
+     try
+     {
+      bool clear=reel=="inclusions";
+diff --git a/Assets/_Game/Tests/PlayMode/COgheChapterClipRecorder.cs b/Assets/_Game/Tests/PlayMode/COgheChapterClipRecorder.cs
+index 9faa6159..2c0a060c 100644
+--- a/Assets/_Game/Tests/PlayMode/COgheChapterClipRecorder.cs
++++ b/Assets/_Game/Tests/PlayMode/COgheChapterClipRecorder.cs
+@@ -21,6 +21,10 @@ namespace GravityBox.Tests
+   // COGHE_EYES=1: each frame is also saved without COghe's eyes in plain/ (the side-by-side review, Mrk 07/10/2026), the
+   // eyes' state goes to track.txt and the folders get "-eyes"; COGHE_EYES=0: no eyes
+   private bool clipEyes;
++  // COGHE_CLIP_SCALE=N renders the Home and Style reels N times larger (store and ad footage); COGHE_CLIP_PLAIN=0 skips the
++  // eyes-less copies in plain/ (only the side-by-side review needs them)
++  private static int ClipScale(){return int.TryParse(Environment.GetEnvironmentVariable("COGHE_CLIP_SCALE"),out int k)&&k>1?k:1;}
++  private static bool ClipPlain=>Environment.GetEnvironmentVariable("COGHE_CLIP_PLAIN")!="0";
+   private void ClipEyesFromEnvironment()
+   {
+    string e=Environment.GetEnvironmentVariable("COGHE_EYES");clipEyes=e=="1";
+@@ -30,7 +34,7 @@ namespace GravityBox.Tests
+   private void ClipFolder(string name)
+   {
+    clipDirectory=$"Artifacts/Clips/{name}{(clipEyes?"-eyes":"")}";if(Directory.Exists(clipDirectory))Directory.Delete(clipDirectory,true);Directory.CreateDirectory(clipDirectory);clipFrame=0;
+-   if(clipEyes)Directory.CreateDirectory(clipDirectory+"/plain");
++   if(clipEyes&&ClipPlain)Directory.CreateDirectory(clipDirectory+"/plain");
+    clipCelebrateAt=-1;
+   }
+   private IEnumerator Shot()
+@@ -44,7 +48,7 @@ namespace GravityBox.Tests
+    try
+    {
+     camera.targetTexture=target;camera.Render();RenderTexture.active=target;texture.ReadPixels(new Rect(0,0,clipWidth,clipHeight),0,0);texture.Apply();File.WriteAllBytes($"{clipDirectory}/{clipFrame:00000}.png",texture.EncodeToPNG());
+-    if(clipEyes)   // the same frame again without the eyes (plain/): a side-by-side shows the same moment
++    if(clipEyes&&ClipPlain)   // the same frame again without the eyes (plain/): a side-by-side shows the same moment
+     {
+      var eyesView=game.Matter.transform.Find("COghe eyes");bool shown=eyesView!=null&&eyesView.gameObject.activeSelf;
+      if(shown){eyesView.gameObject.SetActive(false);camera.Render();texture.ReadPixels(new Rect(0,0,clipWidth,clipHeight),0,0);texture.Apply();eyesView.gameObject.SetActive(true);}
+diff --git a/Assets/_Game/Tests/PlayMode/COgheEyesRender.cs b/Assets/_Game/Tests/PlayMode/COgheEyesRender.cs
+index 114d8ac1..086e41ae 100644
+--- a/Assets/_Game/Tests/PlayMode/COgheEyesRender.cs
++++ b/Assets/_Game/Tests/PlayMode/COgheEyesRender.cs
+@@ -58,7 +58,7 @@ namespace GravityBox.Tests
+   [UnityTest,Explicit,Timeout(3600000)] public IEnumerator RecordEyesHome()
+   {
+    bool was=COgheEyes.Enabled;COgheEyes.Enabled=COgheEyes.Trace=true;
+-   const int W=600,H=800;string root="Artifacts/Clips/eyes-home";
++   int W=600*ClipScale(),H=800*ClipScale();string root="Artifacts/Clips/eyes-home";
+    if(Directory.Exists(root))Directory.Delete(root,true);Directory.CreateDirectory(root+"/eyes");Directory.CreateDirectory(root+"/plain");
+    var rt=RenderTexture.GetTemporary(W,H,24);rt.antiAliasing=4;var tex=new Texture2D(W,H,TextureFormat.RGB24,false);Camera close=null;
+    var marks=new System.Text.StringBuilder();var taps=new System.Text.StringBuilder();var diag=new System.Text.StringBuilder();int frame=0;Vector3 focus=default;bool framed=false;
+@@ -69,10 +69,13 @@ namespace GravityBox.Tests
+     var c=game.Personality.SkinCentre;focus=framed?Vector3.Lerp(focus,c,.12f):c;framed=true;
+     close.transform.rotation=view.transform.rotation;close.transform.position=focus-view.transform.forward*.8f+view.transform.up*.012f;
+     Grab(close,rt,tex,$"{root}/eyes/{frame:00000}.png");
+-    var eyesView=game.Matter.transform.Find("COghe eyes");bool shown=eyesView!=null&&eyesView.gameObject.activeSelf;
+-    if(shown)eyesView.gameObject.SetActive(false);
+-    Grab(close,rt,tex,$"{root}/plain/{frame:00000}.png");
+-    if(shown)eyesView.gameObject.SetActive(true);
++    if(ClipPlain)
++    {
++     var eyesView=game.Matter.transform.Find("COghe eyes");bool shown=eyesView!=null&&eyesView.gameObject.activeSelf;
++     if(shown)eyesView.gameObject.SetActive(false);
++     Grab(close,rt,tex,$"{root}/plain/{frame:00000}.png");
++     if(shown)eyesView.gameObject.SetActive(true);
++    }
+     var eyes=game.Matter.GetComponent<COgheEyes>();diag.AppendLine($"{frame} {game.Personality.Act} {(eyes!=null?eyes.LastState:"-")}");
+     frame++;
+    }
+diff --git a/Assets/_Game/Tests/PlayMode/COgheInkTests.cs b/Assets/_Game/Tests/PlayMode/COgheInkTests.cs
+index 3730f1c1..4cb9af5f 100644
+--- a/Assets/_Game/Tests/PlayMode/COgheInkTests.cs
++++ b/Assets/_Game/Tests/PlayMode/COgheInkTests.cs
+@@ -43,7 +43,7 @@ namespace GravityBox.Tests
+      yield return EnterFurnishedHome(12);yield return Frames(120);
+      COgheAudio.Heard+=heard;
+      var cam=new GameObject("Ink reel camera").AddComponent<Camera>();cam.CopyFrom(game.Owner.View);cam.enabled=false;cam.orthographic=true;cam.aspect=540f/1170;cam.nearClipPlane=.01f;cam.farClipPlane=30;
+-     var rt=RenderTexture.GetTemporary(540,1170,24);var tex=new Texture2D(540,1170,TextureFormat.RGB24,false);
++     int k=ClipScale();var rt=RenderTexture.GetTemporary(540*k,1170*k,24);var tex=new Texture2D(540*k,1170*k,TextureFormat.RGB24,false);
+      var ink=COgheInking.Attach(game,7);var surface=game.Matter.GetComponent<VenomSurface>();
+      var syringe=COgheSyringe.Create(game.transform,game.Matter.Profile.Skin);syringe.gameObject.SetActive(false);
+      COgheAccessories extras=null;float yaw=-20;

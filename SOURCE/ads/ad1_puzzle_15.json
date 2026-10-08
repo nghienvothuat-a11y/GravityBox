@@ -1,0 +1,180 @@
+{
+ "name": "COGHE_AD1_PUZZLE_15S",
+ "duration": 15.0,
+ "shots": [
+  {
+   "take": "25",
+   "in": 36,
+   "out": 96,
+   "speed": 1.0,
+   "zoom": {
+    "9x16": 2.0,
+    "1x1": 1.7,
+    "16x9": 1.25
+   },
+   "push": 0.08
+  },
+  {
+   "take": "04",
+   "in": 60,
+   "out": 200,
+   "speed": 1.556,
+   "zoom": {
+    "9x16": 2.2,
+    "1x1": 1.9,
+    "16x9": 1.35
+   }
+  },
+  {
+   "take": "24",
+   "in": 95,
+   "out": 170,
+   "speed": 1.0,
+   "focus": [
+    650,
+    1500
+   ],
+   "zoom": {
+    "9x16": 1.45,
+    "1x1": 1.45,
+    "16x9": 1.15
+   },
+   "push": 0.06
+  },
+  {
+   "take": "49",
+   "in": 150,
+   "out": 400,
+   "speed": 3.333,
+   "zoom": {
+    "9x16": 1.6,
+    "1x1": 1.45,
+    "16x9": 1.1
+   }
+  },
+  {
+   "take": "06",
+   "in": 240,
+   "out": 400,
+   "speed": 2.667,
+   "zoom": {
+    "9x16": 1.7,
+    "1x1": 1.5,
+    "16x9": 1.1
+   }
+  },
+  {
+   "take": "25-eyes",
+   "in": 140,
+   "out": 170,
+   "speed": 1.0,
+   "focus": [
+    660,
+    1330
+   ],
+   "zoom": {
+    "9x16": 1.15,
+    "1x1": 1.25,
+    "16x9": 1.0
+   },
+   "push": 0.04
+  }
+ ],
+ "captions": [
+  {
+   "t": [
+    0.1,
+    1.95
+   ],
+   "text": "Can you get COghe out?"
+  },
+  {
+   "t": [
+    2.05,
+    4.95
+   ],
+   "text": "Tap to guide it"
+  },
+  {
+   "t": [
+    5.05,
+    7.45
+   ],
+   "text": "Split it in two"
+  },
+  {
+   "t": [
+    7.55,
+    11.95
+   ],
+   "text": "60 physics puzzles",
+   "sub": "gears \u00b7 ropes \u00b7 crates"
+  },
+  {
+   "t": [
+    12.0,
+    13.0
+   ],
+   "text": "Solved!",
+   "accent": true
+  }
+ ],
+ "cues": [
+  [
+   0.05,
+   "HOOK_IMPACT",
+   0.5
+  ],
+  [
+   1.0,
+   "WHOOSH_TRANSITION",
+   0.35
+  ],
+  [
+   2.0,
+   "LIQUID_BLOOP",
+   0.5
+  ],
+  [
+   5.0,
+   "WHOOSH_TRANSITION",
+   0.4
+  ],
+  [
+   5.3,
+   "SPLIT_POP_LEFT",
+   0.6
+  ],
+  [
+   5.55,
+   "SPLIT_POP_RIGHT",
+   0.6
+  ],
+  [
+   7.5,
+   "ROTATE_WHIRR",
+   0.45
+  ],
+  [
+   10.0,
+   "WHOOSH_TRANSITION",
+   0.35
+  ],
+  [
+   12.0,
+   "LOVE_CHIME",
+   0.55
+  ],
+  [
+   13.0,
+   "ENDCARD_SHIMMER",
+   0.65
+  ]
+ ],
+ "card": {
+  "t": 13.0,
+  "hold": 2.0,
+  "tagline": "Physics puzzles with a liquid pet",
+  "cta": "PLAY FREE"
+ }
+}
