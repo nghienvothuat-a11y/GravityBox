@@ -111,10 +111,13 @@ namespace GravityBox.Editor
    owner.Apparatus=new GameObject("Apparatus").transform;owner.Apparatus.SetParent(owner.transform,false);
    var pivot=new GameObject("Fixed chamber",typeof(Rigidbody),typeof(BoxRotationController));pivot.transform.SetParent(owner.Apparatus,false);pivot.GetComponent<Rigidbody>().isKinematic=true;pivot.GetComponent<Rigidbody>().useGravity=false;owner.Rotation=pivot.GetComponent<BoxRotationController>();
    var c=new ExpansionContext{Number=n,Owner=owner,Game=game,Definition=def,Root=pivot.transform,Spawn=new Vector3(-.26f,-.25f,-.19f),Exit=new Vector3(.23f,-.225f,.30f),Outward=Vector3.forward};
-   if(n==2)c.Exit.y=-.07f;if(n==5)c.Exit.y=.05f;if(n==6)c.Exit.y=-.035f;
+   // Glass is never climbable (Mrk, 09/10/2026, plan A): what COghe climbs is cream. An exit on the glass is reached from
+   // the surface under it: 1, 3 and 4 exit at floor level; 2's hole starts at the top of the second step; 5 is reached up
+   // cream climb boards.
+   if(n==1||n==3||n==4)c.Exit.y=-.252f;if(n==2)c.Exit.y=-.094f;if(n==5)c.Exit.y=.05f;if(n==6)c.Exit.y=-.035f;
    // 8 and 10 exit at floor level through slick glass: the hole starts at the floor, there is nothing to climb.
    if(n==8)c.Exit=new Vector3(-.23f,-.252f,.30f);if(n==9)c.Exit=new Vector3(-.25f,.09f,.30f);if(n==10)c.Exit=new Vector3(.25f,-.252f,.30f);
-   if(n==7){c.Exit=new Vector3(.32f,-.30f,.16f);c.Outward=Vector3.down;ViewShell(c,true);}else SpatialShell(c,n>=6);
+   if(n==7){c.Exit=new Vector3(.32f,-.30f,.16f);c.Outward=Vector3.down;ViewShell(c,true);}else SpatialShell(c,true);
    foreach(var surface in c.Surfaces)if(surface.ExteriorGlass)surface.Selectable=true;
    var floor=c.Surfaces[0];
    if(n!=1&&n!=4)ChapterOne(c,n,floor);
@@ -124,7 +127,8 @@ namespace GravityBox.Editor
     var start=n==4?new Vector3(-.19f,-.277f,.09f):new Vector3(-.23f,-.04f,.268f);
     var task=ViewTask(c,"A",start,Vector3.right,.16f,work);
     if(n==5){task.StandOffset=new Vector3(0,-.068f,0);task.TouchSize=new Vector3(.10f,.08f,.07f);}
-    var gate=ViewGate(c,"A blue shutter",c.Exit+Vector3.back*.020f,Vector3.left,.14f,new Vector3(.13f,.14f,.018f));ViewLink(c,task.Rail,gate,true,ViewExitSurface(c));
+    // The exit starts at the floor: the shutter sits 2 cm up, clear of the floor, and still covers the hole (as 8).
+    var gate=ViewGate(c,"A blue shutter",c.Exit+Vector3.back*.020f+Vector3.up*.02f,Vector3.left,.14f,new Vector3(.13f,.13f,.018f));ViewLink(c,task.Rail,gate,true,ViewExitSurface(c));
    }
    owner.Spawn=new GameObject("Spawn").transform;owner.Spawn.SetParent(c.Root,false);owner.Spawn.localPosition=c.Spawn;
    owner.Outlet=new GameObject("Final exit").transform;owner.Outlet.SetParent(c.Root,false);owner.Outlet.localPosition=c.Exit;owner.Outlet.localRotation=Quaternion.LookRotation(c.Outward,Mathf.Abs(c.Outward.y)>.9f?Vector3.forward:Vector3.up);Ring(owner.Outlet,Vector2.zero,owner.ApertureRadius,.0032f,mint);

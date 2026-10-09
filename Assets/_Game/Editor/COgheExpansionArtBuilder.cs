@@ -47,7 +47,9 @@ namespace GravityBox.Editor
                 bool dividerFace=!moving&&(name.Contains("divider")||name.Contains("partition")||name.Contains("low wall"));
                 renderer.enabled=true;renderer.shadowCastingMode=ShadowCastingMode.Off;
                 renderer.sharedMaterial=blade?steel:patch.Slippery||patch.HasSlipRegion?coating:moving?amber:dividerFace?divider:isFloor?floorGlass:clear;
-                if(!moving&&patch.Slippery&&!patch.HasSlipRegion&&patch.Size.x>.4f&&patch.Size.y>.4f)
+                // All slick outer glass looks the same, whatever its size (Mrk, 09/10/2026, plan A: glass is never climbable). A
+                // short pane used to get the strong coating, so level 8's whole box read purple and unlike every other level.
+                if(!moving&&patch.Slippery&&!patch.HasSlipRegion&&(patch.ExteriorGlass||patch.Size.x>.4f&&patch.Size.y>.4f))
                     renderer.sharedMaterial=shellCoating;
                 var oldOverlay=patch.transform.Find("Visible slippery coating");
                 if(oldOverlay!=null)oldOverlay.GetComponent<Renderer>().enabled=false;

@@ -696,6 +696,8 @@ namespace GravityBox.Venom
                 {Motion.Move(Motion.Selected,hit.point+Root.up*.018f,true);ShowMarker(hit.point,Root.up,hit.collider.transform,patch);return;}
                 if(patch!=null)
                 {
+                    // Slick glass (plan A): COghe still goes to the foot of it; the tap is marked "slippery".
+                    if(patch.ExteriorGlass&&!patch.Grip(hit.point))Feedback?.ShowSlick(hit.point);
                     var proxy=hit.collider.GetComponent<COgheSurfacePickProxy>();
                     MoveTo(proxy!=null?proxy.CommandPoint(patch,hit.point):hit.point,patch);return;
                 }

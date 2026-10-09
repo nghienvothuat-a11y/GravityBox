@@ -93,3 +93,23 @@ rơi ra khỏi hộp và màn báo thua.
   - `RandomTapsSweep`: cùng cách chạm ngẫu nhiên cho cả 60 vị trí. Không màn nào để COghe ra ngoài hộp; chỗ kẹt tìm thấy ở
     các màn khác được sửa riêng.
 - Dựng lại một màn chương 1: `GenerateSpatialCampaign -coghe-spatial-levels 7`, rồi `COgheProductUIBuilder.Prepare`.
+
+## Kính không leo được; chỗ leo là tấm màu kem (Mrk chọn phương án A, 09/10/2026)
+
+Người chơi test hỏi: vì sao màn đầu leo được vách kính mà màn sau không.
+- Trước đây màn 1–5 có vách kính leo được, màn 6–60 vách kính trơn.
+- Kính trơn chỉ phủ một lớp tím mờ 5%, nên nhìn không phân biệt được.
+- Riêng màn 8 có lớp tím đậm, vì vách thấp hơn 40 cm.
+
+Luật mới cho cả game:
+- **Vách kính ở mọi màn đều trơn và nhìn như nhau.** `SpatialShell(c,true)` cho cả 10 màn. `COgheExpansionArtBuilder` cho mọi
+  kính ngoài trơn cùng một lớp phủ, nên màn 8 hết tím đậm.
+- **Lỗ thoát trên kính** được tới từ mặt bên dưới nó:
+  - màn 1, 3, 4: lỗ bắt đầu sát sàn (cửa trượt màn 4 cách sàn 2 cm, vẫn che kín lỗ, như màn 8);
+  - màn 2: mép dưới lỗ ngang mặt bậc thứ hai.
+- **Chỗ leo là tấm màu kem có viền và gân** (`ChapterClimbBoard`, `ChapterBoardRibs`):
+  - Màn 5: một tấm phủ cả hành trình của tay A và nối sang tấm thứ hai. Tấm thứ hai lên tới lỗ thoát và khoét quanh lỗ.
+  - Bảng ngà màn 6 (vị trí 7) có thêm gân cho cùng kiểu.
+- **Chạm vào kính:** `COgheControlFeedback.ShowSlick` hiện dấu ⊘ rung chỗ chạm và chữ "Slippery" (giao diện game là tiếng
+  Anh). COghe vẫn đi tới chân vách. Test: `SlickGlassTapIsMarked`.
+- Màu tím vẫn chỉ mặt trơn của đồ vật (bậc, thùng, vách hố).

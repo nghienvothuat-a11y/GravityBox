@@ -27,6 +27,11 @@ namespace GravityBox.Venom
         private int seenRefusals=-1;private float deniedAt=-10;private Vector3 deniedPoint;
         /// <summary>A refused tap on a mechanism is marked where it was refused (a shaking ⊘), not swallowed in silence.</summary>
         public bool DeniedVisible=>deniedRing!=null&&deniedRing.enabled;
+        // A tap on slick glass (Mrk, 09/10/2026, plan A: glass is never climbable): the same shaking ⊘ where it was tapped,
+        // and a short "Slippery" under it. COghe still goes to the foot of the glass.
+        private float slickUntil=-10;private Vector3 slickPoint;private GUIStyle slickLabel;
+        public bool SlickVisible=>Time.unscaledTime<slickUntil;
+        public void ShowSlick(Vector3 point){deniedAt=Time.unscaledTime;deniedPoint=slickPoint=point;slickUntil=deniedAt+.9f;}
         private Mesh faceMesh;
         private MeshRenderer faceFill;
         private readonly Vector3[] faceVertices=new Vector3[4];
@@ -217,6 +222,17 @@ namespace GravityBox.Venom
         }
         private void OnGUI()
         {
+            if(game!=null&&game.Owner!=null&&!game.Home&&Time.unscaledTime<slickUntil)
+            {
+                var sp=game.Owner.View.WorldToScreenPoint(slickPoint);
+                if(sp.z>0)
+                {
+                    if(slickLabel==null)slickLabel=new GUIStyle(GUI.skin.label){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
+                    float unit=Mathf.Min(Screen.width/540f,Screen.height/960f);slickLabel.fontSize=Mathf.RoundToInt(15*unit);
+                    var before=GUI.color;GUI.color=new Color(Coral.r,Coral.g,Coral.b,Mathf.Clamp01((slickUntil-Time.unscaledTime)/.3f));
+                    GUI.Label(new Rect(sp.x-90*unit,Screen.height-sp.y+14*unit,180*unit,26*unit),"Slippery",slickLabel);GUI.color=before;
+                }
+            }
             if(game==null||game.Owner==null||game.ProductUI!=null||game.Home||game.Owner.Completed||game.Owner.Lost)return;
             if(game.Definition.SceneSequence!=null&&game.Definition.SceneSequence.Length>0&&!game.Definition.CanRotate)return;
             if((game.Definition.Id=="venom.origin.01"||game.Definition.Id=="venom.origin.02")&&game.Definition.CanRotate)return;

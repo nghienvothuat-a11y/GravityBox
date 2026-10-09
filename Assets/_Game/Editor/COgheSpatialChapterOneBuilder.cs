@@ -23,6 +23,28 @@ namespace GravityBox.Editor
    for(int i=first+1;i<c.Surfaces.Count;i++)c.Surfaces[i].Slippery=true;
    return c.Surfaces[first];
   }
+  /// <summary>A cream climb board on the back glass (Mrk, 09/10/2026, plan A: glass is never climbable; what COghe climbs
+  /// is cream). One gripping face 4.5 mm in front of the pane, optionally cut around the exit, with a slightly darker rim and
+  /// horizontal ribs so it reads as a grip surface. Returns the face.</summary>
+  static VenomSurfacePatch ChapterClimbBoard(ExpansionContext c,string name,float x0,float x1,float y0,float y1,bool aroundExit=false)
+  {
+   Vector3 centre=new Vector3((x0+x1)*.5f,(y0+y1)*.5f,.2955f);var rot=Quaternion.LookRotation(Vector3.back,Vector3.up);
+   Vector3 hole=Quaternion.Inverse(rot)*(c.Exit-centre);
+   var board=Panel(c.Root,name,centre,Vector3.back,new Vector2(x1-x0,y1-y0),stone,aroundExit,new Vector2(hole.x,hole.y),aroundExit?c.Owner.ApertureRadius:0,c.Surfaces);
+   ChapterBoardRibs(c.Root,name,x0,x1,y0,y1,.2938f,aroundExit?c.Exit:(Vector3?)null,c.Owner.ApertureRadius);
+   return board;
+  }
+  static void ChapterBoardRibs(Transform root,string name,float x0,float x1,float y0,float y1,float z,Vector3? around,float radius)
+  {
+   var rib=SpatialMaterial("Climb board rib",new Color(.78f,.76f,.66f));
+   foreach(float y in new[]{y0+.003f,y1-.003f})MechanismVisual(root,name+" rim",new Vector3((x0+x1)*.5f,y,z),new Vector3(x1-x0,.004f,.002f),rib);
+   foreach(float x in new[]{x0+.003f,x1-.003f})MechanismVisual(root,name+" rim",new Vector3(x,(y0+y1)*.5f,z),new Vector3(.004f,y1-y0,.002f),rib);
+   for(float y=y0+.03f;y<y1-.02f;y+=.035f)
+   {
+    if(around.HasValue&&Mathf.Abs(y-around.Value.y)<radius+.012f)continue;   // the ribs stop short of the exit cut
+    MechanismVisual(root,name+" rib",new Vector3((x0+x1)*.5f,y,z),new Vector3(x1-x0-.016f,.0025f,.002f),rib);
+   }
+  }
   /// <summary>A low slick parapet: a slick riser over 5 cm cannot be climbed, so COghe does not drop off an edge.</summary>
   static void ChapterParapet(ExpansionContext c,string name,Vector3 centre,Vector3 size)
   {int first=c.Surfaces.Count;ViewBlock(c,name,centre,size);for(int i=first;i<c.Surfaces.Count;i++)c.Surfaces[i].Slippery=true;}
@@ -69,7 +91,10 @@ namespace GravityBox.Editor
    }
    if(n==5)
    {
-    var wall=c.Surfaces.Find(p=>p.name=="Outer pane 2");
+    // The glass is slick: cream boards carry the climb. One spans A's whole travel and runs on to the other, which goes up to
+    // the exit and around it, so COghe crosses from the pulled handle to the exit on cream.
+    var wall=ChapterClimbBoard(c,"Climb board A",-.31f,.15f,-.30f,.01f);
+    ChapterClimbBoard(c,"Climb board exit",.15f,.31f,-.30f,.12f,true);
     var a=ViewTask(c,"A",new Vector3(-.23f,-.04f,.268f),Vector3.right,.16f,wall);a.StandOffset=new Vector3(0,-.068f,0);a.TouchSize=new Vector3(.10f,.08f,.07f);
     var gate=ViewGate(c,"A blue shutter",c.Exit+Vector3.back*.020f,Vector3.left,.14f,new Vector3(.13f,.14f,.018f));ViewLink(c,a.Rail,gate,true,ViewExitSurface(c));
     // A box over handle A; floor lever C flips it open. Until then A refuses with a reason.
@@ -83,6 +108,7 @@ namespace GravityBox.Editor
     // An ivory service panel on the back wall above the departure plinth carries wall handle C; C lifts the clear lid
     // off winch A on the floor. Climb up first, then turn the winch.
     int first=c.Surfaces.Count;ViewBlock(c,"Service panel",new Vector3(-.25f,-.02f,.2975f),new Vector3(.26f,.16f,.005f));
+    ChapterBoardRibs(c.Root,"Service panel",-.38f,-.12f,-.10f,.06f,.2938f,null,0);   // cream with ribs: a climb board (plan A)
     var panel=c.Surfaces[first+5];
     var handle=ViewTask(c,"C",new Vector3(-.33f,-.005f,.262f),Vector3.right,.08f,panel);handle.StandOffset=new Vector3(0,-.068f,0);handle.TouchSize=new Vector3(.10f,.08f,.07f);
     var lid=ChapterCover(c,"A glass lid",new Vector3(-.23f,-.222f,-.12f),new Vector3(.25f,.008f,.10f),.12f);
@@ -217,7 +243,7 @@ namespace GravityBox.Editor
    if(n==5)
    {
     // On the wall: hinged along its top edge, it swings up and out like a socket cover.
-    ChapterBox(root,"Amber box over A",new Vector3(-.23f,-.008f,.292f),new Vector3(-.05f,-.064f,-.074f),new Vector3(.05f,0,.006f),Vector3.forward,Vector3.right,95,amberBox,amber,new[]{Rail("A glass cover")});
+    ChapterBox(root,"Amber box over A",new Vector3(-.23f,-.008f,.2885f),new Vector3(-.05f,-.064f,-.074f),new Vector3(.05f,0,.006f),Vector3.forward,Vector3.right,95,amberBox,amber,new[]{Rail("A glass cover")});
    }
    if(n==6)
    {
