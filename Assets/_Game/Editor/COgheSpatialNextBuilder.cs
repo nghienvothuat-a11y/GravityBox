@@ -346,6 +346,13 @@ namespace GravityBox.Editor
    NextPlinth(c,"Low partition",new Vector3(0,-.23f,0),new Vector3(.03f,.14f,.59f));
    var tube=ChapterTube(c,"U transfer tube",new Vector3(-.25f,-.255f,.12f),new Vector3(-.17f,-.252f,.12f),new Vector3(-.10f,-.21f,.12f),new Vector3(-.06f,-.13f,.12f),new Vector3(0,-.10f,.12f),
     new Vector3(.06f,-.13f,.12f),new Vector3(.10f,-.21f,.12f),new Vector3(.17f,-.252f,.12f),new Vector3(.25f,-.255f,.12f));
+   // Where either leg of the U is 1.2–9 cm off the floor a body walking past wedged under it (Mrk's playtest sweep,
+   // 09/10/2026): slick underfill follows the tube's underside 6 mm below it, as on N43.
+   foreach(var p in COgheTubeNetwork.SampleCurve(tube.Edges[0].ControlPoints,4))
+   {
+    float top=p.y-.038f-.006f,gap=top+.30f;if(gap<.012f||gap>.09f)continue;
+    foreach(var f in NextPlinth(c,"Tube underfill",new Vector3(p.x,(top-.30f)*.5f,p.z),new Vector3(.016f,gap,.05f)))f.Slippery=true;
+   }
    var cap=ViewGate(c,"A tube cap",new Vector3(-.272f,-.253f,.12f),Vector3.up,.12f,new Vector3(.012f,.092f,.092f));
    tube.EntryBlocker=cap.GetComponent<VenomMovableProp>().CollisionShapes[0];
    var a=ViewTask(c,"A",new Vector3(-.30f,-.277f,-.12f),Vector3.right,.10f,floor);

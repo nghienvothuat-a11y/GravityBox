@@ -722,14 +722,14 @@ namespace GravityBox.Editor
    c.Exit=new Vector3(.215f,-.132f,.30f);c.Outward=Vector3.forward;c.Spawn=new Vector3(-.10f,-.25f,-.20f);NextShell(c,.30f,true);var floor=c.Surfaces[0];
    var left=NextPlinth(c,"Start bank",new Vector3(-.28f,-.23f,.10f),new Vector3(.24f,.14f,.40f),false); // ivory: climbable back from the floor
    NextStairs(c,"Start stairs",new Vector3(-.30f,0,-.10f),Vector3.back,-.16f,.12f,3,.06f); // the fixed way up from the floor
-   var tray=ExpansionRail(c,"B landing tray",new Vector3(.295f,-.215f,.13f),Vector3.left,.08f,0,new Vector3(.20f,.03f,.32f),.05f,.01f,false,false);
+   // A solid sliding block down to 8 mm above the floor (Mrk's playtest sweep, 09/10/2026): as a 3 cm slab riding 7 cm up,
+   // a body walking past wedged in the gap under it. Its top (the landing) stays at −.20; its tall sides stay slick.
+   var tray=ExpansionRail(c,"B landing tray",new Vector3(.295f,-.246f,.13f),Vector3.left,.08f,0,new Vector3(.20f,.092f,.32f),.05f,.01f,false,false);
    tray.GetComponent<VenomMovableProp>().Manipulable=false;tray.LatchAtEnd=true;TrimSideSlabs(tray);
    foreach(var face in tray.GetComponentsInChildren<VenomSurfacePatch>())if(face.Normal.y<.9f)face.Slippery=true;
    int first=c.Surfaces.Count;var dockedTop=Panel(c.Root,"B landing tray docked",new Vector3(.215f,-.20f,.13f),Vector3.up,new Vector2(.20f,.32f),stone,false,Vector2.zero,0,c.Surfaces);
    dockedTop.gameObject.SetActive(false);
    var deck=tray.gameObject.AddComponent<COgheDockedBridgeDeck>();deck.Rail=tray;deck.MovingSurfaces=tray.GetComponentsInChildren<VenomSurfacePatch>(true);deck.DockedSurfaces=new[]{dockedTop};
-   foreach(float z in new[]{-.03f,.29f})MechanismVisual(c.Root,"B tray rail",new Vector3(.255f,-.232f,z),new Vector3(.30f,.006f,.008f),metal);
-   foreach(float x in new[]{.12f,.39f})MechanismVisual(c.Root,"B tray rail post",new Vector3(x,-.266f,-.03f),new Vector3(.008f,.068f,.008f),metal);
    var b=ViewTask(c,"B",new Vector3(.32f,-.277f,-.21f),Vector3.left,.08f,floor);   // far front-right, under the landing's side: not on the way up
    ViewLink(c,b.Rail,tray,false,null);
    var landing=tray.GetComponentsInChildren<VenomSurfacePatch>(true).First(f=>f.Normal.y>.9f);

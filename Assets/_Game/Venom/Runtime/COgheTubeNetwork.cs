@@ -368,6 +368,7 @@ namespace GravityBox.Venom
             StepFlexible(dt);
             StepQueuedEntries();
             AutoCaptureContactingGroups();
+            ReleaseSnaggedParticles(dt);
             ReconcileGroups();
             AnyTravelling=AnyWaiting=AnyChoice=false;AnyApproaching=false;
             for(int i=0;i<queuedEntry.Length;i++)if(queuedEntry[i]>=0){AnyApproaching=true;break;}
@@ -582,6 +583,44 @@ namespace GravityBox.Venom
                     if(contacts<2||!EntryClearForGroup(anchor,node))continue;
                     BeginAtNode(anchor,node);TryChoose(anchor,adjacency[node][0]);break;
                 }
+            }
+        }
+
+        // A body walking past a mouth can leave one or two particles inside the bore while the rest stays outside, often beside
+        // the tube with its wall in between. Too few are inside for an intake (that needs two in the core), so nothing starts,
+        // and the snagged particles hold the body where it is: no tap moves it (Mrk's playtest sweep, 09/10/2026, level 51).
+        // After a second they rejoin the rest of the body (its centre is free space; the mouth's front is not: the body pulls
+        // a particle put there straight back into the bore).
+        private readonly Dictionary<int,float> snagTime=new Dictionary<int,float>();
+        private void ReleaseSnaggedParticles(float dt)
+        {
+            float r=game.Matter.Profile.ParticleRadius;var groups=new HashSet<int>();
+            for(int anchor=0;anchor<32;anchor++)
+            {
+                int group=game.Matter.Groups[anchor];if(game.Matter.Escaped[anchor]||!groups.Add(group))continue;
+                bool snagged=false;
+                if(TravelFor(anchor)==null)
+                    for(int node=0;node<Nodes.Length&&!snagged;node++)
+                    {
+                        if(Nodes[node].Terminal!=TerminalKind.Entry)continue;
+                        Vector3 mouth=NodeWorld(node),axis=EntryInwardWorld(node);int inside=0,total=0;
+                        for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group&&!game.Matter.Escaped[i])
+                        {
+                            total++;Vector3 o=game.Matter.Bodies[i].position-mouth;float depth=Vector3.Dot(o,axis);
+                            if(depth>r&&depth<Radius*2.5f&&Vector3.ProjectOnPlane(o,axis).magnitude<Radius)inside++;
+                        }
+                        if(inside==0||inside*2>=total)continue;
+                        snagged=true;snagTime.TryGetValue(group,out float t);t+=dt;snagTime[group]=t;
+                        if(t<1f)continue;
+                        bool In(Vector3 p){Vector3 o=p-mouth;float depth=Vector3.Dot(o,axis);return depth>r&&depth<Radius*2.5f&&Vector3.ProjectOnPlane(o,axis).magnitude<Radius;}
+                        Vector3 rest=Vector3.zero;int outside=0;
+                        for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group&&!game.Matter.Escaped[i]&&!In(game.Matter.Bodies[i].position)){rest+=game.Matter.Bodies[i].position;outside++;}
+                        rest/=Mathf.Max(1,outside);int k=0;
+                        for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group&&!game.Matter.Escaped[i]&&In(game.Matter.Bodies[i].position))
+                        {var body=game.Matter.Bodies[i];body.position=rest+new Vector3((k%2)*.006f,.004f,(k/2)*.006f);body.linearVelocity=Vector3.zero;k++;}
+                        snagTime[group]=0;
+                    }
+                if(!snagged)snagTime.Remove(group);
             }
         }
 

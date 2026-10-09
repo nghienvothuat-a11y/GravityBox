@@ -29,6 +29,22 @@ namespace GravityBox.Tests
    try{camera.targetTexture=rt;camera.Render();RenderTexture.active=rt;tex.ReadPixels(new Rect(0,0,720,1280),0,0);tex.Apply();File.WriteAllBytes($"Artifacts/L07/{name}.png",tex.EncodeToPNG());}
    finally{camera.targetTexture=null;RenderTexture.active=prev;RenderTexture.ReleaseTemporary(rt);Object.DestroyImmediate(tex);}
   }
+  // A close-up of COghe from the game's view direction and from above (for stuck reports).
+  private void ShotClose(string name)
+  {
+   Directory.CreateDirectory("Artifacts/L07");game.CameraRig.Frame(720,1280,0,true);var view=game.Owner.View;var c0=game.Motion.Centre(0);
+   var cam=new GameObject("Probe close camera").AddComponent<Camera>();cam.CopyFrom(view);cam.enabled=false;cam.orthographic=true;cam.aspect=1;cam.nearClipPlane=.01f;cam.farClipPlane=20;
+   var rt=RenderTexture.GetTemporary(600,600,24);var tex=new Texture2D(600,600,TextureFormat.RGB24,false);var prev=RenderTexture.active;
+   try
+   {
+    foreach(var (tag,rot) in new[]{("view",view.transform.rotation),("top",Quaternion.LookRotation(-game.Root.up,game.Root.forward)),("side",Quaternion.LookRotation(game.Root.right,game.Root.up))})
+    {
+     cam.transform.rotation=rot;cam.orthographicSize=.10f;cam.transform.position=c0-cam.transform.forward*2f;
+     cam.targetTexture=rt;cam.Render();RenderTexture.active=rt;tex.ReadPixels(new Rect(0,0,600,600),0,0);tex.Apply();File.WriteAllBytes($"Artifacts/L07/{name}-{tag}.png",tex.EncodeToPNG());
+    }
+   }
+   finally{cam.targetTexture=null;RenderTexture.active=prev;RenderTexture.ReleaseTemporary(rt);Object.DestroyImmediate(tex);Object.DestroyImmediate(cam.gameObject);}
+  }
   // Can a player still get COghe home (to the start) with taps? The same detours the wander test uses.
   private IEnumerator TryHome(Vector3 home)
   {
@@ -126,6 +142,21 @@ namespace GravityBox.Tests
    finally{COgheEyes.Enabled=eyesWere;COgheEyes.Trace=clipEyes=false;}
   }
 
+  // Level 28 (content 21): can COghe's own weight on the load tray level the plank (with no crate)?
+  [UnityTest,Explicit,Timeout(600000)] public IEnumerator Level21TrayWeight()
+  {
+   Directory.CreateDirectory("Artifacts/L07");probeLog="Artifacts/L07/tray21.txt";File.WriteAllText(probeLog,"");
+   yield return Load(21);yield return Wait(1);
+   var seesaw=game.Owner.Apparatus.GetComponentInChildren<COgheSeesawBridge>();var tray=seesaw.Tray;
+   float bodyMass=0;for(int i=0;i<32;i++)bodyMass+=game.Matter.Bodies[i].mass;
+   foreach(var pr in game.Props)Note($"prop {pr.name} mass={pr.Body.mass:F3}");
+   Note($"COghe mass={bodyMass:F3} tray mass={tray.Body.mass:F3} stiffness={seesaw.Stiffness} maxTension={seesaw.MaximumTension} slack={seesaw.Slack} spring={seesaw.Hinge.useSpring}/{seesaw.Hinge.spring.spring}");
+   Note($"start: tray {tray.Position:F3} caught={seesaw.Caught} angle={seesaw.AngleToLevel:F1} {Where()}");
+   yield return Tap(tray.Body.position+game.Root.up*.015f);
+   for(int s=1;s<=12;s++){yield return Wait(1);Note($"t={s}s tray {tray.Position:F3} caught={seesaw.Caught} angle={seesaw.AngleToLevel:F1} tension={seesaw.Tension:F3} {Where()}");}
+   ShotClose("tray21-on");
+  }
+
   // The same random taps on every play position (COGHE_PROBE_LEVELS, default 1–60; COGHE_PROBE_RUNS per level, default 3).
   // Two failures: COghe leaves the box, or it ends somewhere no tap moves it (8 taps on walkable faces, none moves it 3 cm).
   [UnityTest,Explicit,Timeout(14400000)] public IEnumerator RandomTapsSweep()
@@ -142,6 +173,7 @@ namespace GravityBox.Tests
     for(int run=0;run<runs;run++)
     {
      yield return LoadScene(order[n-1]);yield return Wait(1);var rng=new System.Random(n*100+run);
+     bool rec=Environment.GetEnvironmentVariable("COGHE_PROBE_RECORD")=="1";if(rec){ClipFolder($"probe-{n:00}-{run}");clipTrack=null;}
      game.CameraRig.Frame(720,1280,0,true);var cam=game.Owner.View;
      float x0=1e9f,x1=-1e9f,y0=1e9f,y1=-1e9f;
      foreach(var f in game.Surfaces)if(f!=null&&f.isActiveAndEnabled&&f.ExteriorGlass)
@@ -152,7 +184,8 @@ namespace GravityBox.Tests
       var screen=k%4==1?cam.WorldToScreenPoint(game.Owner.Outlet.position):new Vector3((float)(x0+rng.NextDouble()*(x1-x0)),(float)(y0+rng.NextDouble()*(y1-y0)),0);
       game.CameraRig.Frame(720,1280,0,true);game.TouchPoint(screen);yield return null;
       if(game.Attached)game.ReleaseProp();
-      yield return Wait((float)(.5+rng.NextDouble()*3.5));
+      float w=(float)(.5+rng.NextDouble()*3.5);
+      if(rec)for(int i=0;i<w/Dt;i++){Tick();if(i%4==3)yield return Shot();}else yield return Wait(w);
      }
      if(game.Owner.Completed){Note($"{n:00} run {run}: solved by chance");continue;}
      if(game.Owner.Lost)
@@ -193,14 +226,27 @@ namespace GravityBox.Tests
       }
      if(!moved)
      {
-      stuck++;Shot($"sweep-{n:00}-{run}-stuck");
+      stuck++;Shot($"sweep-{n:00}-{run}-stuck");ShotClose($"sweep-{n:00}-{run}-close");
       string tasks="";foreach(var tr in game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())tasks+=$" {tr.Label}:{tr.Phase}/{tr.LastFailure}";
       Note($"   stuck detail: parts={game.Matter.TotalFragmentCount} attached={game.Attached} tasks={tasks} tried={tried}");
       // what it is wedged against: faces within 8 cm of the body, and where each body point touches
       var c0=game.Motion.Centre(0);var near=new System.Text.StringBuilder();
       foreach(var f in game.Surfaces)if(f!=null&&f.isActiveAndEnabled){float d=Vector3.Distance(f.Closest(c0),c0);if(d<.08f)near.Append($" [{f.name} d={d:F3} slick={f.Slippery} moving={f.MotionFrame!=null} n={game.Root.InverseTransformDirection(f.Normal):F1}]");}
-      foreach(var col in Physics.OverlapSphere(c0,.06f))if(col.GetComponent<VenomSurfacePatch>()==null&&col.attachedRigidbody==null||col.attachedRigidbody!=null&&System.Array.IndexOf(game.Matter.Bodies,col.attachedRigidbody)<0)near.Append($" (collider {col.name})");
+      foreach(var col in Physics.OverlapSphere(c0,.08f))if(col.attachedRigidbody==null||System.Array.IndexOf(game.Matter.Bodies,col.attachedRigidbody)<0)
+       near.Append($" (collider {col.name} at {Local(col.bounds.center):F3} size {col.bounds.size:F3}{(col.attachedRigidbody!=null?" body "+col.attachedRigidbody.name:"")})");
       Note($"   near:{near}");
+      foreach(var net in game.Owner.Apparatus.GetComponentsInChildren<COgheTubeNetwork>())Note($"   tube: {net.DebugState(game.Motion.Selected)}");
+      // COGHE_PROBE_STUCKCLIP=1: close-up frames while a tap on the floor 12 cm away tries to move it (after detection only)
+      if(Environment.GetEnvironmentVariable("COGHE_PROBE_STUCKCLIP")=="1")
+      {
+       var away=game.Root.TransformPoint(Local(game.Motion.Centre(0))+new Vector3(.08f,0,.09f));away=game.Root.TransformPoint(new Vector3(Local(away).x,-.30f,Local(away).z));
+       yield return Tap(away);var o=game.Motion.Get(0);Note($"   clip tap {Local(away):F3} path={(o!=null?string.Join(" ",o.Path.ConvertAll(q=>q.ToString("F2"))):"none")}");
+       for(int f=0;f<90;f++){for(int k=0;k<4;k++)Tick();if(f%3==0)ShotClose($"stuckclip-{n:00}-{run}-{f:000}");}
+       Note($"   after clip: {Where()}");
+       var oo=game.Motion.Get(0);int grips=0;var gripNames=new System.Text.StringBuilder();
+       for(int i=0;i<32;i++)if(game.Motion.HasGrip(i))grips++;
+       Note($"   order: {(oo==null?"none":$"cursor {oo.Cursor}/{oo.Path.Count} awaiting={oo.AwaitingContact} holding={oo.Holding} exit={oo.Exit}")} grips={grips}");
+      }
      }
      Note($"{n:00} run {run}: {(moved?"moves":"STUCK")} {Where()}");
     }
