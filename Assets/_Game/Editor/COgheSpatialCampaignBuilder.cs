@@ -81,7 +81,10 @@ namespace GravityBox.Editor
   public static void GenerateSpatialCampaign()
   {
    PrepareCampaign30Assets();Directory.CreateDirectory(SpatialFolder+"/Definitions");Directory.CreateDirectory(SpatialFolder+"/Meshes");AssetDatabase.Refresh();
-   string old=authoredMeshFolder;try{authoredMeshFolder=SpatialFolder+"/Meshes";for(int n=1;n<=10;n++)BuildSpatial(n);}finally{authoredMeshFolder=old;}
+   // -coghe-spatial-levels 7,9 rebuilds only those levels (batch); the menu rebuilds all ten.
+   var only=new System.Collections.Generic.HashSet<int>();var args=Environment.GetCommandLineArgs();int at=Array.IndexOf(args,"-coghe-spatial-levels");
+   if(at>=0&&at+1<args.Length)foreach(var part in args[at+1].Split(','))if(int.TryParse(part,out int v))only.Add(v);
+   string old=authoredMeshFolder;try{authoredMeshFolder=SpatialFolder+"/Meshes";for(int n=1;n<=10;n++)if(only.Count==0||only.Contains(n))BuildSpatial(n);}finally{authoredMeshFolder=old;}
    var scenes=EditorBuildSettings.scenes.ToList();foreach(var p in SpatialScenePaths())if(File.Exists(p)&&!scenes.Any(s=>s.path==p))scenes.Add(new EditorBuildSettingsScene(p,true));EditorBuildSettings.scenes=scenes.ToArray();AssetDatabase.SaveAssets();
    Debug.Log("SPATIAL GENERATED 10 isolated levels");
   }

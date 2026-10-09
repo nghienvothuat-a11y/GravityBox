@@ -100,6 +100,18 @@ namespace GravityBox.Editor
     var pad=Panel(c.Root,"Pit lever pad",new Vector3(-.045f,-.3995f,.06f),Vector3.up,new Vector2(.12f,.16f),stone,false,Vector2.zero,0,c.Surfaces);
     var lever=ViewTask(c,"D",new Vector3(-.045f,-.377f,.06f),Vector3.forward,.07f,pad);lever.StandOffset=new Vector3(0,0,-.05f);
     ViewLink(c,lever.Rail,pin,false,null);bridge.RequiredRail=pin;bridge.RequiredEnd=true;
+    // The pit can be fallen into anywhere and always climbed out of (Mrk's playtest, 09/10/2026: a first tap on the exit
+    // left COghe stuck down there, and once it slid out of the box). The glass and the banks end at y −.30 but the pit
+    // floor is 10 cm lower, so its front, back and right ends were open: slick skirts close them, and a slick face closes
+    // the space under the receiving bank (it is never a way up). The receiving cliff only spans that bank, so the whole
+    // pit is one floor, and the floor grips: from anywhere in it COghe crawls back to the climb up to the start bank.
+    basin.Slippery=false;
+    var cliff=c.Surfaces.Find(p=>p.name=="Receiving cliff");c.Surfaces.Remove(cliff);Object.DestroyImmediate(cliff.gameObject);
+    ChapterParapet(c,"Receiving cliff",new Vector3(.109f,-.35f,.18f),new Vector3(.008f,.10f,.24f)); // wholly under the bank: the bridge slides 6 mm from x .105
+    ChapterParapet(c,"Under receiving bank",new Vector3(.2525f,-.35f,.056f),new Vector3(.295f,.10f,.008f));
+    ChapterParapet(c,"Pit skirt front",new Vector3(.1475f,-.35f,-.296f),new Vector3(.505f,.10f,.008f));
+    ChapterParapet(c,"Pit skirt back",new Vector3(.1475f,-.35f,.296f),new Vector3(.505f,.10f,.008f));
+    ChapterParapet(c,"Pit skirt right",new Vector3(.396f,-.35f,0),new Vector3(.008f,.10f,.60f));
    }
    if(n==8)
    {

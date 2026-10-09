@@ -71,3 +71,25 @@ Những điểm đã sửa trong lúc dựng:
 - Người mới chơi thử chương 1.
 - Đo trên máy Android.
 - Hình minh hoạ mới cho dossier từng màn (các hình `Illustrations/0X-0Y.png` là của bản cũ).
+
+## Màn 7 "Chìa khoá dưới hố" (vị trí 8): bịt hố, đáy hố bám được (09/10/2026)
+
+Mrk cho người chơi test (09/10/2026): chạm thẳng vào lỗ thoát ngay từ đầu thì COghe xuống rãnh và kẹt; một lần khác COghe
+rơi ra khỏi hộp và màn báo thua.
+
+- **Nguyên nhân:** đáy hố (`Recovery basin`) thấp hơn hai bờ 10 cm, nhưng vách kính chỉ chạy tới mặt bờ (y −.30). Đầu trước,
+  đầu sau và phía phải của hố để hở, nên COghe trượt ra ngoài. Đáy hố lại trơn: chỉ tấm đặt cần D đứng được, rơi xuống chỗ
+  khác thì không bò được nữa. Lệnh chạm lỗ thoát cố ý đi cả qua mặt trơn, nên COghe tự xuống hố.
+- **Sửa** (`COgheSpatialChapterOneBuilder`, n==7):
+  - Đáy hố bám được.
+  - Vách trơn bịt đầu trước, đầu sau, phía phải của hố, và khoảng trống dưới bờ nhận.
+  - Vách bờ nhận chỉ dài bằng bờ đó, nên cả hố là một mặt sàn: rơi xuống đâu, COghe cũng bò về vách leo bên trái được.
+  - Lời giải giữ nguyên.
+- **Kiểm** (`COgheLevel07ProbeTests`, Explicit, ghi vào `Artifacts/L07`):
+  - `Level07ExitTapAtStart`: chạm lỗ thoát ngay từ đầu, rồi đưa COghe về chỗ xuất phát.
+  - `Level07RandomTaps`: 12 lượt × 25 lần chạm ngẫu nhiên, có cả chạm lỗ thoát và chạm vào hố.
+    - Bản cũ: 6/6 lượt COghe ra ngoài hộp.
+    - Bản mới: 0/12, và lượt nào cũng về được chỗ xuất phát.
+  - `RandomTapsSweep`: cùng cách chạm ngẫu nhiên cho cả 60 vị trí. Không màn nào để COghe ra ngoài hộp; chỗ kẹt tìm thấy ở
+    các màn khác được sửa riêng.
+- Dựng lại một màn chương 1: `GenerateSpatialCampaign -coghe-spatial-levels 7`, rồi `COgheProductUIBuilder.Prepare`.
