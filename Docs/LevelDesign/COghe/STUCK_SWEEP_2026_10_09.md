@@ -34,6 +34,7 @@ Không màn nào để COghe ra ngoài hộp, sau khi đã sửa màn 8. Bản q
 | 28 (21) | COghe nặng hơn thùng (0,096 so với 0,040): đứng lên khay đối trọng là khay chìm 6,6 cm và cầu hạ; vách hố trơn cao hơn 5 cm nên không ra được | Mrk chọn B: `COgheSeesawBridge.RequiredLoad`, khay đứng yên như sàn tới khi thùng nằm trên nó |
 | 28, 29 (21, N25) | Dải sàn sau tấm bập bênh: rơi từ tấm bập bênh hay từ mép bệ xuống thì bị tấm bập bênh, hai vách trơn và kính chặn | `PlankBackGuard`: vách trơn ngay sau tấm bập bênh, gờ trơn dọc hai mép bệ cạnh dải đó |
 | 29 (N25) | Cùng khay đối trọng như 28 (test đi lang thang thấy) | `RequiredLoad`: có thùng khay mới chìm, rồi thêm COghe như thiết kế |
+| 2 (02) | Sau phương án A (kính trơn): khe 5 cm giữa bậc một và kính sau, khe 2 cm giữa bậc hai và kính phải. Test đi lang thang thấy | Tấm kem có gân trên kính sau để leo lên hai bậc; hai bậc đứng sát tấm và kính, không còn khe (xem `SpatialPilot/CHAPTER1_HOOK_REBUILD.md`) |
 
 Các cảnh báo "kẹt" ban đầu ở 10 màn thùng là do bộ quét: sàn của màn thùng là một mặt có lỗ thoát cắt sẵn. Màn 19 kẹt ở ngã
 ba ống: chạm một nhánh là đi tiếp, đúng thiết kế.

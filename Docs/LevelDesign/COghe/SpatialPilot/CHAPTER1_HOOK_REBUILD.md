@@ -109,7 +109,14 @@ Luật mới cho cả game:
   - màn 2: mép dưới lỗ ngang mặt bậc thứ hai.
 - **Chỗ leo là tấm màu kem có viền và gân** (`ChapterClimbBoard`, `ChapterBoardRibs`):
   - Màn 5: một tấm phủ cả hành trình của tay A và nối sang tấm thứ hai. Tấm thứ hai lên tới lỗ thoát và khoét quanh lỗ.
+  - Màn 2: một tấm trên kính sau, từ kính trái tới mép bậc hai, cao hơn mặt bậc hai 4 cm. COghe đi vòng mặt tím, leo tấm
+    lên bậc một rồi lên bậc hai. Bậc một đứng sát tấm. Bậc hai sát kính sau, sát kính phải và kéo ra ngang mặt trước bậc
+    một. Trước đây COghe lên bậc một bằng khe 5 cm giữa bậc và kính. Khi kính trơn, khe đó và khe 2 cm cạnh bậc hai giữ COghe
+    lại (test `Spatial02Wander` bắt được).
+    Bộ tìm đường không đưa COghe qua mép lồi cao hơn khoảng 5 cm. COghe chỉ lên được mặt trên một khối từ một vách dựng cạnh
+    nó (góc lõm), nên chỗ leo phải là tấm kem dựng cạnh bậc.
   - Bảng ngà màn 6 (vị trí 7) có thêm gân cho cùng kiểu.
 - **Chạm vào kính:** `COgheControlFeedback.ShowSlick` hiện dấu ⊘ rung chỗ chạm và chữ "Slippery" (giao diện game là tiếng
-  Anh). COghe vẫn đi tới chân vách. Test: `SlickGlassTapIsMarked`.
+  Anh). Chữ nằm trong cảnh 3D ngay dưới dấu (chữ cao khoảng 3 cm, quay về camera), nên clip quay cũng thấy. COghe vẫn đi tới
+  chân vách. Test: `SlickGlassTapIsMarked`. Clip xem lại: `RecordSlickTap` (màn 5, `Artifacts/Clips/slick`).
 - Màu tím vẫn chỉ mặt trơn của đồ vật (bậc, thùng, vách hố).

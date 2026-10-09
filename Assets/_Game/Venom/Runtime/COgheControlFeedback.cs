@@ -28,10 +28,13 @@ namespace GravityBox.Venom
         /// <summary>A refused tap on a mechanism is marked where it was refused (a shaking ⊘), not swallowed in silence.</summary>
         public bool DeniedVisible=>deniedRing!=null&&deniedRing.enabled;
         // A tap on slick glass (Mrk, 09/10/2026, plan A: glass is never climbable): the same shaking ⊘ where it was tapped,
-        // and a short "Slippery" under it. COghe still goes to the foot of the glass.
-        private float slickUntil=-10;private Vector3 slickPoint;private GUIStyle slickLabel;
-        public bool SlickVisible=>Time.unscaledTime<slickUntil;
-        public void ShowSlick(Vector3 point){deniedAt=Time.unscaledTime;deniedPoint=slickPoint=point;slickUntil=deniedAt+.9f;}
+        // and a short "Slippery" under it, in the scene beside the mark. COghe still goes to the foot of the glass.
+        private float slickUntil=-10;private Vector3 slickPoint;private TextMesh slickText;
+        // Play time, not scaled by pause. While a recording holds the frame clock (Time.captureFramerate) the marks age by
+        // frames instead, so a clip shows them as long as play does.
+        private static float Now=>Time.captureDeltaTime>0?Time.time:Time.unscaledTime;
+        public bool SlickVisible=>Now<slickUntil;
+        public void ShowSlick(Vector3 point){deniedAt=Now;deniedPoint=slickPoint=point;slickUntil=deniedAt+.9f;}
         private Mesh faceMesh;
         private MeshRenderer faceFill;
         private readonly Vector3[] faceVertices=new Vector3[4];
@@ -60,6 +63,12 @@ namespace GravityBox.Venom
             roofGlyph=Line(7,"Roof departure chevron",3,.002f,Amber);
             deniedRing=Line(8,"Refused tap ring",49,.0026f,Coral);
             deniedSlash=Line(9,"Refused tap slash",2,.0026f,Coral);
+            var label=new GameObject("Slippery label",typeof(MeshRenderer),typeof(TextMesh));label.transform.SetParent(visuals,false);
+            var font=Resources.Load<Font>("COgheUI/ManropeBold")??Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            slickText=label.GetComponent<TextMesh>();slickText.font=font;label.GetComponent<MeshRenderer>().sharedMaterial=font.material;
+            slickText.text="Slippery";slickText.anchor=TextAnchor.UpperCenter;slickText.alignment=TextAlignment.Center;slickText.fontSize=64;slickText.color=Coral;
+            float height=label.GetComponent<MeshRenderer>().bounds.size.y;if(height>0)label.transform.localScale*=.036f/height;   // about 3 cm of letters: readable on a phone
+            label.SetActive(false);
             var fill=new GameObject("Touched glass wash");fill.transform.SetParent(visuals,false);
             faceMesh=new Mesh{name="Temporary face feedback"};faceMesh.MarkDynamic();
             faceMesh.vertices=faceVertices;faceMesh.colors=faceColors;faceMesh.triangles=new[]{0,1,2,0,2,3};
@@ -82,7 +91,7 @@ namespace GravityBox.Venom
         {
             anchor=follows;localPoint=anchor!=null?anchor.InverseTransformPoint(point):point;
             localNormal=anchor!=null?anchor.InverseTransformDirection(normal):normal;
-            CommandSurface=surface;commandAt=Time.unscaledTime;
+            CommandSurface=surface;commandAt=Now;
             commandGroup=game.Matter.Groups[game.Motion.Selected];HasCommand=true;CommandCount++;
             Refresh();
         }
@@ -109,10 +118,16 @@ namespace GravityBox.Venom
         {
             if(game==null||game.Owner==null||game.Motion==null)return;
             foreach(var line in lines)line.enabled=false;
-            faceFill.enabled=false;
+            faceFill.enabled=false;if(slickText!=null)slickText.gameObject.SetActive(false);
             if(game.Home||game.Owner.Completed||game.Owner.Lost)return;
-            float now=Time.unscaledTime;
+            float now=Now;
             ShowRefusal(now);
+            if(slickText!=null&&now<slickUntil)
+            {
+                var view=game.Owner.View.transform;slickText.gameObject.SetActive(true);
+                slickText.transform.SetPositionAndRotation(slickPoint-view.up*.03f-view.forward*.02f,view.rotation);
+                var tint=Coral;tint.a=Mathf.Clamp01((slickUntil-now)/.3f);slickText.color=tint;
+            }
             if(HasCommand&&commandGroup!=game.Matter.Groups[game.Motion.Selected])HasCommand=false;
             if(HasCommand)
             {
@@ -222,17 +237,6 @@ namespace GravityBox.Venom
         }
         private void OnGUI()
         {
-            if(game!=null&&game.Owner!=null&&!game.Home&&Time.unscaledTime<slickUntil)
-            {
-                var sp=game.Owner.View.WorldToScreenPoint(slickPoint);
-                if(sp.z>0)
-                {
-                    if(slickLabel==null)slickLabel=new GUIStyle(GUI.skin.label){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold};
-                    float unit=Mathf.Min(Screen.width/540f,Screen.height/960f);slickLabel.fontSize=Mathf.RoundToInt(15*unit);
-                    var before=GUI.color;GUI.color=new Color(Coral.r,Coral.g,Coral.b,Mathf.Clamp01((slickUntil-Time.unscaledTime)/.3f));
-                    GUI.Label(new Rect(sp.x-90*unit,Screen.height-sp.y+14*unit,180*unit,26*unit),"Slippery",slickLabel);GUI.color=before;
-                }
-            }
             if(game==null||game.Owner==null||game.ProductUI!=null||game.Home||game.Owner.Completed||game.Owner.Lost)return;
             if(game.Definition.SceneSequence!=null&&game.Definition.SceneSequence.Length>0&&!game.Definition.CanRotate)return;
             if((game.Definition.Id=="venom.origin.01"||game.Definition.Id=="venom.origin.02")&&game.Definition.CanRotate)return;

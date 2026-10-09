@@ -120,6 +120,26 @@ namespace GravityBox.Tests
    }finally{COgheEyes.Enabled=eyesWere;COgheEyes.Trace=clipEyes=false;}
   }
 
+  // Plan A (Mrk 09/10/2026: glass is never climbable) for review, on level 5: a tap high on the back glass (⊘ and "Slippery";
+  // COghe goes to the foot of the glass), then a tap on the cream board, which COghe climbs. Artifacts/Clips/slick. The frame
+  // clock is held at 30 fps so the marks last as long in the clip as in the game.
+  [UnityTest,Explicit,Timeout(1800000)] public IEnumerator RecordSlickTap()
+  {
+   string size=Environment.GetEnvironmentVariable("COGHE_CLIP_SIZE");
+   if(!string.IsNullOrEmpty(size)){var wh=size.Split('x');clipWidth=int.Parse(wh[0]);clipHeight=int.Parse(wh[1]);}
+   bool eyesWere=COgheEyes.Enabled;ClipEyesFromEnvironment();Time.captureFramerate=30;
+   try
+   {
+    yield return Load(5);ClipFolder("slick");clipTaps=new System.Text.StringBuilder();clipTrack=new System.Text.StringBuilder();
+    yield return Hold(1);
+    var pane=Array.Find(game.Surfaces,f=>f!=null&&f.name=="Outer pane 2");
+    yield return RecordTap(pane.Closest(game.Root.TransformPoint(new Vector3(-.10f,.20f,.30f))));yield return Hold(3);
+    var board=Array.Find(game.Surfaces,f=>f!=null&&f.name=="Climb board A");
+    yield return RecordTap(board.transform.position+game.Root.up*.06f);yield return Hold(4);
+    File.WriteAllText($"{clipDirectory}/taps.txt",clipTaps.ToString());File.WriteAllText($"{clipDirectory}/track.txt",clipTrack.ToString());clipTrack=null;
+   }
+   finally{Time.captureFramerate=0;COgheEyes.Enabled=eyesWere;COgheEyes.Trace=clipEyes=false;}
+  }
   [UnityTest,Explicit,Timeout(3600000)] public IEnumerator RecordReviewClips()
   {
    string only=Environment.GetEnvironmentVariable("COGHE_CLIP_LEVELS"),size=Environment.GetEnvironmentVariable("COGHE_CLIP_SIZE");

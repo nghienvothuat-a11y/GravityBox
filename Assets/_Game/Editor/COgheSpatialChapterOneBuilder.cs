@@ -80,9 +80,16 @@ namespace GravityBox.Editor
   {
    if(n==2)
    {
-    // The faces toward the start are lavender: COghe climbs the first step from its ivory side.
-    int first=c.Surfaces.Count;ViewBlock(c,"Ivory first step",new Vector3(-.12f,-.26f,.11f),new Vector3(.28f,.08f,.28f));c.Surfaces[first+5].Slippery=true;
-    first=c.Surfaces.Count;ViewBlock(c,"Ivory second step",new Vector3(.20f,-.22f,.17f),new Vector3(.36f,.16f,.26f));c.Surfaces[first+5].Slippery=true;c.Surfaces[first+3].Slippery=true;
+    // The faces toward the start are lavender. COghe goes round them to the cream board on the back glass and climbs it onto
+    // each step (plan A, Mrk 09/10/2026: glass is never climbable). Before, it went up a 5 cm slot between the first step
+    // and the glass; that slot, and 2 cm beside the second step, trapped it once the glass was slick. Now the first step
+    // stands against the board, the second against the glass and reaching forward to the first's front.
+    ChapterClimbBoard(c,"Climb board",-.40f,.02f,-.30f,-.10f);
+    int first=c.Surfaces.Count;ViewBlock(c,"Ivory first step",new Vector3(-.12f,-.26f,.13f),new Vector3(.28f,.08f,.32f));c.Surfaces[first+5].Slippery=true;
+    // its right side (under the second step) and back (on the board) are hidden; left as faces, COghe would head for them
+    var hidden=new[]{c.Surfaces[first+3],c.Surfaces[first+4]};
+    first=c.Surfaces.Count;ViewBlock(c,"Ivory second step",new Vector3(.21f,-.22f,.135f),new Vector3(.38f,.16f,.33f));c.Surfaces[first+5].Slippery=true;c.Surfaces[first+3].Slippery=true;
+    foreach(var face in hidden){c.Surfaces.Remove(face);Object.DestroyImmediate(face.gameObject);}
    }
    if(n==3)
    {

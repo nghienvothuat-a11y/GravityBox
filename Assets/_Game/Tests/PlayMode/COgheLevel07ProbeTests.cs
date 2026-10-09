@@ -158,6 +158,19 @@ namespace GravityBox.Tests
    yield return Tap(point);
    Assert.IsTrue(game.Feedback.SlickVisible,"The slick tap is marked");
    Assert.IsNotNull(game.Motion.Get(0),"COghe still goes toward it");
+   yield return null;
+   var label=System.Array.Find(game.Feedback.GetComponentsInChildren<TextMesh>(true),t=>t.name=="Slippery label");
+   Assert.IsNotNull(label);Assert.IsTrue(label.gameObject.activeInHierarchy,"\"Slippery\" shows beside the mark");
+   float tall=label.GetComponent<MeshRenderer>().bounds.size.y;Debug.Log($"Slippery label height {tall*100:F2} cm");
+   Assert.That(tall,Is.InRange(.02f,.05f),"Readable on a phone, not a sign");
+  }
+  // Level 2: the route COghe takes from the start to the top of the first step (Artifacts/L07/route02.txt, route02-*.png).
+  [UnityTest,Explicit,Timeout(600000)] public IEnumerator Level02Route()
+  {
+   Directory.CreateDirectory("Artifacts/L07");probeLog="Artifacts/L07/route02.txt";File.WriteAllText(probeLog,"");
+   yield return Load(2);yield return Wait(1);Note($"start {Where()}");
+   yield return Tap(game.Root.TransformPoint(new Vector3(-.12f,-.22f,.10f)));
+   for(int s=1;s<=24;s++){yield return Wait(.5f);Note($"t={s*.5f:F1} {Where()}");if(s%6==0)Shot($"route02-{s:00}");}
   }
   // Start frames of chapter 1 for a look (Artifacts/L07/start-NN.png).
   [UnityTest,Explicit,Timeout(600000)] public IEnumerator CaptureChapterOneStarts()
