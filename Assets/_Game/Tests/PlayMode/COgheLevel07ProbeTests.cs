@@ -152,8 +152,11 @@ namespace GravityBox.Tests
    foreach(var pr in game.Props)Note($"prop {pr.name} mass={pr.Body.mass:F3}");
    Note($"COghe mass={bodyMass:F3} tray mass={tray.Body.mass:F3} stiffness={seesaw.Stiffness} maxTension={seesaw.MaximumTension} slack={seesaw.Slack} spring={seesaw.Hinge.useSpring}/{seesaw.Hinge.spring.spring}");
    Note($"start: tray {tray.Position:F3} caught={seesaw.Caught} angle={seesaw.AngleToLevel:F1} {Where()}");
+   // the crate out of the way (down on the floor at the front): COghe alone
+   var crate=seesaw.RequiredLoad!=null?seesaw.RequiredLoad:System.Array.Find(game.Props,pr=>pr.name=="A crate").Body;
+   crate.position=game.Root.TransformPoint(new Vector3(.05f,-.27f,-.22f));crate.linearVelocity=Vector3.zero;yield return Wait(1);
    yield return Tap(tray.Body.position+game.Root.up*.015f);
-   for(int s=1;s<=12;s++){yield return Wait(1);Note($"t={s}s tray {tray.Position:F3} caught={seesaw.Caught} angle={seesaw.AngleToLevel:F1} tension={seesaw.Tension:F3} {Where()}");}
+   for(int s=1;s<=12;s++){yield return Wait(1);Note($"t={s}s tray {tray.Position:F3} locked={tray.Locked} latched={tray.Latched} load={(seesaw.RequiredLoad!=null?seesaw.RequiredLoad.name:"none")} caught={seesaw.Caught} angle={seesaw.AngleToLevel:F1} tension={seesaw.Tension:F3} {Where()}");}
    ShotClose("tray21-on");
   }
 

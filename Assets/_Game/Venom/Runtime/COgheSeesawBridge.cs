@@ -13,6 +13,11 @@ namespace GravityBox.Venom
         public HingeJoint Hinge;
         public Transform Anchor;
         public COgheRailSlider Tray;
+        // When set, the tray stays put like floor until this load (the crate) rests on it. COghe outweighs the crate, so
+        // standing on the empty tray alone sank it, levelled the plank and left COghe in a pit it could not climb out of
+        // (Mrk's playtest sweep, 09/10/2026, levels 28 and 29). With the crate on, COghe's weight still counts (level 29).
+        public Rigidbody RequiredLoad;
+        private Collider[] trayColliders = System.Array.Empty<Collider>();
         public Transform[] Guides = System.Array.Empty<Transform>();
         public float Stiffness = 60, Damping = .2f, MaximumTension = 1.5f, CatchAngle = 1.2f, Slack = .008f;
         public Quaternion LevelLocalRotation = Quaternion.identity;
@@ -35,6 +40,15 @@ namespace GravityBox.Venom
             anchorRest = Plank.transform.parent.InverseTransformPoint(Anchor.position);
             plankRest = Plank.rotation; plankRestPosition = Plank.position;
             if (Pawl != null) pawlRest = Pawl.localPosition;
+            trayColliders = Tray.Body.GetComponentsInChildren<Collider>();
+        }
+        private bool LoadOnTray()
+        {
+            if (trayColliders.Length == 0) return false;
+            Bounds b = trayColliders[0].bounds; foreach (var c in trayColliders) b.Encapsulate(c.bounds);
+            Vector3 p = RequiredLoad.worldCenterOfMass;
+            return p.x > b.min.x - .01f && p.x < b.max.x + .01f && p.z > b.min.z - .01f && p.z < b.max.z + .01f &&
+                p.y > b.max.y - .01f && p.y < b.max.y + .06f;
         }
         public override void ResetMechanism(VenomCampaign game)
         {
@@ -46,6 +60,7 @@ namespace GravityBox.Venom
         public override void StepMechanism(VenomCampaign game, float dt)
         {
             if (Caught) { Tension = 0; return; }
+            if (RequiredLoad != null) Tray.Locked = Tray.Position < .003f && !LoadOnTray();
             // Weight comes from the campaign, which accelerates every prop (the plank is one) — never add it twice.
             // Rope length is fixed: the tray's descent must equal the anchor's rise. Tension only pulls.
             Vector3 anchorNow = Plank.transform.parent.InverseTransformPoint(Anchor.position);

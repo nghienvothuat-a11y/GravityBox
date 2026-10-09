@@ -23,7 +23,7 @@ Kết quả ghi ở `Artifacts/L07/sweep.txt`. Khi kẹt, log thêm:
 
 ## Kết quả và sửa
 
-Không màn nào để COghe ra ngoài hộp, sau khi đã sửa màn 8.
+Không màn nào để COghe ra ngoài hộp, sau khi đã sửa màn 8. Bản quét cuối (3 lượt mỗi màn, sau mọi sửa dưới đây): 0 ra ngoài, 0 kẹt ở cả 60 màn.
 
 | Vị trí (nội dung) | Kẹt ở đâu | Sửa |
 | --- | --- | --- |
@@ -31,7 +31,9 @@ Không màn nào để COghe ra ngoài hộp, sau khi đã sửa màn 8.
 | 16 (14) | Dưới chân ống chữ U, chỗ ống cách sàn 1–9 cm | Đệm trơn dưới chân ống, như N43 |
 | 27 (N23) | Trong khe 7 cm dưới khay đáp B | Khay thành khối đặc, đáy cách sàn 8 mm; mặt khay vẫn ở −.20 |
 | 51 (N43) | Một hạt lọt vào miệng ống từ phía trước, thân nằm cạnh ống, vách ống ở giữa: hạt không về được, thân không đi được | `COgheTubeNetwork.ReleaseSnaggedParticles`: phần ít hạt trong miệng ống quá 1 giây mà không vào ống thì về giữa thân |
-| 28 (21) | COghe nặng hơn thùng (0,096 so với 0,040): đứng lên khay đối trọng là khay chìm 6,6 cm và cầu hạ; vách hố trơn cao hơn 5 cm nên không ra được | Chờ Mrk chọn: thêm dải bám (hết kẹt, nhưng màn giải được không cần thùng), hoặc làm khay để COghe không đứng lên được |
+| 28 (21) | COghe nặng hơn thùng (0,096 so với 0,040): đứng lên khay đối trọng là khay chìm 6,6 cm và cầu hạ; vách hố trơn cao hơn 5 cm nên không ra được | Mrk chọn B: `COgheSeesawBridge.RequiredLoad`, khay đứng yên như sàn tới khi thùng nằm trên nó |
+| 28, 29 (21, N25) | Dải sàn sau tấm bập bênh: rơi từ tấm bập bênh hay từ mép bệ xuống thì bị tấm bập bênh, hai vách trơn và kính chặn | `PlankBackGuard`: vách trơn ngay sau tấm bập bênh, gờ trơn dọc hai mép bệ cạnh dải đó |
+| 29 (N25) | Cùng khay đối trọng như 28 (test đi lang thang thấy) | `RequiredLoad`: có thùng khay mới chìm, rồi thêm COghe như thiết kế |
 
 Các cảnh báo "kẹt" ban đầu ở 10 màn thùng là do bộ quét: sàn của màn thùng là một mặt có lỗ thoát cắt sẵn. Màn 19 kẹt ở ngã
 ba ống: chạm một nhánh là đi tiếp, đúng thiết kế.

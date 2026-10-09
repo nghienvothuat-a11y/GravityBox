@@ -770,13 +770,14 @@ namespace GravityBox.Editor
    ViewBlock(c,"Seesaw rest",new Vector3(.13f,-.29f,.10f),new Vector3(.02f,.02f,.10f));
    MechanismVisual(c.Root,"Seesaw axle stand",new Vector3(0,-.255f,.10f),new Vector3(.03f,.09f,.03f),metal);
    var seesaw=new GameObject("A counterweight rope",typeof(COgheSeesawBridge)).GetComponent<COgheSeesawBridge>();seesaw.transform.SetParent(c.Root,false);
-   seesaw.Plank=plank.Body;seesaw.Hinge=hinge;seesaw.Anchor=anchor;seesaw.Tray=tray;seesaw.LevelLocalRotation=Quaternion.identity;
+   seesaw.Plank=plank.Body;seesaw.Hinge=hinge;seesaw.Anchor=anchor;seesaw.Tray=tray;seesaw.LevelLocalRotation=Quaternion.identity;seesaw.RequiredLoad=c.Props.Last(p=>p.name=="A crate").Body;
    seesaw.MovingSurfaces=plank.GetComponentsInChildren<VenomSurfacePatch>(true);seesaw.DockedSurfaces=docked;
    seesaw.Guides=new[]{NextMarker(c,"Rope pulley over tray",new Vector3(-.28f,.12f,.14f)),NextMarker(c,"Rope pulley over plank",new Vector3(.13f,.12f,.10f))};
    foreach(var g in seesaw.Guides){var wheel=MechanismVisual(c.Root,"A pulley wheel",g.localPosition,new Vector3(.05f,.014f,.05f),metal,PrimitiveType.Cylinder);wheel.localRotation=Quaternion.Euler(90,0,0);}
    seesaw.Rope=seesaw.gameObject.AddComponent<LineRenderer>();seesaw.Rope.useWorldSpace=true;seesaw.Rope.startWidth=seesaw.Rope.endWidth=.0028f;seesaw.Rope.sharedMaterial=metal;
    seesaw.Pawl=MechanismVisual(c.Root,"Seesaw pawl",new Vector3(-.13f,-.215f,.155f),new Vector3(.01f,.012f,.01f),metal);
    NextOutline(c,"Load tray outline",new Vector3(-.28f,-.1995f,.14f),new Vector2(.125f,.245f));
+   PlankBackGuard(c);
   }
 
   // N26 · 26 · Nhẹ quá không nghiêng. Two pads A, far apart, open the door into the seesaw room (a split: one half on each;

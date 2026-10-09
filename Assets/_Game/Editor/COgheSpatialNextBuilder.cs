@@ -520,6 +520,15 @@ namespace GravityBox.Editor
     Side(new Vector3(pit.center.x,pm,pit.yMin),Vector3.forward,new Vector2(pit.width,ph));Side(new Vector3(pit.center.x,pm,pit.yMax),Vector3.back,new Vector2(pit.width,ph));}
    return first;
   }
+  /// <summary>The floor strip behind the seesaw plank (z .17–.30, between the load deck and the exit platform) is closed
+  /// (Mrk's playtest sweep, 09/10/2026, level 29): COghe fell off the plank's back or a bank's edge into it and nothing led out
+  /// (the plank, two slick sides and the glass). A slick fence stands just behind the plank, clear of it as it tips, and low
+  /// slick rails line the two banks beside the strip; the plank and its ends are untouched.</summary>
+  static void PlankBackGuard(ExpansionContext c)
+  {
+   foreach(var f in NextPlinth(c,"Plank back fence",new Vector3(0,-.19f,.168f),new Vector3(.30f,.22f,.008f)))f.Slippery=true;
+   foreach(float x in new[]{-.154f,.154f})foreach(var f in NextPlinth(c,"Strip edge rail",new Vector3(x,-.17f,.236f),new Vector3(.008f,.06f,.128f)))f.Slippery=true;
+  }
   // 21 · A plank on a real axle, held tilted by its own weight. A crate pushed onto the sinking load tray tensions a
   // rope (over two pulleys) that lifts the plank's far end until it rests level on its bearer; a pawl catches it.
   static void Next21(ExpansionContext c)
@@ -544,13 +553,14 @@ namespace GravityBox.Editor
    ViewBlock(c,"Seesaw rest",new Vector3(.13f,-.29f,.10f),new Vector3(.02f,.02f,.10f));
    MechanismVisual(c.Root,"Seesaw axle stand",new Vector3(0,-.255f,.10f),new Vector3(.03f,.09f,.03f),metal);
    var seesaw=new GameObject("A counterweight rope",typeof(COgheSeesawBridge)).GetComponent<COgheSeesawBridge>();seesaw.transform.SetParent(c.Root,false);
-   seesaw.Plank=plank.Body;seesaw.Hinge=hinge;seesaw.Anchor=anchor;seesaw.Tray=tray;seesaw.LevelLocalRotation=Quaternion.identity;
+   seesaw.Plank=plank.Body;seesaw.Hinge=hinge;seesaw.Anchor=anchor;seesaw.Tray=tray;seesaw.LevelLocalRotation=Quaternion.identity;seesaw.RequiredLoad=c.Props.Last(p=>p.name=="A crate").Body;
    seesaw.MovingSurfaces=plank.GetComponentsInChildren<VenomSurfacePatch>(true);seesaw.DockedSurfaces=docked;
    seesaw.Guides=new[]{NextMarker(c,"Rope pulley over tray",new Vector3(-.28f,.12f,.11f)),NextMarker(c,"Rope pulley over plank",new Vector3(.13f,.12f,.10f))};
    foreach(var g in seesaw.Guides){var wheel=MechanismVisual(c.Root,"A pulley wheel",g.localPosition,new Vector3(.05f,.014f,.05f),metal,PrimitiveType.Cylinder);wheel.localRotation=Quaternion.Euler(90,0,0);}
    seesaw.Rope=seesaw.gameObject.AddComponent<LineRenderer>();seesaw.Rope.useWorldSpace=true;seesaw.Rope.startWidth=seesaw.Rope.endWidth=.0028f;seesaw.Rope.sharedMaterial=metal;
    seesaw.Pawl=MechanismVisual(c.Root,"Seesaw pawl",new Vector3(-.13f,-.215f,.155f),new Vector3(.01f,.012f,.01f),metal);
    NextOutline(c,"Load tray outline",new Vector3(-.28f,-.1995f,.11f),new Vector2(.125f,.125f));
+   PlankBackGuard(c);
   }
   // 22 · Three rail pieces build low-high-level steps over a floor gap to the exit platform. The tall block B starts
   // in its socket and blocks the path to span C's handle, so B waits aside, C goes in, then B, then the low block A.
