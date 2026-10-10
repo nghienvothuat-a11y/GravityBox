@@ -184,18 +184,63 @@ namespace GravityBox.Editor
             list.arraySize++;list.GetArrayElementAtIndex(list.arraySize-1).objectReferenceValue=data;so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(asset);AssetDatabase.SaveAssets();return list.arraySize-1;
         }
+
+        /// <summary>A flat slab shaped |x/a|^4 + |z/b|^4 = 1 (the plate's inner lip), top at y, a rounded skirt of depth d; UVs in metres.</summary>
+        static Mesh Superellipse(float a,float b,float y,float d,int n)
+        {
+            var verts=new List<Vector3>{new Vector3(0,y,0)};var norms=new List<Vector3>{Vector3.up};var uvs=new List<Vector2>{Vector2.zero};var tris=new List<int>();
+            for(int i=0;i<n;i++)
+            {
+                float t=i*Mathf.PI*2/n,c=Mathf.Cos(t),sn=Mathf.Sin(t);
+                var e=new Vector3(Mathf.Sign(c)*Mathf.Sqrt(Mathf.Abs(c))*a,y,Mathf.Sign(sn)*Mathf.Sqrt(Mathf.Abs(sn))*b);
+                var outward=new Vector3(e.x,0,e.z).normalized;
+                verts.Add(e);norms.Add(Vector3.up);uvs.Add(new Vector2(e.x,e.z));                                  // top rim
+                verts.Add(e+outward*.002f+Vector3.down*d*.4f);norms.Add((Vector3.up+outward).normalized);uvs.Add(new Vector2(e.x,e.z));
+                verts.Add(e+outward*.002f+Vector3.down*d);norms.Add(outward);uvs.Add(new Vector2(e.x,e.z));
+            }
+            for(int i=0;i<n;i++)
+            {
+                int j=(i+1)%n,a0=1+i*3,b0=1+j*3;
+                tris.AddRange(new[]{0,b0,a0});
+                for(int k=0;k<2;k++)tris.AddRange(new[]{a0+k,b0+k,a0+k+1,b0+k,b0+k+1,a0+k+1});
+            }
+            var m=new Mesh{name="Superellipse floor"};m.SetVertices(verts);m.SetNormals(norms);m.SetUVs(0,uvs);m.SetTriangles(tris,0);m.RecalculateBounds();m.RecalculateTangents();return m;
+        }
+        /// <summary>One tile per texture repeat: a soft-dotted vanilla square with a narrow, soft seam on its border.</summary>
+        static Texture2D SaveTileTexture(string name,Color tile,Color seam,int seed)
+        {
+            string path=$"{dir}/Textures/{name}.png";var rng=new System.Random(seed);const int size=256;
+            var t=new Texture2D(size,size,TextureFormat.RGBA32,false);var px=new Color[size*size];
+            for(int y=0;y<size;y++)for(int x=0;x<size;x++)
+            {
+                float g=(float)rng.NextDouble()*.018f;var c=new Color(tile.r-g,tile.g-g,tile.b-g,1);
+                float edge=Mathf.Min(Mathf.Min(x,size-1-x),Mathf.Min(y,size-1-y));   // pixels to the border
+                c=Color.Lerp(seam,c,Mathf.Clamp01((edge-.5f)/2.2f));
+                px[y*size+x]=c;
+            }
+            for(int k=0;k<40;k++)
+            {
+                float ox=(float)rng.NextDouble()*size,oy=(float)rng.NextDouble()*size,r=2+(float)rng.NextDouble()*3;
+                for(int y=(int)(oy-r-1);y<=oy+r+1;y++)for(int x=(int)(ox-r-1);x<=ox+r+1;x++)
+                {if(x<4||y<4||x>size-5||y>size-5)continue;float d=Mathf.Sqrt((x-ox)*(x-ox)+(y-oy)*(y-oy));float w=Mathf.Clamp01(r-d)*.25f;px[y*size+x]=Color.Lerp(px[y*size+x],tile*.93f,w);}
+            }
+            t.SetPixels(px);t.Apply();File.WriteAllBytes(path,t.EncodeToPNG());Object.DestroyImmediate(t);
+            AssetDatabase.ImportAsset(path);var imp=(TextureImporter)AssetImporter.GetAtPath(path);imp.wrapMode=TextureWrapMode.Repeat;imp.maxTextureSize=256;imp.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
         // ---- the dress -------------------------------------------------------------------------------------------------
         public static void Dress(string key)
         {
             dir=$"{Out}/{key}";meshSerial=0;
-            if(AssetDatabase.IsValidFolder(dir))AssetDatabase.DeleteAsset(dir);
-            foreach(var sub in new[]{"","/Materials","/Meshes","/Textures"})Directory.CreateDirectory(dir+sub);
-            AssetDatabase.Refresh();
             var scene=EditorSceneManager.OpenScene(VenomCampaignBuilder.SpatialContentPath(key));
             var game=Object.FindFirstObjectByType<VenomCampaign>();var owner=game.GetComponent<VenomLevelController>();var root=owner.Rotation.transform;
             // Not idempotent by design (Codex review): rounded bodies and the candy live under their real owners, and the
-            // generated assets are rewritten. Dress a freshly generated scene only.
+            // generated assets are rewritten. Checked before anything changes: dress a freshly generated scene only.
             if(root.Find("Bakery dress")!=null)throw new InvalidOperationException($"{key} is already dressed: regenerate it first (GenerateChapterTwoLevels -coghe-plus-levels {key})");
+            if(AssetDatabase.IsValidFolder(dir))AssetDatabase.DeleteAsset(dir);
+            foreach(var sub in new[]{"","/Materials","/Meshes","/Textures"})Directory.CreateDirectory(dir+sub);
+            AssetDatabase.Refresh();
+
             var dress=new GameObject("Bakery dress").transform;dress.SetParent(root,false);
 
             var kit=KitMaterials();
@@ -251,39 +296,47 @@ namespace GravityBox.Editor
                     Rounded(dress,"Bakery backrest jelly",new Vector3(c.x,c.y,.316f),new Vector3(p.Size.x,p.Size.y,.032f),.012f,jelly);
                 }
             }
-            // six by four large tiles, 1.5 mm seams (Codex review: small tiles with dark seams read as an ice tray)
-            const int nx=6,nz=4;float tx=.80f/nx,tz=.60f/nz;
-            var floorTiles=new List<CombineInstance>();var tileMesh=RoundedBox(new Vector3(tx-.0015f,.014f,tz-.0015f),.004f,.10f,3);var cornerMesh=RoundedBox(new Vector3(tx-.026f,.014f,tz-.026f),.006f,.10f,3);
-            for(int ix=0;ix<nx;ix++)for(int iz=0;iz<nz;iz++)
-            {
-                bool corner=(ix==0||ix==nx-1)&&(iz==0||iz==nz-1);var at=new Vector3(-.40f+tx*(ix+.5f),-.307f,-.30f+tz*(iz+.5f));
-                // the plate's rounded corners: a smaller, rounder tile pulled toward the middle
-                if(corner)floorTiles.Add(new CombineInstance{mesh=cornerMesh,transform=Matrix4x4.Translate(at-new Vector3(Mathf.Sign(at.x)*.012f,0,Mathf.Sign(at.z)*.012f))});
-                else floorTiles.Add(new CombineInstance{mesh=tileMesh,transform=Matrix4x4.Translate(at)});
-            }
-            var floor=new GameObject("Bakery floor tiles",typeof(MeshFilter),typeof(MeshRenderer));floor.transform.SetParent(dress,false);
-            var combined=new Mesh{name="Floor tiles",indexFormat=UnityEngine.Rendering.IndexFormat.UInt32};combined.CombineMeshes(floorTiles.ToArray(),true,true);
-            floor.GetComponent<MeshFilter>().sharedMesh=SaveMesh(combined,"floor-tiles");floor.GetComponent<MeshRenderer>().sharedMaterial=tiles;
+            // The floor: one slab shaped like the plate's inner lip (a superellipse of order 4, as the plate mesh), tiles drawn in
+            // its texture as 6 x 4 large squares with narrow seams (Codex review: no geometry may poke through the lip).
+            var floorTex=SaveTileTexture("vanilla-tiles",new Color(1f,.95f,.86f),new Color(.86f,.78f,.68f),11);
+            var floorMat=SaveMaterial("Vanilla floor",new Color(1f,.97f,.92f),.4f,floorTex);floorMat.SetTextureScale("_BaseMap",new Vector2(6f/.8f,4f/.6f));   // seams on x=-.4+k*.133, z=-.3+k*.15
+            var floor=new GameObject("Bakery floor",typeof(MeshFilter),typeof(MeshRenderer));floor.transform.SetParent(dress,false);
+            floor.GetComponent<MeshFilter>().sharedMesh=SaveMesh(Superellipse(.394f,.294f,-.3015f,.006f,96),"floor");floor.GetComponent<MeshRenderer>().sharedMaterial=floorMat;
             // plate lathe: inner flat to .411 (x) /.327 (z), lip crest .468/.372: scaled so the lip rises at the rim (.40/.30)
             Place("Plate",dress,new Vector3(0,-.30f-.008f*.9f-.003f,0),new Vector3(.40f/.44f,.9f,.30f/.35f),kit);
 
-            // Toppings in sparse clusters on the plate's rim crest (outside the play floor, away from the cherry and handles).
+            // Toppings in sparse clusters on the plate's rim crest (outside the play floor, away from the cherry and handles),
+            // set on the plate's actual surface: a ray down onto a temporary collider of the plate mesh (Codex review).
             {
-                var rng=new System.Random(41);float crest=-.30f-.008f*.9f-.003f+.075f*.9f;
-                Vector3 Rim(float a){float c=Mathf.Cos(a),sn=Mathf.Sin(a);return new Vector3(Mathf.Sign(c)*Mathf.Pow(Mathf.Abs(c),.33f)*.425f,crest,Mathf.Sign(sn)*Mathf.Pow(Mathf.Abs(sn),.33f)*.319f);}
+                var plate=dress.Find("Plate");var probes=new List<MeshCollider>();
+                foreach(var mf in plate.GetComponentsInChildren<MeshFilter>()){var mc=mf.gameObject.AddComponent<MeshCollider>();mc.sharedMesh=mf.sharedMesh;probes.Add(mc);}
+                Physics.SyncTransforms();
+                var rng=new System.Random(41);var sx=plate.localScale.x;var sz=plate.localScale.z;
+                // the crest of the lathe profile: radius .468 (x) and .468*.78/.98 (z), superellipse of order 4, then the dress scale
+                Vector3 Crest(float t){float c=Mathf.Cos(t),sn=Mathf.Sin(t);return new Vector3(Mathf.Sign(c)*Mathf.Sqrt(Mathf.Abs(c))*.468f*sx,0,Mathf.Sign(sn)*Mathf.Sqrt(Mathf.Abs(sn))*.468f*.78f/.98f*sz);}
+                bool OnPlate(Vector3 local,out Vector3 point,out Vector3 normal)
+                {
+                    point=normal=default;var from=root.TransformPoint(local+Vector3.up*.3f);
+                    foreach(var h in Physics.RaycastAll(from,-root.up,.6f).OrderBy(h=>h.distance))
+                        if(probes.Contains(h.collider as MeshCollider)){point=h.point;normal=h.normal;return true;}
+                    return false;
+                }
+                void Put(string fbx,Vector3 local,float scale,Material only=null)
+                {
+                    if(!OnPlate(local,out var p,out var n))return;
+                    var t=Place(fbx,dress,Vector3.zero,Vector3.one*scale,kit);
+                    t.position=p;t.rotation=Quaternion.FromToRotation(Vector3.up,n)*Quaternion.Euler(0,rng.Next(360),0);
+                    if(only!=null)foreach(var r in t.GetComponentsInChildren<Renderer>())r.sharedMaterial=only;
+                }
                 var sprinkleMats=new[]{kit["Strawberry"],kit["Cream"],kit["Wafer"]};
                 float[] clusters={.35f,1.2f,2.0f,2.75f,3.6f,4.4f,5.3f,5.95f};
                 for(int k=0;k<clusters.Length;k++)
                 {
-                    var at=Rim(clusters[k]);
-                    for(int i=0;i<3;i++)
-                    {
-                        var sp=Place("Sprinkle",dress,Rim(clusters[k]+(float)(rng.NextDouble()-.5)*.08f)+Vector3.up*.003f,Vector3.one*1.5f,kit,Quaternion.Euler(0,rng.Next(360),0));
-                        foreach(var r in sp.GetComponentsInChildren<Renderer>())r.sharedMaterial=sprinkleMats[rng.Next(sprinkleMats.Length)];
-                    }
-                    if(k%2==0)Place("ChocolateChip",dress,Rim(clusters[k]+.05f)+Vector3.up*.002f,Vector3.one*1.5f,kit,Quaternion.Euler(0,rng.Next(360),0));
-                    if(k%3==1)Place("MintLeaf",dress,Rim(clusters[k]-.05f)+Vector3.up*.002f,Vector3.one*1.5f,kit,Quaternion.Euler(0,rng.Next(360),0));
+                    for(int i=0;i<3;i++)Put("Sprinkle",Crest(clusters[k]+(float)(rng.NextDouble()-.5)*.08f),1.5f,sprinkleMats[rng.Next(sprinkleMats.Length)]);
+                    if(k%2==0)Put("ChocolateChip",Crest(clusters[k]+.05f),1.5f);
+                    if(k%3==1)Put("MintLeaf",Crest(clusters[k]-.05f),1.5f);
                 }
+                foreach(var mc in probes)Object.DestroyImmediate(mc);
             }
             // 3. Props on their real owners: pad P, handle A, the gear lamp, the cherry; gears in biscuit.
             foreach(var sensor in game.GetComponentsInChildren<COgheTissueSensor>(true))
