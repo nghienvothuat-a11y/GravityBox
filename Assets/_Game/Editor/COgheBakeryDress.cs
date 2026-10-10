@@ -261,6 +261,8 @@ namespace GravityBox.Editor
         static void CakeBlock(Transform parent,string name,Bounds b,bool grippyTop,bool slickSides)
         {
             if(variant=="tripo"){TripoBlock(parent,grippyTop?"glaze_block":"glaze_bar",b.center,b.size+new Vector3(.004f,.002f,.004f));return;}
+            // reduced Tripo where the proportions suit (a glazed cake with a cream crown); long or fully slick pieces stay code
+            if(variant=="tripomobile"&&grippyTop&&slickSides){MobileBlock(parent,"GlazeBlock",.0511f,new Vector3(b.center.x,b.max.y,b.center.z),new Vector2(b.size.x+.004f,b.size.z+.004f),b.size.y);return;}
             float rad=Mathf.Min(.016f,b.size.y*.4f,Mathf.Min(b.size.x,b.size.z)*.3f);const float cap=.011f;
             // with a cream cap the body stops under it (no coplanar faces), the cap's thickness below the contact height
             var bodyCentre=grippyTop?b.center-Vector3.up*(cap*.5f-.0015f):b.center;var bodySize=grippyTop?b.size-Vector3.up*(cap-.003f):b.size;
@@ -323,6 +325,46 @@ namespace GravityBox.Editor
             foreach(var col in go.GetComponentsInChildren<Collider>())Object.DestroyImmediate(col);
             return go.transform;
         }
+
+        // Codex's reduced Tripo pieces (Art/Bakery/TripoMobile): placed by their CONTACT height, not their bounds (the cream
+        // block's toppings rise 1.7 cm over its cream; measured in Blender: cream .0638 of .0812, glaze crown .0511 of .0511).
+        static readonly Dictionary<string,Material> mobileMats=new Dictionary<string,Material>();
+        static Transform MobileBlock(Transform parent,string model,float contactInModel,Vector3 centreTop,Vector2 footprint,float height)
+        {
+            const string d="Assets/_Game/Venom/Art/Bakery/TripoMobile/";
+            if(!mobileMats.TryGetValue(model,out var mat))
+            {
+                var n=AssetImporter.GetAtPath(d+model+"_normal.png") as TextureImporter;if(n!=null&&n.textureType!=TextureImporterType.NormalMap){n.textureType=TextureImporterType.NormalMap;n.SaveAndReimport();}
+                var k=AssetImporter.GetAtPath(d+model+"_Mask.png") as TextureImporter;if(k!=null&&k.sRGBTexture){k.sRGBTexture=false;k.SaveAndReimport();}
+                mat=SaveMaterial("TripoMobile "+model,Color.white,.5f,AssetDatabase.LoadAssetAtPath<Texture2D>(d+model+"_basecolor.png"),AssetDatabase.LoadAssetAtPath<Texture2D>(d+model+"_normal.png"),1,AssetDatabase.LoadAssetAtPath<Texture2D>(d+model+"_Mask.png"));
+                mobileMats[model]=mat;
+            }
+            // keep the FBX's own root transform (its axis conversion); fit a container by the model's measured bounds
+            var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(d+model+".fbx");
+            var box=new GameObject("TripoMobile "+model).transform;box.SetParent(parent,false);
+            var go=(GameObject)PrefabUtility.InstantiatePrefab(prefab);PrefabUtility.UnpackPrefabInstance(go,PrefabUnpackMode.Completely,InteractionMode.AutomatedAction);
+            go.transform.SetParent(box,false);
+            bool first=true;Bounds mb=default;
+            foreach(var r in go.GetComponentsInChildren<Renderer>())
+            {
+                var lb=r.GetComponent<MeshFilter>().sharedMesh.bounds;
+                for(int i=0;i<8;i++)
+                {
+                    var corner=lb.center+Vector3.Scale(lb.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1));
+                    var v=box.InverseTransformPoint(r.transform.TransformPoint(corner));if(first){mb=new Bounds(v,Vector3.zero);first=false;}else mb.Encapsulate(v);
+                }
+            }
+            float contactFraction=contactInModel/Mathf.Max(contactHeightOf[model],1e-5f);   // contact height as a share of the full height
+            var scale=new Vector3(footprint.x/mb.size.x,height/(mb.size.y*contactFraction),footprint.y/mb.size.z);
+            box.localScale=scale;
+            box.localPosition=new Vector3(centreTop.x,centreTop.y-height,centreTop.z)-Vector3.Scale(new Vector3(mb.center.x,mb.min.y,mb.center.z),scale);
+            foreach(var r in go.GetComponentsInChildren<Renderer>()){var mats=r.sharedMaterials;for(int i=0;i<mats.Length;i++)mats[i]=mat;r.sharedMaterials=mats;r.shadowCastingMode=ShadowCastingMode.On;}
+            foreach(var col in go.GetComponentsInChildren<Collider>())Object.DestroyImmediate(col);
+            Debug.Log($"BAKERY mobile {model}: model bounds {mb.size:F4}, scale {scale:F3}");
+            return box;
+        }
+        // full heights measured in Blender alongside the contact heights
+        static readonly Dictionary<string,float> contactHeightOf=new Dictionary<string,float>{{"CreamBlock",.0812f},{"GlazeBlock",.0511f}};
         // ---- the dress -------------------------------------------------------------------------------------------------
         public static void Dress(string key)
         {
@@ -387,6 +429,8 @@ namespace GravityBox.Editor
                     caps.Add(new CombineInstance{mesh=cap,transform=Matrix4x4.Translate(new Vector3(-.40f+tx*(ix+.5f),-.30f-.0045f,-.30f+tz*(iz+.5f)))});
                 if(variant=="tripo")
                 {for(int ix=0;ix<nx;ix++)for(int iz=0;iz<nz;iz++)TripoBlock(dress,"cream_block",new Vector3(-.40f+tx*(ix+.5f),-.32f,-.30f+tz*(iz+.5f)),new Vector3(tx,.04f,tz));}
+                else if(variant=="tripomobile")
+                {for(int ix=0;ix<nx;ix++)for(int iz=0;iz<nz;iz++)MobileBlock(dress,"CreamBlock",.0638f,new Vector3(-.40f+tx*(ix+.5f),-.30f,-.30f+tz*(iz+.5f)),new Vector2(tx-.002f,tz-.002f),.04f);}
                 else{Combined(dress,"Bakery floor sponge",bodies,sponge);Combined(dress,"Bakery floor cream",caps,vanilla);}
                 // the bars: front, back, left, right; the backrest raises the back bar where the exit platform meets it
                 const float w=.06f,top=-.24f,bottom=-.345f;
