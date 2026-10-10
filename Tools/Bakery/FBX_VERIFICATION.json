@@ -1,0 +1,38 @@
+{
+  "source_base": "c7aa1d22",
+  "blender": "5.2.0 LTS",
+  "checks": "FBX round-trip dimensions, triangles, UV0, finite vertices, closed manifold, outward volume, nondegenerate faces",
+  "results": [
+    {
+      "name": "Cherry",
+      "triangles": 1000,
+      "result": "PASS"
+    },
+    {
+      "name": "Plate",
+      "triangles": 1152,
+      "result": "PASS"
+    },
+    {
+      "name": "PressurePad",
+      "triangles": 576,
+      "result": "PASS"
+    },
+    {
+      "name": "CandyHandle",
+      "triangles": 1364,
+      "result": "PASS"
+    },
+    {
+      "name": "GummyLamp",
+      "triangles": 192,
+      "result": "PASS"
+    },
+    {
+      "name": "CreamDrip",
+      "triangles": 260,
+      "result": "PASS"
+    }
+  ],
+  "unity_import": "Not tested here; integration owned by Claude"
+}
