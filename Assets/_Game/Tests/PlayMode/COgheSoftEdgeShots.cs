@@ -57,6 +57,16 @@ namespace GravityBox.Tests
     case "pearl":   // soap: pearl with a rainbow film and bubble rings
      C("_BaseColor",.86f,.80f,.97f);C("_PatternColor",.68f,.60f,.92f);C("_EdgeColor",.62f,.53f,.88f);m.SetFloat("_Pattern",3);m.SetFloat("_PatternScale",tape?.012f:.025f);
      m.SetFloat("_Gloss",260);m.SetFloat("_Spec",1.4f);m.SetFloat("_Reflect",.7f);m.SetFloat("_Fresnel",.5f);m.SetFloat("_SheenStrength",.4f);m.SetFloat("_Iridescence",1);break;
+    case "gel":     // wet gel: clear rippling coat flowing slowly over lilac, droplets standing on it
+     C("_BaseColor",.58f,.50f,.90f);C("_EdgeColor",.44f,.37f,.80f);m.SetFloat("_Pattern",0);m.SetFloat("_Mode",1);
+     m.SetFloat("_Ripple",1.1f);m.SetFloat("_RippleScale",22);m.SetFloat("_Drops",tape?.35f:.4f);
+     m.SetFloat("_Gloss",320);m.SetFloat("_Spec",1.7f);m.SetFloat("_Reflect",.9f);m.SetFloat("_Fresnel",.4f);m.SetFloat("_SheenStrength",.25f);break;
+    case "oil":     // pastel holographic film drifting over lilac
+     C("_BaseColor",.60f,.52f,.91f);C("_EdgeColor",.44f,.37f,.80f);m.SetFloat("_Pattern",0);m.SetFloat("_Mode",2);m.SetFloat("_Film",1);
+     m.SetFloat("_Gloss",300);m.SetFloat("_Spec",1.5f);m.SetFloat("_Reflect",.75f);m.SetFloat("_Fresnel",.45f);m.SetFloat("_SheenStrength",.3f);break;
+    case "glitter": // glitter enamel: deep lavender coat with twinkling flakes
+     C("_BaseColor",.54f,.43f,.88f);C("_EdgeColor",.40f,.31f,.74f);m.SetFloat("_Pattern",0);m.SetFloat("_Mode",3);m.SetFloat("_Glitter",2.5f);
+     m.SetFloat("_Gloss",260);m.SetFloat("_Spec",1.5f);m.SetFloat("_Reflect",.7f);m.SetFloat("_Fresnel",.4f);m.SetFloat("_SheenStrength",.3f);break;
    }
    m.SetFloat("_EdgeBand",tape?.12f:0);m.SetFloat("_SheenSpeed",.25f);m.SetFloat("_SheenWidth",.05f);m.name=$"Slick {look}{(tape?" tape":"")}";
    return m;
@@ -65,7 +75,8 @@ namespace GravityBox.Tests
   {
    Directory.CreateDirectory("Artifacts/Soft");
    string scenes=Environment.GetEnvironmentVariable("COGHE_SOFT_SCENES")??"COgheSpatial02";bool clip=Environment.GetEnvironmentVariable("COGHE_SLICK_CLIP")=="1";
-   var looks=new[]{"current","lilac","ice","pearl"};
+   var looks=(Environment.GetEnvironmentVariable("COGHE_SLICK_LOOKS")??"current,lilac,ice,pearl").Split(',');
+   int frames=int.TryParse(Environment.GetEnvironmentVariable("COGHE_SLICK_FRAMES"),out int fr)?fr:120;
    Time.captureFramerate=30;
    try{
    bool first=true;
@@ -103,7 +114,7 @@ namespace GravityBox.Tests
     if(clip&&first)
     {
      foreach(var look in looks)Directory.CreateDirectory($"Artifacts/Soft/clip-{look}");
-     for(int frame=0;frame<120;frame++)
+     for(int frame=0;frame<frames;frame++)
      {
       foreach(var look in looks){Use(look);SoftShot(cam,$"Artifacts/Soft/clip-{look}/{frame:00000}.png",768,512);}
       yield return null;
