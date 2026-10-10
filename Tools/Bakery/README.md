@@ -32,3 +32,11 @@ Run Blender in background with `--python Tools/Bakery/build_bakery_props.py`, th
 `FBX_VERIFICATION.json` records a fresh FBX reimport checking dimensions, triangles, UV0, finite vertices, closed manifold edges, outward signed volumes and nondegenerate faces. `mesh_audit.json` records source-space bounds after Y-up conversion. All six passed at base `c7aa1d22` plus these asset files.
 
 `PROP_PREVIEW.png` is a Blender asset inspection render, with small props enlarged independently for legibility. It is not a Unity frame, relative scale reference, lighting bake or proof of mobile performance. The generated `.blend` is a disposable inspection scene; source authority is the script and shipped FBX. Unity import/material assignment and live level evidence belong to the integration worktree, controlled by Claude.
+
+## Biscuit material textures
+
+Run `build_bakery_textures.py` in Blender after the mesh generator. It adds six 512×512 PNGs and texture paths to `materials.json`. Mesh regeneration rewrites the base manifest, so always run textures second.
+
+BaseColor is a neutral pore/grain modulation multiplied by the manifest color; import sRGB. Normal is tangent-space OpenGL (+Y), import as Normal Map without green-channel inversion, suggested bump scale .35. Mask is linear data, metallic in R (zero) and smoothness in A; preserve source alpha. Use Repeat, mipmaps and a maximum of 512. With a mask assigned, URP `_Smoothness` must be 1 because the texture already contains the final smoothness; without the mask, use manifest smoothness. Enable the normal and metallic-map shader keywords when assigning maps by script.
+
+Use the Biscuit material on the existing gear mesh; preserve its teeth, rotation and collision. Current color maps intentionally keep pores subtle at gameplay distance. These are synthesized surface detail, not a lightmap or baked scene shadow. Final texture filtering/compression and material response require checking in the Unity player. No new shader or render pipeline feature is required.

@@ -28,7 +28,15 @@
         "b": 0.19,
         "a": 1
       },
-      "smoothness": 0.33999999999999997
+      "smoothness": 0.33999999999999997,
+      "baseColorTexture": "Biscuit_BaseColor.png",
+      "normalTexture": "Biscuit_Normal.png",
+      "maskTexture": "Biscuit_Mask.png",
+      "normalScale": 0.35,
+      "textureSize": 512,
+      "wrap": "Repeat",
+      "normalConvention": "OpenGL",
+      "maskChannels": "R=metallic(0), A=smoothness"
     },
     {
       "name": "Wafer",
@@ -38,7 +46,15 @@
         "b": 0.38,
         "a": 1
       },
-      "smoothness": 0.43000000000000005
+      "smoothness": 0.43000000000000005,
+      "baseColorTexture": "Wafer_BaseColor.png",
+      "normalTexture": "Wafer_Normal.png",
+      "maskTexture": "Wafer_Mask.png",
+      "normalScale": 0.35,
+      "textureSize": 512,
+      "wrap": "Repeat",
+      "normalConvention": "OpenGL",
+      "maskChannels": "R=metallic(0), A=smoothness"
     },
     {
       "name": "Chocolate",
