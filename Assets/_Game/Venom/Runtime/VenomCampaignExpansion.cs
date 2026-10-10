@@ -7,6 +7,7 @@ namespace GravityBox.Venom
     {
         public const int LevelCount=60;
         public COgheMechanism[] Mechanisms { get; private set; }=Array.Empty<COgheMechanism>();
+        public COgheCherryGoal CherryGoal { get; private set; }
         private COgheMechanism[] transportMechanisms=Array.Empty<COgheMechanism>(),fusionBarriers=Array.Empty<COgheMechanism>(),exitControllers=Array.Empty<COgheMechanism>();
         public int LevelPage {get;set;}
         private Vector3[] graphSurfacePositions;
@@ -35,6 +36,8 @@ namespace GravityBox.Venom
             transportMechanisms=Array.FindAll(Mechanisms,m=>m.TransportsTissue);
             fusionBarriers=Array.FindAll(Mechanisms,m=>m.SeparatesTissue);
             exitControllers=Array.FindAll(Mechanisms,m=>m.ControlsExit);
+            // A cherry instead of an exit hole (bakery levels): won by standing on it, merged; no exit assist.
+            CherryGoal=Owner.GetComponentInChildren<COgheCherryGoal>(true);CherryGoal?.Bind(this);
             LevelPage=(Definition.Order-1)/10;
         }
         private void ResetMechanisms()

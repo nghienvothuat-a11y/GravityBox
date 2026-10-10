@@ -1058,12 +1058,48 @@ namespace GravityBox.Editor
    var pad=ExpansionPad(c,name,at,.009f,.10f);pad.Column=.10f;pad.GaugeFull=.096f;PadGauge(pad,4);return pad;
   }
 
+
+  // Bakery levels (Mrk, 10/10/2026: "no glass, a flat surface; where COghe climbs, the face of a block; win at a cherry"):
+  // the floor, a slick rim COghe cannot climb (6 cm, over its 5 cm), a taller back wall where a platform meets the back edge,
+  // no roof. COgheBakeryDress gives it the bakery look after the build.
+  // The rim is the level's outer boundary (ExteriorGlass: the plaque and the "Slippery" tap mark use it).
+  static void BakeryShell(ExpansionContext c)
+  {
+   Panel(c.Root,"Laboratory floor",new Vector3(0,-.30f,0),Vector3.up,new Vector2(.8f,.6f),stone,false,Vector2.zero,0,c.Surfaces);
+   const float rim=.06f;
+   var walls=new[]{(new Vector3(0,0,-.3f),Vector3.forward,.8f),(new Vector3(0,0,.3f),Vector3.back,.8f),
+                   (new Vector3(-.4f,0,0),Vector3.right,.6f),(new Vector3(.4f,0,0),Vector3.left,.6f)};
+   foreach(var (pos,normal,length) in walls)
+   {
+    var p=Panel(c.Root,"Bakery rim",pos+Vector3.up*(-.30f+rim*.5f),normal,new Vector2(length,rim),stone,false,Vector2.zero,0,c.Surfaces);
+    p.Slippery=true;p.Selectable=true;p.ExteriorGlass=true;
+   }
+  }
+  // Where a platform meets the back edge, the rim rises 6 cm over the platform so COghe cannot step off it.
+  static void BakeryBackrest(ExpansionContext c,float x0,float x1,float top)
+  {
+   var p=Panel(c.Root,"Bakery backrest",new Vector3((x0+x1)*.5f,(top-.30f)*.5f,.30f),Vector3.back,new Vector2(x1-x0,top+.30f),stone,false,Vector2.zero,0,c.Surfaces);
+   p.Slippery=true;p.Selectable=true;p.ExteriorGlass=true;
+  }
+  // The goal: a cherry standing at c.Exit (its pivot on the surface). A placeholder of spheres until the dress puts the mesh in.
+  static void BakeryCherry(ExpansionContext c)
+  {
+   var goal=new GameObject("Cherry goal",typeof(COgheCherryGoal)).GetComponent<COgheCherryGoal>();goal.transform.SetParent(c.Root,false);
+   var cherry=new GameObject("Cherry").transform;cherry.SetParent(goal.transform,false);cherry.localPosition=c.Exit;goal.Cherry=cherry;
+   var visual=new GameObject("Cherry visual").transform;visual.SetParent(cherry,false);goal.Visual=visual;   // only this bobs
+   var red=SpatialMaterial("Cherry red",new Color(.86f,.10f,.16f));
+   foreach(var (o,d) in new[]{(new Vector3(-.014f,.017f,0),.034f),(new Vector3(.016f,.016f,.006f),.032f)})
+   {var b=GameObject.CreatePrimitive(PrimitiveType.Sphere);Object.DestroyImmediate(b.GetComponent<Collider>());b.name="Cherry placeholder";b.transform.SetParent(visual,false);b.transform.localPosition=o;b.transform.localScale=Vector3.one*d;b.GetComponent<MeshRenderer>().sharedMaterial=red;}
+  }
   // N41 · 41 · Bánh răng đầu tiên (E08 and E12 merged, plan 5.5: teaches gears). On P with the gap open only the motor gear
   // turns; the gap is a ring on the table and the lamp beside the train stays dark. Pull A: its carriage brings G into the
   // ring and the lamp lights; on P the output gear draws the step out of the exit platform.
   static void PlusN41(ExpansionContext c)
   {
-   c.Exit=new Vector3(.20f,-.172f,.30f);c.Spawn=new Vector3(-.28f,-.25f,-.22f);NextShell(c,.10f,true);var floor=c.Surfaces[0];
+   // Bakery trial (Mrk, 10/10/2026, for review): no glass box and a cherry instead of the hole. The cherry stands on the
+   // exit platform 11 cm behind its front edge, so only a body on the platform reaches it; the step is still the way up.
+   c.Exit=new Vector3(.20f,-.24f,.23f);c.Outward=Vector3.down;c.Spawn=new Vector3(-.28f,-.25f,-.22f);BakeryShell(c);var floor=c.Surfaces[0];
+   BakeryBackrest(c,.07f,.33f,-.18f);BakeryCherry(c);
    var drawer=NextDrawerPlatform(c,.20f,.12f,.17f,.26f);
    // E12's table, 4 cm longer on the right for the lamp.
    float y=PlusGearTable(c,"Gear table",new Vector3(-.12f,0,.08f),new Vector2(.30f,.10f));

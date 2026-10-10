@@ -107,7 +107,7 @@ namespace GravityBox.Venom
             ResetBody(Knife,knifeRest);ResetBody(ExitCover,exitRest);ResetBody(ButtonCover,buttonRest);
             HasPropTarget=false;heldProp=approachProp=climbingStep=null;propStance=null;tubeIntent=false;InTube=false;cutClock=-1;holdTime=0;Failure=null;Activity="Idle";
             if(Tube!=null&&Tube.Entrance!=null&&Tube.Entrance.Shape!=null)Tube.Entrance.Shape.enabled=true;
-            hasExited=false;advanceAt=-1;GateOpen=PadA==null;Zoom=false;Home=false;CameraRig?.Reset();
+            hasExited=false;advanceAt=-1;GateOpen=PadA==null;Zoom=false;Home=false;CameraRig?.Reset();CherryGoal?.ResetGoal();
             KnifePhase=BladePhase.Ready;cutDone=false;MassA=MassB=0;
             Owner.Rotation.InputEnabled=Definition.CanRotate;
             if(GateOpen)Owner.LatchGuidedGate();
@@ -438,6 +438,14 @@ namespace GravityBox.Venom
         public void EvaluateExit()
         {
             if(Owner.Lost||Owner.Completed||!FinalExitAvailable)return;
+            if(CherryGoal!=null)
+            {
+                // The whole COghe on the cherry wins; the roster is recorded as out so the outcome reads as an exit.
+                if(!CherryGoal.Reached(this))return;
+                for(int i=0;i<32;i++)Matter.RecordEscape(i);
+                hasExited=true;CherryGoal.Eat(Matter.SimulationTime);Motion.StopAll();
+                Progress.Win(Definition);Owner.SetCampaignOutcome(true);advanceAt=Matter.SimulationTime+VenomCelebration.Duration;return;
+            }
             // Full roster connectivity, never just the number of pieces remaining in the box.
             if(hasExited&&Matter.TotalFragmentCount!=1){Fail(MergeFailure);return;}
             float r=Matter.Profile.ParticleRadius;
@@ -492,7 +500,7 @@ namespace GravityBox.Venom
             // Small fragments otherwise lose their last ceiling contact over
             // the bore and fall forever before EvaluateExit can reject them.
             // The complete roster must still be fused when tissue crosses out.
-            if(Home||!exitAvailable||Matter.Escaped[particle])return false;
+            if(Home||!exitAvailable||Matter.Escaped[particle]||CherryGoal!=null)return false;
             Vector3 p=Owner.Outlet.InverseTransformPoint(Matter.Bodies[particle].position);
             Vector3 capture=Owner.Outlet.TransformPoint(Vector3.back*.022f);
             bool eligible=hasExited&&p.magnitude<.25f||
