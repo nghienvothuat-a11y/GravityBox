@@ -1,0 +1,11 @@
+{
+  "shader": "Universal Render Pipeline/Lit",
+  "surface": "Opaque",
+  "base_color": [1, 1, 1, 1],
+  "smoothness_multiplier": 1,
+  "mask_channels": {"R": "metallic", "G": "one", "B": "one", "A": "smoothness"},
+  "materials": [
+    {"name": "CreamBlock", "basecolor": "CreamBlock_basecolor.png", "normal": "CreamBlock_normal.png", "mask": "CreamBlock_Mask.png"},
+    {"name": "GlazeBlock", "basecolor": "GlazeBlock_basecolor.png", "normal": "GlazeBlock_normal.png", "mask": "GlazeBlock_Mask.png"}
+  ]
+}
