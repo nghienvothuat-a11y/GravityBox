@@ -115,6 +115,44 @@
         "a": 1
       },
       "smoothness": 0.76
+    },
+    {
+      "name": "Glaze lilac",
+      "color": {
+        "r": 0.62,
+        "g": 0.43,
+        "b": 0.79,
+        "a": 1
+      },
+      "smoothness": 0.82
+    },
+    {
+      "name": "Piped cream",
+      "color": {
+        "r": 1,
+        "g": 0.91,
+        "b": 0.76,
+        "a": 1
+      },
+      "smoothness": 0.32
+    },
+    {
+      "name": "Sponge",
+      "color": {
+        "r": 0.94,
+        "g": 0.66,
+        "b": 0.32,
+        "a": 1
+      },
+      "smoothness": 0.2,
+      "baseColorTexture": "Sponge_BaseColor.png",
+      "normalTexture": "Sponge_Normal.png",
+      "maskTexture": "Sponge_Mask.png",
+      "normalScale": 0.65,
+      "textureSize": 512,
+      "wrap": "Repeat",
+      "normalConvention": "OpenGL",
+      "maskChannels": "R=metallic(0), A=smoothness"
     }
   ]
 }
