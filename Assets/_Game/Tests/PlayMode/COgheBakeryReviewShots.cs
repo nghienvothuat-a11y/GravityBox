@@ -20,7 +20,8 @@ namespace GravityBox.Tests
   [UnityTest,Explicit,Timeout(600000)] public IEnumerator BakeryReviewShots()
   {
    Directory.CreateDirectory("Artifacts/Bakery");
-   yield return LoadScene("COgheSpatialPlusN41");yield return Wait(1);
+   string sceneName=Environment.GetEnvironmentVariable("COGHE_BAKERY_SCENE")??"COgheSpatialPlusN41";   // e.g. COgheSpatial01
+   yield return LoadScene(sceneName);yield return Wait(1);
    game.CameraRig.Frame(1080,1920,0,true);BakeryShot(game.Owner.View,"n41-game",1080,1920);
    var low=new System.Text.StringBuilder();
    foreach(var r in Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))

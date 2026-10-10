@@ -117,7 +117,12 @@ namespace GravityBox.Editor
    if(n==1||n==3||n==4)c.Exit.y=-.252f;if(n==2)c.Exit.y=-.094f;if(n==5)c.Exit.y=.05f;if(n==6)c.Exit.y=-.035f;
    // 8 and 10 exit at floor level through slick glass: the hole starts at the floor, there is nothing to climb.
    if(n==8)c.Exit=new Vector3(-.23f,-.252f,.30f);if(n==9)c.Exit=new Vector3(-.25f,.09f,.30f);if(n==10)c.Exit=new Vector3(.25f,-.252f,.30f);
-   if(n==7){c.Exit=new Vector3(.32f,-.30f,.16f);c.Outward=Vector3.down;ViewShell(c,true);}else SpatialShell(c,true);
+   if(n==7){c.Exit=new Vector3(.32f,-.30f,.16f);c.Outward=Vector3.down;ViewShell(c,true);}
+   // Bakery trial (Mrk, 10/10/2026: "tạo level 1 theo phương án 1"): no glass box; the cherry stands on the floor at the
+   // back right, where the exit was (COgheBakeryDress pa1 gives the look after the build).
+   // A flat level reads better from higher up (level 49's 54°); the yaw stays level 1's.
+   else if(n==1){c.Exit=new Vector3(.23f,-.30f,.20f);c.Outward=Vector3.down;BakeryShell(c);BakeryCherry(c);def.CameraEuler=new Vector3(54,20,0);}
+   else SpatialShell(c,true);
    foreach(var surface in c.Surfaces)if(surface.ExteriorGlass)surface.Selectable=true;
    var floor=c.Surfaces[0];
    if(n!=1&&n!=4)ChapterOne(c,n,floor);

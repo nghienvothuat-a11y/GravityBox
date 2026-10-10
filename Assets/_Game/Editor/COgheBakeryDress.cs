@@ -391,7 +391,7 @@ namespace GravityBox.Editor
                 // option 1: the five cleaned Tripo pieces carry the cake, the back rail, the plate (the rest stays shared)
                 // one Tripo cake for the floor (its sponge sides and drips); six separate portions read as small cakes. Its baked
                 // cream top streaks when stretched, so a flat cream surface in few broad portions covers it (Codex review).
-                PA1Piece(dress,"PA1Floor",.955f,new Vector3(cc.x,top,cc.z),new Vector2(cs.x,cs.z),depth);
+                PA1Piece(dress,"PA1Floor",.955f,new Vector3(cc.x,top,cc.z),new Vector2(cs.x,cs.z),depth,.001f);
                 CreamPortions(dress,top+.002f,cream,.012f);   // 2 mm over the walk height: the baked cream has bumps above it
                 // the back rail in code: the Tripo rail's baked streaks read as stripes; the glaze must be smooth (Codex review)
                 Rounded(dress,"Concept back bar",new Vector3(-.17f,top+.026f,.335f),new Vector3(.46f,.052f,.06f),.025f,glaze,.12f,10);
@@ -564,7 +564,10 @@ namespace GravityBox.Editor
         /// <summary>Option 1: a cleaned PA1 Tripo piece (Art/Bakery/TripoPA1) fitted into a target box: its long axis turned to
         /// the box's long axis, its contact surface (a measured share of its height) put on topY, its bottom height below.</summary>
         static readonly Dictionary<string,Material> pa1Mats=new Dictionary<string,Material>();
-        static Transform PA1Piece(Transform parent,string model,float contactFraction,Vector3 centreAtTop,Vector2 footprint,float height)
+        /// <param name="flattenBelow">When ≥ 0: vertices above the contact height are pressed down to this far (metres) under
+        /// it. The floor's baked cream rises above the walk height in places and showed through the cream on an empty floor
+        /// (level 1); blocks hid it on level 49.</param>
+        static Transform PA1Piece(Transform parent,string model,float contactFraction,Vector3 centreAtTop,Vector2 footprint,float height,float flattenBelow=-1)
         {
             const string d="Assets/_Game/Venom/Art/Bakery/TripoPA1/";
             if(!pa1Mats.TryGetValue(model,out var mat))
@@ -594,6 +597,22 @@ namespace GravityBox.Editor
             var scale=new Vector3(footprint.x/mb2.size.x,height/(mb2.size.y*contactFraction),footprint.y/mb2.size.z);
             box.localScale=scale;
             box.localPosition=new Vector3(centreAtTop.x,centreAtTop.y-height,centreAtTop.z)-Vector3.Scale(new Vector3(mb2.center.x,mb2.min.y,mb2.center.z),scale);
+            if(flattenBelow>=0)
+            {
+                // the plane in the box's own space (before its scale): the contact height, less flattenBelow in metres
+                float plane=mb2.min.y+mb2.size.y*contactFraction-flattenBelow/scale.y;
+                foreach(var mf in go.GetComponentsInChildren<MeshFilter>())
+                {
+                    var mesh=Object.Instantiate(mf.sharedMesh);var v=mesh.vertices;var t=mf.transform;int pressed=0;
+                    for(int i=0;i<v.Length;i++)
+                    {
+                        var q=box.InverseTransformPoint(t.TransformPoint(v[i]));if(q.y<=plane)continue;
+                        q.y=plane;v[i]=t.InverseTransformPoint(box.TransformPoint(q));pressed++;
+                    }
+                    mesh.vertices=v;mesh.RecalculateBounds();mf.sharedMesh=SaveMesh(mesh,model+"-flat");
+                    Debug.Log($"BAKERY {model}: {pressed}/{v.Length} vertices pressed under the cream");
+                }
+            }
             foreach(var r in go.GetComponentsInChildren<Renderer>()){var mats=r.sharedMaterials;for(int i=0;i<mats.Length;i++)mats[i]=mat;r.sharedMaterials=mats;r.shadowCastingMode=ShadowCastingMode.On;}
             foreach(var col in go.GetComponentsInChildren<Collider>())Object.DestroyImmediate(col);
             return box;

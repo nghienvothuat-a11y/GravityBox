@@ -127,9 +127,10 @@ namespace GravityBox.Venom
         }
         private void ExitCue()
         {
+            bool cherry=game.CherryGoal!=null;   // bakery levels: the goal is a cherry, not a hole
             if(game.Motion.Get(game.Motion.Selected)?.Exit==true)
-            {Set("exit-moving","COghe đang tới lỗ sáng.");return;}
-            Set("exit","Chạm lỗ sáng để ra ngoài.",CueKind.Touch,game.Owner.Outlet.position);
+            {Set("exit-moving",cherry?"COghe đang tới quả cherry.":"COghe đang tới lỗ sáng.");return;}
+            Set("exit",cherry?"Chạm quả cherry.":"Chạm lỗ sáng để ra ngoài.",CueKind.Touch,game.Owner.Outlet.position);
         }
         private void Set(string stage,string text,CueKind cue=CueKind.None,Vector3 point=default)
         {
