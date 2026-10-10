@@ -1,0 +1,1161 @@
+{
+  "blender": "5.2.0 LTS",
+  "models": [
+    {
+      "source": "/Users/tommynguyen/.buzz/.scratch/tripo/pa1/floor/tripo-out/01-floor-png-convert-096a2f46/model.fbx",
+      "sha256": "05db52f327d11372ea0d1301f6742f38ea74d68d6eb4fbb4af8a22f03b547f95",
+      "task": {
+        "task_id": "096a2f46-c59e-49ea-b8c9-db1bd34dc9b9",
+        "type": "convert_model",
+        "status": "success",
+        "input": {
+          "format": "FBX",
+          "texture_size": 2048,
+          "original_model_id": "8df2ff4f-7a5d-48bf-83ef-88164e1378c3"
+        },
+        "output_fields": [
+          "model_url"
+        ],
+        "credits_consumed": 10,
+        "created_at": "2026-10-10T05:31:36.156787Z",
+        "completed_at": "2026-10-10T05:31:44.776950Z",
+        "files": [
+          "model.fbx"
+        ]
+      },
+      "original": {
+        "bounds_min_blender": [
+          -0.3212890625,
+          -0.4990234375,
+          -0.1083984375
+        ],
+        "bounds_max_blender": [
+          0.3212890625,
+          0.4990234375,
+          0.1083984375
+        ],
+        "dimensions_blender": [
+          0.642578125,
+          0.998046875,
+          0.216796875
+        ],
+        "meshes": [
+          {
+            "name": "tripo_node_096a2f46",
+            "vertices": 7016,
+            "triangles": 13405,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 639,
+            "nonmanifold_edges": 642,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 0.16596993258664502
+          }
+        ],
+        "triangles": 13405,
+        "images": [
+          {
+            "name": "tripo_model_basecolor",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "tripo_model_metallic",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "tripo_model_normal",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "tripo_model_roughness",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "uniform_scale": 0.15562310030395138,
+      "cleaned": {
+        "bounds_min_blender": [
+          -0.0500761941075325,
+          -0.07773143798112869,
+          0.0
+        ],
+        "bounds_max_blender": [
+          0.0500761941075325,
+          0.07773143798112869,
+          0.033738601952791214
+        ],
+        "dimensions_blender": [
+          0.100152388215065,
+          0.15546287596225739,
+          0.033738601952791214
+        ],
+        "meshes": [
+          {
+            "name": "PA1Floor",
+            "vertices": 2195,
+            "triangles": 4388,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 3,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 0.0005740695237002964
+          }
+        ],
+        "triangles": 4388,
+        "images": [
+          {
+            "name": "PA1Floor_basecolor",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "PA1Floor_metallic",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Floor_normal",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Floor_roughness",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "roundtrip": {
+        "bounds_min_blender": [
+          -0.0500761941075325,
+          -0.07773143798112869,
+          -1.1566683610908512e-08
+        ],
+        "bounds_max_blender": [
+          0.0500761941075325,
+          0.07773144543170929,
+          0.03373859077692032
+        ],
+        "dimensions_blender": [
+          0.100152388215065,
+          0.15546289086341858,
+          0.033738601952791214
+        ],
+        "meshes": [
+          {
+            "name": "PA1Floor",
+            "vertices": 2195,
+            "triangles": 4388,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 3,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 0.0005740695237002964
+          }
+        ],
+        "triangles": 4388,
+        "images": [
+          {
+            "name": "PA1Floor_basecolor",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "PA1Floor_basecolor.001",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Floor_metallic",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Floor_normal",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Floor_roughness",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "roundtrip_triangle_delta": 0
+    },
+    {
+      "source": "/Users/tommynguyen/.buzz/.scratch/tripo/pa1/rail/tripo-out/02-glaze-rail-png-convert-8513edda/model.fbx",
+      "sha256": "3e5f8b6fe288e4b46cc7317dfa7dbbb3b289fc593aa859a6df25b17e4ff9e739",
+      "task": {
+        "task_id": "8513edda-6012-40d3-adf4-c854b183bed3",
+        "type": "convert_model",
+        "status": "success",
+        "input": {
+          "format": "FBX",
+          "texture_size": 2048,
+          "original_model_id": "2c5ea7a6-86f5-42e9-9e1b-6299bc0b89ff"
+        },
+        "output_fields": [
+          "model_url"
+        ],
+        "credits_consumed": 10,
+        "created_at": "2026-10-10T05:34:07.636455Z",
+        "completed_at": "2026-10-10T05:34:16.103327Z",
+        "files": [
+          "model.fbx"
+        ]
+      },
+      "original": {
+        "bounds_min_blender": [
+          -0.0419921875,
+          -0.4990234375,
+          -0.03808595985174179
+        ],
+        "bounds_max_blender": [
+          0.0419921875,
+          0.4990234375,
+          0.03808595985174179
+        ],
+        "dimensions_blender": [
+          0.083984375,
+          0.998046875,
+          0.07617191970348358
+        ],
+        "meshes": [
+          {
+            "name": "tripo_node_8513edda",
+            "vertices": 7263,
+            "triangles": 13981,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 855,
+            "nonmanifold_edges": 855,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 0.0054964168618122766
+          }
+        ],
+        "triangles": 13981,
+        "images": [
+          {
+            "name": "tripo_model_basecolor",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "tripo_model_metallic",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "tripo_model_normal",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "tripo_model_roughness",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "uniform_scale": 1.1906976744186046,
+      "cleaned": {
+        "bounds_min_blender": [
+          -0.05005166679620743,
+          -0.594323456287384,
+          0.0
+        ],
+        "bounds_max_blender": [
+          0.05005166679620743,
+          0.594323456287384,
+          0.0911264717578888
+        ],
+        "dimensions_blender": [
+          0.10010333359241486,
+          1.188646912574768,
+          0.0911264717578888
+        ],
+        "meshes": [
+          {
+            "name": "PA1Rail",
+            "vertices": 1432,
+            "triangles": 2860,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 1,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 0.009280448196108394
+          }
+        ],
+        "triangles": 2860,
+        "images": [
+          {
+            "name": "PA1Rail_basecolor",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "PA1Rail_metallic",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Rail_normal",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Rail_roughness",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "roundtrip": {
+        "bounds_min_blender": [
+          -0.05005166679620743,
+          -0.594323456287384,
+          5.9067364333031946e-08
+        ],
+        "bounds_max_blender": [
+          0.05005166679620743,
+          0.594323456287384,
+          0.09112651646137238
+        ],
+        "dimensions_blender": [
+          0.10010333359241486,
+          1.188646912574768,
+          0.0911264568567276
+        ],
+        "meshes": [
+          {
+            "name": "PA1Rail",
+            "vertices": 1432,
+            "triangles": 2859,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 2,
+            "nonmanifold_edges": 3,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 0.009280489080429525
+          }
+        ],
+        "triangles": 2859,
+        "images": [
+          {
+            "name": "PA1Rail_basecolor",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "PA1Rail_basecolor.001",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Rail_metallic",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Rail_normal",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Rail_roughness",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "roundtrip_triangle_delta": -1
+    },
+    {
+      "source": "/Users/tommynguyen/.buzz/.scratch/tripo/pa1/goal/tripo-out/03-goal-base-png-convert-1405eb45/model.fbx",
+      "sha256": "75d547cb59222618420724300f3d63229dfc00c4eeccb7403ffc99f7b93a73cd",
+      "task": {
+        "task_id": "1405eb45-f690-4f5b-be3d-e68708db001d",
+        "type": "convert_model",
+        "status": "success",
+        "input": {
+          "format": "FBX",
+          "texture_size": 2048,
+          "original_model_id": "97078d7c-1b21-4f9e-89a2-9a282c516db9"
+        },
+        "output_fields": [
+          "model_url"
+        ],
+        "credits_consumed": 10,
+        "created_at": "2026-10-10T05:36:36.753298Z",
+        "completed_at": "2026-10-10T05:36:39.373266Z",
+        "files": [
+          "model.fbx"
+        ]
+      },
+      "original": {
+        "bounds_min_blender": [
+          -0.2998046875,
+          -0.4990234375,
+          -0.1357421875
+        ],
+        "bounds_max_blender": [
+          0.2998046875,
+          0.4990234375,
+          0.1357421875
+        ],
+        "dimensions_blender": [
+          0.599609375,
+          0.998046875,
+          0.271484375
+        ],
+        "meshes": [
+          {
+            "name": "tripo_node_1405eb45",
+            "vertices": 7057,
+            "triangles": 14107,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 3,
+            "nonmanifold_edges": 3,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 0.17545654624700505
+          }
+        ],
+        "triangles": 14107,
+        "images": [
+          {
+            "name": "tripo_model_basecolor",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "tripo_model_metallic",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "tripo_model_normal",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "tripo_model_roughness",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "uniform_scale": 0.16677524429967427,
+      "cleaned": {
+        "bounds_min_blender": [
+          -0.05004659295082092,
+          -0.08328583836555481,
+          0.0
+        ],
+        "bounds_max_blender": [
+          0.05004659295082092,
+          0.08328583836555481,
+          0.0452645942568779
+        ],
+        "dimensions_blender": [
+          0.10009318590164185,
+          0.16657167673110962,
+          0.0452645942568779
+        ],
+        "meshes": [
+          {
+            "name": "PA1Goal",
+            "vertices": 1353,
+            "triangles": 2700,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 0,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 0.0008114452772032867
+          }
+        ],
+        "triangles": 2700,
+        "images": [
+          {
+            "name": "PA1Goal_basecolor",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "PA1Goal_metallic",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Goal_normal",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Goal_roughness",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "roundtrip": {
+        "bounds_min_blender": [
+          -0.05004659295082092,
+          -0.08328583836555481,
+          2.8879652003155343e-09
+        ],
+        "bounds_max_blender": [
+          0.05004659295082092,
+          0.0832858458161354,
+          0.0452645942568779
+        ],
+        "dimensions_blender": [
+          0.10009318590164185,
+          0.16657167673110962,
+          0.0452645905315876
+        ],
+        "meshes": [
+          {
+            "name": "PA1Goal",
+            "vertices": 1353,
+            "triangles": 2700,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 0,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 0.0008114452772032867
+          }
+        ],
+        "triangles": 2700,
+        "images": [
+          {
+            "name": "PA1Goal_basecolor",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "PA1Goal_basecolor.001",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Goal_metallic",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Goal_normal",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Goal_roughness",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "roundtrip_triangle_delta": 0
+    },
+    {
+      "source": "/Users/tommynguyen/.buzz/.scratch/tripo/pa1/table/tripo-out/04-gear-table-png-convert-1fd910dd/model.fbx",
+      "sha256": "cedb80bad53201986c88014826dba02b9b843c3a15534363bfb64935b0b9330f",
+      "task": {
+        "task_id": "1fd910dd-5d13-4229-9b26-3346b3f0501d",
+        "type": "convert_model",
+        "status": "success",
+        "input": {
+          "format": "FBX",
+          "texture_size": 2048,
+          "original_model_id": "f14529f8-01e6-49a4-b57b-0958f7bdbfe8"
+        },
+        "output_fields": [
+          "model_url"
+        ],
+        "credits_consumed": 10,
+        "created_at": "2026-10-10T05:38:30.295017Z",
+        "completed_at": "2026-10-10T05:38:32.111575Z",
+        "files": [
+          "model.fbx"
+        ]
+      },
+      "original": {
+        "bounds_min_blender": [
+          -0.1591796875,
+          -0.4990234375,
+          -0.0673828274011612
+        ],
+        "bounds_max_blender": [
+          0.1591796875,
+          0.4990234375,
+          0.0673828274011612
+        ],
+        "dimensions_blender": [
+          0.318359375,
+          0.998046875,
+          0.1347656548023224
+        ],
+        "meshes": [
+          {
+            "name": "tripo_node_1fd910dd",
+            "vertices": 7529,
+            "triangles": 15052,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 6,
+            "nonmanifold_edges": 6,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 0.03950658564766249
+          }
+        ],
+        "triangles": 15052,
+        "images": [
+          {
+            "name": "tripo_model_basecolor",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "tripo_model_metallic",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "tripo_model_normal",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "tripo_model_roughness",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "uniform_scale": 0.3141104294478528,
+      "cleaned": {
+        "bounds_min_blender": [
+          -0.050105780363082886,
+          -0.15676695108413696,
+          0.0
+        ],
+        "bounds_max_blender": [
+          0.050105780363082886,
+          0.15676695108413696,
+          0.042587559670209885
+        ],
+        "dimensions_blender": [
+          0.10021156072616577,
+          0.3135339021682739,
+          0.042587559670209885
+        ],
+        "meshes": [
+          {
+            "name": "PA1Table",
+            "vertices": 1353,
+            "triangles": 2702,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 0,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 0.0012241733060038397
+          }
+        ],
+        "triangles": 2702,
+        "images": [
+          {
+            "name": "PA1Table_basecolor",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "PA1Table_metallic",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Table_normal",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Table_roughness",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "roundtrip": {
+        "bounds_min_blender": [
+          -0.050105780363082886,
+          -0.15676695108413696,
+          2.25227090311364e-08
+        ],
+        "bounds_max_blender": [
+          0.050105780363082886,
+          0.15676695108413696,
+          0.042587559670209885
+        ],
+        "dimensions_blender": [
+          0.10021156072616577,
+          0.3135339021682739,
+          0.042587537318468094
+        ],
+        "meshes": [
+          {
+            "name": "PA1Table",
+            "vertices": 1353,
+            "triangles": 2702,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 0,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 0.0012241733060038397
+          }
+        ],
+        "triangles": 2702,
+        "images": [
+          {
+            "name": "PA1Table_basecolor",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "PA1Table_basecolor.001",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Table_metallic",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Table_normal",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Table_roughness",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "roundtrip_triangle_delta": 0
+    },
+    {
+      "source": "/Users/tommynguyen/.buzz/.scratch/tripo/pa1/plate/tripo-out/05-plate-png-convert-765750e7/model.fbx",
+      "sha256": "8fb227819eae4e8b52ad8e8182616dbbfea76d6c619640485e0db43d225e259d",
+      "task": {
+        "task_id": "765750e7-b998-4423-81f3-8b6503e4b6ed",
+        "type": "convert_model",
+        "status": "success",
+        "input": {
+          "format": "FBX",
+          "texture_size": 2048,
+          "original_model_id": "9ddeb9ae-9762-4e01-a9e9-b5b0c1496169"
+        },
+        "output_fields": [
+          "model_url"
+        ],
+        "credits_consumed": 10,
+        "created_at": "2026-10-10T05:39:49.872989Z",
+        "completed_at": "2026-10-10T05:39:52.246630Z",
+        "files": [
+          "model.fbx"
+        ]
+      },
+      "original": {
+        "bounds_min_blender": [
+          -0.3642578125,
+          -0.4990234375,
+          -0.03613283112645149
+        ],
+        "bounds_max_blender": [
+          0.3642578125,
+          0.4990234375,
+          0.0361328125
+        ],
+        "dimensions_blender": [
+          0.728515625,
+          0.998046875,
+          0.0722656399011612
+        ],
+        "meshes": [
+          {
+            "name": "tripo_node_765750e7",
+            "vertices": 6930,
+            "triangles": 13813,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 103,
+            "nonmanifold_edges": 103,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 0.01778848469257358
+          }
+        ],
+        "triangles": 13813,
+        "images": [
+          {
+            "name": "tripo_model_basecolor",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "tripo_model_metallic",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "tripo_model_normal",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "tripo_model_roughness",
+            "size": [
+              2048,
+              2048
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "uniform_scale": 0.13726541554959787,
+      "cleaned": {
+        "bounds_min_blender": [
+          -0.05001061409711838,
+          -0.06854376196861267,
+          0.0
+        ],
+        "bounds_max_blender": [
+          0.05001061409711838,
+          0.06854376196861267,
+          0.009979856200516224
+        ],
+        "dimensions_blender": [
+          0.10002122819423676,
+          0.13708752393722534,
+          0.009979856200516224
+        ],
+        "meshes": [
+          {
+            "name": "PA1Plate",
+            "vertices": 2017,
+            "triangles": 4030,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 0,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 4.602053542632129e-05
+          }
+        ],
+        "triangles": 4030,
+        "images": [
+          {
+            "name": "PA1Plate_basecolor",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "PA1Plate_metallic",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Plate_normal",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Plate_roughness",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "roundtrip": {
+        "bounds_min_blender": [
+          -0.05001061409711838,
+          -0.06854376196861267,
+          8.652077276849468e-09
+        ],
+        "bounds_max_blender": [
+          0.05001061409711838,
+          0.06854376196861267,
+          0.009979856200516224
+        ],
+        "dimensions_blender": [
+          0.10002122819423676,
+          0.13708752393722534,
+          0.009979847818613052
+        ],
+        "meshes": [
+          {
+            "name": "PA1Plate",
+            "vertices": 2017,
+            "triangles": 4030,
+            "uv_layers": 1,
+            "material_slots": 1,
+            "boundary_edges": 0,
+            "nonmanifold_edges": 0,
+            "degenerate_triangles": 0,
+            "finite_vertices": true,
+            "signed_volume": 4.602053542632129e-05
+          }
+        ],
+        "triangles": 4030,
+        "images": [
+          {
+            "name": "PA1Plate_basecolor",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "sRGB"
+          },
+          {
+            "name": "PA1Plate_basecolor.001",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Plate_metallic",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Plate_normal",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          },
+          {
+            "name": "PA1Plate_roughness",
+            "size": [
+              1024,
+              1024
+            ],
+            "color_space": "Non-Color"
+          }
+        ]
+      },
+      "roundtrip_triangle_delta": 0
+    }
+  ],
+  "unity_import": "Claude integration, option 1 (Mrk 10/10/2026)"
+}
