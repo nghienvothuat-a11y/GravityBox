@@ -604,17 +604,23 @@ namespace GravityBox.Editor
   }
   // The exit platform with a drawer step (shared by 16 and 24): 6 cm slick platform, slot at floor level,
   // the step slides out toward the player when its latch drives it; a static replica carries the body when caught.
-  static COgheRailSlider NextDrawerPlatform(ExpansionContext c,float x,float zFront,float depth,float width)
+  // flush (bakery level 49, 10/10/2026): the docked step's front fills the opening under the lintel, flush with it, and its
+  // risers are slick, so the front is one 6 cm slick wall until the gears draw the step out. Without it the 3.4 cm opening
+  // under a 2.6 cm lintel is two hops under COghe's 5 cm climb: an exit tap at the front takes it onto the platform
+  // (levels 13, 40, 49, 50, 56 could be skipped).
+  static COgheRailSlider NextDrawerPlatform(ExpansionContext c,float x,float zFront,float depth,float width,bool flush=false)
   {
    float zc=zFront+depth*.5f,zBack=zFront+depth;
    Panel(c.Root,"Exit platform",new Vector3(x,-.24f,zc),Vector3.up,new Vector2(width,depth),stone,false,Vector2.zero,0,c.Surfaces);
    foreach(float s in new[]{-1f,1f})Panel(c.Root,"Exit platform",new Vector3(x+s*width*.5f,-.27f,zc),Vector3.right*s,new Vector2(depth,.06f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
    Panel(c.Root,"Exit platform",new Vector3(x,-.27f,zBack),Vector3.forward,new Vector2(width,.06f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
-   Panel(c.Root,"Exit platform lintel",new Vector3(x,-.253f,zFront),Vector3.back,new Vector2(width,.026f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
-   foreach(float s in new[]{-1f,1f})Panel(c.Root,"Exit platform cheek",new Vector3(x+s*(width*.5f-.0125f),-.283f,zFront),Vector3.back,new Vector2(.025f,.034f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
-   var bridge=ExpansionRail(c,"Step bridge",new Vector3(x,-.2845f,zFront+.07f),Vector3.back,.10f,0,new Vector3(width-.06f,.029f,.10f),.03f,.004f,false,false);
+   float lintel=flush?.029f:.026f,cheek=flush?.0295f:.034f;   // flush: 1 mm over the step, which slides under it
+   Panel(c.Root,"Exit platform lintel",new Vector3(x,-.24f-lintel*.5f,zFront),Vector3.back,new Vector2(width,lintel),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
+   foreach(float s in new[]{-1f,1f})Panel(c.Root,"Exit platform cheek",new Vector3(x+s*(width*.5f-.0125f),-.30f+cheek*.5f,zFront),Vector3.back,new Vector2(.025f,cheek),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
+   var bridge=ExpansionRail(c,"Step bridge",new Vector3(x,-.2845f,zFront+(flush?.05f:.07f)),Vector3.back,.10f,0,new Vector3(width-.06f,.029f,.10f),.03f,.004f,false,false);
    bridge.GetComponent<VenomMovableProp>().Manipulable=false;TrimSideSlabs(bridge);
-   int first=c.Surfaces.Count;ViewBlock(c,"Step bridge docked",new Vector3(x,-.2845f,zFront-.03f),new Vector3(width-.06f,.029f,.10f));
+   if(flush)foreach(var f in bridge.GetComponentsInChildren<VenomSurfacePatch>(true))if(Mathf.Abs(f.Normal.y)<.5f)f.Slippery=true;
+   int first=c.Surfaces.Count;ViewBlock(c,"Step bridge docked",new Vector3(x,-.2845f,zFront-(flush?.05f:.03f)),new Vector3(width-.06f,.029f,.10f));
    var docked=c.Surfaces.GetRange(first,c.Surfaces.Count-first).ToArray();foreach(var d in docked)d.gameObject.SetActive(false);
    var deck=bridge.gameObject.AddComponent<COgheDockedBridgeDeck>();deck.Rail=bridge;deck.MovingSurfaces=bridge.GetComponentsInChildren<VenomSurfacePatch>(true);deck.DockedSurfaces=docked;
    return bridge;

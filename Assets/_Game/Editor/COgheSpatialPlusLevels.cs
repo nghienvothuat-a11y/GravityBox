@@ -1100,7 +1100,8 @@ namespace GravityBox.Editor
    // exit platform 11 cm behind its front edge, so only a body on the platform reaches it; the step is still the way up.
    c.Exit=new Vector3(.20f,-.24f,.23f);c.Outward=Vector3.down;c.Spawn=new Vector3(-.28f,-.25f,-.22f);BakeryShell(c);var floor=c.Surfaces[0];
    BakeryBackrest(c,.07f,.33f,-.18f);BakeryCherry(c);
-   var drawer=NextDrawerPlatform(c,.20f,.12f,.17f,.26f);
+   c.Definition.CameraEuler=new Vector3(54,-16,0);   // steeper: the plate lip in front must not hide COghe or P (Codex review)
+   var drawer=NextDrawerPlatform(c,.20f,.12f,.17f,.26f,true);
    // E12's table, 4 cm longer on the right for the lamp.
    float y=PlusGearTable(c,"Gear table",new Vector3(-.12f,0,.08f),new Vector2(.30f,.10f));
    var pad=ExpansionPad(c,"P",new Vector3(-.32f,-.298f,-.16f),.009f,.10f);

@@ -166,18 +166,19 @@ namespace GravityBox.Editor
                 data=Object.Instantiate(shipped);data.name="Bakery renderer";AssetDatabase.CreateAsset(data,path);
                 var ssao=ScriptableObject.CreateInstance<ScreenSpaceAmbientOcclusion>();ssao.name="Bakery SSAO";
                 AssetDatabase.AddObjectToAsset(ssao,data);data.rendererFeatures.Add(ssao);
-                var settings=typeof(ScreenSpaceAmbientOcclusion).GetField("m_Settings",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance);
-                var value=settings?.GetValue(ssao);
-                if(value!=null)
-                {
-                    void Set(string f,object v){var fi=value.GetType().GetField(f,System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Instance);fi?.SetValue(value,v);}
-                    Set("Intensity",1.4f);Set("Radius",.05f);Set("DirectLightingStrength",.4f);settings.SetValue(ssao,value);
-                }
                 // the serialized feature map must list the sub-asset, as the inspector does when a feature is added
                 var map=new SerializedObject(data);var features=map.FindProperty("m_RendererFeatureMap");
                 AssetDatabase.TryGetGUIDAndLocalFileIdentifier(ssao,out string _,out long id);
                 features.arraySize=data.rendererFeatures.Count;features.GetArrayElementAtIndex(features.arraySize-1).longValue=id;map.ApplyModifiedPropertiesWithoutUndo();
                 EditorUtility.SetDirty(data);AssetDatabase.SaveAssets();
+            }
+            // settings every run, so a change here reaches the existing renderer asset
+            foreach(var feature in data.rendererFeatures.OfType<ScreenSpaceAmbientOcclusion>())
+            {
+                var settings=typeof(ScreenSpaceAmbientOcclusion).GetField("m_Settings",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance);
+                var value=settings?.GetValue(feature);if(value==null)continue;
+                void Set(string f,object v){var fi=value.GetType().GetField(f,System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Instance);fi?.SetValue(value,v);}
+                Set("Intensity",.9f);Set("Radius",.035f);Set("DirectLightingStrength",.3f);settings.SetValue(feature,value);EditorUtility.SetDirty(feature);
             }
             for(int i=0;i<list.arraySize;i++)if(list.GetArrayElementAtIndex(i).objectReferenceValue==data)return i;
             list.arraySize++;list.GetArrayElementAtIndex(list.arraySize-1).objectReferenceValue=data;so.ApplyModifiedPropertiesWithoutUndo();
@@ -196,6 +197,8 @@ namespace GravityBox.Editor
             var dress=new GameObject("Bakery dress").transform;dress.SetParent(root,false);
 
             var kit=KitMaterials();
+            // the porcelain read near white and warm in the first frames (Codex review): darker and less glossy here
+            kit["Porcelain"].SetColor("_BaseColor",new Color(.88f,.84f,.79f));kit["Porcelain"].SetFloat("_Smoothness",.55f);
             var jelly=SaveMaterial("Grape jelly",new Color(.62f,.47f,.90f),.9f);
             var tiles=SaveMaterial("Vanilla tiles",new Color(1f,.93f,.80f),.42f,SaveDots("vanilla-dots",Color.white,new Color(.95f,.91f,.86f),5,.16f,.9f,7));
             var sponge=kit.TryGetValue("Wafer",out var wafer)?wafer:tiles;var cream=kit["Cream"];var biscuit=kit["Biscuit"];
@@ -231,7 +234,7 @@ namespace GravityBox.Editor
                     float layer=Mathf.Min(.022f,b.size.y*.45f);
                     Rounded(parent,name+" sponge",b.center,b.size,rad,sponge);
                 }
-                Rounded(parent,name+" cream",new Vector3(b.center.x,b.max.y-.001f,b.center.z),new Vector3(b.size.x+.004f,.008f,b.size.z+.004f),.0038f,cream,.08f,4);
+                Rounded(parent,name+" cream",new Vector3(b.center.x,b.max.y,b.center.z),new Vector3(b.size.x+.006f,.012f,b.size.z+.006f),.0058f,cream,.08f,6);
             }
 
             // 2. Floor tiles over the real floor, Codex's plate under them with its lip on the rim, the rim and backrest faces
@@ -246,15 +249,17 @@ namespace GravityBox.Editor
                     Rounded(dress,"Bakery backrest jelly",new Vector3(c.x,c.y,.316f),new Vector3(p.Size.x,p.Size.y,.032f),.012f,jelly);
                 }
             }
-            var floorTiles=new List<CombineInstance>();var tileMesh=RoundedBox(new Vector3(.096f,.014f,.096f),.006f,.08f,3);
-            for(int ix=0;ix<8;ix++)for(int iz=0;iz<6;iz++)
-                if(!((ix==0||ix==7)&&(iz==0||iz==5)))   // the plate's rounded corners
-                floorTiles.Add(new CombineInstance{mesh=tileMesh,transform=Matrix4x4.Translate(new Vector3(-.35f+ix*.1f,-.307f,-.25f+iz*.1f))});
+            // six by four large tiles, 1.5 mm seams (Codex review: small tiles with dark seams read as an ice tray)
+            const int nx=6,nz=4;float tx=.80f/nx,tz=.60f/nz;
+            var floorTiles=new List<CombineInstance>();var tileMesh=RoundedBox(new Vector3(tx-.0015f,.014f,tz-.0015f),.004f,.10f,3);
+            for(int ix=0;ix<nx;ix++)for(int iz=0;iz<nz;iz++)
+                if(!((ix==0||ix==nx-1)&&(iz==0||iz==nz-1)))   // the plate's rounded corners
+                floorTiles.Add(new CombineInstance{mesh=tileMesh,transform=Matrix4x4.Translate(new Vector3(-.40f+tx*(ix+.5f),-.307f,-.30f+tz*(iz+.5f)))});
             var floor=new GameObject("Bakery floor tiles",typeof(MeshFilter),typeof(MeshRenderer));floor.transform.SetParent(dress,false);
             var combined=new Mesh{name="Floor tiles",indexFormat=UnityEngine.Rendering.IndexFormat.UInt32};combined.CombineMeshes(floorTiles.ToArray(),true,true);
             floor.GetComponent<MeshFilter>().sharedMesh=SaveMesh(combined,"floor-tiles");floor.GetComponent<MeshRenderer>().sharedMaterial=tiles;
             // plate lathe: inner flat to .411 (x) /.327 (z), lip crest .468/.372: scaled so the lip rises at the rim (.40/.30)
-            Place("Plate",dress,new Vector3(0,-.30f-.008f-.003f,0),new Vector3(.40f/.44f,1,.30f/.35f),kit);
+            Place("Plate",dress,new Vector3(0,-.30f-.008f*.9f-.003f,0),new Vector3(.40f/.44f,.9f,.30f/.35f),kit);
 
             // 3. Props on their real owners: pad P, handle A, the gear lamp, the cherry; gears in biscuit.
             foreach(var sensor in root.GetComponentsInChildren<COgheTissueSensor>(true))
@@ -267,7 +272,10 @@ namespace GravityBox.Editor
             {
                 if(task.Handle==null)continue;
                 foreach(var r in task.Handle.GetComponentsInChildren<Renderer>(true))r.enabled=false;
-                var candy=Place("CandyHandle",task.Handle,Vector3.zero,Vector3.one*1.3f,kit);
+                var heading=Quaternion.Euler(0,game.Definition.CameraEuler.y,0);
+                var candy=Place("CandyHandle",task.Handle,Vector3.zero,Vector3.one*1.6f,kit);
+                candy.rotation=root.rotation*heading;candy.position=task.Handle.position+root.up*.004f;
+                var cb=candy.GetComponentInChildren<Renderer>().bounds;Debug.Log($"BAKERY candy {task.Label} at {root.InverseTransformPoint(cb.center):F3} size {cb.size:F3}");
                 foreach(var r in candy.GetComponentsInChildren<Renderer>())
                 {var mats=r.sharedMaterials;for(int i=0;i<mats.Length;i++)if(mats[i]==kit["Strawberry"])mats[i]=candyBlue;r.sharedMaterials=mats;}   // A's circuit colour is blue
             }
@@ -285,7 +293,7 @@ namespace GravityBox.Editor
             foreach(var r in root.GetComponentsInChildren<Renderer>(true))
             {
                 if(r.sharedMaterial==null)continue;string m=r.sharedMaterial.name;
-                if(m.StartsWith("Amber resin")){BoxUV(r,root,.06f);r.sharedMaterial=biscuit;}
+                if(m.StartsWith("Amber resin")||r.name.Contains("involute gear")){BoxUV(r,root,.06f);r.sharedMaterial=biscuit;}
                 else if(m.StartsWith("Spatial satin guides"))r.sharedMaterial=mint;
                 else if(m.StartsWith("Spatial pearl casing"))r.sharedMaterial=white;
             }
@@ -302,7 +310,7 @@ namespace GravityBox.Editor
 
             // 4. Light: a warm key with soft shadows, a three-colour ambient, a peach backdrop, gentle grading.
             foreach(var l in Object.FindObjectsByType<Light>(FindObjectsSortMode.None))
-                if(l.type==LightType.Directional){l.color=new Color(1f,.93f,.84f);l.intensity=1f;l.shadows=LightShadows.Soft;l.shadowStrength=.8f;l.transform.rotation=Quaternion.Euler(58,-60,0);}
+                if(l.type==LightType.Directional){l.color=new Color(1f,.94f,.86f);l.intensity=.9f;l.shadows=LightShadows.Soft;l.shadowStrength=.8f;l.transform.rotation=Quaternion.Euler(58,-60,0);}
             RenderSettings.ambientMode=AmbientMode.Trilight;RenderSettings.ambientSkyColor=new Color(.72f,.66f,.68f);
             RenderSettings.ambientEquatorColor=new Color(.62f,.52f,.50f);RenderSettings.ambientGroundColor=new Color(.42f,.36f,.38f);
             var look=game.gameObject.GetComponent<COgheBakeryPresentation>()??game.gameObject.AddComponent<COgheBakeryPresentation>();
