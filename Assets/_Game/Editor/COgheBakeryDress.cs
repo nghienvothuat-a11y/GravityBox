@@ -193,13 +193,15 @@ namespace GravityBox.Editor
             AssetDatabase.Refresh();
             var scene=EditorSceneManager.OpenScene(VenomCampaignBuilder.SpatialContentPath(key));
             var game=Object.FindFirstObjectByType<VenomCampaign>();var owner=game.GetComponent<VenomLevelController>();var root=owner.Rotation.transform;
-            var old=root.Find("Bakery dress");if(old!=null)Object.DestroyImmediate(old.gameObject);
+            // Not idempotent by design (Codex review): rounded bodies and the candy live under their real owners, and the
+            // generated assets are rewritten. Dress a freshly generated scene only.
+            if(root.Find("Bakery dress")!=null)throw new InvalidOperationException($"{key} is already dressed: regenerate it first (GenerateChapterTwoLevels -coghe-plus-levels {key})");
             var dress=new GameObject("Bakery dress").transform;dress.SetParent(root,false);
 
             var kit=KitMaterials();
             // the porcelain read near white and warm in the first frames (Codex review): darker and less glossy here
             kit["Porcelain"].SetColor("_BaseColor",new Color(.88f,.84f,.79f));kit["Porcelain"].SetFloat("_Smoothness",.55f);
-            var jelly=SaveMaterial("Grape jelly",new Color(.62f,.47f,.90f),.9f);
+            var jelly=kit.TryGetValue("Grape jelly",out var grape)?grape:SaveMaterial("Grape jelly",new Color(.58f,.43f,.78f),.76f);
             var tiles=SaveMaterial("Vanilla tiles",new Color(1f,.93f,.80f),.42f,SaveDots("vanilla-dots",Color.white,new Color(.95f,.91f,.86f),5,.16f,.9f,7));
             var sponge=kit.TryGetValue("Wafer",out var wafer)?wafer:tiles;var cream=kit["Cream"];var biscuit=kit["Biscuit"];
             var candyBlue=SaveMaterial("Candy blue",new Color(.36f,.62f,.95f),.85f);var mint=SaveMaterial("Mint sugar",new Color(.62f,.88f,.78f),.6f);
@@ -251,35 +253,58 @@ namespace GravityBox.Editor
             }
             // six by four large tiles, 1.5 mm seams (Codex review: small tiles with dark seams read as an ice tray)
             const int nx=6,nz=4;float tx=.80f/nx,tz=.60f/nz;
-            var floorTiles=new List<CombineInstance>();var tileMesh=RoundedBox(new Vector3(tx-.0015f,.014f,tz-.0015f),.004f,.10f,3);
+            var floorTiles=new List<CombineInstance>();var tileMesh=RoundedBox(new Vector3(tx-.0015f,.014f,tz-.0015f),.004f,.10f,3);var cornerMesh=RoundedBox(new Vector3(tx-.026f,.014f,tz-.026f),.006f,.10f,3);
             for(int ix=0;ix<nx;ix++)for(int iz=0;iz<nz;iz++)
-                if(!((ix==0||ix==nx-1)&&(iz==0||iz==nz-1)))   // the plate's rounded corners
-                floorTiles.Add(new CombineInstance{mesh=tileMesh,transform=Matrix4x4.Translate(new Vector3(-.40f+tx*(ix+.5f),-.307f,-.30f+tz*(iz+.5f)))});
+            {
+                bool corner=(ix==0||ix==nx-1)&&(iz==0||iz==nz-1);var at=new Vector3(-.40f+tx*(ix+.5f),-.307f,-.30f+tz*(iz+.5f));
+                // the plate's rounded corners: a smaller, rounder tile pulled toward the middle
+                if(corner)floorTiles.Add(new CombineInstance{mesh=cornerMesh,transform=Matrix4x4.Translate(at-new Vector3(Mathf.Sign(at.x)*.012f,0,Mathf.Sign(at.z)*.012f))});
+                else floorTiles.Add(new CombineInstance{mesh=tileMesh,transform=Matrix4x4.Translate(at)});
+            }
             var floor=new GameObject("Bakery floor tiles",typeof(MeshFilter),typeof(MeshRenderer));floor.transform.SetParent(dress,false);
             var combined=new Mesh{name="Floor tiles",indexFormat=UnityEngine.Rendering.IndexFormat.UInt32};combined.CombineMeshes(floorTiles.ToArray(),true,true);
             floor.GetComponent<MeshFilter>().sharedMesh=SaveMesh(combined,"floor-tiles");floor.GetComponent<MeshRenderer>().sharedMaterial=tiles;
             // plate lathe: inner flat to .411 (x) /.327 (z), lip crest .468/.372: scaled so the lip rises at the rim (.40/.30)
             Place("Plate",dress,new Vector3(0,-.30f-.008f*.9f-.003f,0),new Vector3(.40f/.44f,.9f,.30f/.35f),kit);
 
+            // Toppings in sparse clusters on the plate's rim crest (outside the play floor, away from the cherry and handles).
+            {
+                var rng=new System.Random(41);float crest=-.30f-.008f*.9f-.003f+.075f*.9f;
+                Vector3 Rim(float a){float c=Mathf.Cos(a),sn=Mathf.Sin(a);return new Vector3(Mathf.Sign(c)*Mathf.Pow(Mathf.Abs(c),.33f)*.425f,crest,Mathf.Sign(sn)*Mathf.Pow(Mathf.Abs(sn),.33f)*.319f);}
+                var sprinkleMats=new[]{kit["Strawberry"],kit["Cream"],kit["Wafer"]};
+                float[] clusters={.35f,1.2f,2.0f,2.75f,3.6f,4.4f,5.3f,5.95f};
+                for(int k=0;k<clusters.Length;k++)
+                {
+                    var at=Rim(clusters[k]);
+                    for(int i=0;i<3;i++)
+                    {
+                        var sp=Place("Sprinkle",dress,Rim(clusters[k]+(float)(rng.NextDouble()-.5)*.08f)+Vector3.up*.003f,Vector3.one*1.5f,kit,Quaternion.Euler(0,rng.Next(360),0));
+                        foreach(var r in sp.GetComponentsInChildren<Renderer>())r.sharedMaterial=sprinkleMats[rng.Next(sprinkleMats.Length)];
+                    }
+                    if(k%2==0)Place("ChocolateChip",dress,Rim(clusters[k]+.05f)+Vector3.up*.002f,Vector3.one*1.5f,kit,Quaternion.Euler(0,rng.Next(360),0));
+                    if(k%3==1)Place("MintLeaf",dress,Rim(clusters[k]-.05f)+Vector3.up*.002f,Vector3.one*1.5f,kit,Quaternion.Euler(0,rng.Next(360),0));
+                }
+            }
             // 3. Props on their real owners: pad P, handle A, the gear lamp, the cherry; gears in biscuit.
-            foreach(var sensor in root.GetComponentsInChildren<COgheTissueSensor>(true))
+            foreach(var sensor in game.GetComponentsInChildren<COgheTissueSensor>(true))
             {
                 foreach(var r in sensor.GetComponentsInChildren<Renderer>(true))if(r.bounds.size.y<.02f)r.enabled=false;
                 var c=root.InverseTransformPoint(sensor.transform.position);
                 Place("PressurePad",dress,new Vector3(c.x,-.30f,c.z),Vector3.one,kit);
             }
-            foreach(var task in root.GetComponentsInChildren<COgheTapRail>(true))
+            foreach(var task in game.GetComponentsInChildren<COgheTapRail>(true))
             {
                 if(task.Handle==null)continue;
                 foreach(var r in task.Handle.GetComponentsInChildren<Renderer>(true))r.enabled=false;
                 var heading=Quaternion.Euler(0,game.Definition.CameraEuler.y,0);
-                var candy=Place("CandyHandle",task.Handle,Vector3.zero,Vector3.one*1.6f,kit);
+                var candy=Place("CandyHandle",task.Handle,Vector3.zero,Vector3.one,kit);
+                var ls=task.Handle.lossyScale;candy.localScale=new Vector3(1.6f/ls.x,1.6f/ls.y,1.6f/ls.z);   // the handle is a scaled primitive
                 candy.rotation=root.rotation*heading;candy.position=task.Handle.position+root.up*.004f;
                 var cb=candy.GetComponentInChildren<Renderer>().bounds;Debug.Log($"BAKERY candy {task.Label} at {root.InverseTransformPoint(cb.center):F3} size {cb.size:F3}");
                 foreach(var r in candy.GetComponentsInChildren<Renderer>())
                 {var mats=r.sharedMaterials;for(int i=0;i<mats.Length;i++)if(mats[i]==kit["Strawberry"])mats[i]=candyBlue;r.sharedMaterials=mats;}   // A's circuit colour is blue
             }
-            foreach(var train in root.GetComponentsInChildren<COgheGearTrain>(true))
+            foreach(var train in game.GetComponentsInChildren<COgheGearTrain>(true))
             {
                 if(train.MeshLamp!=null)
                 {
@@ -290,7 +315,7 @@ namespace GravityBox.Editor
                     train.MeshLamp.sharedMaterial=train.MeshLampOff;EditorUtility.SetDirty(train);
                 }
             }
-            foreach(var r in root.GetComponentsInChildren<Renderer>(true))
+            foreach(var r in game.GetComponentsInChildren<Renderer>(true))
             {
                 if(r.sharedMaterial==null)continue;string m=r.sharedMaterial.name;
                 if(m.StartsWith("Amber resin")||r.name.Contains("involute gear")){BoxUV(r,root,.06f);r.sharedMaterial=biscuit;}
@@ -309,8 +334,13 @@ namespace GravityBox.Editor
             foreach(var t in game.GetComponentsInChildren<Transform>(true))if(t.name=="Glass preview frame")t.gameObject.SetActive(false);
 
             // 4. Light: a warm key with soft shadows, a three-colour ambient, a peach backdrop, gentle grading.
+            // the key (large window) alone casts soft shadows; the bounce fills from the other side, weaker, without shadow
             foreach(var l in Object.FindObjectsByType<Light>(FindObjectsSortMode.None))
-                if(l.type==LightType.Directional){l.color=new Color(1f,.94f,.86f);l.intensity=.9f;l.shadows=LightShadows.Soft;l.shadowStrength=.8f;l.transform.rotation=Quaternion.Euler(58,-60,0);}
+            {
+                if(l.type!=LightType.Directional)continue;
+                if(l.name.Contains("bounce")){l.color=new Color(.86f,.90f,1f);l.intensity=.3f;l.shadows=LightShadows.None;l.transform.rotation=Quaternion.Euler(35,140,0);}
+                else{l.color=new Color(1f,.94f,.86f);l.intensity=.95f;l.shadows=LightShadows.Soft;l.shadowStrength=.7f;l.transform.rotation=Quaternion.Euler(58,-60,0);}
+            }
             RenderSettings.ambientMode=AmbientMode.Trilight;RenderSettings.ambientSkyColor=new Color(.72f,.66f,.68f);
             RenderSettings.ambientEquatorColor=new Color(.62f,.52f,.50f);RenderSettings.ambientGroundColor=new Color(.42f,.36f,.38f);
             var look=game.gameObject.GetComponent<COgheBakeryPresentation>()??game.gameObject.AddComponent<COgheBakeryPresentation>();
