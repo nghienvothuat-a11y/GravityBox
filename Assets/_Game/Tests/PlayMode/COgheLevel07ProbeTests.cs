@@ -263,6 +263,16 @@ namespace GravityBox.Tests
        for(int i=0;i<32&&!moved;i++)moved=Vector3.Distance(before[i],game.Matter.Bodies[i].position)>.03f;
        tried.Append($" [tube {e.Name} open={e.Open} act={game.Activity}]");
       }
+     // Crate levels: crates can wall COghe into a cell; a player taps a crate (the middle of its top takes the nearest face
+     // that works) and COghe pushes it away. Stuck only if no crate tap moves it either.
+     foreach(var crate in game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())
+     {
+      if(moved||!crate.CrateFaces)continue;
+      for(int i=0;i<32;i++)before[i]=game.Matter.Bodies[i].position;
+      yield return Tap(crate.Rail.Body.position+game.Root.up*crate.CrateSize.y*.5f);yield return Wait(12);
+      for(int i=0;i<32&&!moved;i++)moved=Vector3.Distance(before[i],game.Matter.Bodies[i].position)>.03f;
+      tried.Append($" [crate {crate.name} {crate.Phase}/{crate.LastFailure}]");
+     }
      if(!moved)
      {
       stuck++;Shot($"sweep-{n:00}-{run}-stuck");ShotClose($"sweep-{n:00}-{run}-close");

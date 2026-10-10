@@ -1063,12 +1063,13 @@ namespace GravityBox.Editor
   // the floor, a slick rim COghe cannot climb (6 cm, over its 5 cm), a taller back wall where a platform meets the back edge,
   // no roof. COgheBakeryDress gives it the bakery look after the build.
   // The rim is the level's outer boundary (ExteriorGlass: the plaque and the "Slippery" tap mark use it).
-  static void BakeryShell(ExpansionContext c)
+  // width × depth: the floor (level 49 and level 1: .8 × .6; the crate levels: their grid, 6 × 5 cells).
+  static void BakeryShell(ExpansionContext c,float width=.8f,float depth=.6f)
   {
-   Panel(c.Root,"Laboratory floor",new Vector3(0,-.30f,0),Vector3.up,new Vector2(.8f,.6f),stone,false,Vector2.zero,0,c.Surfaces);
-   const float rim=.06f;
-   var walls=new[]{(new Vector3(0,0,-.3f),Vector3.forward,.8f),(new Vector3(0,0,.3f),Vector3.back,.8f),
-                   (new Vector3(-.4f,0,0),Vector3.right,.6f),(new Vector3(.4f,0,0),Vector3.left,.6f)};
+   Panel(c.Root,"Laboratory floor",new Vector3(0,-.30f,0),Vector3.up,new Vector2(width,depth),stone,false,Vector2.zero,0,c.Surfaces);
+   const float rim=.06f;float hx=width*.5f,hz=depth*.5f;
+   var walls=new[]{(new Vector3(0,0,-hz),Vector3.forward,width),(new Vector3(0,0,hz),Vector3.back,width),
+                   (new Vector3(-hx,0,0),Vector3.right,depth),(new Vector3(hx,0,0),Vector3.left,depth)};
    foreach(var (pos,normal,length) in walls)
    {
     var p=Panel(c.Root,"Bakery rim",pos+Vector3.up*(-.30f+rim*.5f),normal,new Vector2(length,rim),stone,false,Vector2.zero,0,c.Surfaces);

@@ -31,7 +31,11 @@ namespace GravityBox.Editor
    var design = CrateDesigns[k];
    c.Exit = CrateGrid(CrateHole.x + .5f, CrateHole.y + .5f); c.Outward = Vector3.down;
    c.Spawn = CrateGrid(design.spawn.x + .5f, design.spawn.z + .5f) + Vector3.up * .05f;
-   CrateShell(c);
+   // Bakery trial (Mrk, 10/10/2026: "thử với level 6"): no glass box and no hole; the cherry stands where the hole was,
+   // under the red crate, so it is still uncovered by moving the red crate. COgheBakeryDress pa1 gives the look.
+   bool bakery = design.key == "K01";
+   if (bakery) { BakeryShell(c, CrateBoxWidth, CrateBoxDepth); BakeryCherry(c); c.Definition.CameraEuler = new Vector3(54, 20, 0); }
+   else CrateShell(c);
    var floor = c.Surfaces[0];
    for (int i = 0; i < design.crates.Length; i++)
    {

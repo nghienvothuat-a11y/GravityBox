@@ -87,8 +87,10 @@ namespace GravityBox.Tests
     Assert.AreEqual(1,game.Matter.TotalFragmentCount,"Split while wandering to "+Local(target));
     // Out through the exit hole (a low exit beside a wall the wander walked along): only fair where the exit is open,
     // and then the exit tap finishes the level; this wander is over.
-    var inside=Local(game.Motion.Centre(0));
-    if(Mathf.Abs(inside.x)>.40f||Mathf.Abs(inside.z)>.30f)
+    // the box: .8 × .6, or the floor where it is larger (the crate levels' grid, .84 × .70)
+    var inside=Local(game.Motion.Centre(0));var floorFace=Array.Find(game.Surfaces,f=>f!=null&&f.name=="Laboratory floor");
+    float boxX=Mathf.Max(.40f,floorFace!=null?floorFace.Size.x*.5f:0),boxZ=Mathf.Max(.30f,floorFace!=null?floorFace.Size.y*.5f:0);
+    if(Mathf.Abs(inside.x)>boxX||Mathf.Abs(inside.z)>boxZ)
     {
      File.AppendAllText(log,$"out through the exit near {Local(target):F3}\n");
      Assert.IsTrue(game.FinalExitAvailable,"Slipped out through a closed exit while wandering to "+Local(target));

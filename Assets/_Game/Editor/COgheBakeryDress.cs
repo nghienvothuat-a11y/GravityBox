@@ -381,10 +381,14 @@ namespace GravityBox.Editor
             // hide every gameplay face's renderer except mechanisms we restyle below; the cake carries the floor and boundary
             foreach(var p in root.GetComponentsInChildren<VenomSurfacePatch>(true))
             {var r=p.GetComponent<Renderer>();if(r!=null&&(p.name=="Laboratory floor"||p.name.StartsWith("Bakery rim")||p.name.StartsWith("Bakery backrest")))r.enabled=false;}
-            // the cake: the boundary is the floor's edge (±.40, ±.30); the back runs on to .37 to carry the glazed back bar
+            // the cake: the boundary is the floor's edge (levels 49 and 1: ±.40, ±.30; the crate levels: their grid); the back
+            // runs on 7 cm to carry the glazed back bar. The bar and the plate scale with the floor's width.
             const float top=-.30f,depth=.12f;
-            var cakeMin=new Vector3(-.40f,top-depth,-.30f);var cakeMax=new Vector3(.40f,top,.37f);
-            var cc=(cakeMin+cakeMax)*.5f;var cs=cakeMax-cakeMin;
+            var (hx,hz)=FloorHalf(root);float sx=hx/.40f;
+            var cakeMin=new Vector3(-hx,top-depth,-hz);var cakeMax=new Vector3(hx,top,hz+.07f);
+            var cc=(cakeMin+cakeMax)*.5f;var cs=cakeMax-cakeMin;var portions=CreamRects(game,hx,hz);
+            // the crate levels' printed grid would show in the seams between the cells' cream: the seams are the grid
+            foreach(var t in root.GetComponentsInChildren<Transform>(true))if(t.name=="Crate grid line")t.gameObject.SetActive(false);
             bool pa1=variant=="pa1";
             if(pa1)
             {
@@ -392,29 +396,31 @@ namespace GravityBox.Editor
                 // one Tripo cake for the floor (its sponge sides and drips); six separate portions read as small cakes. Its baked
                 // cream top streaks when stretched, so a flat cream surface in few broad portions covers it (Codex review).
                 PA1Piece(dress,"PA1Floor",.955f,new Vector3(cc.x,top,cc.z),new Vector2(cs.x,cs.z),depth,.001f);
-                CreamPortions(dress,top+.002f,cream,.012f);   // 2 mm over the walk height: the baked cream has bumps above it
+                CreamPortions(dress,top+.002f,cream,.012f,portions);   // 2 mm over the walk height: the baked cream had bumps above it
                 // the back rail in code: the Tripo rail's baked streaks read as stripes; the glaze must be smooth (Codex review)
-                Rounded(dress,"Concept back bar",new Vector3(-.17f,top+.026f,.335f),new Vector3(.46f,.052f,.06f),.025f,glaze,.12f,10);
-                PA1Piece(dress,"PA1Plate",.28f,new Vector3(0,top-depth,.035f),new Vector2(1.06f,.90f),.012f);
+                Rounded(dress,"Concept back bar",new Vector3(-.17f*sx,top+.026f,hz+.035f),new Vector3(.46f*sx,.052f,.06f),.025f,glaze,.12f,10);
+                PA1Piece(dress,"PA1Plate",.28f,new Vector3(0,top-depth,cc.z),new Vector2(cs.x+.26f,cs.z+.23f),.012f);
             }
             if(!pa1){
             Rounded(dress,"Concept cake sponge",cc-Vector3.up*.006f,cs-Vector3.up*.012f,.045f,sponge,.12f,10);
             Rounded(dress,"Concept cake filling",new Vector3(cc.x,top-depth*.55f,cc.z),new Vector3(cs.x+.003f,.009f,cs.z+.003f),.0045f,filling,.12f,4);
-            CreamPortions(dress,top,cream,.024f);
+            CreamPortions(dress,top,cream,.024f,portions);
             // drips down the cake's front, left and right faces, and a low cream bead on the boundary
             CreamSkirt(dress,cakeMin,cakeMax,top-.012f,cream,.032f);
-            Bead(dress,new Vector3(-.40f,top,-.30f),new Vector3(.40f,top,-.30f),cream);Bead(dress,new Vector3(-.40f,top,-.30f),new Vector3(-.40f,top,.30f),cream);
-            Bead(dress,new Vector3(.40f,top,-.30f),new Vector3(.40f,top,.30f),cream);
+            Bead(dress,new Vector3(-hx,top,-hz),new Vector3(hx,top,-hz),cream);Bead(dress,new Vector3(-hx,top,-hz),new Vector3(-hx,top,hz),cream);
+            Bead(dress,new Vector3(hx,top,-hz),new Vector3(hx,top,hz),cream);
             // the glazed back bar outside the play floor (z .30–.36), a pill with a long highlight
-            Rounded(dress,"Concept back bar",new Vector3(-.17f,top+.026f,.335f),new Vector3(.46f,.052f,.06f),.025f,glaze,.12f,10);
+            Rounded(dress,"Concept back bar",new Vector3(-.17f*sx,top+.026f,hz+.035f),new Vector3(.46f*sx,.052f,.06f),.025f,glaze,.12f,10);
             // the plate: scalloped, under and around the cake
             var plate=new GameObject("Concept plate",typeof(MeshFilter),typeof(MeshRenderer));plate.transform.SetParent(dress,false);
-            plate.GetComponent<MeshFilter>().sharedMesh=SaveMesh(ScallopPlate(.53f,.44f,.04f,top-depth-.001f,7),"plate");plate.GetComponent<MeshRenderer>().sharedMaterial=porcelain;
-            plate.transform.localPosition=new Vector3(0,0,.035f);
+            plate.GetComponent<MeshFilter>().sharedMesh=SaveMesh(ScallopPlate(.53f*sx,.44f*hz/.30f,.04f,top-depth-.001f,7),"plate");plate.GetComponent<MeshRenderer>().sharedMaterial=porcelain;
+            plate.transform.localPosition=new Vector3(0,0,cc.z);
             }
-            // gameplay blocks: slick sides glaze (pill-rounded), a grippy top a cream cap that drips over the edge
+            // gameplay blocks: slick sides glaze (pill-rounded), a grippy top a cream cap that drips over the edge. The crate
+            // levels' crates ride under the apparatus, outside the chamber: their faces are taken too.
             var groups=new Dictionary<(Transform,string),List<VenomSurfacePatch>>();
-            foreach(var p in root.GetComponentsInChildren<VenomSurfacePatch>(true))
+            var crateFaces=game.GetComponentsInChildren<COgheTapRail>(true).Where(t=>t.CrateFaces).SelectMany(t=>t.GetComponentsInChildren<VenomSurfacePatch>(true));
+            foreach(var p in root.GetComponentsInChildren<VenomSurfacePatch>(true).Concat(crateFaces).Distinct())
             {
                 var r=p.GetComponent<Renderer>();if(r==null||!p.gameObject.activeInHierarchy||p.ExteriorGlass||p.SphereRadius>0||p.Curved!=null)continue;
                 if(p.name=="Laboratory floor"||p.name.StartsWith("Bakery"))continue;
@@ -433,7 +439,13 @@ namespace GravityBox.Editor
                 if(pa1)
                 {
                     // fully slick: the glazed table piece; a grippy top: the goal base (glaze with a cream top)
-                    if(!grippyTop)PA1Piece(parent,"PA1Table",.99f,new Vector3(b.center.x,b.max.y,b.center.z),new Vector2(b.size.x+.004f,b.size.z+.004f),b.size.y);
+                    if(!grippyTop)
+                    {
+                        var table=PA1Piece(parent,"PA1Table",.99f,new Vector3(b.center.x,b.max.y,b.center.z),new Vector2(b.size.x+.004f,b.size.z+.004f),b.size.y);
+                        // the crate levels' red crate keeps its colour: the one to free (strawberry glaze, the same glaze model)
+                        bool red=false;for(var t=parent;t!=null&&!red;t=t.parent)red=t.name=="Red crate";
+                        if(red)foreach(var r in table.GetComponentsInChildren<Renderer>()){var mats=r.sharedMaterials;for(int i=0;i<mats.Length;i++)mats[i]=StrawberryGlaze();r.sharedMaterials=mats;}
+                    }
                     else if(b.size.y>=.035f){PA1Piece(parent,"PA1Goal",.99f,new Vector3(b.center.x,b.max.y,b.center.z),new Vector2(b.size.x+.006f,b.size.z+.006f),b.size.y);continue;}
                     if(!grippyTop)continue;   // thin pieces (the step) fall through to the code cake below
                 }
@@ -443,7 +455,7 @@ namespace GravityBox.Editor
                 Rounded(parent,"Concept cream cap",new Vector3(b.center.x,b.max.y-cap*.5f,b.center.z),new Vector3(b.size.x+.006f,cap,b.size.z+.006f),.006f,cream,.12f,6);
                 if(b.size.y>=.035f)CreamSkirt(parent,new Vector3(b.min.x-.003f,b.min.y,b.min.z-.003f),new Vector3(b.max.x+.003f,b.max.y,b.max.z+.003f),b.max.y-cap+.002f,cream,.012f,true);
             }
-            ConceptDecor(game,root,dress,kit,top-depth+.004f);
+            ConceptDecor(game,root,dress,kit,top-depth+.004f,hx,hz,cc.z);
             if(pa1)foreach(var kvm in pa1Mats)if(kvm.Key=="PA1Floor")kvm.Value.SetColor("_BaseColor",new Color(.93f,.90f,.86f));
             // gears golden biscuit with a cream flower on the hub (child of the gear: it turns with it)
             var gold=Mat("Concept biscuit",new Color(1f,.83f,.50f),.32f,null,biscuitKit.GetTexture("_BumpMap") as Texture2D,.3f);   // golden: no dark pore colour map
@@ -472,7 +484,7 @@ namespace GravityBox.Editor
                 Part3(PrimitiveType.Sphere,m,new Vector3(0,.0102f,0),new Vector3(.070f,.0055f,.070f),pink);
             }
         }
-        static void ConceptDecor(VenomCampaign game,Transform root,Transform dress,Dictionary<string,Material> kit,float plateY)
+        static void ConceptDecor(VenomCampaign game,Transform root,Transform dress,Dictionary<string,Material> kit,float plateY,float hx,float hz,float cz)
         {
             foreach(var t in game.GetComponentsInChildren<Transform>(true))if(t.name=="COghe specimen number")t.gameObject.SetActive(false);
             var pink=SaveMaterial("Concept pearl",new Color(.98f,.55f,.70f),.6f);var white=SaveMaterial("Concept meringue",new Color(1f,.97f,.93f),.4f);
@@ -480,8 +492,8 @@ namespace GravityBox.Editor
             for(int i=0;i<44;i++)
             {
                 float a=(float)(rng.NextDouble()*Mathf.PI*2),c=Mathf.Cos(a),sn=Mathf.Sin(a),k=.93f+(float)rng.NextDouble()*.05f;
-                var p=new Vector3(Mathf.Sign(c)*Mathf.Sqrt(Mathf.Abs(c))*.47f*k,plateY+.004f,.035f+Mathf.Sign(sn)*Mathf.Sqrt(Mathf.Abs(sn))*.39f*k);
-                if(Mathf.Abs(p.x)<.43f&&p.z>-.33f&&p.z<.40f)continue;
+                var p=new Vector3(Mathf.Sign(c)*Mathf.Sqrt(Mathf.Abs(c))*(hx+.07f)*k,plateY+.004f,cz+Mathf.Sign(sn)*Mathf.Sqrt(Mathf.Abs(sn))*(hz+.09f)*k);
+                if(Mathf.Abs(p.x)<hx+.03f&&p.z>-hz-.03f&&p.z<hz+.10f)continue;
                 if(i%5==0){var m=Part3(PrimitiveType.Sphere,dress,p+Vector3.up*.004f,new Vector3(.016f,.012f,.016f),white);Part3(PrimitiveType.Sphere,m,new Vector3(0,.55f,0),new Vector3(.6f,.7f,.6f),white);}
                 else Part3(PrimitiveType.Sphere,dress,p,Vector3.one*(.006f+(float)rng.NextDouble()*.004f),pink);
             }
@@ -489,15 +501,45 @@ namespace GravityBox.Editor
 
         /// <summary>The cake's cream top in five broad portions with narrow, shallow seams (the concept's few divisions); the
         /// top at y. Option 1 lays a thin one over the Tripo cake, option 2 a thick one on its code cake.</summary>
-        static void CreamPortions(Transform dress,float y,Material cream,float thick)
+        static void CreamPortions(Transform dress,float y,Material cream,float thick,(Vector2 a,Vector2 b)[] portions)
         {
-            var portions=new[]{(new Vector2(-.40f,-.30f),new Vector2(-.12f,.08f)),(new Vector2(-.12f,-.30f),new Vector2(.40f,-.02f)),(new Vector2(-.40f,.08f),new Vector2(-.12f,.37f)),
-                               (new Vector2(-.12f,-.02f),new Vector2(.07f,.37f)),(new Vector2(.07f,-.02f),new Vector2(.40f,.37f))};
+            // many portions (a crate grid) go in one mesh, with fewer segments round their edges
+            var parts=new List<CombineInstance>();
             foreach(var (a,b) in portions)
             {
                 var c=new Vector3((a.x+b.x)*.5f,y-thick*.5f,(a.y+b.y)*.5f);var size=new Vector3(b.x-a.x-.0015f,thick,b.y-a.y-.0015f);
-                Rounded(dress,"Concept cream portion",c,size,Mathf.Min(.012f,thick*.49f),cream,.12f,10);
+                if(portions.Length<=8)Rounded(dress,"Concept cream portion",c,size,Mathf.Min(.012f,thick*.49f),cream,.12f,10);
+                else parts.Add(new CombineInstance{mesh=RoundedBox(size,Mathf.Min(.012f,thick*.49f),.12f,4),transform=Matrix4x4.Translate(c)});
             }
+            if(parts.Count>0)Combined(dress,"Concept cream portions",parts,cream);
+        }
+        /// <summary>The cream top's portions (corners in x/z). The crate levels: one per grid cell, the cells the crates slide in
+        /// (the printed grid's job), and a strip behind the grid under the back bar. Other levels: five broad portions (the
+        /// concept's few divisions), drawn for the .8 × .6 floor and scaled to this one.</summary>
+        static (Vector2 a,Vector2 b)[] CreamRects(VenomCampaign game,float hx,float hz)
+        {
+            var crate=game.GetComponentsInChildren<COgheTapRail>(true).FirstOrDefault(t=>t.CrateFaces);
+            if(crate!=null)
+            {
+                var list=new List<(Vector2,Vector2)>();float cell=crate.CrateCell;var min=crate.ArenaMin;
+                int nx=Mathf.RoundToInt((crate.ArenaMax.x-min.x)/cell),nz=Mathf.RoundToInt((crate.ArenaMax.y-min.y)/cell);
+                for(int x=0;x<nx;x++)for(int z=0;z<nz;z++)list.Add((min+new Vector2(x,z)*cell,min+new Vector2(x+1,z+1)*cell));
+                list.Add((new Vector2(-hx,hz),new Vector2(hx,hz+.07f)));
+                return list.ToArray();
+            }
+            float X(float x)=>x*hx/.40f;float Z(float z)=>z>.30f?hz+(z-.30f):z*hz/.30f;
+            var five=new[]{(new Vector2(-.40f,-.30f),new Vector2(-.12f,.08f)),(new Vector2(-.12f,-.30f),new Vector2(.40f,-.02f)),(new Vector2(-.40f,.08f),new Vector2(-.12f,.37f)),
+                           (new Vector2(-.12f,-.02f),new Vector2(.07f,.37f)),(new Vector2(.07f,-.02f),new Vector2(.40f,.37f))};
+            return five.Select(r=>(new Vector2(X(r.Item1.x),Z(r.Item1.y)),new Vector2(X(r.Item2.x),Z(r.Item2.y)))).ToArray();
+        }
+        /// <summary>Half the floor's width and depth (root space): the cake is built to it.</summary>
+        static (float,float) FloorHalf(Transform root)
+        {
+            var f=root.GetComponentsInChildren<VenomSurfacePatch>(true).First(p=>p.name=="Laboratory floor");
+            bool first=true;Bounds b=default;
+            foreach(float x in new[]{-.5f,.5f})foreach(float y in new[]{-.5f,.5f})
+            {var v=root.InverseTransformPoint(f.transform.TransformPoint(new Vector3(f.Size.x*x,f.Size.y*y,0)));if(first){b=new Bounds(v,Vector3.zero);first=false;}else b.Encapsulate(v);}
+            return (b.extents.x,b.extents.z);
         }
         static Transform Part3(PrimitiveType type,Transform parent,Vector3 local,Vector3 scale,Material mat)
         {
@@ -564,6 +606,22 @@ namespace GravityBox.Editor
         /// <summary>Option 1: a cleaned PA1 Tripo piece (Art/Bakery/TripoPA1) fitted into a target box: its long axis turned to
         /// the box's long axis, its contact surface (a measured share of its height) put on topY, its bottom height below.</summary>
         static readonly Dictionary<string,Material> pa1Mats=new Dictionary<string,Material>();
+        static Material strawberry;
+        /// <summary>The Tripo glaze table's own maps with its colour turned from lilac to strawberry red (hue moved, saturation
+        /// raised, shading kept): the red crate reads as red and as the same glazed cake as the others.</summary>
+        static Material StrawberryGlaze()
+        {
+            if(strawberry!=null)return strawberry;
+            const string d="Assets/_Game/Venom/Art/Bakery/TripoPA1/";
+            var src=new Texture2D(2,2);src.LoadImage(File.ReadAllBytes(d+"PA1Table_basecolor.png"));
+            var px=src.GetPixels();
+            for(int i=0;i<px.Length;i++){Color.RGBToHSV(px[i],out float h,out float sat,out float v);px[i]=Color.HSVToRGB(.985f,Mathf.Clamp01(sat*1.6f+.15f),v*.92f);}
+            src.SetPixels(px);var path=$"{dir}/Textures/strawberry-glaze.png";File.WriteAllBytes(path,src.EncodeToPNG());Object.DestroyImmediate(src);
+            AssetDatabase.ImportAsset(path);
+            var mask=AssetDatabase.LoadAssetAtPath<Texture2D>(d+"PA1Table_Mask.png");
+            strawberry=SaveMaterial("PA1 strawberry glaze",Color.white,.5f,AssetDatabase.LoadAssetAtPath<Texture2D>(path),AssetDatabase.LoadAssetAtPath<Texture2D>(d+"PA1Table_normal.png"),1,mask);
+            return strawberry;
+        }
         /// <param name="flattenBelow">When ≥ 0: vertices above the contact height are pressed down to this far (metres) under
         /// it. The floor's baked cream rises above the walk height in places and showed through the cream on an empty floor
         /// (level 1); blocks hid it on level 49.</param>
@@ -620,7 +678,7 @@ namespace GravityBox.Editor
         // ---- the dress -------------------------------------------------------------------------------------------------
         public static void Dress(string key)
         {
-            dir=$"{Out}/{key}";meshSerial=0;
+            dir=$"{Out}/{key}";meshSerial=0;strawberry=null;
             var scene=EditorSceneManager.OpenScene(VenomCampaignBuilder.SpatialContentPath(key));
             var game=Object.FindFirstObjectByType<VenomCampaign>();var owner=game.GetComponent<VenomLevelController>();var root=owner.Rotation.transform;
             // Not idempotent by design (Codex review): rounded bodies and the candy live under their real owners, and the
@@ -742,7 +800,7 @@ namespace GravityBox.Editor
             }
             foreach(var task in game.GetComponentsInChildren<COgheTapRail>(true))
             {
-                if(task.Handle==null)continue;
+                if(task.Handle==null||task.CrateFaces)continue;   // crates have no handle: COghe takes them by any face
                 foreach(var r in task.Handle.GetComponentsInChildren<Renderer>(true))r.enabled=false;
                 var heading=Quaternion.Euler(0,game.Definition.CameraEuler.y,0);
                 var candy=Place("CandyHandle",task.Handle,Vector3.zero,Vector3.one,kit);
