@@ -28,6 +28,7 @@ namespace GravityBox.Editor
         {
             var args=Environment.GetCommandLineArgs();string keys="N41";
             for(int i=0;i<args.Length-1;i++)if(args[i]=="-coghe-bakery-levels")keys=args[i+1];
+            for(int i=0;i<args.Length-1;i++)if(args[i]=="-coghe-bakery-variant")variant=args[i+1];
             foreach(var key in keys.Split(','))Dress(key.Trim());
         }
 
@@ -228,6 +229,100 @@ namespace GravityBox.Editor
             AssetDatabase.ImportAsset(path);var imp=(TextureImporter)AssetImporter.GetAtPath(path);imp.wrapMode=TextureWrapMode.Repeat;imp.maxTextureSize=256;imp.SaveAndReimport();
             return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
         }
+
+        static Material glazeMat,spongeMat,creamMat;static Dictionary<string,Material> kitRef;static Transform dressRoot;
+        static void Combined(Transform parent,string name,List<CombineInstance> parts,Material mat)
+        {
+            var go=new GameObject(name,typeof(MeshFilter),typeof(MeshRenderer));go.transform.SetParent(parent,false);
+            var m=new Mesh{name=name,indexFormat=IndexFormat.UInt32};m.CombineMeshes(parts.ToArray(),true,true);
+            go.GetComponent<MeshFilter>().sharedMesh=SaveMesh(m,name.Replace(' ','-'));go.GetComponent<MeshRenderer>().sharedMaterial=mat;
+        }
+        /// <summary>A row of drips along an edge (CreamDrip, 10 cm segments fitted to the length), hanging from y, facing out.</summary>
+        static void Drips(Transform parent,Vector3 from,Vector3 to,float y,Vector3 outward,Material mat,string fbx="GlazeDrip")
+        {
+            // GlazeDrip (Codex): 10 cm, pivot at the centre of its top edge (Y=0), drips to -.031, X along the edge. Whole
+            // segments at true scale, centred on the edge (no long non-uniform stretch); the joins tuck into the coating.
+            float length=Vector3.Distance(from,to);int n=Mathf.FloorToInt(length/.1f);if(n<1)return;
+            var along=(to-from).normalized;var rot=Quaternion.LookRotation(Vector3.Cross(along,Vector3.up),Vector3.up);
+            if(Vector3.Dot(rot*Vector3.forward,outward)<0)rot=Quaternion.LookRotation(-Vector3.Cross(along,Vector3.up),Vector3.up);
+            var mid=(from+to)*.5f;
+            for(int i=0;i<n;i++)
+            {
+                var centre=mid+along*((i-(n-1)*.5f)*.1f);
+                var t=Place(fbx,parent,Vector3.zero,Vector3.one,kitRef,Quaternion.LookRotation(along,Vector3.up)*Quaternion.Euler(0,-90,0));
+                t.localRotation=Quaternion.LookRotation(Vector3.Cross(Vector3.up,along)*(Vector3.Dot(Vector3.Cross(Vector3.up,along),outward)>=0?1:-1),Vector3.up);
+                t.localPosition=new Vector3(centre.x,y,centre.z)+outward*.0036f;
+                foreach(var r in t.GetComponentsInChildren<Renderer>())r.sharedMaterial=mat;
+            }
+        }
+        /// <summary>A gameplay block as a piece of cake over its real faces. Slick sides: the whole body in glaze (it covers the
+        /// slick faces completely), a thicker glaze lip with drips on top. Grippy top: a soft vanilla cream cap. All grippy: sponge
+        /// body under the cream.</summary>
+        static void CakeBlock(Transform parent,string name,Bounds b,bool grippyTop,bool slickSides)
+        {
+            if(variant=="tripo"){TripoBlock(parent,grippyTop?"glaze_block":"glaze_bar",b.center,b.size+new Vector3(.004f,.002f,.004f));return;}
+            float rad=Mathf.Min(.016f,b.size.y*.4f,Mathf.Min(b.size.x,b.size.z)*.3f);const float cap=.011f;
+            // with a cream cap the body stops under it (no coplanar faces), the cap's thickness below the contact height
+            var bodyCentre=grippyTop?b.center-Vector3.up*(cap*.5f-.0015f):b.center;var bodySize=grippyTop?b.size-Vector3.up*(cap-.003f):b.size;
+            Rounded(parent,name+(slickSides?" glaze":" sponge"),bodyCentre,bodySize,rad,slickSides?glazeMat:spongeMat,.12f,7);
+            if(grippyTop)
+                Rounded(parent,name+" cream",new Vector3(b.center.x,b.max.y-cap*.5f,b.center.z),new Vector3(b.size.x+.004f,cap,b.size.z+.004f),.0052f,creamMat,.08f,6);
+            else if(slickSides)
+                Rounded(parent,name+" glaze lip",new Vector3(b.center.x,b.max.y-.004f,b.center.z),new Vector3(b.size.x+.006f,.012f,b.size.z+.006f),.0058f,glazeMat,.08f,6);
+            if(!slickSides||b.size.y<.02f)return;
+            // glaze drips under the lip, on the sides the camera sees (front and right), as trim on the glaze
+            float y=b.max.y-.004f;
+            Drips(parent,new Vector3(b.min.x+.012f,0,b.min.z),new Vector3(b.max.x-.012f,0,b.min.z),y,Vector3.back,glazeMat);
+            Drips(parent,new Vector3(b.max.x,0,b.min.z+.012f),new Vector3(b.max.x,0,b.max.z-.012f),y,Vector3.right,glazeMat);
+        }
+        /// <summary>A perimeter cake bar outside the play floor: sponge body, its inner face (the slick rim) fully glazed, a
+        /// glaze top with drips toward the play area.</summary>
+        static void GlazedBar(Transform parent,Vector3 centre,Vector3 size,Vector3 inward,float top,float bottom)
+        {
+            if(variant=="tripo"){TripoBlock(parent,"glaze_bar",new Vector3(centre.x,(top+bottom)*.5f,centre.z),new Vector3(size.x,top-bottom,size.z));return;}
+            var c=new Vector3(centre.x,(top+bottom)*.5f,centre.z);var s=new Vector3(size.x,top-bottom,size.z);
+            Rounded(parent,"Bakery bar sponge",c,s,.016f,spongeMat,.12f,7);
+            // piped cream along the bar's outer top edge (outside every route), stopped short of the rounded corners
+            var outward=-inward;var edgeLen=inward.x!=0?s.z:s.x;var along=inward.x!=0?Vector3.forward:Vector3.right;
+            var edge=new Vector3(c.x,top+.008f,c.z)+outward*(Vector3.Dot(new Vector3(Mathf.Abs(inward.x),0,Mathf.Abs(inward.z)),s)*.5f-.008f);
+            int pieces=Mathf.FloorToInt((edgeLen-.05f)/.1f);
+            for(int i=0;i<pieces;i++)
+            {var t=Place("PipedCream",parent,Vector3.zero,Vector3.one,kitRef,Quaternion.LookRotation(Vector3.Cross(along,Vector3.up),Vector3.up));t.localPosition=edge+along*((i-(pieces-1)*.5f)*.1f);}
+            // the inner face: a glaze slab from the floor tiles up over the top
+            var face=Vector3.Scale(new Vector3(Mathf.Abs(inward.x),0,Mathf.Abs(inward.z)),s);
+            var glazeSize=new Vector3(inward.x!=0?.012f:s.x+.004f,top+.30f+.006f,inward.z!=0?.012f:s.z+.004f);
+            var glazeCentre=new Vector3(c.x,(top+.006f-.30f)*.5f-.0f,c.z)+inward*(Vector3.Dot(face,Vector3.one)*.5f-.005f);
+            glazeCentre.y=(top+.006f+(-.30f))*.5f;
+            Rounded(parent,"Bakery bar glaze",glazeCentre,glazeSize,.0055f,glazeMat,.08f,6);
+            Rounded(parent,"Bakery bar glaze top",new Vector3(c.x,top+.002f,c.z),new Vector3(s.x+.004f,.012f,s.z+.004f),.0058f,glazeMat,.08f,6);
+        }
+
+        // Tripo comparison (Mrk, 10/10/2026: "tạo model bằng Tripo3D rồi xếp vào màn"): -coghe-bakery-variant tripo puts the raw
+        // Tripo models (Art/BakeryTripo, converted in Blender, textures as URP maps) over the same faces, stretched to each size.
+        static string variant="code";
+        static readonly Dictionary<string,Material> tripoMats=new Dictionary<string,Material>();
+        static Material TripoMaterial(string model)
+        {
+            if(tripoMats.TryGetValue(model,out var m))return m;string d=$"Assets/_Game/Venom/Art/BakeryTripo/{model}/Tripo_{model}";
+            var normal=AssetImporter.GetAtPath(d+"_normal.png") as TextureImporter;if(normal!=null&&normal.textureType!=TextureImporterType.NormalMap){normal.textureType=TextureImporterType.NormalMap;normal.SaveAndReimport();}
+            var mask=AssetImporter.GetAtPath(d+"_mask.png") as TextureImporter;if(mask!=null&&mask.sRGBTexture){mask.sRGBTexture=false;mask.SaveAndReimport();}
+            m=SaveMaterial("Tripo "+model,Color.white,.5f,AssetDatabase.LoadAssetAtPath<Texture2D>(d+"_basecolor.png"),AssetDatabase.LoadAssetAtPath<Texture2D>(d+"_normal.png"),1,AssetDatabase.LoadAssetAtPath<Texture2D>(d+"_mask.png"));
+            tripoMats[model]=m;return m;
+        }
+        static Transform TripoBlock(Transform parent,string model,Vector3 centre,Vector3 size)
+        {
+            var prefab=AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/_Game/Venom/Art/BakeryTripo/{model}/Tripo_{model}.fbx");
+            var go=(GameObject)PrefabUtility.InstantiatePrefab(prefab);PrefabUtility.UnpackPrefabInstance(go,PrefabUnpackMode.Completely,InteractionMode.AutomatedAction);
+            go.name="Tripo "+model;go.transform.SetParent(parent,false);go.transform.localRotation=Quaternion.identity;
+            var mf=go.GetComponentInChildren<MeshFilter>();var mb=mf.sharedMesh.bounds;var child=mf.transform;
+            // the child may carry the FBX's own transform: measure in the root's frame
+            var lossy=Vector3.Scale(child.localScale,mb.size);
+            go.transform.localScale=new Vector3(size.x/Mathf.Max(lossy.x,1e-5f),size.y/Mathf.Max(lossy.y,1e-5f),size.z/Mathf.Max(lossy.z,1e-5f));
+            go.transform.localPosition=new Vector3(centre.x,centre.y-size.y*.5f,centre.z);
+            foreach(var r in go.GetComponentsInChildren<Renderer>()){var mats=r.sharedMaterials;for(int i=0;i<mats.Length;i++)mats[i]=TripoMaterial(model);r.sharedMaterials=mats;r.shadowCastingMode=ShadowCastingMode.On;}
+            foreach(var col in go.GetComponentsInChildren<Collider>())Object.DestroyImmediate(col);
+            return go.transform;
+        }
         // ---- the dress -------------------------------------------------------------------------------------------------
         public static void Dress(string key)
         {
@@ -248,7 +343,9 @@ namespace GravityBox.Editor
             kit["Porcelain"].SetColor("_BaseColor",new Color(.88f,.84f,.79f));kit["Porcelain"].SetFloat("_Smoothness",.55f);
             var jelly=kit.TryGetValue("Grape jelly",out var grape)?grape:SaveMaterial("Grape jelly",new Color(.58f,.43f,.78f),.76f);
             var tiles=SaveMaterial("Vanilla tiles",new Color(1f,.93f,.80f),.42f,SaveDots("vanilla-dots",Color.white,new Color(.95f,.91f,.86f),5,.16f,.9f,7));
-            var sponge=kit.TryGetValue("Wafer",out var wafer)?wafer:tiles;var cream=kit["Cream"];var biscuit=kit["Biscuit"];
+            var sponge=kit.TryGetValue("Sponge",out var spongeKit)?spongeKit:kit["Wafer"];var cream=kit["Cream"];var biscuit=kit["Biscuit"];
+            var vanilla=kit.TryGetValue("Vanilla cream",out var vk)?vk:SaveMaterial("Vanilla cream",new Color(1f,.96f,.88f),.5f);
+            glazeMat=kit.TryGetValue("Glaze lilac",out var gk)?gk:jelly;spongeMat=sponge;creamMat=vanilla;kitRef=kit;dressRoot=dress;
             var candyBlue=SaveMaterial("Candy blue",new Color(.36f,.62f,.95f),.85f);var mint=SaveMaterial("Mint sugar",new Color(.62f,.88f,.78f),.6f);
             var white=SaveMaterial("Sugar white",new Color(.98f,.97f,.95f),.55f);
 
@@ -272,38 +369,37 @@ namespace GravityBox.Editor
                 bool slickSides=faces.Where(f=>Mathf.Abs(parent.InverseTransformDirection(f.Normal).y)<.5f).All(f=>f.Slippery);
                 bool grippyTop=top!=null&&!top.Slippery;
                 foreach(var f in faces){var r=f.GetComponent<Renderer>();if(r!=null)r.enabled=false;}
-                string name="Bakery "+kv.Key.Item2;float rad=Mathf.Min(.012f,b.size.y*.35f);
-                if(!grippyTop){Rounded(parent,name+" jelly",b.center,b.size,rad,jelly);continue;}
-                // Slick sides stay jelly up to a cream cap: a sponge-looking side would read as climbable (purple = slippery).
-                if(slickSides)Rounded(parent,name+" jelly",b.center,b.size,rad,jelly);
-                else
-                {
-                    float layer=Mathf.Min(.022f,b.size.y*.45f);
-                    Rounded(parent,name+" sponge",b.center,b.size,rad,sponge);
-                }
-                Rounded(parent,name+" cream",new Vector3(b.center.x,b.max.y,b.center.z),new Vector3(b.size.x+.006f,.012f,b.size.z+.006f),.0058f,cream,.08f,6);
+                CakeBlock(parent,"Bakery "+kv.Key.Item2,b,grippyTop,slickSides);
             }
 
-            // 2. Floor tiles over the real floor, Codex's plate under them with its lip on the rim, the rim and backrest faces
-            //    hidden (the plate lip and a jelly backrest show them).
+            // 2. The floor is a cake: 6 x 4 sponge tiles 4 cm thick, grown DOWN from the contact height (cream tops at -.30),
+            //    6 mm seams showing the crumb. The rim and backrest faces (slick) are wrapped by glazed cake bars whose inner faces
+            //    are fully glazed; sponge shows only on their outer faces. The plate sits lower and wider under it all.
             foreach(var p in root.GetComponentsInChildren<VenomSurfacePatch>(true))
+            {var r=p.GetComponent<Renderer>();if(r!=null&&(p.name=="Laboratory floor"||p.name.StartsWith("Bakery rim")||p.name.StartsWith("Bakery backrest")))r.enabled=false;}
             {
-                var r=p.GetComponent<Renderer>();if(r==null)continue;
-                if(p.name=="Laboratory floor"||p.name.StartsWith("Bakery rim"))r.enabled=false;
-                if(p.name.StartsWith("Bakery backrest"))
-                {
-                    r.enabled=false;var t=p.transform;var c=root.InverseTransformPoint(t.position);
-                    Rounded(dress,"Bakery backrest jelly",new Vector3(c.x,c.y,.316f),new Vector3(p.Size.x,p.Size.y,.032f),.012f,jelly);
-                }
+                const int nx=6,nz=4;float tx=.80f/nx,tz=.60f/nz,gap=.006f;
+                var bodies=new List<CombineInstance>();var caps=new List<CombineInstance>();
+                // one continuous sponge slab under the contact height; the portions show only as shallow seams in the cream
+                bodies.Add(new CombineInstance{mesh=RoundedBox(new Vector3(.80f,.034f,.60f),.010f,.12f,6),transform=Matrix4x4.Translate(new Vector3(0,-.34f+.017f,0))});
+                var cap=RoundedBox(new Vector3(tx-.004f,.009f,tz-.004f),.0042f,.12f,4);
+                for(int ix=0;ix<nx;ix++)for(int iz=0;iz<nz;iz++)
+                    caps.Add(new CombineInstance{mesh=cap,transform=Matrix4x4.Translate(new Vector3(-.40f+tx*(ix+.5f),-.30f-.0045f,-.30f+tz*(iz+.5f)))});
+                if(variant=="tripo")
+                {for(int ix=0;ix<nx;ix++)for(int iz=0;iz<nz;iz++)TripoBlock(dress,"cream_block",new Vector3(-.40f+tx*(ix+.5f),-.32f,-.30f+tz*(iz+.5f)),new Vector3(tx,.04f,tz));}
+                else{Combined(dress,"Bakery floor sponge",bodies,sponge);Combined(dress,"Bakery floor cream",caps,vanilla);}
+                // the bars: front, back, left, right; the backrest raises the back bar where the exit platform meets it
+                const float w=.06f,top=-.24f,bottom=-.345f;
+                GlazedBar(dress,new Vector3(0,0,-.30f-w*.5f),new Vector3(.80f+2*w,0,w),Vector3.forward,top,bottom);
+                GlazedBar(dress,new Vector3(0,0,.30f+w*.5f),new Vector3(.80f+2*w,0,w),Vector3.back,top,bottom);
+                GlazedBar(dress,new Vector3(-.40f-w*.5f,0,0),new Vector3(w,0,.60f),Vector3.right,top,bottom);
+                GlazedBar(dress,new Vector3(.40f+w*.5f,0,0),new Vector3(w,0,.60f),Vector3.left,top,bottom);
+                foreach(var p in root.GetComponentsInChildren<VenomSurfacePatch>(true))
+                    if(p.name.StartsWith("Bakery backrest"))
+                    {var c=root.InverseTransformPoint(p.transform.position);GlazedBar(dress,new Vector3(c.x,0,.30f+w*.5f),new Vector3(p.Size.x,0,w),Vector3.back,-.30f+p.Size.y,-.25f);}
             }
-            // The floor: one slab shaped like the plate's inner lip (a superellipse of order 4, as the plate mesh), tiles drawn in
-            // its texture as 6 x 4 large squares with narrow seams (Codex review: no geometry may poke through the lip).
-            var floorTex=SaveTileTexture("vanilla-tiles",new Color(1f,.95f,.86f),new Color(.86f,.78f,.68f),11);
-            var floorMat=SaveMaterial("Vanilla floor",new Color(1f,.97f,.92f),.4f,floorTex);floorMat.SetTextureScale("_BaseMap",new Vector2(6f/.8f,4f/.6f));   // seams on x=-.4+k*.133, z=-.3+k*.15
-            var floor=new GameObject("Bakery floor",typeof(MeshFilter),typeof(MeshRenderer));floor.transform.SetParent(dress,false);
-            floor.GetComponent<MeshFilter>().sharedMesh=SaveMesh(Superellipse(.394f,.294f,-.3015f,.006f,96),"floor");floor.GetComponent<MeshRenderer>().sharedMaterial=floorMat;
-            // plate lathe: inner flat to .411 (x) /.327 (z), lip crest .468/.372: scaled so the lip rises at the rim (.40/.30)
-            Place("Plate",dress,new Vector3(0,-.30f-.008f*.9f-.003f,0),new Vector3(.40f/.44f,.9f,.30f/.35f),kit);
+            // plate lathe: inner flat to .411 (x) / .327 (z): wide enough for the bars (outer .46 / .36), 3 mm under the tiles
+            Place("Plate",dress,new Vector3(0,-.345f-.008f*.8f,0),new Vector3(1.14f,.8f,1.13f),kit);
 
             // Toppings in sparse clusters on the plate's rim crest (outside the play floor, away from the cherry and handles),
             // set on the plate's actual surface: a ray down onto a temporary collider of the plate mesh (Codex review).
