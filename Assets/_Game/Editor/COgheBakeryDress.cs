@@ -382,28 +382,25 @@ namespace GravityBox.Editor
             foreach(var p in root.GetComponentsInChildren<VenomSurfacePatch>(true))
             {var r=p.GetComponent<Renderer>();if(r!=null&&(p.name=="Laboratory floor"||p.name.StartsWith("Bakery rim")||p.name.StartsWith("Bakery backrest")))r.enabled=false;}
             // the cake: the boundary is the floor's edge (±.40, ±.30); the back runs on to .37 to carry the glazed back bar
-            const float top=-.30f,depth=.09f;
+            const float top=-.30f,depth=.12f;
             var cakeMin=new Vector3(-.40f,top-depth,-.30f);var cakeMax=new Vector3(.40f,top,.37f);
             var cc=(cakeMin+cakeMax)*.5f;var cs=cakeMax-cakeMin;
             bool pa1=variant=="pa1";
             if(pa1)
             {
                 // option 1: the five cleaned Tripo pieces carry the cake, the back rail, the plate (the rest stays shared)
+                // one Tripo cake for the floor (its sponge sides and drips); six separate portions read as small cakes. Its baked
+                // cream top streaks when stretched, so a flat cream surface in few broad portions covers it (Codex review).
                 PA1Piece(dress,"PA1Floor",.955f,new Vector3(cc.x,top,cc.z),new Vector2(cs.x,cs.z),depth);
-                PA1Piece(dress,"PA1Rail",1f,new Vector3(-.17f,top+.052f,.335f),new Vector2(.46f,.06f),.052f);
+                CreamPortions(dress,top+.002f,cream,.012f);   // 2 mm over the walk height: the baked cream has bumps above it
+                // the back rail in code: the Tripo rail's baked streaks read as stripes; the glaze must be smooth (Codex review)
+                Rounded(dress,"Concept back bar",new Vector3(-.17f,top+.026f,.335f),new Vector3(.46f,.052f,.06f),.025f,glaze,.12f,10);
                 PA1Piece(dress,"PA1Plate",.28f,new Vector3(0,top-depth,.035f),new Vector2(1.06f,.90f),.012f);
             }
             if(!pa1){
-            Rounded(dress,"Concept cake sponge",cc-Vector3.up*.006f,cs-Vector3.up*.012f,.028f,sponge,.12f,8);
+            Rounded(dress,"Concept cake sponge",cc-Vector3.up*.006f,cs-Vector3.up*.012f,.045f,sponge,.12f,10);
             Rounded(dress,"Concept cake filling",new Vector3(cc.x,top-depth*.55f,cc.z),new Vector3(cs.x+.003f,.009f,cs.z+.003f),.0045f,filling,.12f,4);
-            // the cream top in five broad portions with shallow seams (the concept's few divisions)
-            var portions=new[]{(new Vector2(-.40f,-.30f),new Vector2(-.12f,.08f)),(new Vector2(-.12f,-.30f),new Vector2(.40f,-.02f)),(new Vector2(-.40f,.08f),new Vector2(-.12f,.37f)),
-                               (new Vector2(-.12f,-.02f),new Vector2(.07f,.37f)),(new Vector2(.07f,-.02f),new Vector2(.40f,.37f))};
-            foreach(var (a,b) in portions)
-            {
-                var c=new Vector3((a.x+b.x)*.5f,top-.011f,(a.y+b.y)*.5f);var size=new Vector3(b.x-a.x-.004f,.022f,b.y-a.y-.004f);
-                Rounded(dress,"Concept cream portion",c,size,.0105f,cream,.12f,8);   // soft, thick portions (cream top at the contact height)
-            }
+            CreamPortions(dress,top,cream,.024f);
             // drips down the cake's front, left and right faces, and a low cream bead on the boundary
             CreamSkirt(dress,cakeMin,cakeMax,top-.012f,cream,.032f);
             Bead(dress,new Vector3(-.40f,top,-.30f),new Vector3(.40f,top,-.30f),cream);Bead(dress,new Vector3(-.40f,top,-.30f),new Vector3(-.40f,top,.30f),cream);
@@ -444,12 +441,12 @@ namespace GravityBox.Editor
                 const float cap=.012f;
                 Rounded(parent,"Concept glazed "+kv.Key.Item2,b.center-Vector3.up*cap*.5f,b.size-Vector3.up*cap,rad,glaze,.12f,10);
                 Rounded(parent,"Concept cream cap",new Vector3(b.center.x,b.max.y-cap*.5f,b.center.z),new Vector3(b.size.x+.006f,cap,b.size.z+.006f),.006f,cream,.12f,6);
-                CreamSkirt(parent,new Vector3(b.min.x-.003f,b.min.y,b.min.z-.003f),new Vector3(b.max.x+.003f,b.max.y,b.max.z+.003f),b.max.y-cap+.002f,cream,.012f,true);
+                if(b.size.y>=.035f)CreamSkirt(parent,new Vector3(b.min.x-.003f,b.min.y,b.min.z-.003f),new Vector3(b.max.x+.003f,b.max.y,b.max.z+.003f),b.max.y-cap+.002f,cream,.012f,true);
             }
             ConceptDecor(game,root,dress,kit,top-depth+.004f);
             if(pa1)foreach(var kvm in pa1Mats)if(kvm.Key=="PA1Floor")kvm.Value.SetColor("_BaseColor",new Color(.93f,.90f,.86f));
             // gears golden biscuit with a cream flower on the hub (child of the gear: it turns with it)
-            var gold=Mat("Concept biscuit",new Color(1f,.82f,.48f),.3f,biscuitKit.GetTexture("_BaseMap") as Texture2D,biscuitKit.GetTexture("_BumpMap") as Texture2D,.35f);
+            var gold=Mat("Concept biscuit",new Color(1f,.83f,.50f),.32f,null,biscuitKit.GetTexture("_BumpMap") as Texture2D,.3f);   // golden: no dark pore colour map
             foreach(var r in game.GetComponentsInChildren<Renderer>(true))
             {
                 if(r.sharedMaterial==null)continue;
@@ -458,7 +455,7 @@ namespace GravityBox.Editor
                     BoxUV(r,root,.06f);r.sharedMaterial=gold;
                     var g=r.transform;var flower=new GameObject("Concept cream flower").transform;flower.SetParent(g,false);
                     var gb=r.bounds;flower.position=new Vector3(gb.center.x,gb.max.y+.0015f,gb.center.z);flower.rotation=root.rotation;
-                    float pr=Mathf.Min(gb.extents.x,gb.extents.z)*.42f;
+                    float pr=Mathf.Min(gb.extents.x,gb.extents.z)*.62f;   // a large cream centre, as the concept
                     for(int i=0;i<6;i++){float a=i*Mathf.PI/3;Part3(PrimitiveType.Sphere,flower,new Vector3(Mathf.Cos(a),0,Mathf.Sin(a))*pr*.62f,new Vector3(pr*.62f,pr*.22f,pr*.62f),cream);}
                     Part3(PrimitiveType.Sphere,flower,Vector3.up*pr*.08f,new Vector3(pr*.55f,pr*.3f,pr*.55f),glaze);
                 }
@@ -487,6 +484,19 @@ namespace GravityBox.Editor
                 if(Mathf.Abs(p.x)<.43f&&p.z>-.33f&&p.z<.40f)continue;
                 if(i%5==0){var m=Part3(PrimitiveType.Sphere,dress,p+Vector3.up*.004f,new Vector3(.016f,.012f,.016f),white);Part3(PrimitiveType.Sphere,m,new Vector3(0,.55f,0),new Vector3(.6f,.7f,.6f),white);}
                 else Part3(PrimitiveType.Sphere,dress,p,Vector3.one*(.006f+(float)rng.NextDouble()*.004f),pink);
+            }
+        }
+
+        /// <summary>The cake's cream top in five broad portions with narrow, shallow seams (the concept's few divisions); the
+        /// top at y. Option 1 lays a thin one over the Tripo cake, option 2 a thick one on its code cake.</summary>
+        static void CreamPortions(Transform dress,float y,Material cream,float thick)
+        {
+            var portions=new[]{(new Vector2(-.40f,-.30f),new Vector2(-.12f,.08f)),(new Vector2(-.12f,-.30f),new Vector2(.40f,-.02f)),(new Vector2(-.40f,.08f),new Vector2(-.12f,.37f)),
+                               (new Vector2(-.12f,-.02f),new Vector2(.07f,.37f)),(new Vector2(.07f,-.02f),new Vector2(.40f,.37f))};
+            foreach(var (a,b) in portions)
+            {
+                var c=new Vector3((a.x+b.x)*.5f,y-thick*.5f,(a.y+b.y)*.5f);var size=new Vector3(b.x-a.x-.0015f,thick,b.y-a.y-.0015f);
+                Rounded(dress,"Concept cream portion",c,size,Mathf.Min(.012f,thick*.49f),cream,.12f,10);
             }
         }
         static Transform Part3(PrimitiveType type,Transform parent,Vector3 local,Vector3 scale,Material mat)
@@ -737,7 +747,8 @@ namespace GravityBox.Editor
             foreach(var r in game.GetComponentsInChildren<Renderer>(true))
             {
                 if(r.sharedMaterial==null)continue;string m=r.sharedMaterial.name;
-                if(m.StartsWith("Amber resin")||r.name.Contains("involute gear")){BoxUV(r,root,.06f);r.sharedMaterial=biscuit;}
+                // options 1 and 2 already gave the gears their golden biscuit in ConceptDress (Codex review: this re-coloured them)
+                if((m.StartsWith("Amber resin")||r.name.Contains("involute gear"))&&variant!="concept"&&variant!="pa1"){BoxUV(r,root,.06f);r.sharedMaterial=biscuit;}
                 else if(m.StartsWith("Spatial satin guides"))r.sharedMaterial=mint;
                 else if(m.StartsWith("Spatial pearl casing"))r.sharedMaterial=white;
             }
@@ -763,7 +774,7 @@ namespace GravityBox.Editor
             RenderSettings.ambientMode=AmbientMode.Trilight;RenderSettings.ambientSkyColor=new Color(.72f,.66f,.68f);
             RenderSettings.ambientEquatorColor=new Color(.62f,.52f,.50f);RenderSettings.ambientGroundColor=new Color(.42f,.36f,.38f);
             var look=game.gameObject.GetComponent<COgheBakeryPresentation>()??game.gameObject.AddComponent<COgheBakeryPresentation>();
-            look.Backdrop=new Color(.97f,.78f,.69f);
+            look.Backdrop=new Color(.95f,.71f,.61f);   // the concept's warmer peach
             var profilePath=$"{dir}/Bakery volume.asset";var profile=ScriptableObject.CreateInstance<VolumeProfile>();AssetDatabase.CreateAsset(profile,profilePath);
             var ca=profile.Add<ColorAdjustments>(true);ca.contrast.Override(10);ca.saturation.Override(12);
             var tm=profile.Add<Tonemapping>(true);tm.mode.Override(TonemappingMode.Neutral);

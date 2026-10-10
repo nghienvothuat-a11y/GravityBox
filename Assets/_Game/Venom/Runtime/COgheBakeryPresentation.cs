@@ -8,7 +8,7 @@ namespace GravityBox.Venom
     /// </summary>
     public sealed class COgheBakeryPresentation : MonoBehaviour
     {
-        public Color Backdrop=new Color(.97f,.78f,.69f);
+        public Color Backdrop=new Color(.95f,.71f,.61f);
         private void Start()
         {
             var owner=GetComponent<VenomLevelController>();
