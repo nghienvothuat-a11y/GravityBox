@@ -27,8 +27,9 @@ namespace GravityBox.Editor
     {
         const string Out="Assets/_Game/Venom/Art/SoftEdges";
         const string Marker="COghe soft edges";
-        // The tape: 2.2 cm tall, 0.6 mm thick, on the inner face of the glass, starting just above the surface it guards.
-        const float TapeHeight=.022f,TapeThick=.0006f,TapeLift=.0005f,TapeRepeat=.03f;
+        // The tape: 7 cm tall (Mrk 11/10/2026: taller, so it is plain COghe cannot get over it: COghe stands ~5 cm and
+        // reaches ~6 cm), 0.6 mm thick, on the inner face of the glass, starting just above the surface it guards.
+        const float TapeHeight=.07f,TapeThick=.0006f,TapeLift=.0005f,TapeRepeat=.03f;
         // Clear of the exit hole by this much (its mint ring and aluminium lip stay readable).
         const float HoleMargin=.008f;
         static string dir;static int meshSerial;
@@ -40,10 +41,11 @@ namespace GravityBox.Editor
             if(!dump)SlickMaterials();
             foreach(var key in keys.Split(','))
             {
-                var scene=EditorSceneManager.OpenScene(VenomCampaignBuilder.SpatialContentPath(key.Trim()));
+                string path=VenomCampaignBuilder.SpatialContentPath(key.Trim());   // a content key: 01, K01, N41
+                var scene=EditorSceneManager.OpenScene(path);
                 var game=Object.FindFirstObjectByType<VenomCampaign>();
                 if(dump){Dump(key,game);continue;}
-                Apply(key.Trim(),game);
+                Apply(Path.GetFileNameWithoutExtension(path).Replace("COgheSpatial",""),game);   // assets keyed as in ApplyAll
                 EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);
             }
             AssetDatabase.SaveAssets();
@@ -84,7 +86,11 @@ namespace GravityBox.Editor
             m.SetColor("_BaseColor",new Color(.60f,.52f,.91f));m.SetColor("_EdgeColor",new Color(.44f,.37f,.80f));m.SetColor("_SheenColor",Color.white);
             m.SetFloat("_Mode",2);m.SetFloat("_Film",1);m.SetFloat("_Pattern",0);m.SetFloat("_Iridescence",0);m.SetFloat("_Sparkle",0);m.SetFloat("_FlowSpeed",1);
             m.SetFloat("_Gloss",300);m.SetFloat("_Spec",1.5f);m.SetFloat("_Reflect",.75f);m.SetFloat("_Fresnel",.45f);
-            m.SetFloat("_SheenStrength",.3f);m.SetFloat("_SheenSpeed",.25f);m.SetFloat("_SheenWidth",.05f);m.SetFloat("_EdgeBand",tape?.12f:0);
+            m.SetFloat("_SheenStrength",.3f);m.SetFloat("_SheenSpeed",.25f);m.SetFloat("_SheenWidth",.05f);m.SetFloat("_EdgeBand",tape?.05f:0);
+            // the tape is see-through (a 7 cm band on the front glass would hide COghe beside it); it sorts with the glass
+            m.SetFloat("_Alpha",tape?.6f:1);m.SetFloat("_SrcBlend",tape?(float)BlendMode.SrcAlpha:(float)BlendMode.One);
+            m.SetFloat("_DstBlend",tape?(float)BlendMode.OneMinusSrcAlpha:(float)BlendMode.Zero);m.SetFloat("_ZWrite",tape?0:1);
+            m.renderQueue=tape?(int)RenderQueue.Transparent:-1;
             EditorUtility.SetDirty(m);
         }
         /// <summary>The shared slick material of the Spatial levels takes the hologram look (the generators keep it: see
@@ -193,7 +199,7 @@ namespace GravityBox.Editor
             string matPath=$"{Out}/Slick tape.mat";Directory.CreateDirectory(Out);
             var mat=AssetDatabase.LoadAssetAtPath<Material>(matPath);
             if(mat==null){mat=new Material(Shader.Find("COghe/Slick")){name="Slick tape"};AssetDatabase.CreateAsset(mat,matPath);}
-            if(mat.GetFloat("_Mode")!=2||mat.shader.name!="COghe/Slick")Hologram(mat,true);
+            Hologram(mat,true);
             return mat;
         }
 

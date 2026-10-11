@@ -29,6 +29,10 @@ Shader "COghe/Slick"
   _Film("Oil film",Float)=1
   _Glitter("Glitter",Float)=2.5
   _FlowSpeed("Flow speed",Float)=1
+  _Alpha("Opacity (the tape: see-through, so COghe shows behind it)",Float)=1
+  [HideInInspector]_SrcBlend("Src blend",Float)=1
+  [HideInInspector]_DstBlend("Dst blend",Float)=0
+  [HideInInspector]_ZWrite("ZWrite",Float)=1
  }
  SubShader
  {
@@ -39,12 +43,14 @@ Shader "COghe/Slick"
   CBUFFER_START(UnityPerMaterial)
   half4 _BaseColor,_PatternColor,_EdgeColor,_SheenColor;
   float _Pattern,_PatternScale,_EdgeBand,_Gloss,_Spec,_Reflect,_Fresnel,_SheenStrength,_SheenSpeed,_SheenWidth,_Iridescence,_Sparkle;
-  float _Mode,_Ripple,_RippleScale,_Drops,_Film,_Glitter,_FlowSpeed;
+  float _Mode,_Ripple,_RippleScale,_Drops,_Film,_Glitter,_FlowSpeed,_Alpha;
   CBUFFER_END
   ENDHLSL
   Pass
   {
    Name "ForwardLit" Tags{"LightMode"="UniversalForward"}
+   Blend [_SrcBlend] [_DstBlend]
+   ZWrite [_ZWrite]
    HLSLPROGRAM
    #pragma vertex Vert
    #pragma fragment Frag
@@ -81,7 +87,8 @@ Shader "COghe/Slick"
     else if(_Pattern>1.5)pattern=1-smoothstep(.05,.11,abs(frac(q.y+.16*sin(q.x*6.2832))-.5));   // waves ≈
     else if(_Pattern>.5)pattern=1-smoothstep(.22,.26,abs(frac((q.x+q.y)*.5)-.5));                  // diagonal stripes
     half3 c=lerp(_BaseColor.rgb,_PatternColor.rgb,pattern);
-    if(_EdgeBand>0)c=lerp(c,_EdgeColor.rgb,step(i.uv.y,_EdgeBand)+step(1-_EdgeBand,i.uv.y));
+    float edge=_EdgeBand>0?saturate(step(i.uv.y,_EdgeBand)+step(1-_EdgeBand,i.uv.y)):0;
+    c=lerp(c,_EdgeColor.rgb,edge);
     float fresView=1-saturate(dot(n,v));half wet=0,drop=0;
     if(_Mode>.5&&_Mode<1.5)
     {
@@ -148,7 +155,7 @@ Shader "COghe/Slick"
      col+=on*_Sparkle*(1-smoothstep(.04,.16,length(f)))*pow(saturate(sin(Hash(g+2.7)*40+dot(v,float3(31,17,23)))),12);
     }
     col=MixFog(col,i.fog);
-    return half4(col,1);
+    return half4(col,lerp(_Alpha,1,edge*.7));   // the tape's edges stay firmer than its middle
    }
    ENDHLSL
   }
