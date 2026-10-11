@@ -146,6 +146,8 @@ namespace GravityBox.Tests
    if(!string.IsNullOrEmpty(size)){var wh=size.Split('x');clipWidth=int.Parse(wh[0]);clipHeight=int.Parse(wh[1]);}
    System.Action<string,float> heard=(clip,volume)=>clipSounds?.AppendLine($"{clipFrame/30f:F3} {clip} {volume:F2}");COgheAudio.Heard+=heard;
    bool eyesWere=COgheEyes.Enabled;ClipEyesFromEnvironment();
+   // one clip frame = 1/30 s of game time, so time-driven shading (the slick hologram) moves at its real speed
+   Time.captureFramerate=30;
    try{
    var levels=string.IsNullOrEmpty(only)?new[]{1,2,3,4,5,6,7,8,9,10}:Array.ConvertAll(only.Split(','),int.Parse);
    // Levels are play positions 1–50: the catalog's scene sequence names each one's scene (pilot, 11–30 or Plus).
@@ -160,7 +162,7 @@ namespace GravityBox.Tests
     File.WriteAllText($"{clipDirectory}/taps.txt",clipTaps.ToString());File.WriteAllText($"{clipDirectory}/sounds.txt",clipSounds.ToString());
     File.WriteAllText($"{clipDirectory}/track.txt",clipTrack.ToString());clipTrack=null;
    }
-   }finally{COgheAudio.Heard-=heard;COgheEyes.Enabled=eyesWere;COgheEyes.Trace=clipEyes=false;}
+   }finally{Time.captureFramerate=0;COgheAudio.Heard-=heard;COgheEyes.Enabled=eyesWere;COgheEyes.Trace=clipEyes=false;}
   }
  }
 }
