@@ -33,6 +33,15 @@ Shader "COghe/Slick"
  SubShader
  {
   Tags{"RenderPipeline"="UniversalPipeline" "RenderType"="Opaque" "Queue"="Geometry"}
+  HLSLINCLUDE
+  #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+  // one material buffer for every pass: SRP batcher compatible
+  CBUFFER_START(UnityPerMaterial)
+  half4 _BaseColor,_PatternColor,_EdgeColor,_SheenColor;
+  float _Pattern,_PatternScale,_EdgeBand,_Gloss,_Spec,_Reflect,_Fresnel,_SheenStrength,_SheenSpeed,_SheenWidth,_Iridescence,_Sparkle;
+  float _Mode,_Ripple,_RippleScale,_Drops,_Film,_Glitter,_FlowSpeed;
+  CBUFFER_END
+  ENDHLSL
   Pass
   {
    Name "ForwardLit" Tags{"LightMode"="UniversalForward"}
@@ -42,13 +51,7 @@ Shader "COghe/Slick"
    #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
    #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
    #pragma multi_compile_fog
-   #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
-   CBUFFER_START(UnityPerMaterial)
-   half4 _BaseColor,_PatternColor,_EdgeColor,_SheenColor;
-   float _Pattern,_PatternScale,_EdgeBand,_Gloss,_Spec,_Reflect,_Fresnel,_SheenStrength,_SheenSpeed,_SheenWidth,_Iridescence,_Sparkle;
-   float _Mode,_Ripple,_RippleScale,_Drops,_Film,_Glitter,_FlowSpeed;
-   CBUFFER_END
    struct A{float4 p:POSITION;float3 n:NORMAL;float2 uv:TEXCOORD0;};
    struct V{float4 p:SV_POSITION;float3 w:TEXCOORD0;float3 n:TEXCOORD1;float2 uv:TEXCOORD2;float fog:TEXCOORD3;};
    V Vert(A a)
@@ -149,8 +152,46 @@ Shader "COghe/Slick"
    }
    ENDHLSL
   }
-  UsePass "Universal Render Pipeline/Lit/SHADOWCASTER"
-  UsePass "Universal Render Pipeline/Lit/DEPTHONLY"
-  UsePass "Universal Render Pipeline/Lit/DEPTHNORMALS"
+  Pass
+  {
+   Name "ShadowCaster" Tags{"LightMode"="ShadowCaster"}
+   ZWrite On ZTest LEqual ColorMask 0 Cull Back
+   HLSLPROGRAM
+   #pragma vertex ShadowVert
+   #pragma fragment ShadowFrag
+   #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+   #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
+   float3 _LightDirection,_LightPosition;
+   struct SA{float4 p:POSITION;float3 n:NORMAL;};
+   float4 ShadowVert(SA a):SV_POSITION
+   {
+    float3 w=TransformObjectToWorld(a.p.xyz),n=TransformObjectToWorldNormal(a.n);
+    #if _CASTING_PUNCTUAL_LIGHT_SHADOW
+     float3 toLight=normalize(_LightPosition-w);
+    #else
+     float3 toLight=_LightDirection;
+    #endif
+    float4 cs=TransformWorldToHClip(ApplyShadowBias(w,n,toLight));
+    #if UNITY_REVERSED_Z
+     cs.z=min(cs.z,UNITY_NEAR_CLIP_VALUE);
+    #else
+     cs.z=max(cs.z,UNITY_NEAR_CLIP_VALUE);
+    #endif
+    return cs;
+   }
+   half4 ShadowFrag():SV_Target{return 0;}
+   ENDHLSL
+  }
+  Pass
+  {
+   Name "DepthOnly" Tags{"LightMode"="DepthOnly"}
+   ZWrite On ColorMask R Cull Back
+   HLSLPROGRAM
+   #pragma vertex DepthVert
+   #pragma fragment DepthFrag
+   float4 DepthVert(float4 p:POSITION):SV_POSITION{return TransformObjectToHClip(p.xyz);}
+   half DepthFrag():SV_Target{return 0;}
+   ENDHLSL
+  }
  }
 }

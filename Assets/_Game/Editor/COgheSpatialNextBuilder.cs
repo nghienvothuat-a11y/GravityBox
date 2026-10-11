@@ -90,6 +90,7 @@ namespace GravityBox.Editor
    foreach(var rail in owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())if(rail.name.Contains("shutter"))foreach(var r in rail.GetComponentsInChildren<Renderer>())r.sharedMaterial=rail.name.StartsWith("B")?coral:blue;
    COgheDayLabBuilder.DecorateSpatialMechanisms(game,blue,coral,ivory);
    NextSpatialArt(c,blue,coral,ivory);
+   COgheSoftEdges.Apply(n.ToString("00"),game);   // slick tape at the foot of the glass, rounded blocks (Mrk 10–11/10/2026)
    EditorUtility.SetDirty(def);EditorSceneManager.SaveScene(scene,SpatialContentPath(n));
   }
 

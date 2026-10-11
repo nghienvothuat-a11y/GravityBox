@@ -17,8 +17,11 @@ namespace GravityBox.Editor
     /// drawn with rounded edges. A presentation pass over saved Spatial scenes, after the art builders. It adds meshes and
     /// hides face renderers only: no collider, navigation patch, input target or runtime behaviour changes, so the bevels
     /// are visual (STYLE_RULES §3). Run it on a freshly generated (or checked-out) scene; it refuses a scene it already did.
-    /// Usage: -executeMethod GravityBox.Editor.COgheSoftEdges.ApplyFromCommandLine -coghe-soft-levels 01,02,K01,N41
-    /// (-coghe-soft-dump lists the faces and renderers instead).
+    /// The slick look is option E, the pastel hologram (Mrk, 11/10/2026): the shared "Lavender slippery" material and the
+    /// tape use the COghe/Slick shader. The Q machine's pearl casing stays (equipment, not a slick block).
+    /// All levels: -executeMethod GravityBox.Editor.COgheSoftEdges.ApplyAllFromCommandLine (checks physics and definitions
+    /// are unchanged). Some: ApplyFromCommandLine -coghe-soft-levels 01,02,PlusK01 (-coghe-soft-dump lists the faces).
+    /// The Spatial, Next and Plus generators call <see cref="Apply"/> before they save a scene.
     /// </summary>
     public static class COgheSoftEdges
     {
@@ -34,6 +37,7 @@ namespace GravityBox.Editor
         {
             var args=Environment.GetCommandLineArgs();string keys="01";bool dump=args.Contains("-coghe-soft-dump");
             for(int i=0;i<args.Length-1;i++)if(args[i]=="-coghe-soft-levels")keys=args[i+1];
+            if(!dump)SlickMaterials();
             foreach(var key in keys.Split(','))
             {
                 var scene=EditorSceneManager.OpenScene(VenomCampaignBuilder.SpatialContentPath(key.Trim()));
@@ -45,7 +49,54 @@ namespace GravityBox.Editor
             AssetDatabase.SaveAssets();
         }
 
-        public static void Apply(string key,VenomCampaign game)
+        /// <summary>Every Spatial scene, after the slick materials are switched; refuses to finish if the physics or the
+        /// level definitions differ afterwards. Writes Artifacts/COgheSoftEdges/audit.csv.</summary>
+        public static void ApplyAllFromCommandLine()
+        {
+            const string report="Artifacts/COgheSoftEdges";Directory.CreateDirectory(report);
+            var paths=VenomCampaignBuilder.SpatialScenePaths();
+            string before=COgheViewArtVerification.CapturePhysics(paths);File.WriteAllText(report+"/physics-before.txt",before);
+            var definitions=Directory.GetFiles(VenomCampaignBuilder.SpatialFolder+"/Definitions","*.asset").OrderBy(p=>p).ToArray();
+            var definitionText=definitions.Select(File.ReadAllText).ToArray();
+            SlickMaterials();
+            var rows=new List<string>{"position,scene,tapeRuns,roundedBlocks,skippedOpen,skippedNotBox"};
+            foreach(var path in paths)
+            {
+                var scene=EditorSceneManager.OpenScene(path);var game=Object.FindFirstObjectByType<VenomCampaign>();
+                string key=Path.GetFileNameWithoutExtension(path).Replace("COgheSpatial","");
+                var (tapes,blocks,open,notBox)=Apply(key,game);
+                rows.Add($"{game.Definition.Order},{Path.GetFileNameWithoutExtension(path)},{tapes},{blocks},{open},{notBox}");
+                EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);
+            }
+            AssetDatabase.SaveAssets();
+            string after=COgheViewArtVerification.CapturePhysics(paths);File.WriteAllText(report+"/physics-after.txt",after);
+            File.WriteAllLines(report+"/audit.csv",rows);
+            if(before!=after||!definitionText.SequenceEqual(definitions.Select(File.ReadAllText)))
+                throw new InvalidOperationException("Soft edges changed physical/input data or definitions.");
+            Debug.Log($"SOFT EDGES VERIFIED: {paths.Length} scenes; physics and definitions identical.");
+        }
+
+        /// <summary>Option E, the pastel hologram: soft pink, mint and sky swirls drifting over lilac, glossy, with a slow shine.
+        /// The tape marks its two edges.</summary>
+        public static void Hologram(Material m,bool tape)
+        {
+            m.shader=Shader.Find("COghe/Slick");m.shaderKeywords=Array.Empty<string>();
+            m.SetColor("_BaseColor",new Color(.60f,.52f,.91f));m.SetColor("_EdgeColor",new Color(.44f,.37f,.80f));m.SetColor("_SheenColor",Color.white);
+            m.SetFloat("_Mode",2);m.SetFloat("_Film",1);m.SetFloat("_Pattern",0);m.SetFloat("_Iridescence",0);m.SetFloat("_Sparkle",0);m.SetFloat("_FlowSpeed",1);
+            m.SetFloat("_Gloss",300);m.SetFloat("_Spec",1.5f);m.SetFloat("_Reflect",.75f);m.SetFloat("_Fresnel",.45f);
+            m.SetFloat("_SheenStrength",.3f);m.SetFloat("_SheenSpeed",.25f);m.SetFloat("_SheenWidth",.05f);m.SetFloat("_EdgeBand",tape?.12f:0);
+            EditorUtility.SetDirty(m);
+        }
+        /// <summary>The shared slick material of the Spatial levels takes the hologram look (the generators keep it: see
+        /// VenomCampaignBuilder.SpatialMaterial), and so does the tape.</summary>
+        public static void SlickMaterials()
+        {
+            var slick=AssetDatabase.LoadAssetAtPath<Material>(VenomCampaignBuilder.SpatialFolder+"/Lavender slippery.mat");
+            if(slick!=null)Hologram(slick,false);
+            TapeMaterial();AssetDatabase.SaveAssets();
+        }
+
+        public static (int tapes,int blocks,int open,int notBox) Apply(string key,VenomCampaign game)
         {
             if(game.GetComponentsInChildren<Transform>(true).Any(t=>t.name.StartsWith(Marker)))
                 throw new InvalidOperationException($"{key} already has soft edges: regenerate it (or check its scene out) first");
@@ -54,8 +105,9 @@ namespace GravityBox.Editor
             Directory.CreateDirectory(dir);AssetDatabase.Refresh();
             var root=game.GetComponent<VenomLevelController>().Rotation.transform;
             int tapes=Tape(game,root,TapeMaterial());
-            int blocks=RoundBlocks(game);
-            Debug.Log($"SOFT EDGES {key}: {tapes} tape runs, {blocks} rounded blocks");
+            var (blocks,open,notBox)=RoundBlocks(game);
+            Debug.Log($"SOFT EDGES {key}: {tapes} tape runs, {blocks} rounded blocks ({open} open, {notBox} not boxes left as they were)");
+            return (tapes,blocks,open,notBox);
         }
 
         // ---- the tape ---------------------------------------------------------------------------------------------------
@@ -134,35 +186,14 @@ namespace GravityBox.Editor
             Quad(new Vector3(x0,0,z1),new Vector3(x1,0,z1),new Vector3(x1,0,z0),new Vector3(x0,0,z0),new Vector2(u0,0),new Vector2(u1,0),new Vector2(u1,0),new Vector2(u0,0));
             var m=new Mesh();m.SetVertices(v);m.SetUVs(0,uv);m.SetTriangles(tri,0);m.RecalculateNormals();m.RecalculateTangents();return m;
         }
-        /// <summary>Shared by every level: lavender (the slick colour) with soft diagonal stripes and darker edges, so it reads
-        /// as a tape and its boundary shows (STYLE_RULES: slippery areas need a visible boundary and grain).</summary>
+        /// <summary>Shared by every level: the slick hologram with its edges marked (STYLE_RULES: slippery areas need a
+        /// visible boundary).</summary>
         static Material TapeMaterial()
         {
-            string matPath=$"{Out}/Slick tape.mat",texPath=$"{Out}/slick-tape.png";
-            Directory.CreateDirectory(Out);
-            if(!File.Exists(texPath))
-            {
-                const int w=128,h=64;var tex=new Texture2D(w,h,TextureFormat.RGBA32,false);var px=new Color[w*h];
-                Color baseCol=new Color(.70f,.64f,.93f),stripe=new Color(.60f,.53f,.88f),edge=new Color(.45f,.39f,.79f);
-                for(int j=0;j<h;j++)for(int i=0;i<w;i++)
-                {
-                    float s=Mathf.Repeat((i+j*1.2f)/32f,1f);   // diagonal bands, soft-edged
-                    float k=Mathf.SmoothStep(0,1,Mathf.Clamp01((Mathf.Abs(s-.5f)-.18f)/.06f));
-                    var c=Color.Lerp(stripe,baseCol,k);
-                    if(j<4||j>=h-4)c=edge;   // the tape's edges
-                    px[j*w+i]=c;
-                }
-                tex.SetPixels(px);tex.Apply();File.WriteAllBytes(texPath,tex.EncodeToPNG());Object.DestroyImmediate(tex);
-                AssetDatabase.ImportAsset(texPath);var imp=(TextureImporter)AssetImporter.GetAtPath(texPath);imp.wrapMode=TextureWrapMode.Repeat;imp.mipmapEnabled=true;imp.SaveAndReimport();
-            }
+            string matPath=$"{Out}/Slick tape.mat";Directory.CreateDirectory(Out);
             var mat=AssetDatabase.LoadAssetAtPath<Material>(matPath);
-            if(mat==null)
-            {
-                mat=new Material(Shader.Find("Universal Render Pipeline/Lit")){name="Slick tape"};
-                mat.SetTexture("_BaseMap",AssetDatabase.LoadAssetAtPath<Texture2D>(texPath));mat.SetColor("_BaseColor",Color.white);
-                mat.SetFloat("_Smoothness",.55f);mat.SetFloat("_Metallic",0);
-                AssetDatabase.CreateAsset(mat,matPath);
-            }
+            if(mat==null){mat=new Material(Shader.Find("COghe/Slick")){name="Slick tape"};AssetDatabase.CreateAsset(mat,matPath);}
+            if(mat.GetFloat("_Mode")!=2||mat.shader.name!="COghe/Slick")Hologram(mat,true);
             return mat;
         }
 
@@ -170,7 +201,7 @@ namespace GravityBox.Editor
         /// <summary>Each block (faces sharing a name under one parent, at least four, every face filling its whole side of the
         /// block's box) is drawn as one rounded box, each side in its own face's material (an ivory top keeps its lavender
         /// slick sides). The faces' renderers are hidden; the faces, colliders and navigation stay as they were.</summary>
-        static int RoundBlocks(VenomCampaign game)
+        static (int rounded,int open,int notBox) RoundBlocks(VenomCampaign game)
         {
             var groups=new Dictionary<(Transform,string),List<VenomSurfacePatch>>();
             foreach(var p in game.GetComponentsInChildren<VenomSurfacePatch>(true))
@@ -180,7 +211,7 @@ namespace GravityBox.Editor
                 var k=(p.transform.parent,p.name);if(!groups.TryGetValue(k,out var list))groups[k]=list=new List<VenomSurfacePatch>();list.Add(p);
             }
             var all=game.GetComponentsInChildren<VenomSurfacePatch>(true).Where(p=>p.gameObject.activeInHierarchy).ToArray();
-            int count=0;
+            int count=0,openSides=0,notBoxes=0;
             foreach(var kv in groups)
             {
                 var parent=kv.Key.Item1;var faces=kv.Value;if(faces.Count<4)continue;
@@ -200,12 +231,12 @@ namespace GravityBox.Editor
                     if(!whole)break;
                     sides[axis*2+(n[axis]>0?0:1)]=f.GetComponent<Renderer>().sharedMaterial;
                 }
-                if(!whole){Debug.Log($"SOFT EDGES skip {kv.Key.Item2} under {parent.name}: its faces do not close a box");continue;}
+                if(!whole){Debug.Log($"SOFT EDGES skip {kv.Key.Item2} under {parent.name}: its faces do not close a box");notBoxes++;continue;}
                 // a side with no face must be closed by the glass, the floor or another body's face against it; else it is an
                 // opening (level 49's drawer slot under the exit platform) and the box would cover it
                 bool open=false;
                 for(int i=0;i<6&&!open;i++)if(sides[i]==null&&!Closed(i,b,parent,faces,all))open=true;
-                if(open){Debug.Log($"SOFT EDGES skip {kv.Key.Item2} under {parent.name}: one side is open");continue;}
+                if(open){Debug.Log($"SOFT EDGES skip {kv.Key.Item2} under {parent.name}: one side is open");openSides++;continue;}
                 var fallback=sides[2]??faces[0].GetComponent<Renderer>().sharedMaterial;
                 for(int i=0;i<6;i++)if(sides[i]==null)sides[i]=fallback;
                 float radius=Mathf.Min(.012f,min*.2f);
@@ -216,7 +247,7 @@ namespace GravityBox.Editor
                 foreach(var f in faces)f.GetComponent<Renderer>().enabled=false;
                 count++;
             }
-            return count;
+            return (count,openSides,notBoxes);
         }
         /// <summary>Side <paramref name="side"/> (+x, −x, +y, −y, +z, −z) of the box is covered: a face of something else
         /// lies in its plane, facing back at it, under its centre.</summary>
@@ -277,6 +308,36 @@ namespace GravityBox.Editor
             return new[]{t.TransformPoint(new Vector3(-h.x,-h.y,0)),t.TransformPoint(new Vector3(h.x,-h.y,0)),t.TransformPoint(new Vector3(h.x,h.y,0)),t.TransformPoint(new Vector3(-h.x,h.y,0))};
         }
         static Mesh Save(Mesh m,string name){AssetDatabase.CreateAsset(m,$"{dir}/{name}-{meshSerial++:000}.asset");return m;}
+
+        /// <summary>Every Spatial scene: the materials on slick faces and on other renderers that look slick, for the
+        /// switch to the slick shader. Writes Artifacts/soft-inventory.txt.</summary>
+        public static void InventoryFromCommandLine()
+        {
+            var faceMats=new Dictionary<string,int>();var artMats=new Dictionary<string,int>();var sb=new System.Text.StringBuilder();
+            foreach(var path in VenomCampaignBuilder.SpatialScenePaths())
+            {
+                EditorSceneManager.OpenScene(path);var game=Object.FindFirstObjectByType<VenomCampaign>();if(game==null){sb.AppendLine("no game: "+path);continue;}
+                int slick=0;
+                foreach(var p in game.GetComponentsInChildren<VenomSurfacePatch>(true))
+                {
+                    if(!p.Slippery||p.ExteriorGlass)continue;slick++;
+                    var r=p.GetComponent<Renderer>();string m=r==null?"(no renderer)":!r.enabled?"(renderer off) "+r.sharedMaterial?.name:r.sharedMaterial?.name;
+                    faceMats[m]=faceMats.TryGetValue(m,out int k)?k+1:1;
+                    if(m=="Spatial pearl casing"){string fk="  pearl slick: "+p.name;faceMats[fk]=faceMats.TryGetValue(fk,out int j)?j+1:1;}
+                }
+                foreach(var r in game.GetComponentsInChildren<Renderer>(true))
+                {
+                    if(r.GetComponent<VenomSurfacePatch>()!=null||!r.enabled)continue;
+                    foreach(var m in r.sharedMaterials){if(m==null)continue;string n=m.name;
+                        if(n.IndexOf("lavender",StringComparison.OrdinalIgnoreCase)>=0||n.IndexOf("slip",StringComparison.OrdinalIgnoreCase)>=0)
+                        {string key=$"{n} [{m.shader.name}] on '{r.name}'";artMats[key]=artMats.TryGetValue(key,out int k)?k+1:1;}}
+                }
+                sb.AppendLine($"{Path.GetFileNameWithoutExtension(path)}: {slick} slick faces");
+            }
+            sb.AppendLine("\nSLICK FACE MATERIALS");foreach(var kv in faceMats.OrderByDescending(k=>k.Value))sb.AppendLine($"  {kv.Value,5}  {kv.Key}");
+            sb.AppendLine("\nOTHER SLICK-LOOKING RENDERERS");foreach(var kv in artMats.OrderByDescending(k=>k.Value))sb.AppendLine($"  {kv.Value,5}  {kv.Key}");
+            File.WriteAllText("Artifacts/soft-inventory.txt",sb.ToString());
+        }
 
         static void Dump(string key,VenomCampaign game)
         {

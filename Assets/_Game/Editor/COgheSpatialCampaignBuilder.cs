@@ -96,7 +96,9 @@ namespace GravityBox.Editor
   }
   internal static Material SpatialMaterial(string name,Color color)
   {
-   string path=SpatialFolder+"/"+name+".mat";var m=AssetDatabase.LoadAssetAtPath<Material>(path);if(m==null){m=new Material(stone);AssetDatabase.CreateAsset(m,path);}m.shader=Shader.Find("Universal Render Pipeline/Lit");m.SetFloat("_Surface",0);m.SetFloat("_SrcBlend",1);m.SetFloat("_DstBlend",0);m.SetFloat("_ZWrite",1);m.SetFloat("_Cull",0);m.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");m.DisableKeyword("_ALPHAPREMULTIPLY_ON");m.renderQueue=2000;m.color=color;
+   string path=SpatialFolder+"/"+name+".mat";var m=AssetDatabase.LoadAssetAtPath<Material>(path);if(m==null){m=new Material(stone);AssetDatabase.CreateAsset(m,path);}
+   // the slick look (COgheSoftEdges.Hologram, Mrk 11/10/2026) is tuned in the asset: keep it
+   if(m.shader!=null&&m.shader.name=="COghe/Slick")return m;m.shader=Shader.Find("Universal Render Pipeline/Lit");m.SetFloat("_Surface",0);m.SetFloat("_SrcBlend",1);m.SetFloat("_DstBlend",0);m.SetFloat("_ZWrite",1);m.SetFloat("_Cull",0);m.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");m.DisableKeyword("_ALPHAPREMULTIPLY_ON");m.renderQueue=2000;m.color=color;
    if(m.HasProperty("_BaseColor"))m.SetColor("_BaseColor",color);if(m.HasProperty("_Smoothness"))m.SetFloat("_Smoothness",.35f);EditorUtility.SetDirty(m);return m;
   }
   static void BuildSpatial(int n)
@@ -144,6 +146,7 @@ namespace GravityBox.Editor
    foreach(var lift in owner.Apparatus.GetComponentsInChildren<COghePassengerLift>())lift.Panel.GetComponent<Renderer>().sharedMaterial=n==10?coral:blue;
    COgheDayLabBuilder.DecorateSpatialMechanisms(game,blue,coral,ivory);
    ChapterOneFinish(game);
+   COgheSoftEdges.Apply(n.ToString("00"),game);   // slick tape at the foot of the glass, rounded blocks (Mrk 10–11/10/2026)
    EditorUtility.SetDirty(def);EditorSceneManager.SaveScene(scene,SpatialContentPath(n));
   }
   static void SpatialShell(ExpansionContext c,bool slippery)

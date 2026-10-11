@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Slick tape
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_Shader: {fileID: 4800000, guid: 31987f52153e54d4c86d5b8528f6f95a, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -17,8 +17,7 @@ Material:
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
-  stringTagMap:
-    RenderType: Opaque
+  stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
   m_LockedProperties: 
@@ -50,7 +49,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: f28dedf3a4a51446daaa49da3de57bbc, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -95,19 +94,38 @@ Material:
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
+    - _Drops: 0.45
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _EdgeBand: 0.12
     - _EnvironmentReflections: 1
+    - _Film: 1
+    - _FlowSpeed: 1
+    - _Fresnel: 0.45
+    - _Glitter: 2.5
+    - _Gloss: 300
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
+    - _Iridescence: 0
     - _Metallic: 0
+    - _Mode: 2
     - _OcclusionStrength: 1
     - _Parallax: 0.005
+    - _Pattern: 0
+    - _PatternScale: 0.02
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _Reflect: 0.75
+    - _Ripple: 0.9
+    - _RippleScale: 30
+    - _SheenSpeed: 0.25
+    - _SheenStrength: 0.3
+    - _SheenWidth: 0.05
     - _Smoothness: 0.55
     - _SmoothnessTextureChannel: 0
+    - _Sparkle: 0
+    - _Spec: 1.5
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
@@ -116,9 +134,12 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColor: {r: 0.6, g: 0.52, b: 0.91, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _EdgeColor: {r: 0.44, g: 0.37, b: 0.8, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _PatternColor: {r: 0.5, g: 0.41999996, b: 0.8399999, a: 1}
+    - _SheenColor: {r: 1, g: 1, b: 1, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
