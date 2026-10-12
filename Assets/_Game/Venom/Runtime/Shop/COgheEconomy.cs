@@ -80,7 +80,7 @@ namespace GravityBox.Venom
             int low = 40, high = 120;
             if (item.Group == COgheShopGroup.Hat) { low = 50; high = 110; }
             if (item.Group == COgheShopGroup.Inside) { low = 60; high = 120; }
-            float k = Mathf.InverseLerp(12, 60, item.Level);   // unlock levels ×1.2 for 60 levels (Mrk 06/10): same prices
+            float k = Mathf.InverseLerp(10, 65, item.Level);   // unlock levels mapped onto 10–65 for 65 levels (Mrk 12/10): same prices
             return Mathf.RoundToInt(Mathf.Lerp(low, high, k) / 5f) * 5;
         }
     }

@@ -16,13 +16,13 @@ namespace GravityBox.Venom
         public const int MaxInside = 2;
         public static readonly COgheWear[] Hats =
         {
-            Hat("HAT_BEANIE", "Beanie", 13), Hat("HAT_PARTY", "Party hat", 18), Hat("HAT_FLOWER", "Flower crown", 20), Hat("HAT_CAP", "Cap", 25),
-            Hat("HAT_STRAW", "Straw hat", 29), Hat("HAT_PROPELLER", "Propeller cap", 35), Hat("HAT_CROWN", "Crown", 42), Hat("HAT_ASTRO", "Space helmet", 54),
+            Hat("HAT_BEANIE", "Beanie", 11), Hat("HAT_PARTY", "Party hat", 17), Hat("HAT_FLOWER", "Flower crown", 19), Hat("HAT_CAP", "Cap", 25),
+            Hat("HAT_STRAW", "Straw hat", 29), Hat("HAT_PROPELLER", "Propeller cap", 36), Hat("HAT_CROWN", "Crown", 45), Hat("HAT_ASTRO", "Space helmet", 58),
         };
         public static readonly COgheWear[] InsideItems =
         {
-            In("FLOAT_STARS", "Star bits", 30), In("FLOAT_FISH", "Little fish", 32), In("FLOAT_BUBBLES", "Bubbles", 37),
-            In("FLOAT_JELLY", "Baby jellyfish", 47), In("FLOAT_PEARLS", "Tiny pearls", 48), In("FLOAT_PLANET", "Tiny planet", 56),
+            In("FLOAT_STARS", "Star bits", 30), In("FLOAT_FISH", "Little fish", 33), In("FLOAT_BUBBLES", "Bubbles", 39),
+            In("FLOAT_JELLY", "Baby jellyfish", 50), In("FLOAT_PEARLS", "Tiny pearls", 51), In("FLOAT_PLANET", "Tiny planet", 60),
         };
         public static COgheWear Find(string id)
         {

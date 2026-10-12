@@ -50,7 +50,8 @@ namespace GravityBox.Editor
   {
    const string report="Artifacts/COgheSpatialColourRule";
    Directory.CreateDirectory(report);
-   var paths=VenomCampaignBuilder.SpatialScenePaths().Skip(10).Where(File.Exists).ToArray();
+   // every level but the pilot's content 01–10 (by content, not position: the play order mixes them)
+   var paths=VenomCampaignBuilder.SpatialOrder.Where(k=>!(char.IsDigit(k[0])&&int.Parse(k)<=10)).Select(VenomCampaignBuilder.SpatialContentPath).Where(File.Exists).ToArray();
    string before=COgheViewArtVerification.CapturePhysics(paths);
    File.WriteAllText(report+"/physics-before.txt",before);
    var definitions=Directory.GetFiles(VenomCampaignBuilder.SpatialFolder+"/Definitions","*.asset").OrderBy(p=>p).ToArray();

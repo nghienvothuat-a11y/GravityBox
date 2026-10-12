@@ -136,7 +136,7 @@ namespace GravityBox.Venom
         }
 
         // what each chapter's questions are like (COghe itself only speaks in shapes)
-        private static readonly string[] BonusPrompts = { "What does COghe want?", "COghe wants two things.", "Do them in COghe's order.", "How many does COghe want?", "Watch the whole sentence." };
+        private static readonly string[] BonusPrompts = { "What does COghe want?", "COghe wants two things.", "Do them in COghe's order.", "How many does COghe want?", "Watch the whole sentence.", "Count every word." };
         /// <summary>After two misses: the next thing to do, said plainly.</summary>
         private static string BonusHint(COgheBonusAsk word)
         {

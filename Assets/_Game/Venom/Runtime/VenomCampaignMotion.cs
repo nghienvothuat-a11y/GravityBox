@@ -69,6 +69,17 @@ namespace GravityBox.Venom
         public void Cancel(int anchor)
         {for(int i=0;i<32;i++)if(orders[i]!=null&&game.Matter.Groups[i]==game.Matter.Groups[anchor])orders[i]=null;}
         public void StopAll(){System.Array.Clear(orders,0,32);}
+        private VenomSurfacePatch[] glassCheckedFor;private bool climbableGlass;
+        /// <summary>The level's glass is climbable, with slick tape where it is not (<see cref="VenomSurfacePatch.SlipRegions"/>).</summary>
+        private bool ClimbableGlass()
+        {
+            if(glassCheckedFor!=game.Surfaces)
+            {
+                glassCheckedFor=game.Surfaces;climbableGlass=false;
+                if(game.Surfaces!=null)foreach(var s in game.Surfaces)if(s!=null&&s.SlipRegions!=null&&s.SlipRegions.Length>0){climbableGlass=true;break;}
+            }
+            return climbableGlass;
+        }
         public void ReconcileAfterFusion()
         {
             // Several fragments may now share a body. Keep the newest command,
@@ -445,7 +456,12 @@ namespace GravityBox.Venom
                 }
                 if(peeled)
                 {
-                    if(o==null||!o.AwaitingContact){Cancel(a);o=null;}
+                    // On glass COghe may climb (glass-crawl levels, 12/10/2026) a peel while the next waypoint lies below
+                    // the body is a fall toward the goal: the order waits for the landing and is replanned there. Elsewhere,
+                    // and on the way up, a peel ends the order (a climb that gave up). A floor bears the body, so it does
+                    // not peel there.
+                    bool downhill=o!=null&&ClimbableGlass()&&o.Path.Count>0&&game.Root.TransformPoint(o.Path[Mathf.Min(o.Cursor,o.Path.Count-1)]).y<centre.y-.01f;
+                    if(o==null||!o.AwaitingContact&&!downhill){Cancel(a);o=null;}
                     else {o.Cursor=0;o.AwaitingContact=true;}
                     grips=0;capacity=0;
                 }

@@ -12,7 +12,7 @@ namespace GravityBox.Tests
   {
    try
    {
-    yield return EnterFurnishedHome(12);yield return Frames(30*4);
+    yield return EnterFurnishedHome(10);yield return Frames(30*4);
     var p=game.Personality;bool hearts=false;p.TakeAffectionHearts();
     // three gentle touches, 1.2 s apart: a playful reaction, then it leans in (or a heart), then a hug with hearts
     for(int i=0;i<3;i++){p.TouchedInHome(game.Motion.Centre(0));for(int f=0;f<36;f++){yield return Frames(1);hearts|=p.TakeAffectionHearts();}}
@@ -26,7 +26,7 @@ namespace GravityBox.Tests
   {
    try
    {
-    yield return EnterFurnishedHome(12);var p=game.Personality;bool waved=false;
+    yield return EnterFurnishedHome(10);var p=game.Personality;bool waved=false;
     for(int f=0;f<30*20&&!waved;f++){yield return Frames(1);waved=p.Act==COgheAct.Wave;}
     Assert.IsTrue(waved,"It comes to the front and waves hello");
    }

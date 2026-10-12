@@ -76,7 +76,13 @@ namespace GravityBox.Editor
    // Chapter 5, part 3.
    NewPlus("N48","Hai tầng trục","Hai tầng bánh răng chung một trục.",PlusN48),
    NewPlus("N46","Bàn xoay chở hàng","Bàn xoay mang theo cả thùng trên mặt bàn.",PlusN46),
-   NewPlus("N43","Ống theo hộp số","Bánh răng quyết định ống rẽ nhánh nào.",PlusN43)}).ToArray();
+   NewPlus("N43","Ống theo hộp số","Bánh răng quyết định ống rẽ nhánh nào.",PlusN43),
+   // The glass-crawl levels (Mrk, 12/10/2026): COghe climbs the glass and the roof; the tape stays slick.
+   NewPlus("G1","Leo kính lấy chìa","Kính bò được; băng trơn thì không.",PlusG1),
+   NewPlus("G2","Kệ cao","Chỗ băng trơn bao quanh thì vào từ phía trên.",PlusG2),
+   NewPlus("G3","Qua trần nhà","COghe bò được trên trần.",PlusG3),
+   NewPlus("G4","Ba kệ","Mỗi cơ quan mở đường cho bước sau.",PlusG4),
+   NewPlus("G5","Hai nửa trên trần","",PlusG5,true)}).ToArray();
 
   // Design notes (root-local): numbered steps, labels and routes, projected onto renders for the design plates.
   static readonly List<string> plusNotes=new List<string>();

@@ -27,10 +27,10 @@ namespace GravityBox.Tests
             try
             {
                 FreshShop(false); game.Progress.HomeUnlocked = true;
-                var boss = ui.Catalog.Levels[11];
-                Assert.IsTrue(boss.Boss, "Level 12 closes chapter 1");
-                Assert.AreEqual(0, COgheBonus.After(ui.Catalog, 11), "No bonus after an ordinary level");
-                ui.ShowVictoryForTests(boss.Id, 12); yield return null;
+                var boss = ui.Catalog.Levels[9];
+                Assert.IsTrue(boss.Boss, "Level 10 closes chapter 1");
+                Assert.AreEqual(0, COgheBonus.After(ui.Catalog, 9), "No bonus after an ordinary level");
+                ui.ShowVictoryForTests(boss.Id, 10); yield return null;
                 Assert.AreEqual(1, ui.VictoryBonus, "Chapter 1's bonus is offered");
                 Assert.IsFalse(ui.VictoryStepForTests()); Assert.AreEqual(COgheProductPopup.Unlocks, ui.Popup, "What the win unlocked comes first");
                 yield return Click("Continue");
@@ -51,8 +51,8 @@ namespace GravityBox.Tests
             var completed = game.Progress.Completed.ToList(); bool home = game.Progress.HomeUnlocked;
             try
             {
-                FreshShop(false); COgheHomeRoom.UnlockedLevelOverride = 12; game.Progress.HomeUnlocked = true;
-                game.Progress.Completed.Add(ui.Catalog.Levels[11].Id);
+                FreshShop(false); COgheHomeRoom.UnlockedLevelOverride = 10; game.Progress.HomeUnlocked = true;
+                game.Progress.Completed.Add(ui.Catalog.Levels[9].Id);
                 yield return Click("Home"); yield return new WaitForSecondsRealtime(.6f);
                 Assert.AreEqual(COgheProductPage.Home, ui.Page);
                 yield return Click("Bonus");
@@ -107,8 +107,8 @@ namespace GravityBox.Tests
             bool home = game.Progress.HomeUnlocked;
             try
             {
-                FreshShop(false); COgheHomeRoom.UnlockedLevelOverride = 12; game.Progress.HomeUnlocked = true;
-                ui.ShowVictoryForTests(ui.Catalog.Levels[11].Id, 12); yield return null;
+                FreshShop(false); COgheHomeRoom.UnlockedLevelOverride = 10; game.Progress.HomeUnlocked = true;
+                ui.ShowVictoryForTests(ui.Catalog.Levels[9].Id, 10); yield return null;
                 ui.VictoryStepForTests(); yield return Click("Continue");
                 ui.VictoryStepForTests(); Assert.AreEqual(COgheProductPopup.BonusOffer, ui.Popup);
                 yield return Click("Play bonus");
@@ -116,9 +116,9 @@ namespace GravityBox.Tests
                 yield return new WaitForSecondsRealtime(.5f);
                 yield return Click("Bonus later");
                 float end = Time.realtimeSinceStartup + 8;
-                while (game != null && game.Definition.Order != 13 && Time.realtimeSinceStartup < end) { yield return null; game = Object.FindFirstObjectByType<VenomCampaign>(); }
+                while (game != null && game.Definition.Order != 11 && Time.realtimeSinceStartup < end) { yield return null; game = Object.FindFirstObjectByType<VenomCampaign>(); }
                 yield return null; game = Object.FindFirstObjectByType<VenomCampaign>(); ui = game.ProductUI;
-                Assert.AreEqual(13, game.Definition.Order, "Later: on to chapter 2");
+                Assert.AreEqual(11, game.Definition.Order, "Later: on to chapter 2");
                 Assert.IsFalse(COgheBonus.Done(1), "and the bonus still waits");
             }
             finally { if (game != null) game.Progress.HomeUnlocked = home; EndShop(); }

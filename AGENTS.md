@@ -23,9 +23,10 @@ For Spatial 11–30, start with
 The quantum splitter and swing transfer are planned mechanisms, not existing
 runtime features. Do not claim those scenes are playable based on document checks.
 
-The Spatial catalog is 60 levels in `VenomCampaignBuilder.SpatialOrder`, five chapters
-of 12, each closed by its boss: the pilot, Spatial 11–30, the Spatial Plus levels and
-the crate levels K01–K10 (two per chapter). For Spatial Plus start with
+The Spatial catalog is 65 levels in `VenomCampaignBuilder.SpatialOrder`, six chapters
+(10, then 5 × 11), each closed by its boss at 10/21/32/43/54/65: the pilot, Spatial 11–30,
+the Spatial Plus levels, the crate levels K01–K10 and the glass-crawl levels G1–G5
+([GlassCrawl5](Docs/LevelDesign/COghe/GlassCrawl5/README.md)). For Spatial Plus start with
 [SpatialPlus20](Docs/LevelDesign/COghe/SpatialPlus20/README.md) and its
 [verification](Docs/Verification/COgheSpatialPlus/README.md). New levels get a
 solve test and a wander (stuck) test in `COgheSpatialPlusRecoveryTests`.

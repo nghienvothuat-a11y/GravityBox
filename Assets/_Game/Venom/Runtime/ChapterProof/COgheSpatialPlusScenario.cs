@@ -35,11 +35,54 @@ namespace GravityBox.Venom.ChapterProof
     case "N13":yield return N13();break;case "N15":yield return N15();break;case "N18":yield return N18();break;case "N19":yield return N19();break;
     case "N31":yield return N31();break;case "N33":yield return N33();break;case "N35":yield return N35();break;case "N32":yield return N32();break;case "N40":yield return N40();break;case "N34":yield return N34();break;case "N44":yield return N44();break;case "N45":yield return N45();break;
     case "N41":yield return N41();break;case "N42":yield return N42();break;case "N47":yield return N47();break;case "N49":yield return N49();break;case "N50":yield return N50();break;case "N48":yield return N48();break;case "N46":yield return N46();break;case "N43":yield return N43();break;
+    case "G1":yield return G1();break;case "G2":yield return G2();break;case "G3":yield return G3();break;case "G4":yield return G4();break;
+    case "G5":yield return G5();break;
     default:throw new NotImplementedException("Spatial Plus route "+COgheSpatialNextScenario.ContentKey(game));
    }
    yield return s.Exit();
   }
 
+  // Glass-crawl levels (Mrk 12/10/2026): COghe climbs the bare glass and the roof; the tape is slick.
+  IEnumerator G1()
+  {
+   yield return s.Go(W(-.30f,-.11f,.10f),"Up the bare left glass onto the shelf");
+   yield return Pull("A","A opens the exit shutter");
+  }
+  IEnumerator G2()
+  {
+   yield return Pull("A","A slides the cover off the gap in the left tape");
+   yield return s.Go(W(.10f,-.03f,.20f),"Up the gap, along the back glass, down onto the high shelf");
+   yield return Pull("B","B opens the exit shutter");
+  }
+  IEnumerator G3()
+  {
+   yield return Pull("B","B slides the roof plate across the slick strip");
+   var lift=Find<COghePassengerLift>();
+   yield return tap(lift.Panel.position);yield return until(45,()=>lift.Trips==1&&lift.Rail.AtEnd,"Board the lift and ride up past the tape");
+   yield return s.Go(W(.25f,-.30f,.05f),"Up the back glass, over the roof plate, down into the right room");
+  }
+  IEnumerator G4()
+  {
+   yield return Pull("A","A slides the cover off the gap in the left tape");
+   var plate=s.Slider("Roof plate");
+   yield return s.Go(W(-.22f,-.02f,.22f),"Up the gap and onto the back shelf's pad");
+   yield return until(15,()=>plate.AtEnd,"P latches the roof plate across the strip");
+   yield return s.Go(W(-.24f,.05f,.30f),"Up the back glass above the shelf");
+   yield return s.Go(W(.29f,-.01f,.02f),"Over the roof plate and down onto the right shelf (beside B, not on it)");
+   yield return Pull("B","B opens the exit shutter");
+  }
+  IEnumerator G5()
+  {
+   var q=Find<COgheQuantumSplitter>();var plate=s.Slider("Roof plate");
+   yield return s.Split(q,Selected);int holder=q.LastLeft,climber=q.LastRight;
+   yield return s.Walk(holder,W(.20f,-.30f,-.16f),"The holder stands on P");
+   yield return until(15,()=>plate.AtEnd,"P holds the roof plate across the strip");
+   yield return s.Walk(climber,W(.29f,-.01f,.02f),"The climber goes up the bare back-left corner, over the roof plate, onto the right shelf");
+   game.SelectFragment(climber);yield return Pull("B","B opens the exit shutter");
+   yield return s.Walk(climber,W(.28f,-.30f,.05f),"Down the right glass to the floor");
+   yield return s.Walk(holder,W(.12f,-.30f,.0f),"The holder steps off P");
+   yield return s.Merge(W(.05f,-.30f,.05f));
+  }
   IEnumerator E01()
   {
    var lift=Find<COghePassengerLift>();var crate=Prop("A crate");var socket=Find<COghePropSocket>();

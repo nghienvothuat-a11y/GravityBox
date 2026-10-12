@@ -17,6 +17,8 @@ namespace GravityBox.Venom
         public float HoleRadius=.039f, GripRadius=.08f;
         public bool HasSlipRegion;
         public Rect SlipRegion;
+        [Tooltip("More slick rectangles on this face (patch-local x/y), e.g. the slick tape on glass COghe may climb.")]
+        public Rect[] SlipRegions;
         public Collider Shape;
         public float SphereRadius;
         public COgheCurvedSurface Curved;
@@ -45,9 +47,10 @@ namespace GravityBox.Venom
         public bool Grip(Vector3 world)
         {
             Vector3 p=transform.InverseTransformPoint(world);
-            bool slick=Slippery || HasSlipRegion&&SlipRegion.Contains(new Vector2(p.x,p.y));
+            var q=new Vector2(p.x,p.y);bool slick=Slippery || HasSlipRegion&&SlipRegion.Contains(q) || InTape(q);
             return !slick || RingGrip&&Vector2.Distance(new Vector2(p.x,p.y),HoleCentre)<GripRadius;
         }
+        private bool InTape(Vector2 q){if(SlipRegions!=null)foreach(var r in SlipRegions)if(r.Contains(q))return true;return false;}
         public Vector3 Closest(Vector3 world)
         {
             Vector3 p=transform.InverseTransformPoint(world);

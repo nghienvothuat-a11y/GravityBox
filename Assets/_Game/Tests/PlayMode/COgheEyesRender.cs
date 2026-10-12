@@ -28,10 +28,10 @@ namespace GravityBox.Tests
    }
    try
    {
-    // a level: at rest, then split in two by Q (level 13: "16" content)
+    // a level at rest (level 1)
     yield return Load(1);yield return Frames(90);Shot("level-rest");Shot("level-wide",.25f);
     // Home: moods
-    yield return EnterFurnishedHome(60);yield return Frames(200);var p=game.Personality;
+    yield return EnterFurnishedHome(65);yield return Frames(200);var p=game.Personality;
     Shot("home-rest");
     p.TouchedInHome(game.Motion.Centre(0));yield return Frames(15);Shot("home-touch");
     yield return Frames(60);p.TouchedInHome(game.Motion.Centre(0));yield return Frames(15);Shot("home-touch2");
@@ -84,7 +84,7 @@ namespace GravityBox.Tests
    void Touch(Vector3 at){if(close!=null){var v=close.WorldToViewportPoint(at);taps.AppendLine($"{frame} {v.x*W:F0} {v.y*H:F0}");}game.Personality.TouchedInHome(at);}
    try
    {
-    yield return EnterFurnishedHome(60);yield return Frames(150);var p=game.Personality;var room=game.HomeRoom;
+    yield return EnterFurnishedHome(65);yield return Frames(150);var p=game.Personality;var room=game.HomeRoom;
     Mark("rest");yield return Rec(5);
     Mark("touch");Touch(p.SkinCentre);yield return Rec(2.4f);
     Touch(p.SkinCentre);yield return Rec(2f);

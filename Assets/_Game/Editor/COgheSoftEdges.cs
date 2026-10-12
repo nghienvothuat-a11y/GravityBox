@@ -13,7 +13,8 @@ namespace GravityBox.Editor
 {
     /// <summary>
     /// Soft edges (Mrk, 10/10/2026: "vẫn dùng phong cách đồ hoạ cũ. Là cái hộp"): slick tape along the foot of the glass
-    /// wherever a walkable surface meets it (the glass is never climbable; the tape shows why), and block-shaped mechanisms
+    /// wherever a walkable surface meets it (the glass is never climbable; the tape shows why; on the glass-crawl levels G1–G5 the
+    /// glass grips and the tape is drawn exactly over its slick regions, VenomSurfacePatch.SlipRegions), and block-shaped mechanisms
     /// drawn with rounded edges. A presentation pass over saved Spatial scenes, after the art builders. It adds meshes and
     /// hides face renderers only: no collider, navigation patch, input target or runtime behaviour changes, so the bevels
     /// are visual (STYLE_RULES §3). Run it on a freshly generated (or checked-out) scene; it refuses a scene it already did.
@@ -117,18 +118,40 @@ namespace GravityBox.Editor
         }
 
         // ---- the tape ---------------------------------------------------------------------------------------------------
-        /// <summary>Along every side pane of the glass, above each fixed surface COghe stands on whose edge meets the pane:
-        /// the floor all round, a platform against the glass. Cut round the exit hole and wherever something stands against
-        /// the glass in the band (a climb board, a block).</summary>
+        /// <summary>Slick glass (never climbable): along every side pane, above each fixed surface COghe stands on whose edge
+        /// meets the pane (the floor all round, a platform against the glass), cut round the exit hole and wherever something
+        /// stands against the glass in the band (a climb board, a block). Glass COghe may climb (the glass-crawl levels): the
+        /// tape is exactly its slick regions (VenomSurfacePatch.SlipRegions), roof included, cut round the exit hole.</summary>
         static int Tape(VenomCampaign game,Transform root,Material mat)
         {
             var patches=game.GetComponentsInChildren<VenomSurfacePatch>(true).Where(p=>p.gameObject.activeInHierarchy).ToArray();
-            var panes=patches.Where(p=>p.ExteriorGlass&&Mathf.Abs(root.InverseTransformDirection(p.Normal).y)<.5f).ToArray();
+            var panes=patches.Where(p=>p.ExteriorGlass&&(Mathf.Abs(root.InverseTransformDirection(p.Normal).y)<.5f||!p.Slippery)).ToArray();
             var supports=patches.Where(p=>!p.ExteriorGlass&&p.MotionFrame==null&&p.SphereRadius<=0&&p.Curved==null&&root.InverseTransformDirection(p.Normal).y>.9f&&p.Size.x>.03f&&p.Size.y>.03f).ToArray();
             int runs=0;
             foreach(var pane in panes)
             {
                 var t=pane.transform;var bands=new List<(float y,float x0,float x1)>();
+                if(!pane.Slippery)
+                {
+                    // climbable glass: the tape is where the glass is slick, nothing else
+                    var regions=new List<CombineInstance>();
+                    foreach(var slick in pane.SlipRegions??new Rect[0])
+                    {
+                        var keep=new List<(float,float)>{(slick.xMin,slick.xMax)};
+                        if(pane.Hole&&pane.HoleCentre.y-pane.HoleRadius-HoleMargin<slick.yMax&&pane.HoleCentre.y+pane.HoleRadius+HoleMargin>slick.yMin)
+                            keep=Cut(keep,pane.HoleCentre.x-pane.HoleRadius-HoleMargin,pane.HoleCentre.x+pane.HoleRadius+HoleMargin);
+                        foreach(var (a,b) in keep)if(b-a>.012f){regions.Add(new CombineInstance{mesh=TapeStrip(b-a,slick.height,a),transform=Matrix4x4.Translate(new Vector3(0,slick.yMin,0))});runs++;}
+                    }
+                    if(regions.Count>0)
+                    {
+                        var g=new GameObject(Marker+" · tape",typeof(MeshFilter),typeof(MeshRenderer));g.transform.SetParent(t,false);
+                        var m=new Mesh{name="Slick tape"};m.CombineMeshes(regions.ToArray(),true,true);m.RecalculateBounds();
+                        g.GetComponent<MeshFilter>().sharedMesh=Save(m,"tape");
+                        var gr=g.GetComponent<MeshRenderer>();gr.sharedMaterial=mat;gr.shadowCastingMode=ShadowCastingMode.Off;
+                        foreach(var ci in regions)Object.DestroyImmediate(ci.mesh);
+                    }
+                    continue;
+                }
                 foreach(var f in supports)
                 {
                     var q=Corners(f).Select(c=>t.InverseTransformPoint(c)).ToArray();

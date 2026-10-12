@@ -42,7 +42,13 @@ namespace GravityBox.Tests
   [UnityTest] public IEnumerator SpatialPlusN13Solve(){yield return SolvePlus("N13");}
   [UnityTest] public IEnumerator SpatialPlusN18Solve(){yield return SolvePlus("N18");}
   [UnityTest] public IEnumerator SpatialPlusN15Solve(){yield return SolvePlus("N15");}
-  // Crate levels 51–60 (06/10/2026).
+  // The glass-crawl levels (12/10/2026).
+  [UnityTest] public IEnumerator SpatialPlusG1Solve(){yield return SolvePlus("G1");}
+  [UnityTest] public IEnumerator SpatialPlusG2Solve(){yield return SolvePlus("G2");}
+  [UnityTest] public IEnumerator SpatialPlusG3Solve(){yield return SolvePlus("G3");}
+  [UnityTest] public IEnumerator SpatialPlusG4Solve(){yield return SolvePlus("G4");}
+  [UnityTest] public IEnumerator SpatialPlusG5Solve(){yield return SolvePlus("G5");}
+  // The crate levels K01–K10 (06/10/2026).
   [UnityTest] public IEnumerator SpatialPlusK01Solve(){yield return SolvePlus("K01");}
   [UnityTest] public IEnumerator SpatialPlusK02Solve(){yield return SolvePlus("K02");}
   [UnityTest] public IEnumerator SpatialPlusK03Solve(){yield return SolvePlus("K03");}

@@ -6,7 +6,8 @@ using UnityEngine.TestTools;
 
 namespace GravityBox.Tests
 {
- // The bonus "Hiểu ra", chapters 2–5 (Mrk 07/10/2026): two things in any order, an order, an exact number, all of it.
+ // The bonus "Hiểu ra", chapters 2–6 (Mrk 07/10/2026; chapter 6 on 12/10): two things in any order, an order, an exact number, all of it,
+ // a number on most words.
  // COghe is driven through its own answer paths (a touch on it, Feed, an item); Frames(1) is 1/30 s of simulation.
  public sealed partial class COgheSpatialCampaignTests
  {
@@ -17,14 +18,14 @@ namespace GravityBox.Tests
   }
   private IEnumerator StartBonusInHome(int chapter)
   {
-   yield return EnterFurnishedHome(60);yield return Frames(20);
+   yield return EnterFurnishedHome(65);yield return Frames(20);
    game.Personality.BeginBonus(COgheBonus.Rounds(chapter));
    yield return BonusUntil(()=>game.Personality.BonusAsking,10,"COghe walks to the middle and asks");
   }
 
   [Test] public void EveryChapterHasABonusMadeOfWhatEveryPlayerHas()
   {
-   for(int chapter=1;chapter<=5;chapter++)
+   for(int chapter=1;chapter<=6;chapter++)
    {
     var rounds=COgheBonus.Rounds(chapter);Assert.IsNotNull(rounds,"Chapter "+chapter);Assert.AreEqual(3,rounds.Length);
     foreach(var round in rounds)foreach(var word in round.Words)
@@ -33,7 +34,7 @@ namespace GravityBox.Tests
      if(word.Answer==COgheBonusAnswer.Item)Assert.AreEqual("BALL",word.Item,"Only the gift ball: no bonus depends on what was bought");
     }
    }
-   Assert.IsNull(COgheBonus.Rounds(6));
+   Assert.IsNull(COgheBonus.Rounds(7));
   }
 
   [UnityTest] public IEnumerator BonusTwoThingsAreTakenInAnyOrder()
@@ -100,6 +101,23 @@ namespace GravityBox.Tests
     p.PlayWith(game.HomeRoom.Find("BALL"));
     yield return BonusUntil(()=>p.Playing!=null,10,"It plays ball");
     yield return BonusUntil(()=>p.BonusRound==1,25,"The whole sentence: the next question");
+    Assert.AreEqual(0,p.BonusMisses);
+   }
+   finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;}
+  }
+
+  [UnityTest] public IEnumerator BonusEveryWordCounts()
+  {
+   try
+   {
+    yield return StartBonusInHome(6);var p=game.Personality;
+    // two cuddles, then exactly two mushrooms
+    Assert.AreEqual(COgheBonusAnswer.Touch,p.BonusAsk.Value.Answer);Assert.AreEqual(2,p.BonusAsk.Value.Count);
+    p.TouchedInHome(p.SkinCentre);yield return Frames(5);p.TouchedInHome(p.SkinCentre);
+    yield return BonusUntil(()=>p.BonusAsking&&p.BonusWordsDone==1,6,"Two cuddles, checked: on to the food");
+    Assert.AreEqual(COgheBonusAnswer.Feed,p.BonusAsk.Value.Answer);Assert.AreEqual(2,p.BonusAsk.Value.Count);
+    p.BonusFeed();p.BonusFeed();
+    yield return BonusUntil(()=>p.BonusRound==1,15,"The whole sentence: the next question");
     Assert.AreEqual(0,p.BonusMisses);
    }
    finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;}

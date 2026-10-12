@@ -43,23 +43,24 @@ namespace GravityBox.Venom
             if (game == null || game.ProductUI == null) { Debug.LogError("Bonus reel: no menu"); Application.Quit(1); yield break; }
             if (second) { yield return Second(game, heard, sounds); yield break; }
             if (trailer) { yield return Trailer(game, heard, sounds); yield break; }
-            // level 12, the first boss (its tour plays first, unrecorded)
-            game.ProductUI.LoadForTest(12);
-            for (int i = 0; i < 600 && (game == null || game.Definition.Order != 12 || game.ProductUI == null || game.ProductUI.Page != COgheProductPage.Game); i++)
+            // the first boss (its tour plays first, unrecorded)
+            int boss = FirstBoss(game.ProductUI);
+            game.ProductUI.LoadForTest(boss);
+            for (int i = 0; i < 600 && (game == null || game.Definition.Order != boss || game.ProductUI == null || game.ProductUI.Page != COgheProductPage.Game); i++)
             { yield return new WaitForSecondsRealtime(.05f); game = FindFirstObjectByType<VenomCampaign>(); }
-            if (game == null || game.Definition.Order != 12) { Debug.LogError("Bonus reel: level 12 did not open"); Application.Quit(1); yield break; }
+            if (game == null || game.Definition.Order != boss) { Debug.LogError($"Bonus reel: level {boss} did not open"); Application.Quit(1); yield break; }
             var ui = game.ProductUI;
             // a player who has just beaten it
             COgheShop.ResetForTests(new COgheShop.State { Migrated = true }); COgheShop.TestsOwnUnlocked = false;
             game.Progress.HomeUnlocked = true; game.Progress.Completed.Clear();
-            for (int i = 0; i < 12; i++) game.Progress.Completed.Add(ui.Catalog.Levels[i].Id);
+            for (int i = 0; i < boss; i++) game.Progress.Completed.Add(ui.Catalog.Levels[i].Id);
             BuildRing(); yield return new WaitForSecondsRealtime(.5f);
             COgheAudio.Heard += heard; Time.captureFramerate = 30; capturing = true;
             StartCoroutine(CaptureFrames());
 
-            ui.ShowVictoryForTests(ui.Catalog.Levels[11].Id, 12);
+            ui.ShowVictoryForTests(ui.Catalog.Levels[boss - 1].Id, boss);
             yield return Frames(30);
-            ui.VictoryStepForTests(); yield return Frames(40);                     // what level 12 unlocked
+            ui.VictoryStepForTests(); yield return Frames(40);                     // what the first boss unlocked
             yield return Press(ui, "Continue");
             ui.VictoryStepForTests(); yield return Frames(80);                     // the bonus offer
             yield return Press(ui, "Play bonus");
@@ -83,6 +84,9 @@ namespace GravityBox.Venom
             Debug.Log("COGHE BONUS REEL DONE " + frame);
             Application.Quit(0);
         }
+
+        /// <summary>The catalog position of the first boss (1-based): it opens Home and the first bonus.</summary>
+        private static int FirstBoss(COgheProductUI ui) => System.Array.FindIndex(ui.Catalog.Levels, l => l != null && l.Boss) + 1;
 
         /// <summary>The second reel (-coghe-bonus-reel2): COghe's affection at Home (hello, gentle touches up to a hug, a
         /// thank-you after a game), then the first question of the bonus of chapters 2–5 (with a wrong order and one too many).</summary>
@@ -139,9 +143,9 @@ namespace GravityBox.Venom
         {
             var ui = game.ProductUI; var marks = new System.Text.StringBuilder();
             void Mark(string what) => marks.AppendLine($"{frame} {what}");
-            COgheShop.ResetForTests(new COgheShop.State { Migrated = true }); COgheHomeRoom.UnlockedLevelOverride = 60;   // every piece of furniture
+            COgheShop.ResetForTests(new COgheShop.State { Migrated = true }); COgheHomeRoom.UnlockedLevelOverride = ui.Catalog.Levels.Length;   // every piece of furniture
             game.Progress.HomeUnlocked = true; game.Progress.Completed.Clear();
-            for (int i = 0; i < 12; i++) game.Progress.Completed.Add(ui.Catalog.Levels[i].Id);
+            for (int i = 0, boss = FirstBoss(ui); i < boss; i++) game.Progress.Completed.Add(ui.Catalog.Levels[i].Id);
             BuildRing(); ui.ShowMenu(); yield return new WaitForSecondsRealtime(.8f);
             ui.OpenHome(); var p = game.Personality;
             yield return Until(() => p.Act == COgheAct.Wave, 900); yield return new WaitForSecondsRealtime(.5f);   // furniture popped in, hello said: unrecorded

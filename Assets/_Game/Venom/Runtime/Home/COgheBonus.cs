@@ -29,7 +29,8 @@ namespace GravityBox.Venom
     /// gentle shake. Nothing here touches the puzzles: the bonus lives in Home and is optional (Skip goes on to the next
     /// chapter; a skipped bonus waits in Home).
     /// The answers only use what every player has (a touch, Feed, the gift ball), so no bonus depends on what was bought; the
-    /// chapters grow by putting words together: one word, two in any order, an order, a number, all of them.
+    /// chapters grow by putting words together: one word, two in any order, an order, a number, all of them, and (the sixth
+    /// chapter, Mrk 12/10/2026) a number on most words.
     /// </summary>
     public static class COgheBonus
     {
@@ -52,6 +53,8 @@ namespace GravityBox.Venom
             new[] { One(Food(2)), One(Cuddle(3)), One(Food(3)) },
             // 5: all of it
             new[] { InOrder(Cuddle(2), Play()), InOrder(Food(), Cuddle(3)), InOrder(Food(2), Cuddle(), Play()) },
+            // 6: every word counts
+            new[] { InOrder(Cuddle(2), Food(2)), InOrder(Play(), Cuddle(3), Food()), InOrder(Food(3), Play(), Cuddle(2)) },
         };
 
         /// <summary>The questions of chapter <paramref name="chapter"/>'s bonus (1-based), or null if it has none.</summary>

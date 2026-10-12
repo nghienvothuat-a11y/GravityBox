@@ -22,18 +22,19 @@ namespace GravityBox.Venom
     /// The 14 Home items (Codex, OUTBOX/COGHE_HOME_ITEMS_2026_09_30/ITEMS.json), built in W units (COghe's width, 10 cm):
     /// +Y up, front -Z, origin at the floor centre. Familiar things unlock first; the ball opens the Home (Mrk: the most
     /// playful toy first, at level 10; the bed moves to 14). Levels ×1.2 when the campaign became 60 levels in chapters of 12
-    /// (Mrk 06/10/2026): the ball comes with the first boss (12), the trophy with the last (60); hats, inside items and inks
-    /// moved the same way.
+    /// (Mrk 06/10/2026), then mapped from 12–60 onto 10–65 when it became 65 levels in six chapters (Mrk 12/10/2026): the
+    /// ball still comes with the first boss (10), the trophy with the last (65); hats, inside items and inks moved the same
+    /// way, keeping every price.
     /// </summary>
     public static class COgheHomeItems
     {
         public const float W = .1f;   // COghe's relaxed width at Home (measured on the live skin: ~10-12 cm, not the 7 cm first briefed)
         public static readonly (string id, string name, int level)[] Catalog =
         {
-            ("BALL", "Ball", 12), ("DUMBBELL", "Dumbbell", 14), ("BED", "Bed", 17), ("MIRROR", "Mirror", 19),
-            ("SWING", "Swing", 22), ("SLIDE", "Slide", 24), ("TV", "TV", 28), ("XYLOPHONE", "Xylophone", 31),
-            ("TRAMPOLINE", "Trampoline", 36), ("HAMMOCK", "Hammock", 41), ("WHEEL", "Running wheel", 46),
-            ("AQUARIUM", "Aquarium", 50), ("SHADOW_LAMP", "Shadow lamp", 55), ("TROPHY", "Trophy", 60),
+            ("BALL", "Ball", 10), ("DUMBBELL", "Dumbbell", 12), ("BED", "Bed", 16), ("MIRROR", "Mirror", 18),
+            ("SWING", "Swing", 21), ("SLIDE", "Slide", 24), ("TV", "TV", 28), ("XYLOPHONE", "Xylophone", 32),
+            ("TRAMPOLINE", "Trampoline", 38), ("HAMMOCK", "Hammock", 43), ("WHEEL", "Running wheel", 49),
+            ("AQUARIUM", "Aquarium", 54), ("SHADOW_LAMP", "Shadow lamp", 59), ("TROPHY", "Trophy", 65),
         };
         private const string Ivory = "#e8e0cf", Slate = "#304e56", Teal = "#356d6d", Mint = "#d8e7dd", Coral = "#bc7770", Amber = "#dfba70", Blue = "#afcbd5";
 

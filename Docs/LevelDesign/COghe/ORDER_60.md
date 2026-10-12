@@ -1,5 +1,8 @@
 # 60 màn: xen 10 màn thùng vào 5 chương (06/10/2026)
 
+> Đã thay (12/10/2026): thứ tự hiện tại là 65 màn, 6 chương, boss ở 10 · 21 · 32 · 43 · 54 · 65. Xem
+> [GlassCrawl5/README.md](GlassCrawl5/README.md) và `REORDER_65.json`.
+
 Mrk (06/10/2026, 12:32): "Sửa tiếp Chương 4 và 5 sau đó thêm các level của 51-60 xen kẽ trong các chương. Xếp levels
 theo độ khó tăng dần". Làm sau khi chương 5 dựng lại xong.
 

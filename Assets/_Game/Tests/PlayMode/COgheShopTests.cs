@@ -91,16 +91,16 @@ namespace GravityBox.Tests
             try
             {
                 FreshShop(false); yield return null;
-                var level12 = ui.Catalog.Levels[11];
-                ui.ShowVictoryForTests(level12.Id, 12); yield return null;
+                var level10 = ui.Catalog.Levels[9];
+                ui.ShowVictoryForTests(level10.Id, 10); yield return null;
                 Assert.AreEqual(COgheEconomy.FirstWin, ui.VictoryDrops); Assert.AreEqual(COgheEconomy.FirstWin, COgheShop.Drops);
-                CollectionAssert.IsSubsetOf(new[] { "BALL", "INK_OCEAN", "INK_MINT" }, ui.VictoryUnlocks.ToArray(), "Level 12 (first boss): the ball, Ocean (gifts) and Mint");
+                CollectionAssert.IsSubsetOf(new[] { "BALL", "INK_OCEAN", "INK_MINT" }, ui.VictoryUnlocks.ToArray(), "Level 10 (first boss): the ball, Ocean (gifts) and Mint");
                 ui.VictoryStepForTests(); yield return null;
                 Assert.AreEqual(COgheProductPopup.Unlocks, ui.Popup, "What it unlocked, before the next level");
                 Assert.IsTrue(ui.GetComponentsInChildren<Text>().Any(t => t.text == "Gift ✓"), "gifts marked");
                 Assert.IsTrue(ui.GetComponentsInChildren<Button>().Any(b => b.name == "Buy INK_MINT"), "the rest for sale");
                 yield return Click("Continue"); Assert.AreEqual(COgheProductPopup.None, ui.Popup); Assert.IsEmpty(ui.VictoryUnlocks);
-                ui.ShowVictoryForTests(level12.Id, 12); yield return null;
+                ui.ShowVictoryForTests(level10.Id, 10); yield return null;
                 Assert.AreEqual(0, ui.VictoryDrops, "A level pays once"); Assert.AreEqual(COgheEconomy.FirstWin, COgheShop.Drops); Assert.IsEmpty(ui.VictoryUnlocks);
             }
             finally { EndShop(); ui.ShowMenu(); }
