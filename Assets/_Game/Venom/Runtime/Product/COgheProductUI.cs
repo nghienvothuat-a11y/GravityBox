@@ -160,12 +160,15 @@ namespace GravityBox.Venom
         public void ShowMenu()
         {
             attempt.Abandon("menu");
-            if(bonusChapter>0)EndBonusSession();   // a bonus left for the menu waits in Home
+            if(bonusChapter>0)EndBonusSession();   // Play resumes an unfinished interlude
             Popup=COgheProductPopup.None;Game.EnterShowcase();Page=COgheProductPage.MainMenu;
             Game.SetHabitatPresentation(true);MenuShadows(true);Rebuild();
         }
         public void Play()
         {
+            int waiting=COgheBonus.Waiting(Catalog,Game.Progress);
+            if(waiting>0){StartBonus(waiting,true);return;}
+            if(NeedsInkGuide){OpenStyleFromMenu();return;}
             int next=ResumeLevel;
             if(next==0){Notify("All puzzles complete. Visit Home!");return;}
             if(Game.Definition.Order!=next){Load(next);return;}
@@ -182,7 +185,16 @@ namespace GravityBox.Venom
             MenuShadows(false);Game.ResetLevel();Page=COgheProductPage.Intro;Popup=COgheProductPopup.None;canvas.gameObject.SetActive(false);
             COgheIntro.Play(Game,()=>{if(this==null)return;canvas.gameObject.SetActive(true);if(replay)ShowMenu();else{Page=COgheProductPage.Game;Rebuild();}},replay);
         }
-        private void Load(int n){attempt.Abandon("level_change");leaving=true;SetPaused(false);Game.Load(n);}
+        private void Load(int n, bool testJump=false)
+        {
+            if(!testJump && n==ResumeLevel)
+            {
+                int waiting=COgheBonus.Waiting(Catalog,Game.Progress);
+                if(waiting>0){StartBonus(waiting,true);return;}
+                if(NeedsInkGuide){OpenStyleFromMenu();return;}
+            }
+            attempt.Abandon("level_change");leaving=true;SetPaused(false);Game.Load(n);
+        }
         /// <summary>Only an explicit victory-button tap starts unlocks and the between-level transition.</summary>
         public void NextLevel()
         {
@@ -203,7 +215,7 @@ namespace GravityBox.Venom
             var p=local-safe.rect.min;return new Vector2(Mathf.Clamp(p.x,0,width),Mathf.Clamp(p.y,height*.3f,height*.85f));
         }
         /// <summary>Test builds: jump to any level from Pause.</summary>
-        public void LoadForTest(int n){Popup=COgheProductPopup.None;Load(n);}
+        public void LoadForTest(int n){Popup=COgheProductPopup.None;Load(n,true);}
         public void OpenHome()
         {
             if(!Game.Progress.HomeUnlocked){ShowPopup(COgheProductPopup.Locked);return;}

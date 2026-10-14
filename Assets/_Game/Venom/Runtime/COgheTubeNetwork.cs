@@ -460,7 +460,7 @@ namespace GravityBox.Venom
                 // speed makes the head cross the junction while the tail is
                 // still approaching, so the whole body can never be resident
                 // in the chamber at once and branch selection never unlocks.
-                float speed=openTerminal?.11f*Mathf.Clamp01((openLead-beyond)/.035f):Mathf.Min(.13f,Mathf.Max(0,remaining)*3f);
+                float speed=COghePipeFlow.SpeedMultiplier*(openTerminal?.11f*Mathf.Clamp01((openLead-beyond)/.035f):Mathf.Min(.13f,Mathf.Max(0,remaining)*3f));
                 // A briefly snagged tail must slow the leading core, not leave
                 // droplets along the entire pipe. Arc length follows the bend;
                 // world-space distance could drag tissue across its solid wall.

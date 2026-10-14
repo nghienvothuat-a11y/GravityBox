@@ -21,8 +21,8 @@ namespace GravityBox.Venom
     {
         public static readonly COgheInk[] Catalog =
         {
-            Ink("INK_OCEAN", "Ocean", 10, new Color(.04f, .32f, .78f), new Color(.55f, .85f, 1f), new Vector4(0, .82f, 0, .3f), new Vector4(0, .25f, 0, 0), "Clear"),
-            Ink("INK_MINT", "Mint", 10, new Color(.3f, .82f, .62f), new Color(.8f, 1f, .92f), new Vector4(0, .7f, 0, 0), Vector4.zero, "Solid"),
+            Ink("INK_OCEAN", "Ocean", 8, new Color(.04f, .32f, .78f), new Color(.55f, .85f, 1f), new Vector4(0, .82f, 0, .3f), new Vector4(0, .25f, 0, 0), "Clear"),
+            Ink("INK_MINT", "Mint", 8, new Color(.3f, .82f, .62f), new Color(.8f, 1f, .92f), new Vector4(0, .7f, 0, 0), Vector4.zero, "Solid"),
             Ink("INK_CORAL", "Coral", 15, new Color(.95f, .38f, .3f), new Color(1f, .72f, .55f), new Vector4(0, .65f, 0, 0), new Vector4(0, .2f, 0, 0), "Solid"),
             Ink("INK_FIREFLY", "Firefly", 18, new Color(.25f, .9f, .25f), new Color(.85f, 1f, .45f), new Vector4(0, .78f, .9f, .2f), new Vector4(.25f, .3f, 0, 0), "Glow · semi-clear"),
             Ink("INK_GOLD", "Gold", 23, new Color(1f, .78f, .32f), new Color(1f, .92f, .6f), new Vector4(1, .82f, 0, 0), new Vector4(0, 0, .08f, 0), "Metal"),

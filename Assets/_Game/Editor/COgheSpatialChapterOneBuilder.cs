@@ -166,25 +166,33 @@ namespace GravityBox.Editor
    }
    if(n==10)
    {
-    // BOSS. A floating balcony at the back, reached only by the lift. The last winch A (it opens the exit under the
-    // balcony) has two locks: a clear lid lifted by C, and a jam pin pulled by D. Both are on the balcony, and D is
-    // hidden from the first view behind a screen: turn the view to find it. Up, unlock both, ride down, wind A, out.
-    // 2 mm from the lift deck at its top stop: a wider seam caught COghe stepping across.
-    // Deep enough (z .06–.30) that COghe stepping off the deck lands well inside, not along the front edge.
-    var balcony=ChapterLedge(c,"Balcony",new Vector3(.1435f,.02f,.18f),new Vector3(.513f,.04f,.24f));
-    // The parapet starts 2.3 cm in from the lift: too narrow to fall through, clear of COghe stepping off the deck.
-    ChapterParapet(c,"Balcony parapet",new Vector3(.09f,.07f,.064f),new Vector3(.36f,.06f,.008f));
-    ChapterParapet(c,"Balcony screen",new Vector3(.33f,.10f,.144f),new Vector3(.14f,.12f,.008f));
-    var lift=ChapterLift(c,new Vector3(-.25f,-.278f,.15f),.30f,null,"B");
+    // Boss revision 14/10: C releases the floor bridge control B, B docks a real span, D on the far
+    // balcony releases the exit winch A. No timers, hidden code unlocks or new skill are introduced.
+    var balcony=ChapterLedge(c,"Balcony",new Vector3(-.013f,.02f,.18f),new Vector3(.20f,.04f,.24f));
+    var far=ChapterLedge(c,"Far balcony",new Vector3(.3335f,.02f,.18f),new Vector3(.133f,.04f,.24f));
+    ChapterParapet(c,"Balcony parapet",new Vector3(.00f,.07f,.064f),new Vector3(.174f,.06f,.008f));
+    ChapterParapet(c,"Balcony screen",new Vector3(.3335f,.10f,.144f),new Vector3(.133f,.12f,.008f));
+    ChapterLift(c,new Vector3(-.25f,-.278f,.15f),.30f,null,"B");
     ChapterParapet(c,"Lift guard",new Vector3(-.25f,.0725f,.009f),new Vector3(.27f,.055f,.006f));
-    var lever=ViewTask(c,"C",new Vector3(.05f,.063f,.26f),Vector3.right,.06f,balcony);
-    var hidden=ViewTask(c,"D",new Vector3(.30f,.063f,.27f),Vector3.right,.05f,balcony);
+    var lever=ViewTask(c,"C",new Vector3(-.04f,.063f,.26f),Vector3.right,.05f,balcony);
+    var hidden=ViewTask(c,"D",new Vector3(.30f,.063f,.27f),Vector3.right,.05f,far);
     var winch=ViewTask(c,"A",new Vector3(-.05f,-.277f,-.05f),Vector3.right,.12f,floor);
-    var lid=ChapterCover(c,"A glass lid",new Vector3(.01f,-.222f,-.05f),new Vector3(.20f,.008f,.09f),.12f);
-    var pin=ViewGate(c,"A jam pin",new Vector3(.125f,-.284f,-.05f),Vector3.up,.05f,new Vector3(.02f,.03f,.03f));pin.GetComponent<VenomMovableProp>().Manipulable=false;
+    var bridgeControl=ViewTask(c,"B",new Vector3(.08f,-.277f,-.20f),Vector3.right,.12f,floor);
+    var lid=ChapterCover(c,"A glass lid",new Vector3(.14f,-.222f,-.20f),new Vector3(.20f,.008f,.09f),.12f);
+    var pin=ViewGate(c,"A jam pin",new Vector3(.125f,-.284f,-.05f),Vector3.up,.05f,new Vector3(.02f,.03f,.03f));
+    pin.GetComponent<VenomMovableProp>().Manipulable=false;
     ViewLink(c,lever.Rail,lid,false,null);ViewLink(c,hidden.Rail,pin,false,null);
-    winch.RequiredRail=lid;winch.RequiredEnd=true;winch.AlsoRequired=new[]{pin};
-    var gate=ViewGate(c,"B coral shutter",c.Exit+Vector3.back*.020f+Vector3.up*.02f,Vector3.up,.14f,new Vector3(.13f,.13f,.018f));ViewLink(c,winch.Rail,gate,true,ViewExitSurface(c));
+    bridgeControl.RequiredRail=lid;bridgeControl.RequiredEnd=true;
+    winch.RequiredRail=pin;winch.RequiredEnd=true;
+    // A 2 mm seam at both ends, not overlapping colliders. The whole platform travels; its sides are visibly slick.
+    var span=ExpansionRail(c,"B rising bridge",new Vector3(.177f,-.13f,.23f),Vector3.up,.152f,0,new Vector3(.176f,.036f,.136f),.022f,.001f,true,false);
+    span.GetComponent<VenomMovableProp>().Manipulable=false;
+    foreach(var face in span.GetComponentsInChildren<VenomSurfacePatch>()){face.MotionFrame=span.Body;if(face.Normal.y<.9f)face.Slippery=true;}
+    ViewLink(c,bridgeControl.Rail,span,false,null);
+    span.LatchAtEnd=true;
+    c.Root.GetComponentsInChildren<COgheViewMechanism>().First(m=>m.Output==span).Counterbalance=true;
+    var gate=ViewGate(c,"A blue shutter",c.Exit+Vector3.back*.020f+Vector3.up*.02f,Vector3.up,.14f,new Vector3(.13f,.13f,.018f));
+    ViewLink(c,winch.Rail,gate,true,ViewExitSurface(c));
    }
   }
 
@@ -219,6 +227,7 @@ namespace GravityBox.Editor
   internal static void ChapterOneArt(VenomCampaign game,int n)
   {
    var owner=game.GetComponent<VenomLevelController>();var root=owner.Rotation.transform;
+   printedCircuit=new COghePrintedCircuit(root);
    var shell=Lit("Spatial pearl casing",new Color(.86f,.85f,.77f),.08f,.40f);
    Material Body(string name)=>AssetDatabase.LoadAssetAtPath<Material>(VenomCampaignBuilder.SpatialFolder+"/"+name+".mat");
    var amber=Body("Circuit C amber");var green=Body("Circuit D green");
@@ -247,23 +256,18 @@ namespace GravityBox.Editor
     // On the floor beside the left wall: hinged along its left edge, it tips over onto its side, away from the winch's pull.
     ChapterBox(root,"Amber box over A",new Vector3(-.350f,-.30f,-.128f),new Vector3(0,0,-.038f),new Vector3(.080f,.040f,.038f),Vector3.down,Vector3.forward,90,amberBox,amber,new[]{Rail("A glass lid")});
     // From the wall handle down the panel, across the plinth top, down its front and over the floor to the box.
-    ChapterTrace(art,traceC,new[]{new Vector3(-.25f,-.005f,.2938f),new Vector3(-.225f,-.005f,.2938f),new Vector3(-.225f,-.0988f,.2938f),new Vector3(-.225f,-.0988f,.0388f),new Vector3(-.225f,-.2988f,.0388f),new Vector3(-.225f,-.2988f,-.128f),new Vector3(-.262f,-.2988f,-.128f)},
-     new[]{Vector3.back,Vector3.back,Vector3.up,Vector3.back,Vector3.up,Vector3.up});
+    ChapterTrace(art,traceC,new[]{new Vector3(-.25f,-.005f,.2938f),new Vector3(-.225f,-.005f,.2938f),new Vector3(-.225f,-.0988f,.2938f),new Vector3(-.225f,-.0988f,.0388f),new Vector3(-.225f,-.2988f,.0388f),new Vector3(-.225f,-.2988f,-.128f),new Vector3(-.262f,-.2988f,-.128f)});
     SpatialPort(art,new Vector3(-.262f,-.2992f,-.128f),Vector3.up,amber,shell);
    }
    if(n==10)
    {
-    // BOSS: the familiar amber box over winch A, and a green clip on it: amber C lifts the lid, green D (hidden on the
-    // balcony) pulls the clip. The lid waits for both.
-    var box=ChapterBox(root,"Amber box over A",new Vector3(-.05f,-.30f,-.006f),new Vector3(-.04f,0,-.092f),new Vector3(.04f,.040f,0),Vector3.down,Vector3.right,100,amberBox,amber,new[]{Rail("A glass lid"),Rail("A jam pin")});
-    var clip=Slab(box.transform,"Green clip",new Vector3(0,.014f,-.092f),new Vector3(.018f,.026f,.012f),green);clip.GetComponent<Renderer>().shadowCastingMode=ShadowCastingMode.On;
-    var cover=box.GetComponent<COgheFlipCover>();cover.Clips=new[]{null,clip};cover.ClipTravel=new[]{Vector3.zero,Vector3.left*.054f};
-    // Both traces leave the balcony down the back glass and cross the floor to the box (amber) and its clip (green).
-    ChapterTrace(art,traceC,new[]{new Vector3(.11f,.0412f,.26f),new Vector3(.135f,.0412f,.26f),new Vector3(.135f,.0412f,.2975f),new Vector3(.135f,-.2988f,.2975f),new Vector3(.135f,-.2988f,-.112f),new Vector3(.002f,-.2988f,-.112f)},
-     new[]{Vector3.up,Vector3.up,Vector3.back,Vector3.up,Vector3.up});
-    SpatialPort(art,new Vector3(.002f,-.2992f,-.112f),Vector3.up,amber,shell);
-    ChapterTrace(art,traceD,new[]{new Vector3(.35f,.0412f,.27f),new Vector3(.375f,.0412f,.27f),new Vector3(.375f,.0412f,.2975f),new Vector3(.375f,-.2988f,.2975f),new Vector3(.375f,-.2988f,-.126f),new Vector3(-.05f,-.2988f,-.126f),new Vector3(-.05f,-.2988f,-.104f)},
-     new[]{Vector3.up,Vector3.up,Vector3.back,Vector3.up,Vector3.up,Vector3.up});
+    // The amber circuit opens B's cover. The far green circuit opens A's cover.
+    ChapterBox(root,"Amber box over B",new Vector3(.08f,-.30f,-.156f),new Vector3(-.04f,0,-.092f),new Vector3(.04f,.040f,0),Vector3.down,Vector3.right,100,amberBox,amber,new[]{Rail("A glass lid")});
+    var greenBox=Tinted("Chapter box green",VenomCampaignBuilder.ChapterGreen,.55f);
+    ChapterBox(root,"Green box over A",new Vector3(-.05f,-.30f,-.006f),new Vector3(-.04f,0,-.092f),new Vector3(.04f,.040f,0),Vector3.down,Vector3.right,100,greenBox,green,new[]{Rail("A jam pin")});
+    ChapterTrace(art,traceC,new[]{new Vector3(.01f,.0412f,.26f),new Vector3(.035f,.0412f,.26f),new Vector3(.035f,.0412f,.2975f),new Vector3(.035f,-.2988f,.2975f),new Vector3(.035f,-.2988f,-.262f),new Vector3(.08f,-.2988f,-.262f)});
+    SpatialPort(art,new Vector3(.08f,-.2992f,-.262f),Vector3.up,amber,shell);
+    ChapterTrace(art,traceD,new[]{new Vector3(.35f,.0412f,.27f),new Vector3(.375f,.0412f,.27f),new Vector3(.375f,.0412f,.2975f),new Vector3(.375f,-.2988f,.2975f),new Vector3(.375f,-.2988f,-.126f),new Vector3(-.05f,-.2988f,-.126f),new Vector3(-.05f,-.2988f,-.104f)});
    }
    foreach(var r in art.GetComponentsInChildren<Renderer>())r.shadowCastingMode=ShadowCastingMode.Off;
    foreach(var r in game.GetComponentsInChildren<Renderer>())
@@ -313,16 +317,11 @@ namespace GravityBox.Editor
    var go=GameObject.CreatePrimitive(PrimitiveType.Cube);go.name=name;go.transform.SetParent(parent,false);go.transform.localPosition=p;go.transform.localScale=size;
    Object.DestroyImmediate(go.GetComponent<Collider>());var r=go.GetComponent<Renderer>();r.sharedMaterial=mat;r.shadowCastingMode=ShadowCastingMode.Off;return go.transform;
   }
-  /// <summary>A printed trace with an explicit surface normal per segment (wall, panel, plinth front, floor).</summary>
-  static void ChapterTrace(Transform parent,Material mat,Vector3[] points,Vector3[] normals)
+  /// <summary>Map the authored route to physical wall, plinth and floor supports.</summary>
+  static void ChapterTrace(Transform parent,Material mat,Vector3[] points)
   {
-   for(int i=1;i<points.Length;i++)
-   {
-    var d=points[i]-points[i-1];
-    var go=GameObject.CreatePrimitive(PrimitiveType.Cube);go.name="Printed conductor";go.transform.SetParent(parent,false);
-    go.transform.localPosition=(points[i]+points[i-1])*.5f;go.transform.localRotation=Quaternion.LookRotation(d,normals[i-1]);go.transform.localScale=new Vector3(.003f,.0005f,d.magnitude+.003f);
-    Object.DestroyImmediate(go.GetComponent<Collider>());go.GetComponent<Renderer>().sharedMaterial=mat;
-   }
+   var owner=Object.FindFirstObjectByType<VenomLevelController>();
+   new COghePrintedCircuit(owner.Rotation.transform).Draw(parent,points,mat);
   }
   /// <summary>Tinted clear plastic (URP Lit, alpha blended).</summary>
   static Material Tinted(string name,Color color,float alpha)

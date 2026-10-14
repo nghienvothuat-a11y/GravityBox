@@ -199,7 +199,7 @@ namespace GravityBox.Venom
             {
                 foreach (var item in COgheEconomy.Items) if (item.Level == order) { victoryUnlocks.Add(item.Id); COgheAnalytics.Log("item_unlock", "item", item.Id); }
                 victoryHome = Game.Progress.RevealHome;
-                if (victoryHome) COgheAnalytics.Log("feature_unlock", "feature", "home_style");
+                if (victoryHome) COgheAnalytics.Log("feature_unlock", "feature", "home");
             }
             tripleUntil = victoryDrops > 0 && COgheAds.RewardedAvailable ? Time.unscaledTime + COgheEconomy.TripleWindow : 0;
             OfferBonusAfter(order);
@@ -209,7 +209,8 @@ namespace GravityBox.Venom
         {
             if (COgheAds.Showing) return false;
             if (victoryUnlocks.Count > 0 || victoryHome) { Popup = COgheProductPopup.Unlocks; Rebuild(); return false; }
-            if (victoryBonus > 0) { Popup = COgheProductPopup.BonusOffer; Rebuild(); return false; }   // after a boss: the bonus "Hiểu ra"
+            if (victoryBonus > 0) { StartBonus(victoryBonus, true); return false; }   // after a boss: the bonus "Hiểu ra"
+            if (NeedsInkGuide) { OpenStyleFromMenu(); return false; }
             if (!victoryAdChecked)
             {
                 victoryAdChecked = true;
@@ -242,7 +243,7 @@ namespace GravityBox.Venom
             float y = 70;
             if (victoryHome)
             {
-                art.Label(panel, "Home", "Home and Style are open: a room for COghe, and its own colors and hats.", new Rect(24, y, w - 48, 40), 13, COgheUIArt.Muted);
+                art.Label(panel, "Home", "Home is open! Get to know COghe before your next chapter.", new Rect(24, y, w - 48, 40), 13, COgheUIArt.Muted);
                 y += 46;
             }
             int shown = Mathf.Min(4, victoryUnlocks.Count); float cell = (w - 28) / Mathf.Max(1, shown);

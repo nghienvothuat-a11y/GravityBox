@@ -1,0 +1,114 @@
+{
+  "date": "2026-10-14",
+  "speedMultiplier": 1.5,
+  "pipeSecondsBefore": 10.658,
+  "pipeSecondsAfter": 5.85,
+  "audit": {
+    "scenes": 65,
+    "renderers": 319,
+    "samples": 64836,
+    "unsupported": 0,
+    "issues": [],
+    "pipeLevels": [
+      15,
+      19,
+      29,
+      34,
+      41,
+      43,
+      49,
+      53
+    ]
+  },
+  "physicsSnapshotIdentical": true,
+  "physicsSHA256": "2d2e0bfede504a96ffa4a7fcc3977315d2a9860a76047732ddfa29732635462f",
+  "tests": [
+    {
+      "name": "Spatial04Solve",
+      "result": "Passed"
+    },
+    {
+      "name": "Spatial06Solve",
+      "result": "Passed"
+    },
+    {
+      "name": "Spatial07Solve",
+      "result": "Passed"
+    },
+    {
+      "name": "Spatial10Solve",
+      "result": "Passed"
+    },
+    {
+      "name": "Spatial14PipePaceKeepsTheWholeBody",
+      "result": "Passed"
+    },
+    {
+      "name": "Spatial14Solve",
+      "result": "Passed"
+    },
+    {
+      "name": "Spatial15Solve",
+      "result": "Passed"
+    },
+    {
+      "name": "Spatial17Solve",
+      "result": "Passed"
+    },
+    {
+      "name": "Spatial20Solve",
+      "result": "Passed"
+    },
+    {
+      "name": "Spatial26LatchIsOneWay",
+      "result": "Passed"
+    },
+    {
+      "name": "Spatial26Solve",
+      "result": "Passed"
+    },
+    {
+      "name": "Spatial29Solve",
+      "result": "Passed"
+    },
+    {
+      "name": "SpatialPlusB1Solve",
+      "result": "Passed"
+    },
+    {
+      "name": "SpatialPlusE10Solve",
+      "result": "Passed"
+    },
+    {
+      "name": "SpatialPlusN15Solve",
+      "result": "Passed"
+    },
+    {
+      "name": "SpatialPlusN43Solve",
+      "result": "Passed"
+    }
+  ],
+  "nativeMac": {
+    "passed": 1,
+    "failed": 0,
+    "errors": [],
+    "device": "Mac17,2",
+    "gpu": "Apple M5",
+    "width": 720,
+    "height": 1280,
+    "execution": "Normal player loop; InputSystem touch events; screenshots excluded from frame samples. Author replay, not novice evidence.",
+    "levels": [
+      {
+        "level": 15,
+        "passed": true,
+        "seconds": 11.787717819213867,
+        "escaped": 32,
+        "fragments": 1,
+        "fps": 41.97875213623047,
+        "p95Ms": 49.00621032714844,
+        "p99Ms": 50.807838439941406,
+        "error": ""
+      }
+    ]
+  }
+}

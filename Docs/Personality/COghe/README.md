@@ -229,3 +229,13 @@ thêm ~14 món low-poly (vật liệu dùng chung). Chưa đo trên OPPO.
   và độ rung vào `track.txt`; `COGHE_EYES=0` quay không mắt.
 - Explicit: `RenderPersonalityActs` (khung từng vở diễn), `RenderHome` (toàn cảnh, nhìn từ trên, từng trò chơi),
   `RenderMonsterStills`, `RenderMenuMonster`. Bản Mac: `-coghe-monster-reel <thư mục>` quay menu thật (PNG 30 khung/s + `sounds.txt`).
+
+
+### Override 14/10/2026 — “Hiểu COghe” bắt buộc
+
+Áp dụng Boss hiển thị 10/21/32/43/54/65 trong catalog 65 màn. Sau bấm tiếp trên màn
+thắng và giới thiệu phần mới mở, tự vào phần hiểu COghe; không có Skip. Back về menu,
+Play tiếp câu chưa hoàn tất. Checkpoint câu và hoàn tất lưu độc lập với thưởng Drops;
+paid keys cũ vẫn hợp lệ, không xóa tiến độ level. Các mô tả “optional/skippable” ở
+phần lịch sử phía trên không còn áp dụng. Style tách khỏi Home, mở sau màn 8; Home
+vẫn sau Boss 10. [Biên bản](../../Verification/COgheChapterProgression/README.md).

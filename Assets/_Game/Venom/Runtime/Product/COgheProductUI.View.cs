@@ -45,9 +45,10 @@ namespace GravityBox.Venom
             art.Box(pageRoot,"Brand underline",new Rect(width*.5f-12,height*.12f+92,24,2),new Color(.58f,.71f,.66f));
             float y=height-265,w=Mathf.Min(280,width-80),x=(width-w)*.5f;
             art.Button(pageRoot,"Play",new Rect(x,y,w,64),COgheIcon.Play,Play,"Play",true);
-            int next=ResumeLevel;art.Label(pageRoot,"Progress",next>0?"Level "+next:"All puzzles complete",new Rect(x,y+75,w,20),12,COgheUIArt.Muted);
-            MenuEntry(width*.5f-88,y+118,"Home",Game.Progress.HomeUnlocked?COgheIcon.Home:COgheIcon.Lock,OpenHome);
-            MenuEntry(width*.5f+32,y+118,"Intro",COgheIcon.Film,ReplayIntro);
+            int next=ResumeLevel;art.Label(pageRoot,"Progress",COgheBonus.Waiting(Catalog,Game.Progress)>0?"Understand COghe to continue":NeedsInkGuide?"New: give COghe its first color":next>0?"Level "+next:"All puzzles complete",new Rect(x,y+75,w,20),12,COgheUIArt.Muted);
+            MenuEntry(width*.5f-132,y+118,"Home",Game.Progress.HomeUnlocked?COgheIcon.Home:COgheIcon.Lock,OpenHome);
+            MenuEntry(width*.5f-28,y+118,"Style",StyleUnlocked?COgheIcon.Sparkles:COgheIcon.Lock,()=>OpenStyleFromMenu());
+            MenuEntry(width*.5f+76,y+118,"Intro",COgheIcon.Film,ReplayIntro);
             // Real 3D creature receives a greeting; this transparent target does not capture Play/Home.
             var touch=art.Box(pageRoot,"Greet COghe",new Rect(width*.16f,height*.29f,width*.68f,Mathf.Max(48,y-18-height*.29f)),Color.clear,true);
             touch.gameObject.AddComponent<Button>().onClick.AddListener(()=>{Game.GreetHome();COgheAudio.Happy();});

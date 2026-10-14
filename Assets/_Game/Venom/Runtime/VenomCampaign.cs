@@ -410,7 +410,7 @@ namespace GravityBox.Venom
             for(int i=0;i<32;i++)if(Matter.Groups[i]==Matter.Groups[tubeAnchor])
             {var p=Tube.transform.InverseTransformPoint(Matter.Bodies[i].position);centre+=p;tail=Mathf.Min(tail,p.z);count++;}
             centre/=Mathf.Max(1,count);
-            tubeProgress+=Tube.FlowSpeed*dt;
+            tubeProgress+=Tube.FlowSpeed*COghePipeFlow.SpeedMultiplier*dt;
             for(int i=0;i<32;i++)if(Matter.Groups[i]==Matter.Groups[tubeAnchor])
             {
                 var b=Matter.Bodies[i];Vector3 p=Tube.transform.InverseTransformPoint(b.position);

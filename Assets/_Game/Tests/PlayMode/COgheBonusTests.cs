@@ -21,29 +21,28 @@ namespace GravityBox.Tests
         }
         private Vector2 ScreenOf(Vector3 world) => game.Owner.View.WorldToScreenPoint(world);
 
-        [UnityTest] public IEnumerator ABossWinOffersTheBonusAndSkipKeepsItForHome()
+        [UnityTest] public IEnumerator BossInterludeIsRequiredAndMenuCannotSkipIt()
         {
             var completed = game.Progress.Completed.ToList(); bool home = game.Progress.HomeUnlocked;
             try
             {
                 FreshShop(false); game.Progress.HomeUnlocked = true;
+                for(int i=0;i<10;i++)game.Progress.Completed.Add(ui.Catalog.Levels[i].Id);
                 var boss = ui.Catalog.Levels[9];
-                Assert.IsTrue(boss.Boss, "Level 10 closes chapter 1");
-                Assert.AreEqual(0, COgheBonus.After(ui.Catalog, 9), "No bonus after an ordinary level");
+                Assert.AreEqual(0, COgheBonus.After(ui.Catalog, 9));
                 ui.ShowVictoryForTests(boss.Id, 10); yield return null;
-                Assert.AreEqual(1, ui.VictoryBonus, "Chapter 1's bonus is offered");
-                Assert.IsFalse(ui.VictoryStepForTests()); Assert.AreEqual(COgheProductPopup.Unlocks, ui.Popup, "What the win unlocked comes first");
+                Assert.IsFalse(ui.VictoryStepForTests()); Assert.AreEqual(COgheProductPopup.Unlocks, ui.Popup);
                 yield return Click("Continue");
-                Assert.IsFalse(ui.VictoryStepForTests()); Assert.AreEqual(COgheProductPopup.BonusOffer, ui.Popup, "then the bonus");
-                Assert.IsTrue(ui.GetComponentsInChildren<Text>().Any(t => t.text == "+" + COgheBonus.Reward + " Drops"), "with its reward");
-                yield return Click("Skip bonus");
-                Assert.AreEqual(COgheProductPopup.None, ui.Popup); Assert.AreEqual(0, ui.VictoryBonus);
-                Assert.IsTrue(ui.VictoryStepForTests(), "Skip goes straight on to the next chapter");
-                Assert.IsFalse(COgheBonus.Done(1), "Skipping pays nothing");
-                game.Progress.Completed.Add(boss.Id);
-                Assert.AreEqual(1, COgheBonus.Waiting(ui.Catalog, game.Progress), "The skipped bonus waits in Home");
+                Assert.IsFalse(ui.VictoryStepForTests());
+                Assert.AreEqual(COgheProductPage.Home, ui.Page); Assert.AreEqual(1, ui.BonusChapter);
+                Assert.IsFalse(ui.GetComponentsInChildren<Button>().Any(b=>b.name=="Skip bonus"));
+                yield return Click("Bonus back"); Assert.AreEqual(COgheProductPage.MainMenu,ui.Page);
+                yield return Click("Play"); Assert.AreEqual(1,ui.BonusChapter);
+                Assert.AreEqual(1,game.Definition.Order,"No next scene loaded when leaving the interlude");
+                Assert.IsFalse(COgheBonus.Done(1));
+                CollectionAssert.AreEqual(ui.Catalog.Levels.Take(10).Select(l=>l.Id),game.Progress.Completed);
             }
-            finally { game.Progress.Completed.Clear(); game.Progress.Completed.AddRange(completed); game.Progress.HomeUnlocked = home; EndShop(); ui.ShowMenu(); }
+            finally { ui.ShowMenu(); game.Progress.Completed.Clear();game.Progress.Completed.AddRange(completed);game.Progress.HomeUnlocked=home;EndShop(); }
         }
 
         [UnityTest] public IEnumerator TheBonusIsUnderstoodInHomeAndPaysOnce()
@@ -102,26 +101,33 @@ namespace GravityBox.Tests
             finally { game.Progress.Completed.Clear(); game.Progress.Completed.AddRange(completed); game.Progress.HomeUnlocked = home; EndShop(); ui.ShowMenu(); }
         }
 
-        [UnityTest] public IEnumerator PlayingTheBonusFromTheVictoryAndLeavingGoesOnToTheNextChapter()
+        [UnityTest] public IEnumerator BonusResumesCompletedQuestionsEvenWithZeroDropRewards()
         {
-            bool home = game.Progress.HomeUnlocked;
             try
             {
-                FreshShop(false); COgheHomeRoom.UnlockedLevelOverride = 10; game.Progress.HomeUnlocked = true;
-                ui.ShowVictoryForTests(ui.Catalog.Levels[9].Id, 10); yield return null;
-                ui.VictoryStepForTests(); yield return Click("Continue");
-                ui.VictoryStepForTests(); Assert.AreEqual(COgheProductPopup.BonusOffer, ui.Popup);
-                yield return Click("Play bonus");
-                Assert.AreEqual(COgheProductPage.Home, ui.Page); Assert.AreEqual(1, ui.BonusChapter); Assert.IsTrue(game.Personality.InBonus);
-                yield return new WaitForSecondsRealtime(.5f);
-                yield return Click("Bonus later");
-                float end = Time.realtimeSinceStartup + 8;
-                while (game != null && game.Definition.Order != 11 && Time.realtimeSinceStartup < end) { yield return null; game = Object.FindFirstObjectByType<VenomCampaign>(); }
-                yield return null; game = Object.FindFirstObjectByType<VenomCampaign>(); ui = game.ProductUI;
-                Assert.AreEqual(11, game.Definition.Order, "Later: on to chapter 2");
-                Assert.IsFalse(COgheBonus.Done(1), "and the bonus still waits");
+                FreshShop(false); game.Progress.HomeUnlocked=true;
+                game.Progress.Completed.Add(ui.Catalog.Levels[9].Id);
+                COgheEconomy.Set("drops_bonus_round",0); COgheEconomy.Set("drops_bonus",0);
+                ui.Play();yield return null;
+                var p=game.Personality;
+                yield return AwaitBonus(()=>p.BonusAsking,10,"First question");
+                game.TouchPoint(ScreenOf(p.SkinCentre+Vector3.up*.04f));
+                yield return AwaitBonus(()=>COgheBonus.CompletedRounds(1)==1,3,"Checkpoint independent of reward amount");
+                yield return Click("Bonus back");
+                // Serialize/reload precisely the same shop data used across application restarts.
+                var saved=JsonUtility.ToJson(COgheShop.Current);
+                COgheShop.ResetForTests(JsonUtility.FromJson<COgheShop.State>(saved));
+                yield return Click("Play");
+                Assert.AreEqual(1,game.Personality.BonusRound); Assert.AreEqual(0,COgheShop.Drops);
+                Assert.IsFalse(COgheBonus.Done(1));
+                // Saved final-question checkpoints with a zero reward must still reach the real thank-you and unlock.
+                COgheShop.Understand(COgheBonus.RoundKey(1,2));COgheShop.Understand(COgheBonus.RoundKey(1,3));
+                ui.ShowMenu();ui.Play();
+                yield return AwaitBonus(()=>ui.Popup==COgheProductPopup.BonusDone,30,"Resume the thank-you after the final question");
+                Assert.IsTrue(COgheBonus.Done(1));Assert.AreEqual(0,COgheShop.Drops);
+                Assert.AreEqual(0,COgheBonus.Waiting(ui.Catalog,game.Progress));
             }
-            finally { if (game != null) game.Progress.HomeUnlocked = home; EndShop(); }
+            finally {ui.ShowMenu();EndShop();}
         }
     }
 }

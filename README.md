@@ -1,5 +1,14 @@
 # COghe — Day Lab Puzzle Prototype
 
+**Ống và mạch, 14/10/2026:** vận tốc chui ống ×1,5; mạch và chân tiếp điểm bám mặt kính/sàn/bệ thật. Đã rà 65 màn, giữ nguyên dữ liệu vật lý cơ quan. [Kiểm chứng và ảnh runtime](Docs/Verification/COghePipeCircuits/README.md).
+
+**Tiến trình 14/10/2026:** trang trí mở sau màn hiển thị 8 với bài hướng dẫn tiêm màu
+Ocean miễn phí; Boss 10 phối hợp thang, cầu nâng và bốn circuit theo chuỗi phụ thuộc.
+“Understand COghe” là phần bắt buộc sau mỗi Boss trước chương tiếp, có checkpoint
+khi về menu/thoát game. Nhà vẫn mở sau Boss 10. Giữ nguyên tiến độ và đồ đã sở hữu.
+[Thiết kế và kiểm chứng](Docs/Verification/COgheChapterProgression/README.md).
+
+
 **Luật kính, 14/10/2026:** kính trần bám được; chỉ vùng phủ vật liệu trơn mới mất
 bám và làm COghe rơi/trượt. Màn hiển thị 1–6 đưa lỗ lên tường kính, bỏ dải trơn quanh
 sàn/tấm bám phụ; màn 7 dùng lớp phủ chặn đường bò vòng qua cầu. Bộ 65 màn giữ ID,

@@ -4,13 +4,13 @@ using UnityEngine.UI;
 namespace GravityBox.Venom
 {
     /// <summary>
-    /// The bonus "Hiểu ra" (Mrk 07/10/2026, <see cref="COgheBonus"/>). After a chapter's boss, between the unlocks and the
-    /// next level, the player is offered it: Play goes to Home, where COghe asks in shapes; Skip goes on to the next level and
-    /// the bonus waits in Home (its button there). Understanding every round pays the reward once, after COghe's thank-you.
+    /// Required chapter interludes (14/10/2026): the victory continuation enters Home automatically.
+    /// Main menu remains available, but Play resumes the first unfinished interlude before any next chapter.
+    /// Completed questions and rewards are persisted independently, including a zero-Drops configuration.
     /// </summary>
     public sealed partial class COgheProductUI
     {
-        private int victoryOrder, victoryBonus, bonusChapter, bonusNext, bonusDrops, bonusShownRound = -1, bonusShownMisses = -1;
+        private int victoryBonus, bonusChapter, bonusNext, bonusDrops, bonusShownRound = -1, bonusShownMisses = -1;
         private bool bonusFromVictory, bonusPaid, bonusThanksShown, bonusPopupShown;
         private int bonusEarned;   // everything this bonus paid: the rounds and the prize
         /// <summary>The bonus being played in Home (its chapter), or 0.</summary>
@@ -20,7 +20,7 @@ namespace GravityBox.Venom
 
         private void OfferBonusAfter(int order)
         {
-            victoryOrder = order; victoryBonus = COgheBonus.After(Catalog, order);
+            victoryBonus = COgheBonus.After(Catalog, order);
             if (victoryBonus > 0) COgheAnalytics.Log("bonus_offer", "chapter", victoryBonus);
         }
 
@@ -28,12 +28,12 @@ namespace GravityBox.Venom
         public void StartBonus(int chapter, bool fromVictory)
         {
             var rounds = COgheBonus.Rounds(chapter); if (rounds == null || !Game.Progress.HomeUnlocked) return;
-            bonusFromVictory = fromVictory; bonusNext = fromVictory ? victoryOrder + 1 : 0;
+            bonusFromVictory = fromVictory; bonusNext = ResumeLevel;
             victoryBonus = 0; victoryNextRequested = false;
             if (Page != COgheProductPage.Home) EnterHome();
             Popup = COgheProductPopup.None; homeZoom = false;
             bonusChapter = chapter; bonusPaid = bonusThanksShown = bonusPopupShown = false; bonusShownRound = bonusShownMisses = -1; bonusEarned = 0;
-            Game.Personality?.BeginBonus(rounds);
+            Game.Personality?.BeginBonus(rounds, COgheBonus.CompletedRounds(chapter));
             COgheAnalytics.Log("bonus_start", "chapter", chapter, "from", fromVictory ? "victory" : "home");
             Rebuild();
         }
@@ -49,6 +49,7 @@ namespace GravityBox.Venom
             if (joy > 0)
             {
                 int paid = COgheShop.Earn(COgheBonus.RoundKey(bonusChapter, joy), COgheBonus.RoundReward(joy), "bonus_round");
+                COgheShop.Understand(COgheBonus.RoundKey(bonusChapter, joy));
                 bonusEarned += paid;
                 var at = BonusScreen(p.SkinCentre + Vector3.up * .05f);
                 COgheHearts.Burst(safe, at, bonusChapter * 31 + joy, 9, .6f);
@@ -70,6 +71,7 @@ namespace GravityBox.Venom
         {
             bonusPaid = true;
             bonusDrops = COgheShop.Earn(COgheBonus.Key(bonusChapter), COgheBonus.Reward, "bonus");
+            COgheShop.Understand(COgheBonus.Key(bonusChapter));
             bonusEarned += bonusDrops;
             COgheAnalytics.Log("bonus_complete", "chapter", bonusChapter, "drops", bonusDrops, "total", bonusEarned);
             if (show && bonusDrops > 0 && Game.Personality != null) FlyDrops(BonusScreen(Game.Personality.SkinCentre + Vector3.up * .04f), 16, bonusDrops, 99);
@@ -91,12 +93,11 @@ namespace GravityBox.Venom
             }, bonusChapter * 97 + seed);
         }
 
-        /// <summary>"Later" in the bonus: it waits in Home; from a victory the campaign goes on.</summary>
+        /// <summary>Leave for the menu; Play resumes the required interlude from its saved question.</summary>
         private void LeaveBonus()
         {
-            COgheAnalytics.Log("bonus_skip", "chapter", bonusChapter, "where", "home");
-            bool fromVictory = bonusFromVictory; EndBonusSession();
-            if (fromVictory) ContinueAfterBonus(); else Rebuild();
+            COgheAnalytics.Log("bonus_leave", "chapter", bonusChapter);
+            EndBonusSession(); ShowMenu();
         }
         private void FinishBonus()
         {
@@ -108,15 +109,16 @@ namespace GravityBox.Venom
         private void ContinueAfterBonus()
         {
             int next = bonusNext; bonusNext = 0;
-            if (next >= 1 && next <= Game.PlayableLevelCount) Load(next); else ShowMenu();
+            if (COgheBonus.Waiting(Catalog, Game.Progress) > 0) Play();
+            else if (next >= 1 && next <= Game.PlayableLevelCount) Load(next); else ShowMenu();
         }
 
-        // Home during the bonus: COghe's question, the rounds so far, Feed (one of the answers) and Later ---------------------
+        // Home during the bonus: COghe's question, the rounds so far, Feed (one of the answers) and Back ---------------------
         private void BonusHomeView()
         {
             var p = Game.Personality;
             bonusShownRound = p != null ? p.BonusRound : 0; bonusShownMisses = p != null ? p.BonusMisses : 0; bonusThanksShown = p != null && p.BonusThanking;
-            art.Button(pageRoot, "Bonus later", new Rect(24, 25, 52, 52), COgheIcon.Back, LeaveBonus);
+            art.Button(pageRoot, "Bonus back", new Rect(24, 25, 52, 52), COgheIcon.Back, LeaveBonus);
             art.Label(pageRoot, "Bonus title", "Understand COghe", new Rect(85, 25, width - 170, 52), 19);
             art.Button(pageRoot, "Pause", new Rect(width - 76, 25, 52, 52), COgheIcon.Pause, () => ShowPopup(COgheProductPopup.Pause));
             int rounds = p != null ? p.BonusRounds : 0;
@@ -158,16 +160,12 @@ namespace GravityBox.Venom
                 int chapter = victoryBonus;
                 PopupTitle(panel, w, "Understand COghe");
                 art.Icon(panel, COgheIcon.Sparkles, new Rect((w - 44) * .5f, 74, 44, 44), COgheUIArt.Teal);
-                art.Label(panel, "Message", "Bonus: COghe wants to tell you\nsomething, without words.", new Rect(24, 124, w - 48, 44), 14, COgheUIArt.Muted);
+                art.Label(panel, "Message", "Understand its wishes to continue.\nCOghe speaks with body shapes.", new Rect(24, 124, w - 48, 44), 14, COgheUIArt.Muted);
                 var reward = art.Rect(panel, "Bonus reward", new Rect(w * .5f - 66, 172, 132, 30));
                 DropIcon(reward, new Rect(0, 2, 26, 26));
                 art.Label(reward, "Amount", "+" + COgheBonus.Reward + " Drops", new Rect(32, 0, 100, 30), 17, COgheUIArt.Teal, TextAnchor.MiddleLeft).font = art.BoldFont;
                 LabelButton(panel, "Play bonus", new Rect(24, h - 120, w - 48, 54), COgheIcon.Play, "Play", () => StartBonus(chapter, true), true);
-                LabelButton(panel, "Skip bonus", new Rect(24, h - 58, w - 48, 44), COgheIcon.Skip, "Skip (play it later in Home)", () =>
-                {
-                    COgheAnalytics.Log("bonus_skip", "chapter", chapter, "where", "offer");
-                    victoryBonus = 0; Resume();
-                });
+                LabelButton(panel, "Bonus menu", new Rect(24, h - 58, w - 48, 44), COgheIcon.Back, "Main menu", ShowMenu);
             }
             else
             {

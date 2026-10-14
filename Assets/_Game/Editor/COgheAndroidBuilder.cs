@@ -16,7 +16,7 @@ namespace GravityBox.Editor
         [MenuItem("Gravity Box/COghe/Build Android test APK")]
         public static void Build() => BuildScenes(VenomCampaignBuilder.CampaignScenePaths(), Output);
 
-        [MenuItem("Gravity Box/COghe/Spatial pilot/Build Android test APK · 50 levels")]
+        [MenuItem("Gravity Box/COghe/Spatial pilot/Build Android test APK · 60 levels")]
         public static void BuildSpatial() => BuildScenes(VenomCampaignBuilder.SpatialScenePaths(),
             "Builds/SpatialLab/Android/COghe-Spatial.apk");
 
@@ -44,6 +44,8 @@ namespace GravityBox.Editor
             if(!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android,BuildTarget.Android))
                 throw new InvalidOperationException("Install Android Build Support for this Unity version first.");
             foreach(var scene in scenes)if(!File.Exists(scene))throw new FileNotFoundException("Generate campaign before building",scene);
+
+            COgheAppIconBuilder.Apply();
 
             var platform=NamedBuildTarget.Android;
             string product=PlayerSettings.productName,identifier=PlayerSettings.GetApplicationIdentifier(platform);

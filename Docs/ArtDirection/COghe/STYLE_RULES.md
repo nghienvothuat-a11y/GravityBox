@@ -19,10 +19,12 @@ lighting or physical rules with whatever an image generator happened to draw.
 | Number plate | Small ivory plastic plaque adhered directly to the glass, below the upper front-left rail; two-digit level number. No floating sign or bracket on the frame. |
 | Controls and outputs | **No letters** (Mrk, 05/10/2026). A control, its printed trace, terminals and what it moves share one colour: blue (A), coral (B), amber (C), green (D), pink (E and motor pads P); A1/A2, C1–C3 reuse their letter's colour. The letter stays only as the name in code. Lift buttons are coral. A handle locked by another control sits under a five-sided box in that control's colour that flips open on a hinge (chapter 1); a bolt or pin wears its opener's colour. Kept text: the Q machine's mark, weights (50%, 25%) and the level plaque. |
 | Bodies and supports | Warm pearl/ivory equipment casings; low-contrast satin blue-grey rails and supports. Do not colour an entire door or mechanical frame as a signal. |
-| Connections | Thin printed traces with chamfered corners and small terminals, flush to a real floor, work surface or glass pane. These are presentation only. Actual load-bearing pulley cables remain visible mechanical cables, in their winch's colour. No gunmetal or dark parts, no posts beside lift shafts, no guide lines standing in mid-air (Mrk, 05/10/2026); `COgheSpatialPresentationAudit` lists any that come back. |
+| Connections | Thin printed traces with chamfered corners and small terminals, flush to a real floor, work surface or glass pane. These are presentation only. Actual load-bearing pulley cables remain visible mechanical cables, in their winch's colour. No gunmetal or dark parts, no posts beside lift shafts, no guide lines standing in mid-air (Mrk, 05/10/2026); `COgheCircuitSurfaceAudit` checks their support on the fixed physical faces. |
 | Surface semantics | Lavender satin means no active grip; muted cyan distinguishes transfer tubes; a thin flush mint ring identifies the final exit. Keep these separate from A/B circuit colours. |
 | Light and depth | Glass C lighting/background and baked reflection assets; one shadow-casting key, restrained fill. No per-mechanism realtime lights, realtime reflection capture or heavy screen-space effects. |
 | Animation | Read real contact, force and mechanism state. Keep control targets legible during movement; decorative motion never opens a gate or changes the navigation graph. |
+
+Circuit routing (14/10/2026): bake traces against fixed, connected physical faces using `COghePrintedCircuit`. Exclude moving carriers, inactive/docked navigation replicas and isolated button caps as paths to the enclosure; keep terminal footprints inside their support. Avoid apertures. Keep all routing in Editor code and audit saved scenes after changes. [Verification](../../Verification/COghePipeCircuits/README.md).
 
 Material assets and the Spatial art builder are the source for exact tuning;
 do not guess colours from screenshots. Presentation changes must pass the physics
@@ -85,6 +87,22 @@ and [native Unity verification](../../Verification/COgheProductUI/README.md).
   Play. It must not show a working purchase flow without the corresponding system.
 
 ## 1. Identity and hierarchy
+
+### App icon — approved C, 07/10/2026
+
+The user selected [option C](AppIcon/2026-10-07/coghe-icon-c.png): the glossy
+liquid creature in its playful monster expression, white eyes, small teeth and a
+short coral tongue, on the cream–mint laboratory background. This exception is
+for the launcher/brand artwork; it does not redesign the normal gameplay body.
+Keep the approved image intact, with no text or baked outer rounded border.
+
+The shipping source is `Assets/_Game/Branding/COghe-AppIcon.png`, outside
+`Resources`. `COgheAppIconBuilder.Apply` sets the default and Android legacy/round
+icon slots from that image; the Android builder applies it on every build.
+Use the complete image rather than a cropped two-layer adaptive reinterpretation.
+Android launchers choose their own mask; verify the installed result on hardware.
+
+### Creature and laboratory identity
 
 - A bright, warm, calm space research laboratory. The player guides a curious
   creature and builds a relationship with it. Keep equipment clean and readable.

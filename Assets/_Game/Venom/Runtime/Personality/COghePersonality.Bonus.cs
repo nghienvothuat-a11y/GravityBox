@@ -73,12 +73,13 @@ namespace GravityBox.Venom
         /// <summary>True once, as COghe starts its happy dance: the prize flies out of it into the Drops.</summary>
         public bool TakeBonusPrize() { bool due = prizeDue; prizeDue = false; return due; }
 
-        public void BeginBonus(COgheBonusRound[] rounds)
+        public void BeginBonus(COgheBonusRound[] rounds, int completedRounds = 0)
         {
             if (room == null || rounds == null || rounds.Length == 0) return;
             StopPlaying(); FinishReveals(); EndAct(); home = HomeState.Rest; game.Motion.StopAll();
-            bonusRounds = rounds; bonusRound = 0; heartsDue = confettiDue = prizeDue = false; joyDue = 0;
-            StartQuestion(); WalkToBonusSpot();
+            bonusRounds = rounds; bonusRound = Mathf.Clamp(completedRounds, 0, rounds.Length); heartsDue = confettiDue = prizeDue = false; joyDue = 0;
+            if (bonusRound == rounds.Length) { bonusRound--; NextBonusRound(); }
+            else { StartQuestion(); WalkToBonusSpot(); }
         }
 
         public void EndBonus()

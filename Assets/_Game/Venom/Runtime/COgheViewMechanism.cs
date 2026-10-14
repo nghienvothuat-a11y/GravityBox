@@ -8,6 +8,9 @@ namespace GravityBox.Venom
     {
         public COgheRailSlider Input, Output;
         public bool Reverse, FinalGate;
+        /// <summary>A powered vertical carriage offsets its own axial weight within the same force limit.
+        /// Passenger load is still physical; an end catch supports the docked bridge.</summary>
+        public bool Counterbalance;
         public VenomSurfacePatch Aperture;
         public Renderer Lamp;
         public Material Waiting, Ready;
@@ -21,7 +24,8 @@ namespace GravityBox.Venom
             float fraction=Input.AtEnd?1:Input.Position<=Input.CatchTolerance?0:Input.Fraction;
             float target=(Reverse?1-fraction:fraction)*Output.Travel;
             float speed=Vector3.Dot(Output.Body.linearVelocity,Output.WorldAxis);
-            Output.ApplyEffort(Output.WorldAxis*Mathf.Clamp((target-Output.Position)*5-speed*.7f,-.45f,.45f));
+            float support=Counterbalance&&Output.Gravity ? -Vector3.Dot(Vector3.down*9.81f*Output.Body.mass,Output.WorldAxis) : 0;
+            Output.ApplyEffort(Output.WorldAxis*Mathf.Clamp((target-Output.Position)*5-speed*.7f+support,-.45f,.45f));
             UpdateAperture(game,false);
         }
         private void UpdateAperture(VenomCampaign game,bool force)

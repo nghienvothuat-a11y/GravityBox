@@ -24,6 +24,9 @@ namespace GravityBox.Venom
             public int AdsForDropsToday, InterstitialsToday;
             public bool Migrated;
             public bool CommerceVisited;
+            public List<string> Understood = new List<string>();
+            // 0/1: choose a free ink; 2: hold on the body; 3: inspect the saved result; 4: finished.
+            public int InkGuideStep;
             public List<string> Retried = new List<string>();
         }
 
@@ -50,7 +53,7 @@ namespace GravityBox.Venom
                     catch (Exception e) { Debug.LogWarning("COghe shop save unreadable, starting fresh: " + e.Message); }
                 }
                 state.Owned ??= new List<string>(); state.Paid ??= new List<string>(); state.GiftDay ??= ""; state.AdDay ??= "";
-                state.Retried ??= new List<string>();
+                state.Retried ??= new List<string>(); state.Understood ??= new List<string>();
                 return state;
             }
         }
@@ -82,6 +85,11 @@ namespace GravityBox.Venom
             return amount;
         }
         public static bool Paid(string key) => Current.Paid.Contains(key);
+        public static bool Understood(string key) => Paid(key) || Current.Understood.Contains(key);
+        public static void Understand(string key)
+        { if (!Current.Understood.Contains(key)) { Current.Understood.Add(key); Save(); } }
+        public static void SetInkGuideStep(int step)
+        { if (Current.InkGuideStep != step) { Current.InkGuideStep = Mathf.Clamp(step, 0, 4); Save(); } }
 
         public static void VisitCommerce() { if (Current.CommerceVisited) return; Current.CommerceVisited = true; Save(); }
         public static void NoteRetry(string levelId) { if (Current.Retried.Contains(levelId)) return; Current.Retried.Add(levelId); Save(); }

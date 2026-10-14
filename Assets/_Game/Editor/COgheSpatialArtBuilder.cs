@@ -13,6 +13,7 @@ namespace GravityBox.Editor
  public static partial class COgheDayLabBuilder
  {
   private const string SpatialCircuitRoot="Spatial circuit artwork";
+  private static COghePrintedCircuit printedCircuit;
 
   [MenuItem("Gravity Box/COghe/Spatial pilot/Refine circuits and verify physics")]
   public static void RebuildSpatialCircuits()
@@ -90,6 +91,7 @@ namespace GravityBox.Editor
   {
    var owner=game.Owner!=null?game.Owner:game.GetComponent<VenomLevelController>();
    var root=owner.Rotation.transform;
+   printedCircuit=new COghePrintedCircuit(root);
    meshDirectory=$"Meshes/SpatialCircuit/{SpatialArtKey(game)}";serial=0;
    Directory.CreateDirectory(Folder+"/"+meshDirectory);AssetDatabase.Refresh();
    // Load approved shared assets without reinitializing unrelated materials.
@@ -133,12 +135,14 @@ namespace GravityBox.Editor
       // floating above/below the carriage. Wall controls use the rear-glass plane.
       bool wall=Mathf.Abs(task.WorkingSurface.Normal.y)<.5f;
       float sign=r.transform.localPosition.y>task.Rail.Start.y?1:-1;
-      Vector3 p=task.Rail.Start+task.Rail.Axis*task.Rail.Travel*.5f;
+      Vector3 p=root.InverseTransformPoint(task.Rail.Frame.TransformPoint(task.Rail.Start+task.Rail.Axis*task.Rail.Travel*.5f));
       if(wall){p.z=.293f;p.y+=sign*.022f;}
       else {p.y=root.InverseTransformPoint(task.WorkingSurface.transform.position).y+.0015f;p.z+=sign*.030f;}
       mount.localPosition=p;
      }
-     Box(mount,"Recessed guide",Vector3.zero,size,.001f,railMat);
+     var half=mount.up*size.y*.5f;
+     printedCircuit.Draw(art,new[]{art.InverseTransformPoint(mount.position-half),art.InverseTransformPoint(mount.position+half)},railMat,"Printed guide");
+     Object.DestroyImmediate(mount.gameObject);
     }
     if(r.name=="Pulley bearing support")r.sharedMaterial=railMat;
    }
@@ -175,10 +179,13 @@ namespace GravityBox.Editor
     // Small fixed contact pads at each end. The travel itself stays quiet satin metal.
     foreach(float end in new[]{0f,task.Rail.Travel})
     {
-     Vector3 p=task.Rail.Start+task.Rail.Axis*end;
-     p+=wall?new Vector3(0,0,.024f):new Vector3(0,-.020f,0);
-     Box(art,"Terminal base",p,wall?new Vector3(.028f,.033f,.002f):new Vector3(.030f,.002f,.040f),.0008f,shell);
-     Disk(art,"Terminal contact",p+(wall?Vector3.back:Vector3.up)*.0013f,wall?Vector3.back:Vector3.up,.0035f,.0005f,color.trace);
+     Vector3 p=root.InverseTransformPoint(task.Rail.Frame.TransformPoint(task.Rail.Start+task.Rail.Axis*end));
+     var anchor=printedCircuit.Anchor(task.WorkingSurface.Closest(root.TransformPoint(p)),.022f,true);
+     p=root.InverseTransformPoint(anchor.point+anchor.face.N*.001f);
+     Vector3 normal=root.InverseTransformDirection(anchor.face.N);
+     var pad=Child(art,"Terminal mount");pad.localPosition=p;pad.rotation=Quaternion.LookRotation(anchor.face.N,anchor.face.Y);
+     Box(pad,"Terminal base",Vector3.zero,new Vector3(.030f,.040f,.002f),.0008f,shell);
+     Disk(art,"Terminal contact",p+normal*.0013f,normal,.0035f,.0005f,color.trace);
     }
     CombineByMaterial(trim);
    }
@@ -189,8 +196,8 @@ namespace GravityBox.Editor
     // Chapter 1 draws the trace to a box or its clip itself (VenomCampaignBuilder.ChapterOneFinish).
     if(VenomCampaignBuilder.ChapterOneOwnTrace(link.Output))continue;
     var colour=Colour(task!=null?task.Label:Driver(link.Output));
-    Vector3 from=link.Input.Start+link.Input.Axis*link.Input.Travel;
-    Vector3 to=link.Output.Start+new Vector3(-.055f,-.045f,0);
+    Vector3 from=root.InverseTransformPoint(link.Input.Frame.TransformPoint(link.Input.Start+link.Input.Axis*link.Input.Travel));
+    Vector3 to=root.InverseTransformPoint(link.Output.Frame.TransformPoint(link.Output.Start+new Vector3(-.055f,-.045f,0)));
     // Printed on fixed receiving surfaces: floor -> rear glass, wall -> rear glass,
     // or the top of the raised plinth -> rear glass. No floating diagonal shaft.
     if(task!=null&&task.WorkingSurface.Normal.y>.5f)
@@ -284,32 +291,14 @@ namespace GravityBox.Editor
   }
   private static void SpatialPort(Transform parent,Vector3 p,Vector3 normal,Material color,Material backing)
   {
+   var anchor=printedCircuit.Anchor(parent.TransformPoint(p),.009f,true);
+   p=parent.InverseTransformPoint(anchor.point+anchor.face.N*.001f);normal=parent.InverseTransformDirection(anchor.face.N);
    Disk(parent,"Receiver surround",p,normal,.008f,.001f,backing);
    Disk(parent,"Receiver contact",p+normal*.0006f,normal,.004f,.0005f,color);
   }
   private static void SpatialTrace(Transform parent,Vector3[] points,Material mat)
   {
-   // Two millimetre printed tracks. Chamfer planar elbows, keep surface-fold corners
-   // sharp so the conductor stays on the glass/floor instead of cutting across space.
-   var path=new System.Collections.Generic.List<Vector3>{points[0]};
-   for(int i=1;i<points.Length-1;i++)
-   {
-    var a=(points[i-1]-points[i]).normalized;var b=(points[i+1]-points[i]).normalized;
-    bool samePlane=(Mathf.Abs(points[i-1].y-points[i].y)<.0001f&&Mathf.Abs(points[i+1].y-points[i].y)<.0001f)||
-      (Mathf.Abs(points[i-1].z-points[i].z)<.0001f&&Mathf.Abs(points[i+1].z-points[i].z)<.0001f);
-    float bevel=Mathf.Min(.010f,Mathf.Min(Vector3.Distance(points[i-1],points[i]),Vector3.Distance(points[i+1],points[i]))*.25f);
-    if(samePlane){path.Add(points[i]+a*bevel);path.Add(points[i]+b*bevel);}else path.Add(points[i]);
-   }
-   path.Add(points[points.Length-1]);
-   for(int i=1;i<path.Count;i++)
-   {
-    var d=path[i]-path[i-1];if(d.sqrMagnitude<.0000001f)continue;
-    var go=GameObject.CreatePrimitive(PrimitiveType.Cube);go.name="Printed conductor";go.transform.SetParent(parent,false);
-    go.transform.localPosition=(path[i]+path[i-1])*.5f;
-    Vector3 normal=Mathf.Abs(d.y)<.0001f&&Mathf.Abs(path[i].z-.298f)>.0001f?Vector3.up:Vector3.back;
-    go.transform.localRotation=Quaternion.LookRotation(d,normal);go.transform.localScale=new Vector3(.003f,.0005f,d.magnitude+.0002f);
-    Object.DestroyImmediate(go.GetComponent<Collider>());go.GetComponent<Renderer>().sharedMaterial=mat;
-   }
+   printedCircuit.Draw(parent,points,mat);
   }
  }
 }

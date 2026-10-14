@@ -39,9 +39,15 @@ namespace GravityBox.Venom.ChapterProof
    if(n==10)
    {
     yield return Ride("Up to the balcony");yield return Operate("C");
+    yield return Ride("Return for the newly unlocked bridge control");yield return Operate("B");
+    var span=Array.Find(game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>(),r=>r.name=="B rising bridge");
+    yield return until(20,()=>span.AtEnd,"The bridge physically docks between the balconies");
+    yield return Ride("Return upstairs with the bridge docked");
+    yield return Go(new Vector3(.177f,.04f,.23f),"Cross the raised span");
     // D is hidden behind the balcony screen from the first view: look from behind to reach it.
     if(orbit!=null)yield return orbit(-144);else game.CameraRig.Orbit(432,720);
     yield return Operate("D");game.CameraRig.Overview();
+    yield return Go(new Vector3(.177f,.04f,.23f),"Return across the span");
     yield return Ride("Back down");yield return Operate("A");
    }
    yield return until(10,()=>game.FinalExitAvailable,"Exit unlocked physically");yield return tap(game.Owner.Outlet.position);yield return until(40,()=>game.Owner.Completed,"All tissue through final exit");

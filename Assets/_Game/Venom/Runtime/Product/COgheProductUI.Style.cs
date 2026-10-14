@@ -23,7 +23,7 @@ namespace GravityBox.Venom
         private COgheSyringe syringe;
         private Text styleCaption, styleStatus, styleDetail;
         private RectTransform styleMix;
-        private CanvasGroup styleUndoGroup, styleRinseGroup;
+        private CanvasGroup styleUndoGroup, styleRinseGroup, styleDoneGroup;
         private float styleStageTop = 84, styleStageBottom = 300, styleScroll = 1;
         // the hold: where it went in (a particle and an offset, so it rides the body), for how long, and the look before it
         private bool injecting, onBody, holdChanged, holdTouch;
@@ -81,6 +81,7 @@ namespace GravityBox.Venom
         public void OpenStyle()
         {
             if (Page != COgheProductPage.Home) return;
+            styleFromMenu = inkGuide = false;
             Page = COgheProductPage.Style; Popup = COgheProductPopup.None; styleOpen = true;
             styleTab = styleSub = 0; styleReplaceSlot = -1; stylePending = null; styleUndo.Clear(); styleScroll = 1;
             var chosen = COgheInks.Find(styleInk); if (chosen == null || !Earned(chosen.Level) || !COgheShop.Owns(styleInk)) styleInk = COgheInks.Catalog[0].Id;
@@ -96,7 +97,9 @@ namespace GravityBox.Venom
             if (Page != COgheProductPage.Style) return;
             if (styleStage != null) styleStage.Release();
             if (!LookOwned()) { ShowStylePopup(COgheProductPopup.StyleTryOn); return; }   // keep it (buy) or take it off
-            CloseStyle();
+            bool toMenu = styleFromMenu || !Game.Progress.HomeUnlocked;
+            inkGuide = false; CloseStyle();
+            if (toMenu) { ShowMenu(); return; }
             Page = COgheProductPage.Home; Popup = COgheProductPopup.None;
             if (styleSize > 0) { homeFocus = styleFocus; homeSize = styleSize; homeEase = 1.2f; }   // the room camera eases back
             Rebuild();
@@ -189,6 +192,7 @@ namespace GravityBox.Venom
         public bool BeginStyleHold(Vector2 screen, bool touch)
         {
             if (Page != COgheProductPage.Style || Popup != COgheProductPopup.None || styleTab != 0 || injecting) return false;
+            if (inkGuide && COgheShop.Current.InkGuideStep < 2) { Notify("Tap the Ocean syringe first."); return false; }
             if (!Pick(screen, touch)) return false;
             { var washing = Inking; if (washing != null) washing.FinishRinse(); }
             if (styleReplaceSlot < 0 && !HasRoomFor(styleInk)) { stylePending = styleInk; ShowStylePopup(COgheProductPopup.StyleReplaceInk); return false; }
@@ -216,6 +220,7 @@ namespace GravityBox.Venom
                 for (int s = 0; s < COgheInking.Slots; s++) if (beforeHold.Inks[s] != MixInks()[s]) styleDirty = true;
                 COgheAudio.Instance?.Play("creature_happy", .35f, 0, .3f);
             }
+            if (inkGuide && holdChanged && held >= .6f) { SaveLook(); COgheShop.SetInkGuideStep(3); }
             beforeHold = null; RefreshStyle();
         }
 
@@ -255,7 +260,7 @@ namespace GravityBox.Venom
                 if (styleStage != null) styleStage.Release();
                 stylePending = styleInk; ShowStylePopup(COgheProductPopup.StyleReplaceInk); return;
             }
-            held += dt; holdChanged = true;
+            held += dt; holdChanged = true; RefreshInkGuide();
             if (!known) BuildMix();   // a new colour joined the mix
             slideClock += dt; if (slideClock > .3f) { slideClock = 0; COgheAudio.Instance?.Play("creature_slide", .18f, 0, .2f); }
         }
@@ -288,6 +293,7 @@ namespace GravityBox.Venom
         // Choosing ----------------------------------------------------------------------------------------------------------
         public void SetStyleTab(int tab, int sub)
         {
+            if (inkGuide && tab != 0) { Notify("Finish your first color before trying accessories."); return; }
             if (tab != styleTab || sub != styleSub) styleScroll = 1;
             if (tab != styleTab) styleReplaceSlot = -1;   // a waiting replacement is for this hold only
             styleTab = tab; styleSub = sub; Rebuild();
@@ -297,6 +303,7 @@ namespace GravityBox.Venom
         public void ChooseStyleItem(string id)
         {
             if (injecting) return;
+            if (inkGuide && COgheShop.Current.InkGuideStep < 3 && id != "INK_OCEAN") { Notify("Choose the free Ocean syringe for this lesson."); return; }
             var ink = COgheInks.Find(id);
             if (ink != null)
             {
@@ -305,6 +312,7 @@ namespace GravityBox.Venom
                 if (styleInk != id) styleReplaceSlot = -1;
                 { var washing = Inking; if (washing != null) washing.FinishRinse(); }
                 styleInk = id;   // choosing a syringe does not change COghe
+                if (inkGuide && COgheShop.Current.InkGuideStep < 2) COgheShop.SetInkGuideStep(2);
                 if (styleReplaceSlot < 0 && !HasRoomFor(id)) { stylePending = id; ShowStylePopup(COgheProductPopup.StyleReplaceInk); return; }
                 Rebuild(); return;
             }
@@ -392,8 +400,8 @@ namespace GravityBox.Venom
             float aw = (width - 64) / 3, ay = height - 76;
             styleUndoGroup = StyleAction(new Rect(24, ay, aw, 52), COgheIcon.Restart, "Undo", StyleUndo, false);
             styleRinseGroup = StyleAction(new Rect(32 + aw, ay, aw, 52), COgheIcon.Sparkles, "Rinse", () => ShowStylePopup(COgheProductPopup.StyleRinse), false);
-            StyleAction(new Rect(40 + 2 * aw, ay, aw, 52), COgheIcon.Check, "Done", LeaveStyle, true);
-            RefreshStyle();
+            styleDoneGroup = StyleAction(new Rect(40 + 2 * aw, ay, aw, 52), COgheIcon.Check, "Done", FinishInkGuide, true);
+            InkGuideView(); RefreshStyle();
         }
 
         /// <summary>The words and buttons that change while holding (never the whole screen: the catalog stays put).</summary>
@@ -419,9 +427,10 @@ namespace GravityBox.Venom
                 caption = s.Inside.Count == 0 ? "They float inside COghe." : clarity >= NeedsClarity ? "Your decorations are ready." : "Clear ink makes these visible.";
             }
             pageRoot.Find("Style panel/Selected").GetComponent<Text>().text = title;
-            styleDetail.text = detail; styleCaption.text = caption;
+            styleDetail.text = detail; styleCaption.text = caption; RefreshInkGuide();
             SetEnabled(styleUndoGroup, styleUndo.Count > 0 && !injecting);
             SetEnabled(styleRinseGroup, HasColors && !injecting);
+            SetEnabled(styleDoneGroup, !injecting && (!inkGuide || COgheShop.Current.InkGuideStep >= 3));
         }
         private static void SetEnabled(CanvasGroup g, bool on) { if (g == null) return; g.alpha = on ? 1 : .45f; g.interactable = on; }
 
@@ -463,7 +472,10 @@ namespace GravityBox.Venom
                 if (styleTab == 0)
                 {
                     var ink = COgheInks.Catalog[i]; bool mixed = System.Array.IndexOf(MixInks(), ink.Id) >= 0;
-                    StyleCard(content, cardRect, ink.Id, ink.Name, Earned(ink.Level), ink.Level, styleInk == ink.Id, styleInk == ink.Id ? "Selected" : mixed ? "In mix" : null, COgheShop.Owns(ink.Id));
+                    bool choosing = inkGuide && COgheShop.Current.InkGuideStep < 2;
+                    bool selected = styleInk == ink.Id && !choosing;
+                    string state = choosing && ink.Id == "INK_OCEAN" ? "Free · Tap" : selected ? "Selected" : mixed ? "In mix" : null;
+                    StyleCard(content, cardRect, ink.Id, ink.Name, Earned(ink.Level), ink.Level, selected, state, COgheShop.Owns(ink.Id));
                 }
                 else if (styleSub == 0 && i == 0) StyleCard(content, cardRect, "", "None", true, 0, s.Hat == "", "Remove hat");
                 else

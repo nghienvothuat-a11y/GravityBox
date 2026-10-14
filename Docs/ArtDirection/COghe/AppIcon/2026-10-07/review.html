@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COghe · App icon A / B / C</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#2c4650;background:#f6f4ec}
+*{box-sizing:border-box}body{margin:0;padding:36px max(20px,calc((100vw - 1150px)/2))}
+header{margin-bottom:26px}h1{font-size:32px;margin:0 0 8px}p{line-height:1.6;margin:8px 0;color:#557079}
+small{font-size:13px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+article{background:#fffdf7;border:1px solid #dde4df;border-radius:24px;padding:24px}
+h2{font-size:22px;margin:0 0 8px}.hero{width:100%;display:block;aspect-ratio:1;border-radius:0}
+.controls{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:22px 0}
+button{background:#fffdf7;border:1px solid #bccbc5;border-radius:12px;padding:10px 16px;color:#2c4650;font:inherit;cursor:pointer}
+button[aria-pressed=true]{background:#37786d;color:white}
+.thumbs{display:flex;align-items:end;justify-content:center;gap:20px;padding:24px 8px;background:#e8efeb;border-radius:16px;margin-top:20px}
+figure{margin:0;text-align:center}figcaption{font-size:12px;margin-top:8px;color:#63777a}
+.thumb{display:block;margin:auto;object-fit:cover}a{color:#286d66}.note{margin:24px 0}
+body[data-mask=rounded] .art{border-radius:22%}body[data-mask=circle] .art{border-radius:50%}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.thumbs{gap:16px}body{padding:24px 16px}}
+</style>
+<body data-mask="rounded">
+<header><small>COghe / APP ICON STUDY / 07.10.2026</small><h1>Một sinh vật. Ba cách gây tò mò.</h1>
+<p>Đã duyệt phương án C và áp dụng làm app icon. Giữ COghe đen bóng, cơ thể chất lỏng, xúc tu và palette kem–mint. C thử thêm diện mạo quái vật tinh nghịch theo yêu cầu của tác giả.</p></header>
+<div class="controls" aria-label="Kiểu hiển thị icon"><span>Xem khung:</span>
+<button data-mask="square" aria-pressed="false">Vuông gốc</button>
+<button data-mask="rounded" aria-pressed="true">Bo góc</button>
+<button data-mask="circle" aria-pressed="false">Tròn</button></div>
+<main class="grid">
+<article><h2>A · COghe tò mò</h2><p>Tập trung nhận diện sinh vật: gần gũi, rõ silhouette, ít chi tiết.</p>
+<a href="coghe-icon-a.png"><img class="hero art" src="coghe-icon-a.png" alt="Icon A — COghe tò mò"></a>
+<div class="thumbs">
+<figure><img class="thumb art" src="coghe-icon-a.png" width="48" height="48" alt="A 48px"><figcaption>48 px</figcaption></figure>
+<figure><img class="thumb art" src="coghe-icon-a.png" width="64" height="64" alt="A 64px"><figcaption>64 px</figcaption></figure>
+<figure><img class="thumb art" src="coghe-icon-a.png" width="96" height="96" alt="A 96px"><figcaption>96 px</figcaption></figure></div>
+<p><a href="coghe-icon-a.png" download>Tải PNG A</a></p></article>
+<article><h2>B · Chui ra khỏi kính</h2><p>Tập trung ý tưởng gameplay: chất lỏng biến dạng, tìm đường thoát qua lỗ.</p>
+<a href="coghe-icon-b.png"><img class="hero art" src="coghe-icon-b.png" alt="Icon B — COghe thoát qua lỗ kính"></a>
+<div class="thumbs">
+<figure><img class="thumb art" src="coghe-icon-b.png" width="48" height="48" alt="B 48px"><figcaption>48 px</figcaption></figure>
+<figure><img class="thumb art" src="coghe-icon-b.png" width="64" height="64" alt="B 64px"><figcaption>64 px</figcaption></figure>
+<figure><img class="thumb art" src="coghe-icon-b.png" width="96" height="96" alt="B 96px"><figcaption>96 px</figcaption></figure></div>
+<p><a href="coghe-icon-b.png" download>Tải PNG B</a></p></article><article><h2>C · Quái vật tinh nghịch — Đã chọn</h2><p>Gợi nhớ chất lỏng symbiote: mắt trắng xếch, nụ cười có răng và lưỡi ngắn. Giữ thân COghe mềm và bối cảnh sáng.</p>
+<a href="coghe-icon-c.png"><img class="hero art" src="coghe-icon-c.png" alt="Icon C — COghe quái vật tinh nghịch"></a>
+<div class="thumbs">
+<figure><img class="thumb art" src="coghe-icon-c.png" width="48" height="48" alt="C 48px"><figcaption>48 px</figcaption></figure>
+<figure><img class="thumb art" src="coghe-icon-c.png" width="64" height="64" alt="C 64px"><figcaption>64 px</figcaption></figure>
+<figure><img class="thumb art" src="coghe-icon-c.png" width="96" height="96" alt="C 96px"><figcaption>96 px</figcaption></figure></div>
+<p><a href="coghe-icon-c.png" download>Tải PNG C</a> · <a href="prompt-c.json">Prompt C</a></p></article></main>
+<p class="note">Ảnh gốc vuông, nền kín, không chữ. Khung bo/tròn chỉ là mô phỏng bằng CSS để đánh giá độ rõ khi thu nhỏ.
+C đã được áp dụng vào Unity và APK Android. Hiệu quả tăng lượt cài cần kiểm chứng bằng A/B test.</p>
+<p><small>Tạo bằng image_gen tích hợp · <a href="prompts.json">Prompt của hai phương án</a></small></p>
+<script>document.querySelectorAll('button[data-mask]').forEach(button=>button.addEventListener('click',()=>{
+document.body.dataset.mask=button.dataset.mask;
+document.querySelectorAll('button[data-mask]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+}));</script></body></html>

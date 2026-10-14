@@ -115,14 +115,9 @@ namespace GravityBox.Editor
     foreach(var r in q.GetComponentsInChildren<Renderer>(true))if(r.name.Contains("casing")||r.name.Contains("housing"))r.sharedMaterial=pearl;
    foreach(var p in c.Surfaces)if(p.name.StartsWith("Q casing")||p.name.StartsWith("Q rear housing"))p.GetComponent<Renderer>().sharedMaterial=pearl;
    var art=new GameObject("Spatial next printed traces").transform;art.SetParent(c.Root,false);
+   var traceRouter=new COghePrintedCircuit(c.Root);
    foreach(var (label,points) in nextTraces)
-    for(int i=1;i<points.Length;i++)
-    {
-     Vector3 a=points[i-1],b=points[i],d=b-a;if(d.magnitude<.001f)continue;
-     var strip=MechanismVisual(art,"Printed conductor "+label,(a+b)*.5f,new Vector3(.003f,.0008f,d.magnitude+.003f),COgheDayLabBuilder.Circuit(c.Game,label).trace);
-     strip.localRotation=Quaternion.LookRotation(d,Mathf.Abs(d.normalized.y)>.9f?Vector3.forward:Vector3.up);
-     strip.GetComponent<Renderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
-    }
+    traceRouter.Draw(art,points,COgheDayLabBuilder.Circuit(c.Game,label).trace,"Printed conductor "+label);
    nextTraces.Clear();
    // Crate levels: the red crate (it hides the exit) is coral; both handles of a crate share a colour.
    foreach(var task in c.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())

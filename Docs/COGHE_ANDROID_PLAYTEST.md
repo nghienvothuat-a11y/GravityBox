@@ -1,17 +1,20 @@
 # COghe — bản Android trên thiết bị thật
 
-## NewGraphic — Spatial 50 màn (30/09/2026)
+## NewGraphic — Spatial 60 màn (07/10/2026)
 
 ```sh
 bash Tools/build-venom-android.sh --spatial
 ```
 
-Unity: **Gravity Box → COghe → Spatial pilot → Build Android test APK · 50 levels**.
-Đóng gói theo `SpatialOrder`: 30 scene `COgheSpatial01`…`30` xen 20 Spatial Plus,
-đủ 50 vị trí chơi; thiếu scene thì dừng build. [Thứ tự](LevelDesign/COghe/SpatialPlus20/PLACEMENT.md).
+Unity: **Gravity Box → COghe → Spatial pilot → Build Android test APK · 60 levels**.
+Đóng gói theo `VenomCampaignBuilder.SpatialOrder`: 60 màn trong năm chương,
+mỗi chương 12 màn, gồm các màn Spatial, Spatial Plus và K01–K10. Thứ tự hiện hành
+ở `Assets/_Game/Editor/COgheSpatialCampaignBuilder.cs`; thiếu scene thì dừng build.
 APK: `Builds/SpatialLab/Android/COghe-Spatial.apk`. App **COghe**, package
 `com.gravityboxlab.venom`; ARM64, IL2CPP Release, portrait, ký debug local để test.
-Hộp đứng yên, chạm giao việc, kéo đổi góc camera; chọn nhóm 01–10 / 11–20 / 21–30 / 31–40 / 41–50.
+Hộp đứng yên, chạm giao việc, kéo đổi góc camera; Product chơi lần lượt từ Play.
+Bản test có công cụ chọn màn trong Pause; `COGHE_STORE=1` loại công cụ này khỏi build.
+Icon ứng dụng dùng phương án C đã duyệt, được áp dụng tự động trước khi build.
 Menu/script không có `--spatial` vẫn dùng catalog cũ, không phải bộ Spatial.
 
 Cài bằng `adb install -r Builds/SpatialLab/Android/COghe-Spatial.apk`, rồi mở app
@@ -19,6 +22,19 @@ như lệnh bên dưới. Không cần gỡ app hay xoá dữ liệu. Build thà
 APK được tạo; cần kiểm tra trên thiết bị để kết luận input, gameplay hoặc FPS.
 
 ## Hướng dẫn và lịch sử catalog cũ
+
+### Xác minh icon C trên OPPO — 07/10/2026
+
+Build Spatial 60 thành công bằng Unity 6000.3.19f1, IL2CPP ARM64 Release. APK có
+60 scene, chữ ký kiểm tra hợp lệ và đủ sáu kích thước launcher icon. Ảnh nguồn
+giữ nguyên phương án C đã duyệt; Android exporter thu nhỏ thành PNG cho thiết bị.
+Cài thành công trên OPPO CPH2591 / Android 15, xác nhận icon mới trong trình cài
+đặt và Main Menu có sinh vật 3D chuyển động. Không thấy Unity/AndroidRuntime error
+trong mẫu log khởi động; chưa chạy lại toàn bộ campaign hoặc benchmark FPS.
+
+Bằng chứng cục bộ: `Artifacts/COgheAndroid/icon-c-build-record.json`,
+`icon-c-from-apk.png` và `unity-build.log`. APK 53,810,499 byte (51.3 MiB),
+SHA-256 `0ea99e52e2125bbd701d15f808fe4eeb3c911315b03ba8f8763eda7f80a1a3a4`.
 
 Build đúng hai mươi scene `VenomOrigin01`…`VenomOrigin20` bằng Unity 6000.3.19f1:
 

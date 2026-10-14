@@ -23,11 +23,11 @@ namespace GravityBox.Venom
     }
 
     /// <summary>
-    /// The bonus "Hiểu ra" (Mrk 07/10/2026): after each chapter's boss, a skippable round in Home where COghe "speaks" only in
+    /// The bonus "Hiểu ra" (Mrk 07/10/2026): after each chapter's boss, a required chapter interlude in Home where COghe "speaks" only in
     /// simple body shapes and the player answers by doing what it asks. Each right answer pays at once, with COghe's joy, and
     /// more each question; understanding the whole bonus pays the most, after COghe's thank-you. A wrong answer only gets a
-    /// gentle shake. Nothing here touches the puzzles: the bonus lives in Home and is optional (Skip goes on to the next
-    /// chapter; a skipped bonus waits in Home).
+    /// gentle shake. The interlude lives in Home. Its answers are required before the next chapter; leaving returns to the menu
+    /// and completed questions resume without paying twice. Existing completed chapters and purchases are preserved.
     /// The answers only use what every player has (a touch, Feed, the gift ball), so no bonus depends on what was bought; the
     /// chapters grow by putting words together: one word, two in any order, an order, a number, all of them, and (the sixth
     /// chapter, Mrk 12/10/2026) a number on most words.
@@ -60,8 +60,14 @@ namespace GravityBox.Venom
         /// <summary>The questions of chapter <paramref name="chapter"/>'s bonus (1-based), or null if it has none.</summary>
         public static COgheBonusRound[] Rounds(int chapter) => chapter >= 1 && chapter <= Chapters.Length ? Chapters[chapter - 1] : null;
         public static string Key(int chapter) => "bonus:" + chapter;
-        /// <summary>Done once its reward is paid (the shop records paid keys, so it pays once).</summary>
-        public static bool Done(int chapter) => COgheShop.Paid(Key(chapter));
+        /// <summary>Completion checkpoint; legacy paid rewards also count as completed.</summary>
+        public static bool Done(int chapter) => COgheShop.Understood(Key(chapter));
+        public static int CompletedRounds(int chapter)
+        {
+            int count = 0; var rounds = Rounds(chapter);
+            while (rounds != null && count < rounds.Length && COgheShop.Understood(RoundKey(chapter, count + 1))) count++;
+            return count;
+        }
         /// <summary>The prize for understanding every question: the largest.</summary>
         public static int Reward => COgheEconomy.BonusDrops * COgheEntitlements.DropsMultiplier;
         /// <summary>Paid the moment question <paramref name="round"/> (1-based) is understood, growing question by question (10, 20, 30).</summary>
@@ -84,7 +90,7 @@ namespace GravityBox.Venom
             return chapter > 0 && Rounds(chapter) != null && !Done(chapter) ? chapter : 0;
         }
 
-        /// <summary>The earliest bonus whose boss is beaten but which is not done (skipped earlier), or 0.</summary>
+        /// <summary>The earliest bonus whose boss is beaten but which is not done (including unfinished interludes from older saves), or 0.</summary>
         public static int Waiting(COgheProductCatalog catalog, VenomCampaignSave save)
         {
             if (catalog == null || save == null) return 0;
