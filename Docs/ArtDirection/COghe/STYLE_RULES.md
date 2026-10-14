@@ -39,6 +39,20 @@ The original Day Lab visual reference is the Unity level 07 shipped at commit `8
 [runtime images](Runtime/README.md). The Day Lab concept is supporting inspiration;
 its photographic lighting and proportions are not a requirement to change gameplay.
 
+## Bare glass and coatings — 14/10/2026
+
+All bare glass in the current Spatial campaign is climbable, including the roof.
+The approved slick appearance remains option E's pastel hologram (`COghe/Slick`),
+not the older flat lavender. Only its visible footprint releases adhesion. The
+same authored `SlipRegions` drive grip and the coating mesh; presentation must
+not invent decorative bands over physically different regions. Keep the middle
+of an uncoated pane clear, and never hide a no-grip flag behind clear glass.
+Opening levels 1–6 have no floor perimeter tape or extra ivory grip boards; their
+exits are in glass walls. Level 7's wall control sits on bare glass with visible
+coating separating the departure and receiving sides of the pulley bridge.
+This supersedes the 09/10 non-climbable glass proposal. Existing mechanism colours,
+circuits, glass lighting, number plaque and creature design remain approved.
+
 ## Product interface — approved 30/09/2026
 
 Applies to the Spatial 50 product flow. See the [approved mockups](ProductUI/review.html)

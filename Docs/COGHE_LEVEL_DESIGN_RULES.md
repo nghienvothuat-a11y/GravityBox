@@ -25,6 +25,17 @@ STYLE_RULES. [Bàn giao và ràng buộc Spatial](LevelDesign/COghe/SpatialNext2
 phân biệt phần đã có, phần phải triển khai và tiêu chí nghiệm thu. Catalog lịch sử
 giữ nguyên; luật tách Q mới không tự biến các scene dao cũ thành scene Q.
 
+**Cập nhật 14/10/2026 — luật kính hiện hành (65 màn Spatial):** kính để trần luôn
+bám được, kể cả tường và nóc. Chỉ vùng có lớp vật liệu trơn hiển thị mới mất bám;
+COghe rơi/trượt theo trọng lực, không có lực bò trên vùng đó. Thay thế “kính không
+bám được” của phương án A ngày 09/10. `SlipRegions` là dữ liệu vùng phủ thực,
+hình lớp phủ phải khớp dữ liệu, không dùng một dải trang trí để đại diện cả tấm kính.
+Màn hiển thị 1–6 có lỗ trên tường kính, không có dải trơn quanh sàn hoặc tấm bám phụ.
+Màn 7 đặt công tắc trực tiếp trên kính và dùng lớp trơn ngăn bò vòng qua cầu ròng rọc.
+Các màn sau giữ cơ quan/chuỗi giải, đặt lớp phủ tại đường tắt cần ngăn và kiểm tra lại
+lời giải cùng khả năng phục hồi. Mã content khác số màn: 6 = K01, 7 = 06.
+Xem [hồ sơ thay đổi và kiểm chứng](Verification/COgheGlassRule/README.md).
+
 1. **Giải đố thuần, cảm giác chill.** Không phân điểm chỉ số, không dùng đồ mua ở
    Nhà để tăng lực, tốc độ, sức bám hoặc mở khả năng giải màn. Khối lượng phân chia
    trong một màn là tài nguyên vật lý của puzzle, không phải nâng cấp lâu dài.

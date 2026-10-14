@@ -76,7 +76,7 @@ namespace GravityBox.Venom
             if(glassCheckedFor!=game.Surfaces)
             {
                 glassCheckedFor=game.Surfaces;climbableGlass=false;
-                if(game.Surfaces!=null)foreach(var s in game.Surfaces)if(s!=null&&s.SlipRegions!=null&&s.SlipRegions.Length>0){climbableGlass=true;break;}
+                if(game.Surfaces!=null)foreach(var s in game.Surfaces)if(s!=null&&s.ExteriorGlass&&!s.Slippery){climbableGlass=true;break;}
             }
             return climbableGlass;
         }

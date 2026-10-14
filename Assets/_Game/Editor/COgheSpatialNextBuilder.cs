@@ -90,6 +90,7 @@ namespace GravityBox.Editor
    foreach(var rail in owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())if(rail.name.Contains("shutter"))foreach(var r in rail.GetComponentsInChildren<Renderer>())r.sharedMaterial=rail.name.StartsWith("B")?coral:blue;
    COgheDayLabBuilder.DecorateSpatialMechanisms(game,blue,coral,ivory);
    NextSpatialArt(c,blue,coral,ivory);
+   COgheGlassRuleAuthoring.Configure(n.ToString("00"),game);
    COgheSoftEdges.Apply(n.ToString("00"),game);   // slick tape at the foot of the glass, rounded blocks (Mrk 10–11/10/2026)
    EditorUtility.SetDirty(def);EditorSceneManager.SaveScene(scene,SpatialContentPath(n));
   }
@@ -385,24 +386,24 @@ namespace GravityBox.Editor
   {
    c.Exit=new Vector3(0,-.172f,.30f);c.Spawn=new Vector3(-.10f,-.25f,-.262f);c.Definition.CameraEuler=new Vector3(44,20,0);NextShell(c,.10f,true);var floor=c.Surfaces[0];
    var q=NextQuantum(c,new Vector3(-.10f,-.30f,-.18f));
-   // Platform 6 cm high (slick) with a drawer slot at floor level for the step bridge.
-   Panel(c.Root,"Exit platform",new Vector3(0,-.24f,.205f),Vector3.up,new Vector2(.26f,.17f),stone,false,Vector2.zero,0,c.Surfaces);
-   foreach(float x in new[]{-1f,1f})Panel(c.Root,"Exit platform",new Vector3(x*.13f,-.27f,.205f),Vector3.right*x,new Vector2(.17f,.06f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
-   Panel(c.Root,"Exit platform",new Vector3(0,-.27f,.29f),Vector3.forward,new Vector2(.26f,.06f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
-   Panel(c.Root,"Exit platform lintel",new Vector3(0,-.253f,.12f),Vector3.back,new Vector2(.26f,.026f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
-   foreach(float x in new[]{-1f,1f})Panel(c.Root,"Exit platform cheek",new Vector3(x*.1175f,-.283f,.12f),Vector3.back,new Vector2(.025f,.034f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
-   var bridge=ExpansionRail(c,"Step bridge",new Vector3(0,-.2845f,.19f),Vector3.back,.10f,0,new Vector3(.20f,.029f,.10f),.03f,.004f,false,false);
+   // Platform 8 cm high (slick) with a drawer slot at floor level for the step bridge.
+   Panel(c.Root,"Exit platform",new Vector3(0,-.22f,.205f),Vector3.up,new Vector2(.26f,.17f),stone,false,Vector2.zero,0,c.Surfaces);
+   foreach(float x in new[]{-1f,1f})Panel(c.Root,"Exit platform",new Vector3(x*.13f,-.26f,.205f),Vector3.right*x,new Vector2(.17f,.08f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
+   Panel(c.Root,"Exit platform",new Vector3(0,-.26f,.29f),Vector3.forward,new Vector2(.26f,.08f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
+   Panel(c.Root,"Exit platform lintel",new Vector3(0,-.233f,.12f),Vector3.back,new Vector2(.26f,.026f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
+   foreach(float x in new[]{-1f,1f})Panel(c.Root,"Exit platform cheek",new Vector3(x*.1175f,-.273f,.12f),Vector3.back,new Vector2(.025f,.054f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
+   var bridge=ExpansionRail(c,"Step bridge",new Vector3(0,-.2745f,.22f),Vector3.back,.13f,0,new Vector3(.20f,.049f,.06f),.03f,.004f,false,false);
    bridge.GetComponent<VenomMovableProp>().Manipulable=false;TrimSideSlabs(bridge);
-   int first=c.Surfaces.Count;ViewBlock(c,"Step bridge docked",new Vector3(0,-.2845f,.09f),new Vector3(.20f,.029f,.10f));
+   int first=c.Surfaces.Count;ViewBlock(c,"Step bridge docked",new Vector3(0,-.2745f,.09f),new Vector3(.20f,.049f,.06f));
    var docked=c.Surfaces.GetRange(first,c.Surfaces.Count-first).ToArray();foreach(var d in docked)d.gameObject.SetActive(false);
    var deck=bridge.gameObject.AddComponent<COgheDockedBridgeDeck>();deck.Rail=bridge;deck.MovingSurfaces=bridge.GetComponentsInChildren<VenomSurfacePatch>(true);deck.DockedSurfaces=docked;
    var a=ExpansionPad(c,"A",new Vector3(-.27f,-.298f,.02f),.009f,.10f);var b=ExpansionPad(c,"B",new Vector3(.27f,-.298f,.02f),.009f,.10f);
    var latch=new GameObject("A B bridge locks",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();latch.transform.SetParent(c.Root,false);
    latch.Inputs=new[]{a,b};latch.Output=bridge;
    latch.Pins=new[]{MechanismVisual(c.Root,"A bridge lock",new Vector3(-.115f,-.255f,.118f),new Vector3(.012f,.02f,.012f),metal),MechanismVisual(c.Root,"B bridge lock",new Vector3(.115f,-.255f,.118f),new Vector3(.012f,.02f,.012f),metal)};
-   latch.Pawl=MechanismVisual(c.Root,"Bridge pawl",new Vector3(0,-.238f,.118f),new Vector3(.03f,.006f,.008f),metal);
-   NextTrace("A",new Vector3(-.27f,-.2992f,.07f),new Vector3(-.27f,-.2992f,.10f),new Vector3(-.115f,-.2992f,.10f),new Vector3(-.115f,-.2992f,.118f));
-   NextTrace("B",new Vector3(.27f,-.2992f,.07f),new Vector3(.27f,-.2992f,.10f),new Vector3(.115f,-.2992f,.10f),new Vector3(.115f,-.2992f,.118f));
+   latch.Pawl=MechanismVisual(c.Root,"Bridge pawl",new Vector3(0,-.233f,.118f),new Vector3(.03f,.006f,.008f),metal);
+   NextTrace("A",new Vector3(-.27f,-.2992f,.08f),new Vector3(-.27f,-.2992f,.10f),new Vector3(-.115f,-.2992f,.10f),new Vector3(-.115f,-.2992f,.118f));
+   NextTrace("B",new Vector3(.27f,-.2992f,.08f),new Vector3(.27f,-.2992f,.10f),new Vector3(.115f,-.2992f,.10f),new Vector3(.115f,-.2992f,.118f));
   }
   // 17 · Q splits in the left room. One half holds pad A (tube cap held open); the other flows through the tube to
   // the right room and pulls B, which latches the return door and the cap open. The holder walks back; they merge.
@@ -603,19 +604,20 @@ namespace GravityBox.Editor
    MechanismVisual(c.Root,"J valve selector",new Vector3(-.02f,-.10f,-.075f),new Vector3(.03f,.03f,.012f),metal);
    NextTrace("A",new Vector3(.27f,-.1592f,-.19f),new Vector3(.155f,-.1592f,-.19f));
   }
-  // The exit platform with a drawer step (shared by 16 and 24): 6 cm slick platform, slot at floor level,
-  // the step slides out toward the player when its latch drives it; a static replica carries the body when caught.
+  // The exit platform with a drawer step (shared by 16 and 24): 8 cm slick platform, slot at floor level,
+  // The platform is 8 cm above the floor, beyond the body's reach without the 5 cm drawer step.
+  // The step slides out toward the player when its latch drives it; a static replica carries the body when caught.
   static COgheRailSlider NextDrawerPlatform(ExpansionContext c,float x,float zFront,float depth,float width)
   {
    float zc=zFront+depth*.5f,zBack=zFront+depth;
-   Panel(c.Root,"Exit platform",new Vector3(x,-.24f,zc),Vector3.up,new Vector2(width,depth),stone,false,Vector2.zero,0,c.Surfaces);
-   foreach(float s in new[]{-1f,1f})Panel(c.Root,"Exit platform",new Vector3(x+s*width*.5f,-.27f,zc),Vector3.right*s,new Vector2(depth,.06f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
-   Panel(c.Root,"Exit platform",new Vector3(x,-.27f,zBack),Vector3.forward,new Vector2(width,.06f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
-   Panel(c.Root,"Exit platform lintel",new Vector3(x,-.253f,zFront),Vector3.back,new Vector2(width,.026f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
-   foreach(float s in new[]{-1f,1f})Panel(c.Root,"Exit platform cheek",new Vector3(x+s*(width*.5f-.0125f),-.283f,zFront),Vector3.back,new Vector2(.025f,.034f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
-   var bridge=ExpansionRail(c,"Step bridge",new Vector3(x,-.2845f,zFront+.07f),Vector3.back,.10f,0,new Vector3(width-.06f,.029f,.10f),.03f,.004f,false,false);
+   Panel(c.Root,"Exit platform",new Vector3(x,-.22f,zc),Vector3.up,new Vector2(width,depth),stone,false,Vector2.zero,0,c.Surfaces);
+   foreach(float s in new[]{-1f,1f})Panel(c.Root,"Exit platform",new Vector3(x+s*width*.5f,-.26f,zc),Vector3.right*s,new Vector2(depth,.08f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
+   Panel(c.Root,"Exit platform",new Vector3(x,-.26f,zBack),Vector3.forward,new Vector2(width,.08f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
+   Panel(c.Root,"Exit platform lintel",new Vector3(x,-.233f,zFront),Vector3.back,new Vector2(width,.026f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
+   foreach(float s in new[]{-1f,1f})Panel(c.Root,"Exit platform cheek",new Vector3(x+s*(width*.5f-.0125f),-.273f,zFront),Vector3.back,new Vector2(.025f,.054f),stone,false,Vector2.zero,0,c.Surfaces).Slippery=true;
+   var bridge=ExpansionRail(c,"Step bridge",new Vector3(x,-.2745f,zFront+.10f),Vector3.back,.13f,0,new Vector3(width-.06f,.049f,.06f),.03f,.004f,false,false);
    bridge.GetComponent<VenomMovableProp>().Manipulable=false;TrimSideSlabs(bridge);
-   int first=c.Surfaces.Count;ViewBlock(c,"Step bridge docked",new Vector3(x,-.2845f,zFront-.03f),new Vector3(width-.06f,.029f,.10f));
+   int first=c.Surfaces.Count;ViewBlock(c,"Step bridge docked",new Vector3(x,-.2745f,zFront-.03f),new Vector3(width-.06f,.049f,.06f));
    var docked=c.Surfaces.GetRange(first,c.Surfaces.Count-first).ToArray();foreach(var d in docked)d.gameObject.SetActive(false);
    var deck=bridge.gameObject.AddComponent<COgheDockedBridgeDeck>();deck.Rail=bridge;deck.MovingSurfaces=bridge.GetComponentsInChildren<VenomSurfacePatch>(true);deck.DockedSurfaces=docked;
    return bridge;

@@ -13,10 +13,11 @@ namespace GravityBox.Venom
         public static readonly Dictionary<string, string> Operation = new Dictionary<string, string>
         {
             ["coghe.spatial.pilot.01"] = "Tap a spot to send COghe there.",
-            ["coghe.spatial.pilot.02"] = "COghe climbs ivory. It slides off lavender.",
+            ["coghe.spatial.pilot.02"] = "COghe can crawl on glass.",
             ["coghe.spatial.pilot.03"] = "Drag to look around the box.",
             ["coghe.spatial.pilot.04"] = "Tap a handle and COghe pulls it.",
             ["coghe.spatial.pilot.05"] = "A box locks the handle inside. Pull the control of the same colour to flip it open.",
+            ["coghe.spatial.pilot.06"] = "Bare glass grips. Shimmering coating does not.",
             ["coghe.spatial.pilot.08"] = "Tap the lift button to ride. It pops up again when the lift arrives.",
             ["coghe.spatial.next.14"] = "Tap a tube to go through it.",
             ["coghe.spatial.plus.n13"] = "This block is on a spring: let it go and it springs back.",

@@ -996,8 +996,8 @@ namespace GravityBox.Editor
   {
    c.Exit=new Vector3(.20f,-.172f,.30f);c.Spawn=new Vector3(-.28f,-.25f,-.22f);NextShell(c,.10f,true);var floor=c.Surfaces[0];
    var drawer=NextDrawerPlatform(c,.20f,.12f,.17f,.26f);
-   // The step starts 3 cm out (not yet a step): the wrong way it visibly runs back in.
-   drawer.InitialTravel=.03f;drawer.transform.localPosition=drawer.Start+drawer.Axis.normalized*.03f;
+   // The step starts 1.2 cm out, still behind the lip: the wrong way visibly retracts it.
+   drawer.InitialTravel=.012f;drawer.transform.localPosition=drawer.Start+drawer.Axis.normalized*.012f;
    // The table carries the gear row only: B's carriage stops just behind it. 5 cm tall: a 3 cm slick table is a step, and
    // the way to B ran over it into the gears.
    float y=PlusGearTable(c,"Gear table",new Vector3(-.18f,0,0),new Vector2(.26f,.10f),-.25f);

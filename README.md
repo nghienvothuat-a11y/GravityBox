@@ -1,5 +1,10 @@
 # COghe — Day Lab Puzzle Prototype
 
+**Luật kính, 14/10/2026:** kính trần bám được; chỉ vùng phủ vật liệu trơn mới mất
+bám và làm COghe rơi/trượt. Màn hiển thị 1–6 đưa lỗ lên tường kính, bỏ dải trơn quanh
+sàn/tấm bám phụ; màn 7 dùng lớp phủ chặn đường bò vòng qua cầu. Bộ 65 màn giữ ID,
+thứ tự và cơ quan đã có. [Thiết kế và kiểm chứng](Docs/Verification/COgheGlassRule/README.md).
+
 ## Bắt đầu trên máy khác — nhánh `NewGraphic`
 
 **Chốt ngày 29/09/2026:** đồ hoạ **Glass C** — sinh vật đen bóng trong hộp kính,

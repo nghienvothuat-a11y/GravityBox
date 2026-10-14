@@ -8,7 +8,7 @@ namespace GravityBox.Editor
  /// <summary>
  /// Chapter 1 rebuilt for the hook plan (Mrk, 05/10/2026; PLANS/COGHE_LEVEL_HOOK_PLAN.md §5.1). Every level adds one step
  /// or one new kind of dependency over the one before, and every lock shows where it is opened from:
- /// 2 lavender cannot be climbed · 3 look around · 4 handle → door · 5 a floor lever flips open the box over the wall
+ /// 2 crawl up bare glass · 3 look around · 4 handle → door · 5 a floor lever flips open the box over the wall
  /// handle · 6 climb to the wall handle that flips open the box over the winch · 7 the bridge's stop pin is worked from
  /// the pit · 8 ride up, pull, press the popped-up button to ride down · 9 one bridge both blocks the lift and is the way ·
  /// 10 BOSS: the box over the last winch also has a clip; both openers are on the balcony the lift reaches, one hidden.
@@ -23,8 +23,7 @@ namespace GravityBox.Editor
    for(int i=first+1;i<c.Surfaces.Count;i++)c.Surfaces[i].Slippery=true;
    return c.Surfaces[first];
   }
-  /// <summary>A cream climb board on the back glass (Mrk, 09/10/2026, plan A: glass is never climbable; what COghe climbs
-  /// is cream). One gripping face 4.5 mm in front of the pane, optionally cut around the exit, with a slightly darker rim and
+  /// <summary>An optional raised cream board from the historical 09/10 layout. Bare glass itself grips as of 14/10. One gripping face 4.5 mm in front of the pane, optionally cut around the exit, with a slightly darker rim and
   /// horizontal ribs so it reads as a grip surface. Returns the face.</summary>
   static VenomSurfacePatch ChapterClimbBoard(ExpansionContext c,string name,float x0,float x1,float y0,float y1,bool aroundExit=false)
   {
@@ -80,15 +79,11 @@ namespace GravityBox.Editor
   {
    if(n==2)
    {
-    // The faces toward the start are lavender. COghe goes round them to the cream board on the back glass and climbs it onto
-    // each step (plan A, Mrk 09/10/2026: glass is never climbable). Before, it went up a 5 cm slot between the first step
-    // and the glass; that slot, and 2 cm beside the second step, trapped it once the glass was slick. Now the first step
-    // stands against the board, the second against the glass and reaching forward to the first's front.
-    ChapterClimbBoard(c,"Climb board",-.40f,.02f,-.30f,-.10f);
-    int first=c.Surfaces.Count;ViewBlock(c,"Ivory first step",new Vector3(-.12f,-.26f,.13f),new Vector3(.28f,.08f,.32f));c.Surfaces[first+5].Slippery=true;
+    // 14/10: the steps remain; bare back glass is the climb route, with no auxiliary grip board.
+    int first=c.Surfaces.Count;ViewBlock(c,"Ivory first step",new Vector3(-.12f,-.26f,.13f),new Vector3(.28f,.08f,.32f));
     // its right side (under the second step) and back (on the board) are hidden; left as faces, COghe would head for them
     var hidden=new[]{c.Surfaces[first+3],c.Surfaces[first+4]};
-    first=c.Surfaces.Count;ViewBlock(c,"Ivory second step",new Vector3(.21f,-.22f,.135f),new Vector3(.38f,.16f,.33f));c.Surfaces[first+5].Slippery=true;c.Surfaces[first+3].Slippery=true;
+    first=c.Surfaces.Count;ViewBlock(c,"Ivory second step",new Vector3(.21f,-.22f,.135f),new Vector3(.38f,.16f,.33f));
     foreach(var face in hidden){c.Surfaces.Remove(face);Object.DestroyImmediate(face.gameObject);}
    }
    if(n==3)
@@ -98,10 +93,8 @@ namespace GravityBox.Editor
    }
    if(n==5)
    {
-    // The glass is slick: cream boards carry the climb. One spans A's whole travel and runs on to the other, which goes up to
-    // the exit and around it, so COghe crosses from the pulled handle to the exit on cream.
-    var wall=ChapterClimbBoard(c,"Climb board A",-.31f,.15f,-.30f,.01f);
-    ChapterClimbBoard(c,"Climb board exit",.15f,.31f,-.30f,.12f,true);
+    // 14/10: the wall handle and exit are reached directly on bare glass.
+    var wall=c.Surfaces.Find(p=>p.name=="Outer pane 2");
     var a=ViewTask(c,"A",new Vector3(-.23f,-.04f,.268f),Vector3.right,.16f,wall);a.StandOffset=new Vector3(0,-.068f,0);a.TouchSize=new Vector3(.10f,.08f,.07f);
     var gate=ViewGate(c,"A blue shutter",c.Exit+Vector3.back*.020f,Vector3.left,.14f,new Vector3(.13f,.14f,.018f));ViewLink(c,a.Rail,gate,true,ViewExitSurface(c));
     // A box over handle A; floor lever C flips it open. Until then A refuses with a reason.
@@ -112,11 +105,8 @@ namespace GravityBox.Editor
    if(n==6)
    {
     var pulley=SpatialPulley(c,floor);var winch=pulley.Command;
-    // An ivory service panel on the back wall above the departure plinth carries wall handle C; C lifts the clear lid
-    // off winch A on the floor. Climb up first, then turn the winch.
-    int first=c.Surfaces.Count;ViewBlock(c,"Service panel",new Vector3(-.25f,-.02f,.2975f),new Vector3(.26f,.16f,.005f));
-    ChapterBoardRibs(c.Root,"Service panel",-.38f,-.12f,-.10f,.06f,.2938f,null,0);   // cream with ribs: a climb board (plan A)
-    var panel=c.Surfaces[first+5];
+    // C sits directly on the glass above the departure plinth; the centre coating prevents a bypass to the exit.
+    var panel=c.Surfaces.Find(p=>p.name=="Outer pane 2");
     var handle=ViewTask(c,"C",new Vector3(-.33f,-.005f,.262f),Vector3.right,.08f,panel);handle.StandOffset=new Vector3(0,-.068f,0);handle.TouchSize=new Vector3(.10f,.08f,.07f);
     var lid=ChapterCover(c,"A glass lid",new Vector3(-.23f,-.222f,-.12f),new Vector3(.25f,.008f,.10f),.12f);
     ViewLink(c,handle.Rail,lid,false,null);winch.RequiredRail=lid;winch.RequiredEnd=true;

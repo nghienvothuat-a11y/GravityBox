@@ -12,9 +12,8 @@ using Object=UnityEngine.Object;
 namespace GravityBox.Editor
 {
     /// <summary>
-    /// Soft edges (Mrk, 10/10/2026: "vẫn dùng phong cách đồ hoạ cũ. Là cái hộp"): slick tape along the foot of the glass
-    /// wherever a walkable surface meets it (the glass is never climbable; the tape shows why; on the glass-crawl levels G1–G5 the
-    /// glass grips and the tape is drawn exactly over its slick regions, VenomSurfacePatch.SlipRegions), and block-shaped mechanisms
+    /// Soft edges: bare glass grips (Mrk, 14/10/2026); film is drawn exactly over the authored slick regions
+    /// in VenomSurfacePatch.SlipRegions. It does not invent material or navigation rules. Block mechanisms are
     /// drawn with rounded edges. A presentation pass over saved Spatial scenes, after the art builders. It adds meshes and
     /// hides face renderers only: no collider, navigation patch, input target or runtime behaviour changes, so the bevels
     /// are visual (STYLE_RULES §3). Run it on a freshly generated (or checked-out) scene; it refuses a scene it already did.
@@ -28,11 +27,8 @@ namespace GravityBox.Editor
     {
         const string Out="Assets/_Game/Venom/Art/SoftEdges";
         const string Marker="COghe soft edges";
-        // The tape: 7 cm tall (Mrk 11/10/2026: taller, so it is plain COghe cannot get over it: COghe stands ~5 cm and
-        // reaches ~6 cm), 0.6 mm thick, on the inner face of the glass, starting just above the surface it guards.
-        const float TapeHeight=.07f,TapeThick=.0006f,TapeLift=.0005f,TapeRepeat=.03f;
-        // Clear of the exit hole by this much (its mint ring and aluminium lip stay readable).
-        const float HoleMargin=.008f;
+        // 0.6 mm film on the inner face. Region dimensions come from authored physical patches.
+        const float TapeThick=.0006f,TapeRepeat=.03f;
         static string dir;static int meshSerial;
 
         public static void ApplyFromCommandLine()
@@ -118,86 +114,76 @@ namespace GravityBox.Editor
         }
 
         // ---- the tape ---------------------------------------------------------------------------------------------------
-        /// <summary>Slick glass (never climbable): along every side pane, above each fixed surface COghe stands on whose edge
-        /// meets the pane (the floor all round, a platform against the glass), cut round the exit hole and wherever something
-        /// stands against the glass in the band (a climb board, a block). Glass COghe may climb (the glass-crawl levels): the
-        /// tape is exactly its slick regions (VenomSurfacePatch.SlipRegions), roof included, cut round the exit hole.</summary>
+        /// <summary>Render only the authored coating regions, including on roofs, cut around the real bore.</summary>
         static int Tape(VenomCampaign game,Transform root,Material mat)
         {
-            var patches=game.GetComponentsInChildren<VenomSurfacePatch>(true).Where(p=>p.gameObject.activeInHierarchy).ToArray();
-            var panes=patches.Where(p=>p.ExteriorGlass&&(Mathf.Abs(root.InverseTransformDirection(p.Normal).y)<.5f||!p.Slippery)).ToArray();
-            var supports=patches.Where(p=>!p.ExteriorGlass&&p.MotionFrame==null&&p.SphereRadius<=0&&p.Curved==null&&root.InverseTransformDirection(p.Normal).y>.9f&&p.Size.x>.03f&&p.Size.y>.03f).ToArray();
             int runs=0;
-            foreach(var pane in panes)
+            foreach(var pane in game.Surfaces.Where(p=>p!=null&&p.ExteriorGlass&&p.gameObject.activeInHierarchy))
             {
-                var t=pane.transform;var bands=new List<(float y,float x0,float x1)>();
-                if(!pane.Slippery)
+                var regions=new List<CombineInstance>();
+                var rects=new List<Rect>(pane.SlipRegions??Array.Empty<Rect>());
+                if(pane.HasSlipRegion)rects.Add(pane.SlipRegion);
+                // A fully coated authored pane is shown fully coated, never a decorative strip hiding a different rule.
+                if(pane.Slippery)rects=new List<Rect>{new Rect(-pane.Size*.5f,pane.Size)};
+                foreach(var slick in rects)
                 {
-                    // climbable glass: the tape is where the glass is slick, nothing else
-                    var regions=new List<CombineInstance>();
-                    foreach(var slick in pane.SlipRegions??new Rect[0])
-                    {
-                        var keep=new List<(float,float)>{(slick.xMin,slick.xMax)};
-                        if(pane.Hole&&pane.HoleCentre.y-pane.HoleRadius-HoleMargin<slick.yMax&&pane.HoleCentre.y+pane.HoleRadius+HoleMargin>slick.yMin)
-                            keep=Cut(keep,pane.HoleCentre.x-pane.HoleRadius-HoleMargin,pane.HoleCentre.x+pane.HoleRadius+HoleMargin);
-                        foreach(var (a,b) in keep)if(b-a>.012f){regions.Add(new CombineInstance{mesh=TapeStrip(b-a,slick.height,a),transform=Matrix4x4.Translate(new Vector3(0,slick.yMin,0))});runs++;}
-                    }
-                    if(regions.Count>0)
-                    {
-                        var g=new GameObject(Marker+" · tape",typeof(MeshFilter),typeof(MeshRenderer));g.transform.SetParent(t,false);
-                        var m=new Mesh{name="Slick tape"};m.CombineMeshes(regions.ToArray(),true,true);m.RecalculateBounds();
-                        g.GetComponent<MeshFilter>().sharedMesh=Save(m,"tape");
-                        var gr=g.GetComponent<MeshRenderer>();gr.sharedMaterial=mat;gr.shadowCastingMode=ShadowCastingMode.Off;
-                        foreach(var ci in regions)Object.DestroyImmediate(ci.mesh);
-                    }
-                    continue;
+                    regions.Add(new CombineInstance{mesh=TapeRegion(slick,pane),transform=Matrix4x4.identity});runs++;
                 }
-                foreach(var f in supports)
-                {
-                    var q=Corners(f).Select(c=>t.InverseTransformPoint(c)).ToArray();
-                    for(int i=0;i<4;i++)
-                    {
-                        Vector3 a=q[i],b=q[(i+1)%4];
-                        if(Mathf.Abs(a.z)>.006f||Mathf.Abs(b.z)>.006f||Mathf.Abs(a.y-b.y)>.003f)continue;   // not an edge lying on this pane
-                        float y=(a.y+b.y)*.5f,x0=Mathf.Max(Mathf.Min(a.x,b.x),-pane.Size.x*.5f),x1=Mathf.Min(Mathf.Max(a.x,b.x),pane.Size.x*.5f);
-                        if(x1-x0>.01f&&y+TapeHeight<pane.Size.y*.5f)bands.Add((y,x0,x1));
-                    }
-                }
-                if(bands.Count==0)continue;
-                // what stands against the glass inside a band: any other fixed face within 3 cm of the pane
-                var blockers=patches.Where(p=>p!=pane&&!p.ExteriorGlass&&p.MotionFrame==null).Select(p=>Corners(p).Select(c=>t.InverseTransformPoint(c)).ToArray()).ToArray();
-                var parts=new List<CombineInstance>();
-                foreach(var (y,x0,x1) in bands)
-                {
-                    float lo=y+TapeLift,hi=y+TapeHeight;var keep=new List<(float,float)>{(x0,x1)};
-                    if(pane.Hole&&pane.HoleCentre.y-pane.HoleRadius-HoleMargin<hi&&pane.HoleCentre.y+pane.HoleRadius+HoleMargin>lo)
-                        keep=Cut(keep,pane.HoleCentre.x-pane.HoleRadius-HoleMargin,pane.HoleCentre.x+pane.HoleRadius+HoleMargin);
-                    foreach(var q in blockers)
-                    {
-                        float zMin=q.Min(v=>v.z),yMin=q.Min(v=>v.y),yMax=q.Max(v=>v.y);
-                        if(zMin>.03f||q.Max(v=>v.z)<-.001f||yMax<=lo+.001f||yMin>=hi-.001f)continue;
-                        keep=Cut(keep,q.Min(v=>v.x)-.002f,q.Max(v=>v.x)+.002f);
-                    }
-                    foreach(var (a,b) in keep)if(b-a>.012f){parts.Add(new CombineInstance{mesh=TapeStrip(b-a,hi-lo,a),transform=Matrix4x4.Translate(new Vector3(0,lo,0))});runs++;}
-                }
-                if(parts.Count==0)continue;
-                var go=new GameObject(Marker+" · tape",typeof(MeshFilter),typeof(MeshRenderer));go.transform.SetParent(t,false);
-                var mesh=new Mesh{name="Slick tape"};mesh.CombineMeshes(parts.ToArray(),true,true);mesh.RecalculateBounds();
-                go.GetComponent<MeshFilter>().sharedMesh=Save(mesh,"tape");
-                var r=go.GetComponent<MeshRenderer>();r.sharedMaterial=mat;r.shadowCastingMode=ShadowCastingMode.Off;
-                foreach(var p in parts)Object.DestroyImmediate(p.mesh);
+                if(regions.Count==0)continue;
+                var g=new GameObject(Marker+" · tape",typeof(MeshFilter),typeof(MeshRenderer));g.transform.SetParent(pane.transform,false);
+                var mesh=new Mesh{name="Slick tape"};mesh.CombineMeshes(regions.ToArray(),true,true);mesh.RecalculateBounds();
+                g.GetComponent<MeshFilter>().sharedMesh=Save(mesh,"tape");
+                var renderer=g.GetComponent<MeshRenderer>();renderer.sharedMaterial=mat;renderer.shadowCastingMode=ShadowCastingMode.Off;
+                foreach(var ci in regions)Object.DestroyImmediate(ci.mesh);
             }
             return runs;
         }
-        static List<(float,float)> Cut(List<(float,float)> spans,float a,float b)
+
+        /// <summary>Refresh only the coating meshes after a layout edit. Rounded mechanisms and their colliders stay intact.</summary>
+        public static void RefreshTape(string key,VenomCampaign game)
         {
-            var result=new List<(float,float)>();
-            foreach(var (x0,x1) in spans)
+            foreach(var t in game.GetComponentsInChildren<Transform>(true).Where(t=>t.name==Marker+" · tape").ToArray())Object.DestroyImmediate(t.gameObject);
+            dir=$"{Out}/{key}/Coatings";meshSerial=0;
+            if(AssetDatabase.IsValidFolder(dir))AssetDatabase.DeleteAsset(dir);
+            Directory.CreateDirectory(dir);AssetDatabase.Refresh();
+            Tape(game,game.GetComponent<VenomLevelController>().Rotation.transform,TapeMaterial());
+        }
+
+        // Clip the visual film to the actual circular bore, not a large rectangular "grip window" around it.
+        // The coating data remains rectangular; there is simply no glass (and no collision contact) inside the bore.
+        static Mesh TapeRegion(Rect r,VenomSurfacePatch pane)
+        {
+            var m=TapeStrip(r.width,r.height,r.xMin);
+            if(!pane.Hole||!r.Overlaps(new Rect(pane.HoleCentre-Vector2.one*pane.HoleRadius,Vector2.one*pane.HoleRadius*2)))
             {
-                if(b<=x0||a>=x1){result.Add((x0,x1));continue;}
-                if(a>x0)result.Add((x0,a));if(b<x1)result.Add((b,x1));
+                var vertices=m.vertices;for(int i=0;i<vertices.Length;i++)vertices[i].y+=r.yMin;m.vertices=vertices;m.RecalculateBounds();return m;
             }
-            return result;
+            Object.DestroyImmediate(m);
+            var ys=new List<float>{r.yMin,r.yMax};float cy=pane.HoleCentre.y,cx=pane.HoleCentre.x,radius=pane.HoleRadius;
+            for(int i=0;i<=24;i++){float y=cy+radius*Mathf.Sin(-Mathf.PI*.5f+Mathf.PI*i/24);if(y>r.yMin&&y<r.yMax)ys.Add(y);}
+            ys.Sort();var v=new List<Vector3>();var uv=new List<Vector2>();var tri=new List<int>();
+            float Half(float y)=>Mathf.Sqrt(Mathf.Max(0,radius*radius-(y-cy)*(y-cy)));
+            void Quad(float l0,float r0,float l1,float r1,float y0,float y1)
+            {
+                if(r0-l0<.00001f&&r1-l1<.00001f)return;
+                // Front and back faces are on opposite sides of a 0.6 mm film, matching TapeStrip's culling.
+                for(int side=0;side<2;side++)
+                {
+                    int k=v.Count;float z=TapeThick*(side==0?1.7f:.7f);
+                    v.AddRange(new[]{new Vector3(l0,y0,z),new Vector3(r0,y0,z),new Vector3(r1,y1,z),new Vector3(l1,y1,z)});
+                    for(int j=0;j<4;j++)uv.Add(new Vector2(v[k+j].x/TapeRepeat,(v[k+j].y-r.yMin)/r.height));
+                    tri.AddRange(side==0?new[]{k,k+1,k+2,k,k+2,k+3}:new[]{k,k+2,k+1,k,k+3,k+2});
+                }
+            }
+            for(int i=0;i<ys.Count-1;i++)
+            {
+                float y0=ys[i],y1=ys[i+1];
+                if((y0+y1)*.5f<cy-radius||(y0+y1)*.5f>cy+radius){Quad(r.xMin,r.xMax,r.xMin,r.xMax,y0,y1);continue;}
+                float h0=Half(y0),h1=Half(y1);
+                Quad(r.xMin,Mathf.Clamp(cx-h0,r.xMin,r.xMax),r.xMin,Mathf.Clamp(cx-h1,r.xMin,r.xMax),y0,y1);
+                Quad(Mathf.Clamp(cx+h0,r.xMin,r.xMax),r.xMax,Mathf.Clamp(cx+h1,r.xMin,r.xMax),r.xMax,y0,y1);
+            }
+            m=new Mesh();m.SetVertices(v);m.SetUVs(0,uv);m.SetTriangles(tri,0);m.RecalculateNormals();m.RecalculateTangents();m.RecalculateBounds();return m;
         }
         /// <summary>A thin slab in the pane's frame: x from <paramref name="x0"/> along <paramref name="length"/>, y 0..height,
         /// z just inside the glass (the pane's normal points into the box). U runs along the tape, V across it.</summary>

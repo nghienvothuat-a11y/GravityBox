@@ -387,8 +387,8 @@ namespace GravityBox.Venom.ChapterProof
    yield return until(10,()=>door.AtEnd,"The door stays open");
    yield return s.Walk(half,W(.16f,-.30f,-.20f),"Three quarters through the door");
    yield return s.Merge(W(.24f,-.30f,-.06f));
-   yield return s.Go(W(.23f,-.27f,.08f),"Onto the exit step");
-   yield return s.Go(W(.23f,-.24f,.22f),"Onto the exit platform");
+   yield return s.GoSurface("Step bridge",W(.23f,-.27f,.08f),"Onto the exit step");
+   yield return s.GoSurface("Exit platform",W(.23f,-.24f,.22f),"Onto the exit platform");
   }
   // N34: half with half balances (nothing moves); then a quarter rides the lift, the half on the counter tray lifts it to
   // the bank; it pulls B (exit step out), steps back on the raised tray and rides down when the counterweight steps off.
@@ -417,8 +417,8 @@ namespace GravityBox.Venom.ChapterProof
    yield return s.Walk(weight,W(-.33f,-.30f,-.25f),"The counterweight steps off");
    yield return until(10,()=>lift.Rising.Position<.01f,"The quarter rides down");
    yield return s.Merge(W(-.05f,-.30f,.0f));
-   yield return s.Go(W(.23f,-.27f,.08f),"Onto the exit step");
-   yield return s.Go(W(.23f,-.24f,.22f),"Onto the exit platform");
+   yield return s.GoSurface("Step bridge",W(.23f,-.27f,.08f),"Onto the exit step");
+   yield return s.GoSurface("Exit platform",W(.23f,-.24f,.22f),"Onto the exit platform");
   }
   // N44: on P with straight gear A in, the step runs back; draw A out, push the idler pair B in; on P the step runs out.
   IEnumerator N44()
@@ -430,8 +430,8 @@ namespace GravityBox.Venom.ChapterProof
    yield return Pull("B","Push the idler pair in");
    yield return s.Go(pad,"Back onto P");
    yield return until(15,()=>bridge.AtEnd,"Four wheels: the step runs out");
-   yield return s.Go(W(.20f,-.27f,.07f),"Onto the step");
-   yield return s.Go(W(.20f,-.24f,.21f),"Onto the exit platform");
+   yield return s.GoSurface("Step bridge",W(.20f,-.27f,.07f),"Onto the step");
+   yield return s.GoSurface("Exit platform",W(.20f,-.24f,.21f),"Onto the exit platform");
   }
   // N45: half drives half: the lift stalls half way. The driver steps off (the lift comes down), the rider splits at Q:
   // a quarter rides, the other quarter joins the driver on P (75 %): the lift reaches the top. Then as E15.
@@ -474,7 +474,7 @@ namespace GravityBox.Venom.ChapterProof
    if(train.MeshLamp.sharedMaterial!=train.MeshLampOn)throw new InvalidOperationException("The mesh lamp did not light");
    yield return s.Go(pad,"Back onto P");
    yield return until(20,()=>drawer.AtEnd,"The train draws the step out");
-   yield return s.Go(W(.20f,-.27f,.07f),"Onto the step");yield return s.Go(W(.20f,-.24f,.21f),"Onto the exit platform");
+   yield return s.GoSurface("Step bridge",W(.20f,-.27f,.07f),"Onto the step");yield return s.GoSurface("Exit platform",W(.20f,-.24f,.21f),"Onto the exit platform");
   }
   // N42: B's gear sits in A's lane, so A refuses. Draw B out, push A in (its gear passes B's slot), push B back; P.
   IEnumerator N42()
@@ -489,7 +489,7 @@ namespace GravityBox.Venom.ChapterProof
    yield return until(5,()=>train.Meshed,"Every gear meshes");
    yield return s.Go(W(-.33f,-.298f,-.20f),"Onto P");
    yield return until(20,()=>drawer.AtEnd,"The train draws the step out");
-   yield return s.Go(W(.20f,-.27f,.07f),"Onto the step");yield return s.Go(W(.20f,-.24f,.21f),"Onto the exit platform");
+   yield return s.GoSurface("Step bridge",W(.20f,-.27f,.07f),"Onto the step");yield return s.GoSurface("Exit platform",W(.20f,-.24f,.21f),"Onto the exit platform");
   }
   // N47: G refuses (the gate is down). P1: machine 1 lifts the gate, which latches. G to machine 2; P2: the step runs out.
   IEnumerator N47()
@@ -504,9 +504,9 @@ namespace GravityBox.Venom.ChapterProof
    if(!gate.AtEnd)throw new InvalidOperationException("The gate dropped when G left machine 1");
    yield return s.Go(W(-.33f,-.298f,.12f),"Onto P2");
    yield return until(20,()=>drawer.AtEnd,"Machine 2 draws the step out");
-   yield return s.Go(W(.20f,-.27f,.07f),"Onto the step");
+   yield return s.GoSurface("Step bridge",W(.20f,-.27f,.07f),"Onto the step");
    // Tap the platform beside the body: from this framing a tap straight behind it passes over the body (a selection).
-   yield return s.Go(W(.16f,-.24f,.22f),"Onto the exit platform");
+   yield return s.GoSurface("Exit platform",W(.16f,-.24f,.22f),"Onto the exit platform");
   }
   // N49: half on P2, a quarter on C (the lock bolt slides out), a quarter on P1: 75 % on the motors opens the door.
   IEnumerator N49()
@@ -768,7 +768,7 @@ namespace GravityBox.Venom.ChapterProof
    yield return Pull("A","Gear G into the gap");
    yield return s.Go(W(-.32f,-.30f,-.16f),"Stand on pad P");
    yield return until(20,()=>drawer.AtEnd,"The train draws the step out");
-   yield return s.Go(W(.20f,-.27f,.07f),"Onto the step");yield return s.Go(W(.20f,-.24f,.21f),"Onto the exit platform");
+   yield return s.GoSurface("Step bridge",W(.20f,-.27f,.07f),"Onto the step");yield return s.GoSurface("Exit platform",W(.20f,-.24f,.21f),"Onto the exit platform");
   }
   IEnumerator E13()
   {
@@ -783,7 +783,7 @@ namespace GravityBox.Venom.ChapterProof
    game.SelectFragment(b);yield return s.EnterTube(right,1);yield return s.LeaveTube(right);
    yield return s.Merge(W(.15f,-.30f,0)); // open floor between Q and the step: not beside the step (boxed in), not near Q's tray
    yield return s.Go(W(0,-.30f,0),"Square in front of the step"); // not onto its side edge
-   yield return s.Go(W(0,-.27f,.08f),"Onto the step");yield return s.Go(W(0,-.24f,.21f),"Onto the exit platform");
+   yield return s.GoSurface("Step bridge",W(0,-.27f,.08f),"Onto the step");yield return s.GoSurface("Exit platform",W(0,-.24f,.21f),"Onto the exit platform");
   }
   IEnumerator E14()
   {
@@ -827,7 +827,7 @@ namespace GravityBox.Venom.ChapterProof
    yield return until(20,()=>g.AtEnd,"Machine 1 pushes gear G into machine 2");
    yield return s.Go(W(.02f,-.30f,-.20f),"Stand on P2");
    yield return until(20,()=>drawer.AtEnd,"Machine 2 draws the step out");
-   yield return s.Go(W(.24f,-.27f,.07f),"Onto the step");yield return s.Go(W(.24f,-.24f,.21f),"Onto the exit platform");
+   yield return s.GoSurface("Step bridge",W(.24f,-.27f,.07f),"Onto the step");yield return s.GoSurface("Exit platform",W(.24f,-.24f,.21f),"Onto the exit platform");
   }
   IEnumerator E18()
   {

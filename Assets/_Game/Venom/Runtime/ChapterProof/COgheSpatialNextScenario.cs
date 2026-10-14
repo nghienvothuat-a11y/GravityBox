@@ -16,6 +16,19 @@ namespace GravityBox.Venom.ChapterProof
   public COgheTapRail Task(string label)=>Array.Find(game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>(),x=>x.Label==label)??throw new InvalidOperationException("Missing task "+label);
   public T Find<T>() where T:Component=>game.Owner.Apparatus.GetComponentInChildren<T>()??throw new InvalidOperationException("Missing "+typeof(T).Name);
   // Tap a surface point for the selected fragment and wait until its centre arrives.
+  // Read the authored top: a click must target the visible platform after its height changes.
+  // This chooses an input point only; motion and arrival still use the normal player command path.
+  public IEnumerator GoSurface(string name,Vector3 near,string why)
+  {
+   VenomSurfacePatch top=null;float best=float.PositiveInfinity;
+   foreach(var patch in game.Surfaces)
+   {
+    if(patch==null||!patch.isActiveAndEnabled||!patch.name.StartsWith(name,StringComparison.Ordinal)||patch.Normal.y<.9f)continue;
+    float d=Vector3.SqrMagnitude(patch.Closest(near)-near);if(d>=best)continue;best=d;top=patch;
+   }
+   if(top==null)throw new InvalidOperationException("No visible top for "+name);
+   yield return Go(top.Closest(near),why);
+  }
   public IEnumerator Go(Vector3 world,string why,float tolerance=.05f)
   {
    int actor=Selected;bool Arrived()=>Vector3.Distance(game.Motion.Centre(actor),world+Vector3.up*.02f)<tolerance;
@@ -288,8 +301,8 @@ namespace GravityBox.Venom.ChapterProof
     yield return Walk(right,W(.27f,-.298f,.02f),"Right half loads pad B");
     yield return until(20,()=>latch.Caught,"Both loads slide the bridge out; its pawl catches");
     yield return Merge(W(.10f,-.30f,.04f));
-    yield return Go(W(0,-.27f,.08f),"Onto the step bridge");
-    yield return Go(W(0,-.24f,.21f),"Onto the exit platform");
+    yield return GoSurface("Step bridge",W(0,-.27f,.08f),"Onto the step bridge");
+    yield return GoSurface("Exit platform",W(0,-.24f,.21f),"Onto the exit platform");
    }
    else if(n==17)
    {
@@ -355,7 +368,7 @@ namespace GravityBox.Venom.ChapterProof
     yield return Go(W(-.12f,-.27f,.08f),"Mount the low block");
     yield return Go(W(-.016f,-.24f,.08f),"Mount the tall block");
     yield return Go(W(.095f,-.24f,.08f),"Onto the span");
-    yield return Go(W(.27f,-.24f,.12f),"Onto the exit platform");
+    yield return GoSurface("Exit platform",W(.27f,-.24f,.12f),"Onto the exit platform");
    }
    else if(n==23)
    {
@@ -377,8 +390,8 @@ namespace GravityBox.Venom.ChapterProof
     yield return Walk(r2,W(.33f,-.298f,.14f),"25 % onto B2");
     yield return until(20,()=>latch.Caught,"Four loads slide the step out; pawl catches");
     yield return Merge(W(.12f,-.30f,-.02f));
-    yield return Go(W(0,-.27f,.07f),"Onto the step");
-    yield return Go(W(0,-.24f,.21f),"Onto the exit platform");
+    yield return GoSurface("Step bridge",W(0,-.27f,.07f),"Onto the step");
+    yield return GoSurface("Exit platform",W(0,-.24f,.21f),"Onto the exit platform");
    }
    else if(n==25)
    {

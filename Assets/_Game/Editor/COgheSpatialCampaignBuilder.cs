@@ -14,8 +14,8 @@ namespace GravityBox.Editor
  {
   public const string SpatialFolder="Assets/_Game/Venom/SpatialCampaign";
   // Chapter 1 as rebuilt for the hook plan (05/10/2026). Lessons say how a new mechanism works, never the answer.
-  static readonly string[] SpatialNames={"Chạm để đi","Đi vòng mặt tím","Nhìn quanh vách","Kéo là mở","Mở nắp trước","Leo lên, mở hộp","Chìa khoá dưới hố","Lên, kéo, xuống","Cầu chắn giếng thang","Cỗ máy thân quen"};
-  static readonly string[] SpatialLessons={"Chạm vòng xanh để chỉ đường.","COghe leo được mặt ngà, trượt khỏi mặt tím.","Kéo ngang để nhìn quanh vách.","Chạm tay nắm để COghe kéo nó.","Hộp màu khoá tay nắm bên trong: kéo cần cùng màu để mở hộp.","Tay nắm có thể ở trên cao.","Chốt chặn có cần riêng.","Nút thang bật lên lại khi tới nơi.","Một vật có thể làm hai việc.",""};
+  static readonly string[] SpatialNames={"Chạm để đi","Bò lên kính","Nhìn quanh vách","Kéo là mở","Mở nắp trước","Leo lên, mở hộp","Chìa khoá dưới hố","Lên, kéo, xuống","Cầu chắn giếng thang","Cỗ máy thân quen"};
+  static readonly string[] SpatialLessons={"Chạm vòng xanh để chỉ đường.","COghe có thể bò trên kính.","Kéo ngang để nhìn quanh vách.","Chạm tay nắm để COghe kéo nó.","Hộp màu khoá tay nắm bên trong: kéo cần cùng màu để mở hộp.","Tay nắm có thể ở trên cao.","Chốt chặn có cần riêng.","Nút thang bật lên lại khi tới nơi.","Một vật có thể làm hai việc.",""};
   // The Spatial campaign in play order: 65 levels in six chapters, each closed by its boss (50 levels proposed
   // 29/09/2026 and approved 30/09/2026; the 10 crate levels interleaved 07/10/2026; the 5 glass-crawl levels and this
   // order 12/10/2026). A key names the content: "01"…"30" are the scenes COgheSpatialNN (pilot 01–10, Spatial 11–30),
@@ -108,10 +108,9 @@ namespace GravityBox.Editor
    owner.Apparatus=new GameObject("Apparatus").transform;owner.Apparatus.SetParent(owner.transform,false);
    var pivot=new GameObject("Fixed chamber",typeof(Rigidbody),typeof(BoxRotationController));pivot.transform.SetParent(owner.Apparatus,false);pivot.GetComponent<Rigidbody>().isKinematic=true;pivot.GetComponent<Rigidbody>().useGravity=false;owner.Rotation=pivot.GetComponent<BoxRotationController>();
    var c=new ExpansionContext{Number=n,Owner=owner,Game=game,Definition=def,Root=pivot.transform,Spawn=new Vector3(-.26f,-.25f,-.19f),Exit=new Vector3(.23f,-.225f,.30f),Outward=Vector3.forward};
-   // Glass is never climbable (Mrk, 09/10/2026, plan A): what COghe climbs is cream. An exit on the glass is reached from
-   // the surface under it: 1, 3 and 4 exit at floor level; 2's hole starts at the top of the second step; 5 is reached up
-   // cream climb boards.
-   if(n==1||n==3||n==4)c.Exit.y=-.252f;if(n==2)c.Exit.y=-.094f;if(n==5)c.Exit.y=.05f;if(n==6)c.Exit.y=-.035f;
+   // 14/10: bare glass grips. The opening lessons end with an actual climb up the glass; no cream climb boards.
+   // Keep 3's hole below the observation screen, so orbiting still reveals it.
+   if(n==1||n==3||n==4)c.Exit.y=-.10f;if(n==2)c.Exit.y=-.04f;if(n==5)c.Exit.y=.05f;if(n==6)c.Exit.y=-.035f;
    // 8 and 10 exit at floor level through slick glass: the hole starts at the floor, there is nothing to climb.
    if(n==8)c.Exit=new Vector3(-.23f,-.252f,.30f);if(n==9)c.Exit=new Vector3(-.25f,.09f,.30f);if(n==10)c.Exit=new Vector3(.25f,-.252f,.30f);
    if(n==7){c.Exit=new Vector3(.32f,-.30f,.16f);c.Outward=Vector3.down;ViewShell(c,true);}else SpatialShell(c,true);
@@ -141,7 +140,8 @@ namespace GravityBox.Editor
    foreach(var lift in owner.Apparatus.GetComponentsInChildren<COghePassengerLift>())lift.Panel.GetComponent<Renderer>().sharedMaterial=n==10?coral:blue;
    COgheDayLabBuilder.DecorateSpatialMechanisms(game,blue,coral,ivory);
    ChapterOneFinish(game);
-   COgheSoftEdges.Apply(n.ToString("00"),game);   // slick tape at the foot of the glass, rounded blocks (Mrk 10–11/10/2026)
+   COgheGlassRuleAuthoring.Configure(n.ToString("00"),game);
+   COgheSoftEdges.Apply(n.ToString("00"),game);
    EditorUtility.SetDirty(def);EditorSceneManager.SaveScene(scene,SpatialContentPath(n));
   }
   static void SpatialShell(ExpansionContext c,bool slippery)

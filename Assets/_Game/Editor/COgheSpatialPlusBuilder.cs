@@ -167,6 +167,7 @@ namespace GravityBox.Editor
    foreach(var task in owner.Apparatus.GetComponentsInChildren<COgheTapRail>()){var material=task.Label.StartsWith("B")?coral:blue;foreach(var r in task.Handle.GetComponentsInChildren<Renderer>())r.sharedMaterial=material;}
    COgheDayLabBuilder.DecorateSpatialMechanisms(game,blue,coral,ivory);
    NextSpatialArt(c,blue,coral,ivory);
+   COgheGlassRuleAuthoring.Configure(d.Key,game);
    COgheSoftEdges.Apply("Plus"+d.Key,game);   // slick tape at the foot of the glass, rounded blocks (Mrk 10–11/10/2026)
    EditorUtility.SetDirty(def);EditorSceneManager.SaveScene(scene,SpatialContentPath(d.Key));
    File.WriteAllLines($"{PlusNotes}/{d.Key}.notes",plusNotes);

@@ -18,6 +18,14 @@ remains the historical Origin baseline. Later scoped rules take precedence over
 older V2/Blender proposals; concept paintings do not override runtime contracts.
 Keep presentation separate from puzzle physics and state.
 
+Spatial glass rule (14/10/2026): bare glass always grips, including walls and roof.
+Only visible slick coatings remove adhesion; their meshes must match `SlipRegions`.
+This supersedes the 09/10 non-climbable-glass proposal. Opening display levels 1–6
+have wall exits, no floor perimeter tape or auxiliary grip boards; display 7 uses
+bare glass at its switch and coatings to prevent bypassing the pulley bridge.
+Keep authoring and saved scenes consistent; verify solves and wall/roof shortcuts.
+See `Docs/Verification/COgheGlassRule/README.md`.
+
 For Spatial 11–30, start with
 [IMPLEMENTATION_HANDOFF.md](Docs/LevelDesign/COghe/SpatialNext20/IMPLEMENTATION_HANDOFF.md).
 The quantum splitter and swing transfer are planned mechanisms, not existing
