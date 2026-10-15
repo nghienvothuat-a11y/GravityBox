@@ -95,7 +95,7 @@ namespace GravityBox.Venom
             actTilt = Mathf.Clamp(pitch * .6f, 0, 35 * Mathf.Deg2Rad);   // lean the flat shapes back to face a camera looking down
             if (p.Act != COgheAct.Wave && p.Act != COgheAct.Shape && p.Act != COgheAct.Monster) return;
             // match each particle to the nearest free source of the shape at its peak; left-over particles melt into it
-            if (p.Act == COgheAct.Monster) BuildMonster(MonsterPoseAt(1.9f, p.Length), 1.9f);
+            if (p.Act == COgheAct.Monster) BuildMonster(MonsterPoseAt(3.1f, p.Length), 3.1f);
             else BuildShape(p.Act, p.Shape, p.Length * .5f, p.Length);
             int pairs = 0;
             for (int i = 0; i < count; i++)

@@ -131,10 +131,17 @@ Android launchers choose their own mask; verify the installed result on hardware
   material; wardrobe is presentation only (no colliders, forces or puzzle state)
   and must never hide a mechanism, the exit or the creature's silhouette. Item
   icons follow the Home item icon style (Codex, `Resources/COgheStyle/Icons`).
-- The main menu monster (approved by Mrk 02/10/2026): for that one act COghe may
-  rise into an original Venom-inspired liquid monster with white slanted eyes,
-  fangs and a tongue; they appear only while the act plays and vanish with it.
-  No Marvel logo or identifying marks. See `Docs/Personality/COghe/README.md`.
+- The temporary monster act at Home and the main menu (revised by Mrk 15/10/2026):
+  a smooth liquid mound grows into a **head above a connected puddle**, never a
+  humanoid torso, shoulders, arms or hands. Show the change gradually: swell and
+  rise, reveal the eyes, form the grin and fangs, unfurl the tongue, retract, melt.
+  Teeth/eyes/tongue are temporary, with glossy continuous skin and smooth curved
+  silhouettes; no low-poly face plates. Tongue width is doubled (15/10 follow-up),
+  retaining thickness and the earlier flowing wave rhythm: the middle bends,
+  the tip follows, and only the short root section is damped. Avoid a rigid held curl.
+  No Marvel logo or identifying marks.
+  Shared presentation only; no changes to physics, progression or Plus access.
+  See `Docs/Personality/COghe/README.md`.
 - Build assets in Unity for this phase. Do not introduce Blender or purchased asset
   dependencies without a new task requiring them.
 

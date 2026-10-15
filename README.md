@@ -1,5 +1,7 @@
 # COghe — Day Lab Puzzle Prototype
 
+**Animation Home, 15/10/2026:** đầu quái vật mọc dần từ vũng nhầy, nhe nanh và thè lưỡi rồi tan lại; bỏ thân người. Lưỡi rộng ×2, giữ nhịp uốn mềm của bản cũ. Tái sử dụng kết quả dựng da/mặt, có kiểm chứng trực tiếp trên iPhone. [Video Unity và số đo](Docs/Verification/COgheMonsterHead/README.md).
+
 **Ống và mạch, 14/10/2026:** vận tốc chui ống ×1,5; mạch và chân tiếp điểm bám mặt kính/sàn/bệ thật. Đã rà 65 màn, giữ nguyên dữ liệu vật lý cơ quan. [Kiểm chứng và ảnh runtime](Docs/Verification/COghePipeCircuits/README.md).
 
 **Tiến trình 14/10/2026:** trang trí mở sau màn hiển thị 8 với bài hướng dẫn tiêm màu

@@ -121,6 +121,9 @@ namespace GravityBox.Venom
             else if (homeZoom)
             {
                 target = (Game.Personality != null ? Game.Personality.SkinCentre : Game.Motion.Centre(0)) + Vector3.up * .02f;
+                if (menuLife == null) menuLife = Game.Matter.GetComponent<VenomLifeAnimation>();
+                if (menuLife != null && menuLife.Monster.Body > 0)
+                    target = Vector3.Lerp(target, menuLife.Monster.Focus, menuLife.Monster.Body);
                 targetSize = .18f; rate = 3.5f;
             }
             float blend = homeSize < 0 ? 1 : 1 - Mathf.Exp(-Time.unscaledDeltaTime * rate);

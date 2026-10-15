@@ -12,7 +12,7 @@ namespace GravityBox.Venom
     /// </summary>
     public sealed class COgheMonsterFace : MonoBehaviour
     {
-        private const int Lip = 18, Rows = 5, TeethPerRow = 13;
+        private const int Lip = 28, Rows = 5, TeethPerRow = 11;
         private const float MouthWidth = 1.15f;   // radians either side of the face's middle
         private VenomLifeAnimation life;
         private VenomSurface surface;
@@ -22,7 +22,10 @@ namespace GravityBox.Venom
         private readonly List<Vector3> v = new List<Vector3>(1024), n = new List<Vector3>(1024);
         private readonly List<int> tri = new List<int>(2048);
         private readonly Vector3[] upper = new Vector3[Lip + 1], lower = new Vector3[Lip + 1];
+        private readonly Vector3[] lipPoints=new Vector3[(Lip+1)*(Rows+1)], lipNormals=new Vector3[(Lip+1)*(Rows+1)];
+        public const float TongueWidthScale = 2.7f; // exactly twice the previous 1.35; thickness is unchanged
         private bool shown;
+        public double LastBuildMilliseconds { get; private set; }
 
         // eye outline (radians across and up from its middle): round on the inside, a long point up and out
         private static readonly Vector2[] EyeShape =
@@ -35,8 +38,8 @@ namespace GravityBox.Venom
         {
             life = owner; surface = GetComponent<VenomSurface>();
             white = Fx(Color.white);
-            red = Lit(lit, new Color(.58f, .06f, .1f), .6f); dark = Lit(lit, new Color(.16f, .01f, .03f), .35f);
-            ivory = Lit(lit, new Color(.93f, .9f, .82f), .7f); pink = Lit(lit, new Color(.72f, .2f, .27f), .78f);
+            red = Lit(lit, new Color(.24f, .025f, .045f), .38f); dark = Lit(lit, new Color(.026f, .008f, .016f), .22f);
+            ivory = Lit(lit, new Color(.93f, .9f, .82f), .7f); pink = Lit(lit, new Color(.64f, .16f, .22f), .62f);
             eyes = Part("Monster eyes", white); mouth = Part("Monster mouth", red); throat = Part("Monster throat", dark);
             teeth = Part("Monster teeth", ivory); tongue = Part("Monster tongue", pink);
             if (surface != null) surface.Rebuilt += OnRebuilt;
@@ -88,70 +91,69 @@ namespace GravityBox.Venom
 
         private void OnRebuilt(VenomSurface s)
         {
+            long started = COgheMobileMetrics.Enabled ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
+            LastBuildMilliseconds = 0;
             rig = life.Monster;
             if (rig.Amount < .02f) { Show(false); return; }
             Show(true);
             jawUp = rig.JawUp; jawForward = rig.JawForward; jawHead = rig.JawHead;   // the jaw's own frame
             float show = Mathf.SmoothStep(0, 1, rig.Amount);
-            BuildMouth(show);
-            BuildTeeth(show);
+            BuildMouth(rig.Mouth);
+            BuildTeeth(rig.Fangs);
             BuildEyes(show);
             BuildTongue(show);
+            if (started != 0) LastBuildMilliseconds = (System.Diagnostics.Stopwatch.GetTimestamp() - started) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
         }
 
         // The mouth: a grin from cheek to cheek; the jaw's lip follows the jaw ------------------------------------------------
         private static float UpperLip(float x) => -.16f + .36f * x * x;                               // corners up: a grin
         private static float LowerLip(float x) => UpperLip(x) - (.03f + .09f * (1 - x * x));         // a dark line when shut
 
-        private void BuildMouth(float show)
+        private float LipAngle(float x, float across) => Mathf.Lerp(UpperLip(x),
+            LowerLip(x) - rig.Jaw * .7f * Mathf.Sqrt(Mathf.Max(0, 1 - x * x)), across);
+
+        private Vector3 MouthPoint(float x, float across, float width, float offset, out Vector3 normal)
         {
-            float width = MouthWidth * Mathf.Lerp(.6f, 1, show);
-            for (int i = 0; i <= Lip; i++)
-            {
-                float x = i / (float)Lip * 2 - 1;
-                upper[i] = OnSkin(x * width, UpperLip(x));
-                // the lower lip slides down the skin as the jaw opens (the skin of head, cheeks and chin is one piece of
-                // liquid; the opening is drawn here): widest in the middle, closing at the corners
-                lower[i] = OnSkin(x * width, LowerLip(x) - rig.Jaw * .7f * Mathf.Sqrt(Mathf.Max(0, 1 - x * x)));
-            }
-            // the skin's mesh is built on a ~6 mm grid: stand clear of it, or it pokes through
-            Vector3 lift = rig.Forward * Mathf.Max(rig.Size * .1f, .0045f);
-            // the mouth: rows between the lips, kept just outside the skin
-            Begin();
-            for (int r = 0; r <= Rows; r++)
-            for (int i = 0; i <= Lip; i++)
-            {
-                Vector3 p = Vector3.Lerp(upper[i], lower[i], r / (float)Rows);
-                if (r > 0 && r < Rows) p = OutsideSkin(p);
-                v.Add(p + lift); n.Add(rig.Forward);
-            }
-            Grid(Rows, Lip);
-            Commit(mouth);
-            // the throat: the darker middle of the opening, a little in front of the mouth
-            Begin();
-            for (int r = 0; r <= Rows; r++)
-            for (int i = 0; i <= Lip; i++)
-            {
-                float x = i / (float)Lip * 2 - 1, w = Mathf.Lerp(.3f, .78f, r / (float)Rows);
-                float u = Mathf.Lerp(.5f, i / (float)Lip, .72f);   // the deep middle of the mouth
-                int j = Mathf.Clamp(Mathf.RoundToInt(u * Lip), 0, Lip);
-                Vector3 p = OutsideSkin(Vector3.Lerp(upper[j], lower[j], w));
-                v.Add(p + lift * 1.4f); n.Add(rig.Forward);
-            }
-            Grid(Rows, Lip);
-            Commit(throat);
+            Vector3 p = OnSkin(x * width, LipAngle(x, across));
+            normal = life.SkinNormal(p);
+            return p + normal * offset;
         }
 
-        /// <summary>A point pushed out of the skin along the face's forward direction.</summary>
-        private Vector3 OutsideSkin(Vector3 p)
+        private void BuildMouth(float show)
         {
-            for (int k = 0; k < 12 && life.InsideSkin(p); k++) p += rig.Forward * (rig.Size * .06f);
-            return p;
+            Begin();
+            if (show < .001f) { Commit(mouth); Commit(throat); return; }
+            float width = MouthWidth * Mathf.SmoothStep(0, 1, show);
+            float lift = .0016f;
+            // Smoothly sampled surface patches; no rounded-to-nearest columns or stepped push-out.
+            for (int row = 0; row <= Rows; row++)
+            for (int i = 0; i <= Lip; i++)
+            {
+                Vector3 p = MouthPoint(i / (float)Lip * 2 - 1, row / (float)Rows, width, lift, out var normal);
+                int at=row*(Lip+1)+i;lipPoints[at]=p;lipNormals[at]=normal;
+                if(row==0)upper[i]=p;if(row==Rows)lower[i]=p;
+                v.Add(p); n.Add(normal);
+            }
+            Grid(Rows, Lip); Commit(mouth);
+            Begin();
+            for (int row = 0; row <= Rows; row++)
+            for (int i = 0; i <= Lip; i++)
+            {
+                float x = (i / (float)Lip * 2 - 1) * .95f;
+                float u=(x+1)*.5f*Lip, w=Mathf.Lerp(.12f,.88f,row/(float)Rows)*Rows;
+                int column=Mathf.Min((int)u,Lip-1),r=Mathf.Min((int)w,Rows-1);u-=column;w-=r;
+                int at=r*(Lip+1)+column;
+                Vector3 normal=Vector3.Lerp(Vector3.Lerp(lipNormals[at],lipNormals[at+1],u),Vector3.Lerp(lipNormals[at+Lip+1],lipNormals[at+Lip+2],u),w).normalized;
+                Vector3 p=Vector3.Lerp(Vector3.Lerp(lipPoints[at],lipPoints[at+1],u),Vector3.Lerp(lipPoints[at+Lip+1],lipPoints[at+Lip+2],u),w)+normal*.00045f;
+                v.Add(p); n.Add(normal);
+            }
+            Grid(Rows, Lip); Commit(throat);
         }
 
         private void BuildTeeth(float show)
         {
             Begin();
+            if (show < .001f || rig.Mouth < .1f) { Commit(teeth); return; }
             for (int row = 0; row < 2; row++)
             {
                 bool top = row == 0;
@@ -163,12 +165,15 @@ namespace GravityBox.Venom
                     Vector3 root = top ? lipUpper : lipLower;
                     // toward the other lip, a little out toward the viewer
                     Vector3 across = top ? -rig.Up : rig.Up, toward = (top ? lipLower - lipUpper : lipUpper - lipLower);
-                    Vector3 dir = (across * .8f + rig.Forward * .25f + (toward.sqrMagnitude > 1e-8f ? toward.normalized * .4f : Vector3.zero)).normalized;
+                    Vector3 normal = life.SkinNormal(root);
+                    Vector3 tangent = Vector3.ProjectOnPlane(toward.sqrMagnitude > 1e-8f ? toward.normalized : across, normal).normalized;
+                    Vector3 dir = (tangent + normal * .5f).normalized;
                     float fang = Mathf.Exp(-Mathf.Pow((Mathf.Abs(x) - .52f) / .12f, 2));   // long canines either side
                     float length = rig.Size * (top ? .3f + .3f * fang : .3f + .26f * fang) * (1 - .35f * x * x) * show;
-                    float width = rig.Size * .095f * (1 + .35f * fang) * Mathf.Lerp(.5f, 1, show);
+                    length = Mathf.Min(length, (lipUpper - lipLower).magnitude * .48f);
+                    float width = rig.Size * .085f * (1 + .35f * fang) * Mathf.SmoothStep(0, 1, show);
                     Vector3 side = Vector3.Cross(dir, rig.Forward).normalized;
-                    Cone(root + rig.Forward * Mathf.Max(rig.Size * .16f, .006f) - dir * (width * .3f), dir, side, width, length);   // in front of the mouth
+                    Cone(root + rig.Forward * .0013f - dir * (width * .3f), dir, side, width, length);   // in front of the mouth
                 }
             }
             Commit(teeth);
@@ -179,44 +184,53 @@ namespace GravityBox.Venom
             Begin();
             float squint = Mathf.Clamp(rig.Squint, -.3f, .8f), size = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.15f, .75f, show)) * (1 + .15f * Mathf.Max(0, -squint));   // wide in the roar
             if (size < .01f) { Commit(eyes); return; }
+            const int steps = 44, rings = 3;
             for (int side = -1; side <= 1; side += 2)
             {
-                int first = v.Count;
                 Vector2 middle = new Vector2(side * .46f, .3f);
-                Vector3 centre = OnSkin(middle.x, middle.y);
-                v.Add(centre + life.SkinNormal(centre) * Mathf.Max(rig.Size * .08f, .0042f)); n.Add(rig.Forward);
-                foreach (var q0 in EyeShape)
+                Vector3 centre=OnSkin(middle.x,middle.y), centreNormal=life.SkinNormal(centre);
+                for (int ring = 0; ring <= rings; ring++)
+                for (int k = 0; k <= steps; k++)
                 {
-                    // a squint narrows it and drops the inner corner: a smug, wicked look
-                    float open = 1 - .92f * Mathf.Clamp01(rig.Blink);   // a blink closes it to a slit
-                    Vector2 q = new Vector2(q0.x * side, (q0.y * (1 - .55f * Mathf.Max(0, squint)) + q0.x * .28f * Mathf.Max(0, squint)) * open) * (size * 1.45f);
-                    Vector3 p = OnSkin(middle.x + q.x, middle.y + q.y);
-                    v.Add(p + life.SkinNormal(p) * Mathf.Max(rig.Size * .08f, .0042f)); n.Add(rig.Forward);
+                    if(ring==0){v.Add(centre+centreNormal*.0017f);n.Add(centreNormal);continue;}
+                    if(k==steps){v.Add(v[v.Count-steps]);n.Add(n[n.Count-steps]);continue;}
+                    float at = k / (float)steps * EyeShape.Length;
+                    int j = Mathf.FloorToInt(at) % EyeShape.Length; float u = at - Mathf.Floor(at);
+                    Vector2 a = EyeShape[(j + EyeShape.Length - 1) % EyeShape.Length], b = EyeShape[j],
+                        c = EyeShape[(j + 1) % EyeShape.Length], d = EyeShape[(j + 2) % EyeShape.Length];
+                    Vector2 q0 = .5f * ((2 * b) + (-a + c) * u + (2 * a - 5 * b + 4 * c - d) * u * u + (-a + 3 * b - 3 * c + d) * u * u * u);
+                    float open = 1 - .94f * Mathf.Clamp01(rig.Blink);
+                    Vector2 q = new Vector2(q0.x * side, q0.y * (1 - .55f * Mathf.Max(0, squint)) * open) * (size * 1.35f * ring / rings);
+                    Vector3 p = OnSkin(middle.x + q.x, middle.y + q.y), normal = life.SkinNormal(p);
+                    v.Add(p + normal * .0017f); n.Add(normal);
                 }
-                int count = EyeShape.Length;
-                for (int k = 0; k < count; k++) Face(first, first + 1 + k, first + 1 + (k + 1) % count);
+                Grid(rings, steps);
             }
             Commit(eyes);
         }
 
-        private readonly Vector3[] tonguePath = new Vector3[21];
+        private readonly Vector3[] tonguePath = new Vector3[29];
         /// <summary>A long tongue sliding out and writhing: a wave travels down it, mostly up and down so it reads in profile.</summary>
         private void BuildTongue(float show)
         {
             Begin();
             float out_ = rig.Tongue;
             if (out_ < .02f) { Commit(tongue); return; }
-            int mid = Lip / 2;
-            Vector3 root = OutsideSkin(Vector3.Lerp(upper[mid], lower[mid], .7f)) - rig.Forward * (rig.Size * .06f);
-            float length = rig.Size * 2.6f * out_, t = rig.Time;
+            Vector3 root = MouthPoint(0, .7f, MouthWidth, .0025f, out _);
+            float length = rig.Size * 1.85f * out_, t = rig.Time;
             for (int k = 0; k < tonguePath.Length; k++)
             {
                 float u = k / (float)(tonguePath.Length - 1);
-                float lift = .27f * Mathf.Sin(t * 5.2f - u * 7.5f) * u + .25f * u * u * u * u;   // the tip curls up
-                float side = .09f * Mathf.Sin(t * 3.7f - u * 5f) * u;
-                tonguePath[k] = root + rig.Forward * (length * u) + rig.Up * (length * (lift - .2f * u * u)) + rig.Right * (length * side);
+                // Keep the old travelling-wave rhythm across the whole tongue. Only
+                // the first short section eases in, so the root stays anchored while
+                // the middle bends and the tip follows instead of holding a fixed curl.
+                float envelope=u*Mathf.SmoothStep(0,1,u/.18f), curl=.25f*u*u*u*u;
+                float lift=.27f*Mathf.Sin(t*3.2f-u*5.5f)*envelope+curl;
+                float side=.09f*Mathf.Sin(t*2.4f-u*4f)*envelope;
+                tonguePath[k]=root+rig.Forward*(length*u)+Vector3.down*(length*.20f*u*u)
+                    +rig.Up*(length*lift)+rig.Right*(length*side);
             }
-            TubePath(tonguePath, rig.Size * .17f, rig.Size * .055f);
+            TubePath(tonguePath, rig.Size * .17f * Mathf.SmoothStep(0, .3f, out_), rig.Size * .04f * out_);
             Commit(tongue);
         }
 
@@ -229,7 +243,6 @@ namespace GravityBox.Venom
             var local = transform.worldToLocalMatrix;
             for (int i = 0; i < v.Count; i++) { v[i] = local.MultiplyPoint3x4(v[i]); n[i] = local.MultiplyVector(n[i]).normalized; }
             mesh.SetVertices(v); mesh.SetNormals(n); mesh.SetTriangles(tri, 0, false);
-            if (mesh != eyes) mesh.RecalculateNormals();
             mesh.RecalculateBounds();
         }
         /// <summary>A triangle facing <see cref="COgheMonsterRig.Forward"/> (out of the face), whatever order it is given in.</summary>
@@ -251,43 +264,46 @@ namespace GravityBox.Venom
         private void Cone(Vector3 root, Vector3 dir, Vector3 side, float width, float length)
         {
             if (length < 1e-5f) return;
-            const int sides = 5;
+            const int sides = 10, rings = 4;
             Vector3 other = Vector3.Cross(dir, side).normalized;
             int first = v.Count;
-            for (int k = 0; k < sides; k++)
+            for (int ring = 0; ring <= rings; ring++)
             {
-                float angle = k * Mathf.PI * 2 / sides;
-                Vector3 radial = side * Mathf.Cos(angle) + other * Mathf.Sin(angle) * .7f;
-                v.Add(root + radial * (width * .5f)); n.Add(radial);
+                float u = ring / (float)rings, radius = width * .5f * Mathf.Pow(1 - u, .8f);
+                for (int k = 0; k < sides; k++)
+                {
+                    float angle = k * Mathf.PI * 2 / sides;
+                    Vector3 radial = side * Mathf.Cos(angle) + other * Mathf.Sin(angle);
+                    v.Add(root + dir * (length * u) + rig.Forward * (length * .16f * u * u) + radial * radius);
+                    n.Add((radial + dir * (width / Mathf.Max(length, .0001f) * .5f)).normalized);
+                }
             }
-            v.Add(root + dir * length); n.Add(dir);
-            int tip = v.Count - 1;
+            for (int ring = 0; ring < rings; ring++)
             for (int k = 0; k < sides; k++)
             {
-                int a = first + k, b = first + (k + 1) % sides;
-                // outward from the cone's axis
-                Vector3 normal = Vector3.Cross(v[b] - v[a], v[tip] - v[a]);
-                Vector3 outward = (v[a] + v[b]) * .5f - root;
-                if (Vector3.Dot(normal, outward) >= 0) { tri.Add(a); tri.Add(b); tri.Add(tip); } else { tri.Add(a); tri.Add(tip); tri.Add(b); }
+                int a = first + ring * sides + k, b = first + ring * sides + (k + 1) % sides, c = a + sides, d = b + sides;
+                tri.Add(a); tri.Add(b); tri.Add(c); tri.Add(b); tri.Add(d); tri.Add(c);
             }
         }
         private void TubePath(Vector3[] path, float r0, float r1)
         {
-            const int sides = 8;
+            const int sides = 16;
             int first = v.Count, segments = path.Length - 1;
             for (int ring = 0; ring <= segments; ring++)
             {
                 float t = ring / (float)segments;
                 Vector3 p = path[ring], tangent = (path[Mathf.Min(segments, ring + 1)] - path[Mathf.Max(0, ring - 1)]).normalized;
-                Vector3 right = Vector3.Cross(tangent, rig.Up); if (right.sqrMagnitude < 1e-6f) right = rig.Right; right.Normalize();
+                Vector3 right=Vector3.ProjectOnPlane(rig.Right,tangent).normalized;
+                if(right.sqrMagnitude<1e-6f)right=Vector3.Cross(tangent,rig.Up).normalized;
+                right=Quaternion.AngleAxis(8*Mathf.Sin(rig.Time*2.4f-t*4f)*t*rig.Tongue,tangent)*right;
                 Vector3 normal = Vector3.Cross(right, tangent).normalized;
                 float cap = t < .85f ? 1 : Mathf.Sqrt(Mathf.Max(0, 1 - Mathf.Pow((t - .85f) / .15f, 2)));
                 float radius = Mathf.Lerp(r0, r1, t) * Mathf.Max(cap, .1f);
                 for (int k = 0; k < sides; k++)
                 {
                     float angle = k * Mathf.PI * 2 / sides;
-                    Vector3 dir = right * Mathf.Cos(angle) * 1.35f + normal * Mathf.Sin(angle) * .55f;   // a flat tongue
-                    v.Add(p + dir * radius); n.Add(dir.normalized);
+                    Vector3 dir = right * Mathf.Cos(angle) * TongueWidthScale + normal * Mathf.Sin(angle) * .55f;   // a flat tongue
+                    v.Add(p + dir * radius); n.Add((right * (Mathf.Cos(angle) / TongueWidthScale) + normal * (Mathf.Sin(angle) / .55f)).normalized);
                 }
             }
             for (int ring = 0; ring < segments; ring++)

@@ -64,27 +64,62 @@ namespace GravityBox.Tests
    Assert.AreEqual(COgheAct.None,p.Act,"A command ends the act at once");
   }
 
-  // The monster (Mrk 02/10): it turns to show its profile with its tongue out, then looks at the camera with its head
-  // tilted; its face comes with it and goes with it. Close stills for review: Artifacts/Monster.
+  // A puddle grows a head before revealing eyes, fangs and tongue. The face retracts before the head melts.
   [UnityTest] public IEnumerator MonsterGrowsAFaceAndLosesIt()
   {
    yield return Load(1);yield return Frames(60);
-   var p=game.Personality;var life=game.Matter.GetComponent<VenomLifeAnimation>();var toCamera=-game.Owner.View.transform.forward;
+   var p=game.Personality;var life=game.Matter.GetComponent<VenomLifeAnimation>();
    p.Force(COgheAct.Monster);
-   yield return Frames(Mathf.RoundToInt(3.3f*30));
-   Assert.AreEqual(COgheAct.Monster,p.Act);
-   var rig=life.Monster;Assert.Greater(rig.Amount,.9f,"Fully formed");Assert.Greater(rig.Jaw,.7f,"mouth open");Assert.Greater(rig.Tongue,.8f,"tongue out");
-   Assert.Less(Mathf.Abs(Vector3.Dot(rig.Forward,toCamera)),.6f,"seen in profile");
+   yield return Frames(45);
+   var mound=life.Monster;
+   Assert.Greater(mound.Body,.8f);Assert.AreEqual(0,mound.Amount,"Liquid mound first, no face pasted on at the start");
+   yield return Frames(54);
+   var formed=life.Monster;
+   Assert.Greater(formed.Head.y,mound.Head.y+.025f,"The head rises gradually from the puddle");
+   Assert.Greater(formed.Amount,.9f);Assert.AreEqual(0,formed.Fangs);Assert.AreEqual(0,formed.Tongue);
+   yield return Frames(75);
+   var rig=life.Monster;Assert.Greater(rig.Jaw,.7f);Assert.Greater(rig.Fangs,.9f);Assert.Greater(rig.Tongue,.8f);
    var face=game.Matter.GetComponent<COgheMonsterFace>();Assert.IsNotNull(face);
    foreach(var name in new[]{"Monster eyes","Monster mouth","Monster teeth","Monster tongue"})
-   {var part=face.transform.Find(name);Assert.IsTrue(part.gameObject.activeSelf,name);Assert.Greater(part.GetComponent<MeshFilter>().sharedMesh.vertexCount,10,name);Assert.IsNull(part.GetComponent<Collider>(),"Presentation only");}
-   Assert.Greater(rig.Head.y-game.Motion.Centre(0).y,.07f,"It stands far taller than COghe");
-   yield return Frames(Mathf.RoundToInt((5.8f-3.3f)*30));
-   rig=life.Monster;
-   Assert.Greater(Vector3.Dot(rig.Forward,toCamera),.6f,"Then it looks at the camera");Assert.Greater(Mathf.Abs(Vector3.Dot(rig.Right,Vector3.up)),.2f,"its head tilted");
-   yield return Frames(Mathf.RoundToInt((COghePersonality.MonsterLength-5.8f)*30)+6);
+   {
+    var part=face.transform.Find(name);Assert.IsTrue(part.gameObject.activeSelf,name);
+    var mesh=part.GetComponent<MeshFilter>().sharedMesh;Assert.Greater(mesh.vertexCount,10,name);
+    Assert.IsNull(part.GetComponent<Collider>(),"Presentation only");
+    foreach(var v in mesh.vertices)Assert.IsFalse(float.IsNaN(v.x)||float.IsInfinity(v.x),name+" finite geometry");
+   }
+   Assert.Less(rig.Head.y-game.Motion.Centre(0).y,.14f,"A short head on a pool, not a tall humanoid");
+   yield return Frames(60);
+   Assert.Less(life.Monster.Tongue,.01f,"Tongue withdrawn before melting");
+   yield return Frames(60);
    Assert.AreNotEqual(COgheAct.Monster,p.Act);Assert.AreEqual(0,life.Monster.Amount);
-   Assert.IsFalse(face.transform.Find("Monster eyes").gameObject.activeSelf,"The face goes with it");
+   Assert.IsFalse(face.transform.Find("Monster eyes").gameObject.activeSelf,"No leftover face after the act");
+  }
+  [UnityTest] public IEnumerator MonsterEdgeReuseMatchesUncachedSurface()
+  {
+   yield return Load(1);yield return Frames(60);
+   var surface=game.Matter.GetComponent<VenomSurface>();
+   var field=typeof(VenomSurface).GetField("reuseMonsterEdges",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance);
+   Assert.IsNotNull(field);
+   var filter=game.Matter.transform.Find("Continuous wet skin").GetComponent<MeshFilter>();
+   surface.ParticleInk=new Vector4[32];for(int i=0;i<32;i++)surface.ParticleInk[i]=new Vector4(i/31f,1-i/31f,0,0);
+   game.Personality.Force(COgheAct.Monster);
+   foreach(int frames in new[]{30,72,72,75})
+   {
+    yield return Frames(frames);
+    field.SetValue(surface,false);surface.Rebuild(false);
+    var expected=filter.sharedMesh.vertices;var normals=filter.sharedMesh.normals;
+    var colors=new System.Collections.Generic.List<Vector4>();filter.sharedMesh.GetUVs(2,colors);
+    field.SetValue(surface,true);surface.Rebuild(false);
+    var actual=filter.sharedMesh.vertices;var actualNormals=filter.sharedMesh.normals;
+    var actualColors=new System.Collections.Generic.List<Vector4>();filter.sharedMesh.GetUVs(2,actualColors);
+    Assert.AreEqual(expected.Length,actual.Length);Assert.AreEqual(colors.Count,actualColors.Count);
+    for(int i=0;i<expected.Length;i++)
+    {
+     Assert.Less(Vector3.Distance(expected[i],actual[i]),.00001f,"Same skin crossing: "+i);
+     Assert.Less(Vector3.Distance(normals[i],actualNormals[i]),.01f,"Same normal: "+i);
+     Assert.Less(Vector4.Distance(colors[i],actualColors[i]),.0001f,"Same ink: "+i);
+    }
+   }
   }
   [Explicit("Renders monster review stills")]
   [UnityTest] public IEnumerator RenderMonsterStills()

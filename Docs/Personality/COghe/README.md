@@ -35,27 +35,30 @@ Zoom in khi COghe ăn), [`home-round3.jpg`](home-round3.jpg).
 - Chỉ tính chạm thật trên màn hình: bản giải tự động và proof không bao giờ kích hoạt cơn bực.
 - Không diễn khi ở trong cơ quan, đang nắm vật, trên tường/dốc, hoặc thân đang tách mảnh.
 
-## Main menu: quái vật (02/10, Mrk)
+## Home / Main Menu: đầu quái vật trồi từ vũng nhầy (15/10/2026)
 
-Màn mở đầu gây chú ý: menu vừa hiện (~1,2 s) là COghe diễn, sau đó cứ 3 vở diễn ở menu lại có một lần. Dài 7,2 s.
-Mềm mại như chất lỏng, không dọa, không giọng nói (Mrk sửa lần 2). Xem: [`monster-menu.mp4`](monster-menu.mp4) (quay từ
-bản Mac, có giao diện menu và tiếng), [`monster-menu.jpg`](monster-menu.jpg).
+Thay dáng người cũ theo yêu cầu Mrk: chỉ còn đầu quái vật nối liền với phần nhầy,
+không ngực/vai/tay. Vẫn dùng chung vở diễn ở Home và Main Menu; không đổi quyền
+Plus hoặc nhịp tự diễn ở menu. Tổng thời gian **9,6 giây**.
 
 | Lúc | Diễn |
 | --- | --- |
-| 0–1,5 s | Chất lỏng phồng nhẹ, dâng lên thành cột rồi nặn thành dáng Venom; mắt trắng xếch và hàm răng hiện ra |
-| 1,3–2,3 s | Quay nghiêng (thấy mặt nghiêng) |
-| 1,6–4,5 s | Cả thân lượn uốn éo như chất lỏng; há miệng từ từ, thè lưỡi dài, lưỡi uốn lượn |
-| 3,9–4,9 s | Rụt lưỡi, ngậm miệng, ngước nhìn ra xa |
-| 4,5–6,6 s | Quay sang nhìn camera, chớp mắt, nghiêng đầu |
-| 6,3–7,2 s | Tan về COghe |
+| 0–1,6 s | Vũng nhầy tụ và phồng lên, chưa có mặt |
+| 0,55–3 s | Một khối đầu từ từ nhô lên, phần gốc vẫn liền với vũng nhầy |
+| 2,1–3,1 s | Mắt hình thành trên da; đầu giữ hướng 3/4, không quay mất mặt |
+| 2,9–4,85 s | Miệng thành một nét cười rồi mở dần; nanh lộ ra sau mắt |
+| 4,65–6,35 s | Lưỡi trườn ra từ miệng, uốn cong với chuyển động mềm |
+| 6,35–7,75 s | Thu lưỡi, ngậm miệng, nhìn lại và chớp mắt |
+| 7,8–9,6 s | Mặt thu lại trước, đầu chảy xuống vũng nhầy rồi về COghe |
 
-- Như mọi vở diễn: chỉ là lớp da, không hạt nào di chuyển. Mắt, răng, miệng, lưỡi (`COgheMonsterFace`) nằm đúng trên mặt da
-  (tìm trong trường của lớp da mỗi khung) và chỉ có trong vở này — ngoại lệ Mrk cho với quy tắc "không răng". Trong vở này
-  đôi mắt thường của COghe tắt, mặt quái vật thay chỗ.
-- Hình lấy cảm hứng từ Venom nhưng là thiết kế riêng, không dùng logo hay chi tiết nhận diện của Marvel.
-- Camera menu: khung cả con quái vật, lại gần mặt một chút khi há miệng và nghiêng đầu (`COgheProductUI.FrameShowcase`).
-- Tiếng: chỉ tiếng chất lỏng (dâng lên, lưỡi trượt ra) và tiếng "pốc" khi tan.
+- Chỉ thay lớp da và mặt, không di chuyển hạt, thêm collider hoặc ghi tiến độ.
+- Lưới miệng/mắt lấy mẫu liên tục theo mặt da; răng/lưỡi dùng normal mượt.
+  Sửa sai số nội suy trường da và normal chỉ khi diễn quái vật; giữ mật độ lưới cũ.
+- Camera Home ở chế độ zoom theo tâm đầu/vũng nhầy; overview và thao tác xoay giữ nguyên.
+- Tiếng vẫn là chất lỏng: cue lưỡi khớp nhịp mới ở 4,65 s. Không giọng nói/tiếng dọa.
+- Lưỡi rộng gấp đôi bản đầu quái vật, giữ độ dày cũ. Theo phản hồi 15/10, giữ nhịp sóng uốn của bản cũ chạy dọc cả thân lưỡi; chỉ đoạn sát miệng giảm biên độ để gốc không giật. Giữa lưỡi có độ võng và đầu lưỡi lượn theo sóng, tránh giữ cố định tư thế cong.
+- [Ảnh, video Unity và kiểm chứng](../../Verification/COgheMonsterHead/README.md).
+- Các video và mô tả dáng người 02/10 là lịch sử, không còn là chuẩn hình dáng.
 
 ## Mắt (07/10, Mrk)
 

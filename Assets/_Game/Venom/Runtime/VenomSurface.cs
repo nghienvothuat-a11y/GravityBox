@@ -19,6 +19,15 @@ namespace GravityBox.Venom
         private readonly Vector3[] edgePoints = new Vector3[64], edgeNormals = new Vector3[64];
         private readonly int[] edgeVersions = new int[64];
         private int cellVersion;
+        // Crossed grid edges belong to several adjacent cells. Reuse the exact monster
+        // field solution for the whole fragment instead of solving it again in each cell.
+        private bool reuseMonsterEdges = true;
+        private bool monsterEdges;
+        private readonly int[] cornerGrid = new int[8];
+        private int[] monsterEdgeStamp = Array.Empty<int>();
+        private Vector3[] monsterEdgePoint = Array.Empty<Vector3>(), monsterEdgeNormal = Array.Empty<Vector3>();
+        private Vector4[] monsterEdgeInk = Array.Empty<Vector4>();
+        private int monsterStamp;
         private readonly int[] inside = new int[4], outside = new int[4];
         private readonly int[] seen = new int[CohesiveOrganism.ParticleCount];
         /// <summary>The body's particles plus what the life animation adds (a crest, a shape, the monster).</summary>
@@ -229,6 +238,19 @@ namespace GravityBox.Venom
             level.Campaign?.PrepareSkinFragment(new Bounds((min+max)*.5f,size+Vector3.one*cell*2));
             int nx=Mathf.CeilToInt(size.x/cell)+1, ny=Mathf.CeilToInt(size.y/cell)+1,nz=Mathf.CeilToInt(size.z/cell)+1;
             int length=nx*ny*nz;
+            monsterEdges = reuseMonsterEdges && life.Monster.Body > .001f;
+            if (monsterEdges)
+            {
+                int required=length*7; // the seven positive grid-edge directions used by these tetrahedra
+                if(monsterEdgeStamp.Length<required)
+                {
+                    int capacity=Mathf.NextPowerOfTwo(required);
+                    monsterEdgeStamp=new int[capacity];monsterEdgePoint=new Vector3[capacity];monsterEdgeNormal=new Vector3[capacity];
+                    monsterEdgeInk=Array.Empty<Vector4>();
+                }
+                if(inking&&monsterEdgeInk.Length<monsterEdgeStamp.Length)monsterEdgeInk=new Vector4[monsterEdgeStamp.Length];
+                if(++monsterStamp==int.MaxValue){Array.Clear(monsterEdgeStamp,0,monsterEdgeStamp.Length);monsterStamp=1;}
+            }
             if(field.Length<length){int capacity=Mathf.NextPowerOfTwo(length);field=new float[capacity];gradient=new Vector3[capacity];}
             Array.Clear(field,0,length);Array.Clear(gradient,0,length);
             if(inking){if(inkField.Length<field.Length)inkField=new Vector4[field.Length];Array.Clear(inkField,0,length);}
@@ -261,6 +283,7 @@ namespace GravityBox.Venom
                 for(int c=0;c<8;c++)
                 {
                     Vector3Int o=offsets[c];int index=x+o.x+nx*(y+o.y+ny*(z+o.z));
+                    cornerGrid[c]=index;
                     corners[c]=min+new Vector3(x+o.x,y+o.y,z+o.z)*cell;cornerNormals[c]=gradient[index];
                     if(inking)cornerInks[c]=inkField[index];
                 }
@@ -289,10 +312,57 @@ namespace GravityBox.Venom
             // order and emitted triangle/vertex order exactly.
             int key=a*8+b;
             if(edgeVersions[key]==cellVersion){p=edgePoints[key];n=edgeNormals[key];return;}
+            int shared=-1;
+            if(monsterEdges)
+            {
+                Vector3Int d=offsets[b]-offsets[a];
+                int direction=Mathf.Abs(d.x)+Mathf.Abs(d.y)*2+Mathf.Abs(d.z)*4-1;
+                shared=Mathf.Min(cornerGrid[a],cornerGrid[b])*7+direction;
+                if(monsterEdgeStamp[shared]==monsterStamp)
+                {
+                    p=monsterEdgePoint[shared];n=monsterEdgeNormal[shared];
+                    edgeVersions[key]=cellVersion;edgePoints[key]=p;edgeNormals[key]=n;
+                    if(inking)edgeInks[key]=monsterEdgeInk[shared];
+                    return;
+                }
+            }
             float t=(organism.Profile.SkinThreshold-values[a])/(values[b]-values[a]);p=Vector3.Lerp(corners[a],corners[b],t);n=Vector3.Lerp(cornerNormals[a],cornerNormals[b],t).normalized;
+            if (life.Monster.Body > .001f)
+            {
+                // Correct interpolation error on the portrait head against the smooth implicit field.
+                // One bounded Newton step and an analytic normal smooth the portrait without increasing mesh density.
+                Vector3 edge = corners[b] - corners[a];
+                for (int iteration = 0; iteration < 2; iteration++)
+                {
+                    float value = 0; Vector3 gradient = Vector3.zero;
+                    for (int i = 0; i < sourceCount; i++)
+                    {
+                        if (weights[i] < .00001f) continue;
+                        Vector3 d = p - points[i]; float h2 = supports[i] * supports[i], q = 1 - d.sqrMagnitude / h2;
+                        if (q <= 0) continue;
+                        value += q * q * q * weights[i]; gradient += d * (6 * q * q * weights[i] / h2);
+                    }
+                    if (gradient.sqrMagnitude > 1e-12f) n = gradient.normalized;
+                    if (iteration == 1) break;
+                    float slope = Vector3.Dot(gradient, edge);
+                    if (Mathf.Abs(slope) < 1e-6f) break;
+                    t = Mathf.Clamp01(t + (value - organism.Profile.SkinThreshold) / slope);
+                    p = Vector3.Lerp(corners[a], corners[b], t);
+                }
+            }
             ConstrainFloor(ref p,ref n);
             edgeVersions[key]=cellVersion;edgePoints[key]=p;edgeNormals[key]=n;
             if(inking)edgeInks[key]=Vector4.Lerp(cornerInks[a],cornerInks[b],t)/Mathf.Max(1e-6f,Mathf.Lerp(values[a],values[b],t));
+            if(shared>=0)
+            {
+                monsterEdgeStamp[shared]=monsterStamp;monsterEdgePoint[shared]=p;monsterEdgeNormal[shared]=n;
+                if(inking)monsterEdgeInk[shared]=edgeInks[key];
+            }
+            if (life.Monster.Body > .001f)
+            {
+                int reverse=b*8+a;edgeVersions[reverse]=cellVersion;edgePoints[reverse]=p;edgeNormals[reverse]=n;
+                if(inking)edgeInks[reverse]=edgeInks[key];
+            }
         }
         private void Triangle(Vector3 a,Vector3 b,Vector3 c,Vector3 an,Vector3 bn,Vector3 cn,int ka,int kb,int kc)
         {

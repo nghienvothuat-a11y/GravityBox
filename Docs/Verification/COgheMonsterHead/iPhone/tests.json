@@ -1,0 +1,90 @@
+{
+  "runs": [
+    {
+      "run": "tests.xml",
+      "passed": 4,
+      "failed": 1,
+      "seconds": 43.4586743,
+      "tests": [
+        {
+          "name": "HomeMonsterReturnsToLiquidAndCanBeInterrupted",
+          "result": "Failed"
+        },
+        {
+          "name": "TheMenuOpensWithTheMonster",
+          "result": "Passed"
+        },
+        {
+          "name": "MonsterEdgeReuseMatchesUncachedSurface",
+          "result": "Passed"
+        },
+        {
+          "name": "MonsterGrowsAFaceAndLosesIt",
+          "result": "Passed"
+        },
+        {
+          "name": "PersonalityActsNeverMoveTheBody",
+          "result": "Passed"
+        }
+      ]
+    },
+    {
+      "run": "tests-final.xml",
+      "passed": 2,
+      "failed": 0,
+      "seconds": 13.5145934,
+      "tests": [
+        {
+          "name": "HomeMonsterReturnsToLiquidAndCanBeInterrupted",
+          "result": "Passed"
+        },
+        {
+          "name": "MonsterEdgeReuseMatchesUncachedSurface",
+          "result": "Passed"
+        }
+      ]
+    },
+    {
+      "run": "tests-skin-consumers.xml",
+      "passed": 3,
+      "failed": 0,
+      "seconds": 7.7034065,
+      "tests": [
+        {
+          "name": "HatSitsOnTheBiggestPieceAndTouchesNothing",
+          "result": "Passed"
+        },
+        {
+          "name": "InkIsCarriedByTheParticlesAndRinsesAway",
+          "result": "Passed"
+        },
+        {
+          "name": "TheHatSitsStillOnARestingCOghe",
+          "result": "Passed"
+        }
+      ]
+    },
+    {
+      "run": "tests-wave-final.xml",
+      "passed": 3,
+      "failed": 0,
+      "seconds": 18.7713,
+      "tests": [
+        {
+          "name": "HomeMonsterReturnsToLiquidAndCanBeInterrupted",
+          "result": "Passed"
+        },
+        {
+          "name": "TheMenuOpensWithTheMonster",
+          "result": "Passed"
+        },
+        {
+          "name": "MonsterEdgeReuseMatchesUncachedSurface",
+          "result": "Passed"
+        }
+      ]
+    }
+  ],
+  "note": "First Home failure was an incorrect test expectation: existing SmoothStep(0, .3, amount) yields at most .3. Corrected expectation; actual root width is doubled to .2754 head units with thickness unchanged. Final rerun passes.",
+  "scope": "Eight distinct checks passed across these runs. After restoring the flowing tongue rhythm, Home interruption/width, Menu startup and mesh equivalence were rerun (3/3 passed). Other five tests precede only that waveform-only revision."
+}

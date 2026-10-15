@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-15",
+  "branch": "NewGraphic",
+  "baseCommit": "eb14e234",
+  "workingTree": "Uncommitted liquid-head implementation and this optimization/tongue revision. No physics, scene, profile, or save asset changes.",
+  "device": "iPhone 13 Pro Max (iPhone14,3)",
+  "os": "iOS 18.3.2",
+  "gpu": "Apple A15",
+  "resolution": [
+    1284,
+    2778
+  ],
+  "targetFps": 60,
+  "unity": "6000.3.19f1",
+  "configuration": "Release IL2CPP, Metal; COGHE_MOBILE_BENCHMARK enabled, no Unity Profiler attached",
+  "baseline": "Same liquid-head act before this turn\u2019s edge/face reuse and tongue widening. Includes identical one-shot measurement fixture.",
+  "optimizationSoak": "Same optimized skin/face but initially restrained tongue motion; user subsequently asked to restore earlier flowing rhythm.",
+  "final": "Double-width tongue with restored travelling-wave rhythm; cache/skin and face density unchanged from optimization soak.",
+  "binarySha256": {
+    "before": {
+      "COghe": "62ca03727b3b27c1898bd050a088c6624f56e35783df2d9f0b6fc444c2981b06",
+      "Frameworks/UnityFramework.framework/UnityFramework": "1568803a7cba128062a5c86780de022a17fe3bf45c72c487a658611ee3e222e5"
+    },
+    "optimizationSoak": {
+      "COghe": "991dbcc19c181667b1c918b0f931bee7a54685aacbc14c65b2591e6e853235da",
+      "Frameworks/UnityFramework.framework/UnityFramework": "dff6a00f31ddc8a450ad52d7c0d6c2dab0f0682c2ff332e77889b5a9cfef4247"
+    },
+    "final": {
+      "COghe": "84e74fd86aa8412dad465b0714bf764899cf8097deb10d89fa2cd96538c1ce1f",
+      "Frameworks/UnityFramework.framework/UnityFramework": "fab81fc95e139c4e35c60c5b5fd64b34c64bd41534eef9ce469652f14e5a929f"
+    }
+  },
+  "finalSourceSha256": {
+    "Assets/_Game/Venom/Runtime/VenomSurface.cs": "5e61412bf2af470b16b288afdf53e63817a58b1b9a64fad7125e139ba0e16b7b",
+    "Assets/_Game/Venom/Runtime/Personality/COgheMonsterFace.cs": "aedfc749c05173f45da179c47894e12e0b5326ecd05c3235a94fac0aba4e6c31",
+    "Assets/_Game/Venom/Runtime/Product/COgheProductProof.cs": "8d6bbaa3985ef242a68d0b1f98ec815aca776a7ca943aff4403b1c141596b6b2"
+  },
+  "qualitySettingsSha256": "bcf4a41cf09b77b8211e0ae377ba2e87946fb68fb0772ce12aad772953ca63d0",
+  "thermal": "Baseline and short native console runs reported Fair. Long run console did not forward Unity messages; long-run temperature/thermal trace was not collected."
+}

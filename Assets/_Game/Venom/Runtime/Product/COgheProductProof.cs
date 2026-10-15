@@ -1,4 +1,4 @@
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+#if UNITY_EDITOR || DEVELOPMENT_BUILD || COGHE_MOBILE_BENCHMARK
 using System;
 using System.Collections;
 using System.IO;
@@ -13,34 +13,142 @@ namespace GravityBox.Venom
     /// fixed 30 fps and the sounds it made (-coghe-monster-reel &lt;dir&gt;). Development builds only; writes no saves.</summary>
     public sealed class COgheMonsterReel : MonoBehaviour
     {
+        [Serializable] private sealed class DeviceRequest { public string[] args; }
+        private static string[] requestedArgs;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Boot()
         {
-            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-coghe-monster-reel")<0)return;
+            requestedArgs=Environment.GetCommandLineArgs();
+            // iOS IL2CPP does not consistently forward native launch arguments to System.Environment.
+            // An explicit, consumed request in the app sandbox enables the same test fixture.
+            string request=Path.Combine(Application.persistentDataPath,"COgheMonsterRequest.json");
+            if(File.Exists(request))
+            {
+                try { requestedArgs=JsonUtility.FromJson<DeviceRequest>(File.ReadAllText(request)).args??requestedArgs; }
+                finally { File.Delete(request); }
+            }
+            if(Array.IndexOf(requestedArgs,"-coghe-monster-reel")<0)return;
+            Debug.Log("COGHE MONSTER REQUEST "+Application.persistentDataPath);
             VenomCampaignSave.PersistenceEnabled=false;COgheProductMode.OverrideForTests=true;
             var go=new GameObject("Monster reel");DontDestroyOnLoad(go);go.AddComponent<COgheMonsterReel>();
         }
+        [Serializable] private struct MonsterTiming
+        { public float fps,p95Ms; public double skinMs,faceMs; public int frames,maxSkinVertices; public string gpu; public bool home; }
         private IEnumerator Start()
         {
-            var args=Environment.GetCommandLineArgs();int at=Array.IndexOf(args,"-coghe-monster-reel");
+            var args=requestedArgs;int at=Array.IndexOf(args,"-coghe-monster-reel");
             string output=at+1<args.Length&&!args[at+1].StartsWith("-")?Path.GetFullPath(args[at+1]):Path.Combine(Application.persistentDataPath,"MonsterReel");
             Directory.CreateDirectory(output);
-            Screen.SetResolution(472,1022,FullScreenMode.Windowed);Application.runInBackground=true;
+            if (!Application.isMobilePlatform) Screen.SetResolution(472,1022,FullScreenMode.Windowed);
+            Application.runInBackground=true;Screen.sleepTimeout=SleepTimeout.NeverSleep;
             var sounds=new System.Text.StringBuilder();int frame=0;
             System.Action<string,float> heard=(clip,volume)=>sounds.AppendLine($"{frame/30f:F3} {clip} {volume:F2}");
             yield return new WaitForSecondsRealtime(1.5f);
             var game=FindFirstObjectByType<VenomCampaign>();
             if(game==null||game.ProductUI==null){Debug.LogError("Monster reel: no menu");Application.Quit(1);yield break;}
-            game.ProductUI.ShowMenu();COgheAudio.Heard+=heard;Time.captureFramerate=30;
-            for(frame=0;frame<30*10;frame++)
+            bool home = Array.IndexOf(args, "-coghe-monster-home") >= 0;
+            bool realtime = Array.IndexOf(args, "-coghe-monster-realtime") >= 0;
+            if (home)
             {
-                ScreenCapture.CaptureScreenshot(Path.Combine(output,$"frame_{frame:00000}.png"));
+                // A review fixture only: opens the existing Home without changing saved progress/entitlements.
+                game.Progress.HomeUnlocked = true; game.ProductUI.OpenHome(); game.ProductUI.ToggleHomeZoom();
+                yield return new WaitForSecondsRealtime(2);
+            }
+            else game.ProductUI.ShowMenu();
+            if (realtime)
+            {
+                int cyclesAt=Array.IndexOf(args,"-coghe-monster-cycles");
+                int cycles=3;
+                if(cyclesAt>=0&&cyclesAt+1<args.Length&&int.TryParse(args[cyclesAt+1],out int requested))cycles=Mathf.Clamp(requested,1,90);
+                yield return Measure(game,output,home,cycles);
+                Debug.Log("COGHE MONSTER REEL DONE");Application.Quit(0);yield break;
+            }
+            game.Personality.Force(COgheAct.Monster);
+            COgheAudio.Heard+=heard;Time.captureFramerate=realtime?0:30;
+            var samples = new System.Collections.Generic.List<float>(1200);
+            COgheMobileMetrics.Enabled = realtime; double skinMs = 0, faceMs = 0; Array.Clear(COgheMobileMetrics.Milliseconds,0,4);
+            int maxVertices=0;float until=Time.realtimeSinceStartup+COghePersonality.MonsterLength+.6f;
+            int total=Mathf.CeilToInt((COghePersonality.MonsterLength+.6f)*30);
+            for(frame=0;realtime?Time.realtimeSinceStartup<until:frame<total;frame++)
+            {
+                if (!realtime)
+                {
+                    bool stills=Array.IndexOf(args,"-coghe-monster-stills")>=0;
+                    if(!stills||frame==45||frame==99||frame==174||frame==281)
+                        ScreenCapture.CaptureScreenshot(Path.Combine(output,$"frame_{frame:00000}.png"));
+                }
+                else if (frame>2)
+                {
+                    samples.Add(Time.unscaledDeltaTime*1000); skinMs+=COgheMobileMetrics.Milliseconds[0];
+                    var face=game.Matter.GetComponent<COgheMonsterFace>();if(face!=null)faceMs+=face.LastBuildMilliseconds;
+                }
+                Array.Clear(COgheMobileMetrics.Milliseconds,0,4);
+                maxVertices=Mathf.Max(maxVertices,game.Matter.GetComponent<VenomSurface>().VertexCount);
                 yield return null;
             }
             Time.captureFramerate=0;COgheAudio.Heard-=heard;
             File.WriteAllText(Path.Combine(output,"sounds.txt"),sounds.ToString());
+            if (realtime && samples.Count>0)
+            {
+                float mean=samples.Average();samples.Sort();
+                File.WriteAllText(Path.Combine(output,"timing.json"),JsonUtility.ToJson(new MonsterTiming {
+                    fps=1000/mean,p95Ms=samples[(int)(samples.Count*.95f)],frames=samples.Count,maxSkinVertices=maxVertices,
+                    gpu=SystemInfo.graphicsDeviceName,home=home,skinMs=skinMs/samples.Count,faceMs=faceMs/samples.Count },true));
+            }
             Debug.Log("COGHE MONSTER REEL DONE");Application.Quit(0);
         }
+        [Serializable] private struct DeviceTiming
+        {
+            public string device,os,gpu,unity; public int width,height,targetFps,cycles,frames,over33,over50,gcCollections,maxSkinVertices;
+            public float seconds,fps,p50Ms,p95Ms,p99Ms,worstMs,batteryStart,batteryEnd;
+            public string batteryStatus; public double skinMs,faceMs; public long memoryStart,memoryEnd;
+        }
+        private IEnumerator Measure(VenomCampaign game,string output,bool home,int cycles)
+        {
+            var skin=game.Matter.GetComponent<VenomSurface>();
+            // Warm mesh buffers/shaders once before the measured cycles. No save changes.
+            game.Personality.Force(COgheAct.Monster);
+            yield return new WaitForSecondsRealtime(COghePersonality.MonsterLength+.8f);
+            var face=game.Matter.GetComponent<COgheMonsterFace>();
+            var samples=new System.Collections.Generic.List<float>(cycles*700);
+            var rows=new System.Collections.Generic.List<Vector4>(cycles*700);
+            var endFrame=new WaitForEndOfFrame();
+            var result=new DeviceTiming { device=SystemInfo.deviceModel,os=SystemInfo.operatingSystem,gpu=SystemInfo.graphicsDeviceName,
+                unity=Application.unityVersion,width=Screen.width,height=Screen.height,targetFps=Application.targetFrameRate,cycles=cycles,
+                batteryStart=SystemInfo.batteryLevel,batteryStatus=SystemInfo.batteryStatus.ToString(),memoryStart=UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() };
+            int gc=GC.CollectionCount(0);double skinTotal=0,faceTotal=0;
+            COgheMobileMetrics.Enabled=true;
+            for(int cycle=0;cycle<cycles;cycle++)
+            {
+                game.Personality.Force(COgheAct.Monster);
+                float start=Time.realtimeSinceStartup,until=start+COghePersonality.MonsterLength+.6f;
+                while(Time.realtimeSinceStartup<until)
+                {
+                    Array.Clear(COgheMobileMetrics.Milliseconds,0,4);
+                    yield return endFrame;
+                    float ms=Time.unscaledDeltaTime*1000;
+                    samples.Add(ms);skinTotal+=COgheMobileMetrics.Milliseconds[0];faceTotal+=face!=null?face.LastBuildMilliseconds:0;
+                    rows.Add(new Vector4(cycle,Time.realtimeSinceStartup-start,(float)COgheMobileMetrics.Milliseconds[0],face!=null?(float)face.LastBuildMilliseconds:0));
+                    result.maxSkinVertices=Mathf.Max(result.maxSkinVertices,skin.VertexCount);
+                    if(ms>33.334f)result.over33++;if(ms>50)result.over50++;
+                    yield return null;
+                }
+            }
+            COgheMobileMetrics.Enabled=false;
+            result.frames=samples.Count;result.gcCollections=GC.CollectionCount(0)-gc;
+            result.memoryEnd=UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong();result.batteryEnd=SystemInfo.batteryLevel;
+            var csv=new System.Text.StringBuilder("cycle,act_seconds,frame_ms,skin_ms,face_ms\n");
+            for(int i=0;i<samples.Count;i++)
+                csv.AppendFormat(System.Globalization.CultureInfo.InvariantCulture,"{0},{1:F4},{2:F4},{3:F4},{4:F4}\n",(int)rows[i].x,rows[i].y,samples[i],rows[i].z,rows[i].w);
+            File.WriteAllText(Path.Combine(output,"frames.csv"),csv.ToString());
+            result.seconds=samples.Sum()/1000;result.fps=samples.Count/result.seconds;
+            samples.Sort();result.p50Ms=samples[(int)(samples.Count*.5f)];result.p95Ms=samples[(int)(samples.Count*.95f)];
+            result.p99Ms=samples[(int)(samples.Count*.99f)];result.worstMs=samples[samples.Count-1];
+            result.skinMs=skinTotal/samples.Count;result.faceMs=faceTotal/samples.Count;
+            File.WriteAllText(Path.Combine(output,"timing.json"),JsonUtility.ToJson(result,true));
+            Debug.Log("COGHE MONSTER TIMING "+JsonUtility.ToJson(result));
+        }
+
     }
 
     /// <summary>Opt-in native-player visual verification; never runs for a normal player or writes campaign saves.</summary>
