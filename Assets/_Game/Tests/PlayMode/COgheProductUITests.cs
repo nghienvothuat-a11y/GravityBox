@@ -146,7 +146,8 @@ namespace GravityBox.Tests
             yield return Click("Got it");Assert.AreEqual(COgheProductPage.MainMenu,ui.Page);
             game.Progress.HomeUnlocked=true; // fixture: UI unlock state, not a claim that Boss 10 was solved
             yield return Click("Home");Assert.AreEqual(COgheProductPage.Home,ui.Page);
-            yield return Click("Feed");yield return Click("Play");Assert.Greater(game.Greeting,0);
+            yield return Click("Feed");yield return Click("Ability");Assert.AreEqual(COgheProductPopup.AbilityStats,ui.Popup);
+            yield return Click("Close");game.GreetHome();Assert.Greater(game.Greeting,0);
             yield return Click("Back");yield return Click("Play");
             Assert.IsFalse(game.Home);Assert.IsTrue(game.Owner.Apparatus.gameObject.activeSelf);Assert.AreEqual(32,game.Matter.Bodies.Length);
             foreach(var collider in game.Matter.Bodies.Select(b=>b.GetComponent<Collider>()))Assert.IsTrue(collider.enabled);

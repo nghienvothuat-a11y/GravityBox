@@ -19,6 +19,13 @@ namespace GravityBox.Venom
         public Transform PadA,PadB;
         public bool AutoAdvance=true;
         public COgheProductUI ProductUI {get;private set;}
+        /// <summary>The Intelligence ability (product levels): COghe walks to the next device of the solution by itself.</summary>
+        public COgheIntelligence Intelligence {get;private set;}
+        /// <summary>Simulation time of the player's last touch on the game (Intelligence waits for a pause).</summary>
+        public float LastInputTime {get;private set;}
+        /// <summary>A device took a tap (the tapped mechanism; refused taps included, see its LastRefusal).</summary>
+        public event Action<COgheMechanism> MechanismTouched;
+        internal void NoteMechanismTouched(COgheMechanism m)=>MechanismTouched?.Invoke(m);
         public VenomLevelController Owner {get;private set;}
         public CohesiveOrganism Matter=>Owner.Organism;
         public Transform Root=>Owner.Rotation.transform;
@@ -88,7 +95,9 @@ namespace GravityBox.Venom
             if(Feedback==null)Feedback=gameObject.AddComponent<COgheControlFeedback>();
             Feedback.Initialize(this);
             if(COghePersonality.Applies(this)){Personality=gameObject.AddComponent<COghePersonality>();Personality.Initialize(this);}
-            InitializeMechanisms();CameraRig=new VenomCampaignCamera(this);EnhancedTouchSupport.Enable();ResetLevel();
+            InitializeMechanisms();CameraRig=new VenomCampaignCamera(this);EnhancedTouchSupport.Enable();
+            if(COgheIntelligence.Applies(this)){Intelligence=gameObject.AddComponent<COgheIntelligence>();Intelligence.Initialize(this);}
+            ResetLevel();
             if(COgheProductMode.Applies(this)){ProductUI=gameObject.AddComponent<COgheProductUI>();ProductUI.Initialize(this);}
         }
         /// <summary>Taps a mechanism took and taps that switched the active part, since the level was reset (difficulty
@@ -99,6 +108,8 @@ namespace GravityBox.Venom
         {
             MechanismTaps=0;PartSelections=0;
             ResetPointerInput();
+            if(Motion!=null)Motion.SpeedScale=COgheProductMode.Applies(this)?COgheAbilities.SpeedScale:1;
+            if(Matter!=null)LastInputTime=Matter.SimulationTime;
             if(Owner==null||Matter==null)return;
             habitat?.Leave();Owner.Rotation.ResetState();Owner.ResetCampaignState();
             for(int i=0;i<Matter.Bodies.Length;i++)
@@ -179,6 +190,7 @@ namespace GravityBox.Venom
             if(Owner.Completed){Owner.Celebration.Step();return;}
             Impact=Mathf.MoveTowards(Impact,0,dt*3);CatchPulse=Mathf.MoveTowards(CatchPulse,0,dt*2);
             Motion.Step(dt);
+            if(!Home)Intelligence?.Step(dt);
             if(!Home){StepProp(dt);StepKnife(dt);StepPads(dt);StepTube(dt);StepMechanisms(dt);}
             int contacts=0;Vector3 velocity=Vector3.zero;
             for(int i=0;i<32;i++){if(Motion.HasGrip(i))contacts++;velocity+=Matter.Bodies[i].linearVelocity/32;}
@@ -555,7 +567,7 @@ namespace GravityBox.Venom
         private bool PlayArea(Vector2 p)
         {return ProductUI!=null?ProductUI.AllowsWorldPointer(p):CameraRig.AllowsPointer(p,Screen.width,Screen.height);}
         public void CancelPointer()=>ResetPointerInput();
-        public void BeginPointer(Vector2 p){if(!Owner.CanControl||InputLocked||!PlayArea(p))return;ProductUI?.OnGameplayInteraction();pointerDown=true;pointerMoved=false;pointerStart=pointerPrevious=p;}
+        public void BeginPointer(Vector2 p){if(!Owner.CanControl||InputLocked||!PlayArea(p))return;ProductUI?.OnGameplayInteraction();LastInputTime=Matter.SimulationTime;pointerDown=true;pointerMoved=false;pointerStart=pointerPrevious=p;}
         public void MovePointer(Vector2 p)
         {
             if(!pointerDown)return;
@@ -606,6 +618,7 @@ namespace GravityBox.Venom
         }
         public void TouchPoint(Vector2 screen)
         {
+            if(Matter!=null)LastInputTime=Matter.SimulationTime;
             if(!Owner.CanControl||InputLocked||ProductUI!=null&&ProductUI.BlockWorldInput)return;
             ProductUI?.OnGameplayInteraction();
             climbingStep=null;tubeIntent=false;

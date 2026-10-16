@@ -16,6 +16,8 @@ namespace GravityBox.Venom
         /// <summary>The eyes, once they are switched on (COgheEyes.Enabled), on the skin that exists by then.</summary>
         private void EnsureEyes() { if (COgheEyes.Enabled && eyes == null && game != null && game.Matter != null && game.Matter.GetComponent<VenomSurface>() != null) eyes = COgheEyes.Attach(game); }
         /// <summary>The mood for the eyes of fragment <paramref name="group"/>, and where they look (null: at the player).</summary>
+        /// <summary>Where the Intelligence ability has COghe look while it thinks (null: its own choice).</summary>
+        public Vector3? GuideLook;
         public COgheMood EyeMood(int group, out Vector3? look)
         {
             look = null;
@@ -25,6 +27,7 @@ namespace GravityBox.Venom
             if (Act != COgheAct.None && Act != COgheAct.Home) return COgheMood.Hidden;   // a shape, a wave, the monster, a melt, a tantrum
             if (Act == COgheAct.Home && Pose.Morph > .15f) return COgheMood.Hidden;      // a heart, a bonus word
             if (room != null) return HomeMood(out look);
+            if (GuideLook.HasValue) { look = GuideLook; return COgheMood.Focus; }   // Intelligence: looking around for the next device
             float now = game.Matter.SimulationTime;
             foreach (var m in game.Mechanisms)
             {

@@ -94,11 +94,11 @@ namespace GravityBox.Venom
             if(heldProp!=null)
             {
                 // Holding a crate, a tap on a lift button lets the crate go and presses the button (Mrk, 05/10/2026).
-                foreach(var m in Mechanisms)if(m.isActiveAndEnabled&&m.ClaimsTapWhileHolding(ray,obstruction)){ReleaseProp();return m.TryTouch(this,ray,obstruction);}
+                foreach(var m in Mechanisms)if(m.isActiveAndEnabled&&m.ClaimsTapWhileHolding(ray,obstruction)){ReleaseProp();bool took=m.TryTouch(this,ray,obstruction);if(took)NoteMechanismTouched(m);return took;}
                 return false;
             }
-            foreach(var rail in tapRails)if(rail.isActiveAndEnabled&&rail.TryTouchControlBody(this,ray,obstruction))return true;
-            foreach(var m in Mechanisms)if(m.isActiveAndEnabled&&m.TryTouch(this,ray,obstruction))return true;
+            foreach(var rail in tapRails)if(rail.isActiveAndEnabled&&rail.TryTouchControlBody(this,ray,obstruction)){NoteMechanismTouched(rail);return true;}
+            foreach(var m in Mechanisms)if(m.isActiveAndEnabled&&m.TryTouch(this,ray,obstruction)){NoteMechanismTouched(m);return true;}
             return false;
         }
         private string MechanismActivity()

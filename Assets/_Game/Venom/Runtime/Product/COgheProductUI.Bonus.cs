@@ -103,6 +103,8 @@ namespace GravityBox.Venom
         {
             Popup = COgheProductPopup.None;
             bool fromVictory = bonusFromVictory; EndBonusSession();
+            int card = COgheAbilities.Pending();   // the ability card this Understand COghe earned
+            if (card > 0) { OpenAbilityPick(card, fromVictory); return; }
             if (fromVictory) ContinueAfterBonus(); else Rebuild();
         }
         private void EndBonusSession() { Game.Personality?.EndBonus(); bonusChapter = 0; bonusFromVictory = false; }

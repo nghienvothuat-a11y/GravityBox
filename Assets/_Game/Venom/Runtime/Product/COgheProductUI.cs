@@ -9,7 +9,7 @@ using UnityEngine.UI;
 namespace GravityBox.Venom
 {
     public enum COgheProductPage { MainMenu, Game, Home, Intro, Victory, Style }
-    public enum COgheProductPopup { None, Pause, Help, Restart, LeaveMenu, LeaveHome, Collection, Locked, Failure, Levels, StyleReplaceInk, StyleRinse, StyleReplaceInside, StyleLocked, StyleNeedsClear, StyleTryOn, Buy, Unlocks, Gift, Plus, BonusOffer, BonusDone }
+    public enum COgheProductPopup { None, Pause, Help, Restart, LeaveMenu, LeaveHome, Collection, Locked, Failure, Levels, StyleReplaceInk, StyleRinse, StyleReplaceInside, StyleLocked, StyleNeedsClear, StyleTryOn, Buy, Unlocks, Gift, Plus, BonusOffer, BonusDone, AbilityPick, AbilityStats }
 
     /// <summary>Test-only tools (the level picker in Pause): compiled into development builds and the team's test builds
     /// (COGHE_TEST_TOOLS, added by the build scripts unless COGHE_STORE=1); absent from a store build.</summary>

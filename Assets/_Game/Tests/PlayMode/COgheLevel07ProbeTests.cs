@@ -196,7 +196,8 @@ namespace GravityBox.Tests
    ShotClose("tray21-on");
   }
 
-  // The same random taps on every play position (COGHE_PROBE_LEVELS, default 1–60; COGHE_PROBE_RUNS per level, default 3).
+  // The same random taps on every play position (COGHE_PROBE_LEVELS, default all; COGHE_PROBE_RUNS per level, default 3;
+  // COGHE_PROBE_SPEED: walking speed multiplier, the Agility ability).
   // Two failures: COghe leaves the box, or it ends somewhere no tap moves it (8 taps on walkable faces, none moves it 3 cm).
   [UnityTest,Explicit,Timeout(14400000)] public IEnumerator RandomTapsSweep()
   {
@@ -211,7 +212,9 @@ namespace GravityBox.Tests
     int outCount=0,stuck=0,otherLost=0;
     for(int run=0;run<runs;run++)
     {
-     yield return LoadScene(order[n-1]);yield return Wait(1);var rng=new System.Random(n*100+run);
+     yield return LoadScene(order[n-1]);
+     if(float.TryParse(Environment.GetEnvironmentVariable("COGHE_PROBE_SPEED"),out float speed))game.Motion.SpeedScale=speed;   // Agility (ability cards)
+     yield return Wait(1);var rng=new System.Random(n*100+run);
      bool rec=Environment.GetEnvironmentVariable("COGHE_PROBE_RECORD")=="1";if(rec){ClipFolder($"probe-{n:00}-{run}");clipTrack=null;}
      game.CameraRig.Frame(720,1280,0,true);var cam=game.Owner.View;
      float x0=1e9f,x1=-1e9f,y0=1e9f,y1=-1e9f;

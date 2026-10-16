@@ -116,7 +116,9 @@ namespace GravityBox.Venom
             if(bonusChapter>0){BonusHomeView();return;}
             Top(true);float x=width*.5f-148,y=height-152;
             MenuEntry(x,y,"Feed",COgheIcon.Food,()=>{Game.FeedHome();COgheAudio.Happy();});
-            MenuEntry(x+80,y,"Play",COgheIcon.Heart,()=>{Game.GreetHome();COgheAudio.Happy();});
+            // Ability (the ability cards, Mrk 16/10/2026) where Play was: Play only cuddled COghe, as a tap on COghe does
+            MenuEntry(x+80,y,"Ability",COgheIcon.Cards,()=>ShowPopup(COgheProductPopup.AbilityStats));
+            if(COgheAbilities.Pending()>0)art.Box(pageRoot,"Ability ready",new Rect(x+80+42,y-4,14,14),new Color(.86f,.36f,.3f)).pixelsPerUnitMultiplier=6;
             MenuEntry(x+160,y,"Items",COgheIcon.Menu,()=>ShowPopup(COgheProductPopup.Collection));
             MenuEntry(x+240,y,"Style",COgheIcon.Sparkles,OpenStyle);
             // the camera's Zoom stays one tap away, floating above the row (Codex: four main actions, not five)
@@ -173,7 +175,7 @@ namespace GravityBox.Venom
         {
             popupRoot=art.Rect(safe,"Popup "+Popup,new Rect(0,0,width,height));
             var veil=art.Box(popupRoot,"Input shield",new Rect(-width,-height,width*3,height*3),new Color(.13f,.23f,.21f,.36f),true);veil.sprite=null;
-            if(StylePopup()||ShopPopup()||BonusPopup())return;
+            if(StylePopup()||ShopPopup()||BonusPopup()||AbilityPopup())return;
             float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?(InHome?324:COgheTestTools.LevelSelect?482:430):Popup==COgheProductPopup.Levels?Mathf.Min(560,height-90):Popup==COgheProductPopup.Help?450:Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null?Mathf.Min(560,height-90):260;
             bool privacy=Popup==COgheProductPopup.Pause&&COgheAds.PrivacyRequired?.Invoke()==true;
             if(privacy)h+=56;

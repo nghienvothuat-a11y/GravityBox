@@ -6,7 +6,9 @@ namespace GravityBox.Venom
 {
     public enum COgheIcon { Play, Pause, Restart, Home, Menu, Help, Music, Sound, Muted,
         Overview, Close, Hand, Back, Forward, Skip, Check, Lock, Film, Food, Heart,
-        Tap, Drag, Pinch, Minus, Circle, Left, Right, Sparkles }
+        Tap, Drag, Pinch, Minus, Circle, Left, Right, Sparkles,
+        // the ability cards (Mrk 16/10/2026): Emotion, Agility, Intelligence, and Home's Ability button
+        Smile, Zap, Brain, Cards }
 
     /// <summary>One icon atlas and a nine-slice panel, shared by all retained UI.</summary>
     public sealed class COgheUIArt : IDisposable

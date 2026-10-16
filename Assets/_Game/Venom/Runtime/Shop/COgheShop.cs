@@ -31,6 +31,9 @@ namespace GravityBox.Venom
             // Preserve unlock milestones from the pre-15/10 order; completed puzzles still use stable IDs.
             public int PacingRevision;
             public List<int> ReachedBeforePacing = new List<int>();
+            // Ability cards (Mrk 16/10/2026): one card per "Hiểu ra", each stat 0–10; the chapters whose card is taken.
+            public int Emotion, Agility, Intelligence;
+            public List<int> CardsPicked = new List<int>();
         }
 
         private const string Key = "coghe.shop.v1";
@@ -58,6 +61,7 @@ namespace GravityBox.Venom
                 state.Owned ??= new List<string>(); state.Paid ??= new List<string>(); state.GiftDay ??= ""; state.AdDay ??= "";
                 state.Retried ??= new List<string>(); state.Understood ??= new List<string>();
                 state.ReachedBeforePacing ??= new List<int>();
+                state.CardsPicked ??= new List<int>();
                 return state;
             }
         }
@@ -92,6 +96,19 @@ namespace GravityBox.Venom
         public static bool Understood(string key) => Paid(key) || Current.Understood.Contains(key);
         public static void Understand(string key)
         { if (!Current.Understood.Contains(key)) { Current.Understood.Add(key); Save(); } }
+        /// <summary>Takes chapter <paramref name="chapter"/>'s ability card: +1 to <paramref name="ability"/> (to
+        /// <see cref="COgheAbilities.Max"/>), once per chapter. False if that card was taken or the ability is full.</summary>
+        public static bool PickAbility(int chapter, COgheAbility ability)
+        {
+            if (Current.CardsPicked.Contains(chapter) || COgheAbilities.Level(ability) >= COgheAbilities.Max) return false;
+            Current.CardsPicked.Add(chapter);
+            if (ability == COgheAbility.Emotion) Current.Emotion++;
+            else if (ability == COgheAbility.Agility) Current.Agility++;
+            else Current.Intelligence++;
+            Save();
+            COgheAnalytics.Log("ability_pick", "chapter", chapter, "ability", ability.ToString(), "level", COgheAbilities.Level(ability));
+            return true;
+        }
         public static void SetInkGuideStep(int step)
         { if (Current.InkGuideStep != step) { Current.InkGuideStep = Mathf.Clamp(step, 0, 4); Save(); } }
 

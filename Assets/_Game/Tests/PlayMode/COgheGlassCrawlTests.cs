@@ -22,7 +22,8 @@ namespace GravityBox.Tests
    // high on the back and right glass (the panes the camera sees from inside), and every shelf's top
    foreach(float x in new[]{-.30f,-.10f,.10f,.30f})foreach(float y in new[]{-.15f,.0f,.07f})targets.Add(new Vector3(x,y,.30f));
    foreach(float z in new[]{-.20f,.0f,.20f})foreach(float y in new[]{-.15f,.0f,.07f})targets.Add(new Vector3(.40f,y,z));
-   foreach(var f in game.Surfaces)if(f!=null&&f.isActiveAndEnabled&&f.MotionFrame==null&&!f.ExteriorGlass&&f.Normal.y>.9f&&f.name!="Laboratory floor")
+   // devices are not shelves: a handle's carriage surface (walkable since 14/10) would be a tap on the device
+   foreach(var f in game.Surfaces)if(f!=null&&f.isActiveAndEnabled&&f.MotionFrame==null&&!f.ExteriorGlass&&f.Normal.y>.9f&&f.name!="Laboratory floor"&&f.GetComponentInParent<COgheMechanism>()==null&&(f.Shape==null||f.Shape.attachedRigidbody==null))
     targets.Add(game.Root.InverseTransformPoint(f.transform.position));
    float top=-1;
    foreach(var local in targets)
@@ -37,6 +38,7 @@ namespace GravityBox.Tests
    yield return Tap(game.Owner.Outlet.position);
    for(int i=0;i<15/Dt&&!game.Owner.Completed;i++){Tick();if(i%60==0)yield return null;}
    Assert.IsFalse(game.Owner.Completed,$"{key}: the exit let COghe out without the mechanisms");
+   foreach(var rail in game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())Assert.AreEqual(0,rail.CompletedJourneys,$"{key}: no tap may work a device here ({rail.Label})");
    File.AppendAllText(log,$"highest body centre {top:F3}\n");
   }
   // From the floor, the tape alone keeps COghe off the glass: a tap high on taped glass leaves it below the tape's top.
