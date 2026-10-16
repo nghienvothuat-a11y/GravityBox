@@ -10,6 +10,31 @@ namespace GravityBox.Tests
 {
     public partial class COgheProductUITests
     {
+        [UnityTest] public IEnumerator ReorderedCatalogKeepsOldInkUnlockAndDoesNotGrantPuzzleWins()
+        {
+            try
+            {
+                FreshShop(false);
+                foreach (var level in ui.Catalog.Levels.Take(7)) game.Progress.Completed.Add(level.Id);
+                var oldEight = ui.Catalog.Levels.Single(l => l.SceneSequence[l.Order - 1] == "COgheSpatial07");
+                game.Progress.Completed.Add(oldEight.Id);
+                COgheShop.Current.InkGuideStep = 2;
+                int wins = game.Progress.Completed.Count, drops = COgheShop.Drops;
+                COgheShop.Migrate(game);
+                Assert.IsTrue(ui.StyleUnlocked, "Old display level 8 still unlocks Style after reordering");
+                Assert.IsFalse(game.Progress.Completed.Contains(ui.Catalog.Levels[7].Id), "Migration never solves the new display level 8");
+                Assert.AreEqual(wins, game.Progress.Completed.Count); Assert.AreEqual(drops, COgheShop.Drops);
+                ui.OpenStyleFromMenu(); yield return null;
+                Assert.AreEqual(COgheProductPage.Style, ui.Page); Assert.AreEqual(2, COgheShop.Current.InkGuideStep);
+                var saved = JsonUtility.ToJson(COgheShop.Current);
+                COgheShop.ResetForTests(JsonUtility.FromJson<COgheShop.State>(saved));
+                COgheShop.Migrate(game);
+                Assert.AreEqual(8, COgheShop.Current.ReachedBeforePacing.Count, "Migration is idempotent");
+                Assert.IsFalse(COgheHomeRoom.Reached(game, 10), "No future unlocks are granted");
+            }
+            finally { if (ui != null) ui.ShowMenu(); EndShop(); }
+        }
+
         [UnityTest] public IEnumerator InkGuideFitsPhoneAndTabletWithoutOverlappingControls()
         {
             var report=new System.Text.StringBuilder();int problems=0;
@@ -48,9 +73,14 @@ namespace GravityBox.Tests
                 Assert.AreEqual(1,COgheShop.Current.InkGuideStep);Assert.IsTrue(COgheShop.Owns("INK_OCEAN"));
                 yield return new WaitForSecondsRealtime(1.5f);
                 Assert.IsFalse(ui.BeginStyleHold(OnCOghe(),false),"The first step teaches choosing a syringe");
+                AssertInkArrowAt("Icon", "Card INK_OCEAN");
                 yield return Card("INK_OCEAN");Assert.AreEqual(2,COgheShop.Current.InkGuideStep);
+                yield return new WaitForSecondsRealtime(.5f);
+                AssertInkArrowScreen(OnCOghe());
                 yield return Hold(OnCOghe(),1.1f);yield return null;
                 Assert.AreEqual(3,COgheShop.Current.InkGuideStep);
+                yield return new WaitForSecondsRealtime(.5f);
+                AssertInkArrowAt("Done action");
                 Assert.IsTrue(COgheStyle.Current.Amount.Any(a=>a.x>.01f),"Actual tissue received the free ink");
                 Assert.AreEqual(COgheEconomy.FirstWin,COgheShop.Drops,"No Drops spent during the lesson");
                 Assert.AreEqual(1,ui.StyleUndoCount);
@@ -68,6 +98,47 @@ namespace GravityBox.Tests
                 Assert.IsFalse(game.Progress.HomeUnlocked);
             }
             finally {if(ui!=null)ui.ShowMenu();EndShop();}
+        }
+
+        private void AssertInkArrowAt(string name, string parent = null)
+        {
+            var target = ui.GetComponentsInChildren<RectTransform>().Single(r => r.name == name && (parent == null || r.parent.name == parent));
+            AssertInkArrowScreen(RectTransformUtility.WorldToScreenPoint(null, target.TransformPoint(target.rect.center)));
+        }
+        private void AssertInkArrowScreen(Vector2 screen)
+        {
+            var arrow = ui.GetComponentsInChildren<COgheGuide>().Single(g => g.name == "Ink guide arrow");
+            var r = (RectTransform)arrow.transform;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(r, screen, null, out var p);
+            Assert.IsTrue(arrow.ArrowShown); Assert.IsTrue(arrow.TargetOnScreen);
+            Assert.Less(Vector2.Distance(p - r.rect.min, arrow.TargetPoint), 8, "Guide follows the actual tappable target");
+            Assert.IsFalse(arrow.GetComponent<CanvasGroup>().blocksRaycasts);
+            Assert.IsTrue(arrow.GetComponentsInChildren<Graphic>().All(g => !g.raycastTarget));
+        }
+
+        [UnityTest] public IEnumerator RewardFxRemainDecorativeExpireWhilePausedAndDoNotReplayOnRelayout()
+        {
+            try
+            {
+                FreshShop(false); COgheHomeRoom.UnlockedLevelOverride = 8;
+                ui.ShowVictoryForTests(ui.Catalog.Levels[7].Id, 8); yield return null;
+                int paid = COgheShop.Drops;
+                Assert.IsTrue(ui.GetComponentsInChildren<COgheRewardFx>().Any(f => f.name == "Drop shine"));
+                ui.NextLevel(); yield return null;
+                Assert.AreEqual(COgheProductPopup.Unlocks, ui.Popup);
+                Assert.AreEqual(1, ui.GetComponentsInChildren<COgheRewardFx>().Count(f => f.name == "Unlock fireworks"));
+                ui.RelayoutForTests(); yield return null;
+                Assert.AreEqual(1, ui.GetComponentsInChildren<COgheRewardFx>().Count(f => f.name == "Unlock fireworks"));
+                Assert.IsTrue(ui.GetComponentsInChildren<COgheRewardFx>().All(f => !f.raycastTarget));
+                Time.timeScale = 0;
+                yield return new WaitForSecondsRealtime(COgheRewardFx.FireworkLife + .2f);
+                Assert.IsEmpty(ui.GetComponentsInChildren<COgheRewardFx>());
+                ui.RelayoutForTests(); yield return null;
+                Assert.IsEmpty(ui.GetComponentsInChildren<COgheRewardFx>(), "Layout changes do not restart rewards");
+                Assert.AreEqual(paid, COgheShop.Drops, "VFX never pay or duplicate rewards");
+                Assert.AreEqual(COgheProductPage.Victory, ui.Page, "Effects never advance the puzzle");
+            }
+            finally { Time.timeScale = 1; if (ui != null) ui.ShowMenu(); EndShop(); }
         }
 
         [UnityTest] public IEnumerator OldRewardsRemainCompletedAndLaterBossesAlsoRequireUnderstanding()

@@ -1,5 +1,14 @@
 # COghe — luật bám kính, 14/10/2026
 
+## Revision riêng màn 6 — 15/10/2026
+
+Sửa theo yêu cầu mới nhất: riêng màn 6 (K01) có lỗ dưới sàn, nằm dưới khối đỏ.
+Dời khối đỏ để lộ lỗ và thoát xuống; bỏ toàn bộ công tắc, nút, nắp và cửa.
+Đây là ngoại lệ mới cho luật lỗ trên kính ở các màn đầu; kết quả bên dưới
+là lịch sử của lượt kiểm tra 14/10, không đại diện cho bố cục K01 hiện tại.
+[Thiết kế và kiểm chứng mới](../COgheCrateReveal6/README.md).
+Kết quả bên dưới ghi nhận bản luật kính trước thay đổi cơ quan này.
+
 Yêu cầu: kính để trần luôn bám được; chỉ vật liệu trơn làm mất bám. Phạm vi là
 **65 màn trong `SpatialOrder`**, không đổi catalog lịch sử, ID hay save.
 

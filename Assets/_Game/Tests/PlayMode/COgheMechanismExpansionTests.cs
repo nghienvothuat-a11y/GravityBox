@@ -87,7 +87,7 @@ namespace GravityBox.Tests
             train.Wheels[1].localPosition+=Vector3.down*.04f;train.StepMechanism(null,Dt);Assert.AreEqual(0,train.AngularSpeeds[3],"Breaking any contact stops the downstream train");
         }
 
-        // ResetLevel also redraws props at their reset pose (for levels shown paused, under the intro or Boss tour); that
+        // ResetLevel also redraws props at their reset pose (for levels shown paused, under the intro or Boss warning); that
         // must come after the mechanisms, or the sync pushes the old pose over a rail carriage's reset (the locked knife).
         [UnityTest] public IEnumerator ResetLevelKeepsRailCarriagesAtTheirResetPose()
         {

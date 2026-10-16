@@ -114,7 +114,7 @@ namespace GravityBox.Venom
             for(int i=0;i<32;i++){previous[i]=Owner.Outlet.InverseTransformPoint(Matter.Bodies[i].position);inBore[i]=false;}
             ResetMechanisms();
             // a Rigidbody.position write reaches the transform only on the next physics step; a level reset under the paused
-            // intro or Boss tour would still draw COghe at its menu spot, then jump to the start when the level runs. After
+            // intro or Boss warning would still draw COghe at its menu spot, then jump to the start when the level runs. After
             // the mechanisms (rail sliders re-pose prop bodies), since the sync below pushes these transforms back to physics.
             foreach(var body in Matter.Bodies)body.transform.SetPositionAndRotation(body.position,body.rotation);
             foreach(var p in Props)p.Body.transform.SetPositionAndRotation(p.Body.position,p.Body.rotation);
@@ -555,7 +555,7 @@ namespace GravityBox.Venom
         private bool PlayArea(Vector2 p)
         {return ProductUI!=null?ProductUI.AllowsWorldPointer(p):CameraRig.AllowsPointer(p,Screen.width,Screen.height);}
         public void CancelPointer()=>ResetPointerInput();
-        public void BeginPointer(Vector2 p){if(!Owner.CanControl||InputLocked||!PlayArea(p))return;pointerDown=true;pointerMoved=false;pointerStart=pointerPrevious=p;}
+        public void BeginPointer(Vector2 p){if(!Owner.CanControl||InputLocked||!PlayArea(p))return;ProductUI?.OnGameplayInteraction();pointerDown=true;pointerMoved=false;pointerStart=pointerPrevious=p;}
         public void MovePointer(Vector2 p)
         {
             if(!pointerDown)return;
@@ -585,7 +585,8 @@ namespace GravityBox.Venom
             {
                 if(ConsumeViewTouches())return;
                 ConsumeMouseInput();
-                if(Mouse.current!=null&&PlayArea(Mouse.current.position.ReadValue()))CameraRig.Pinch(Mathf.Exp(Mouse.current.scroll.ReadValue().y*.0015f));
+                if(Mouse.current!=null&&PlayArea(Mouse.current.position.ReadValue()))
+                {float scroll=Mouse.current.scroll.ReadValue().y;if(Mathf.Abs(scroll)>.001f){ProductUI?.OnGameplayInteraction();CameraRig.Pinch(Mathf.Exp(scroll*.0015f));}}
                 return;
             }
             if(Touch.activeTouches.Count>0||touchFinger>=0)
@@ -606,6 +607,7 @@ namespace GravityBox.Venom
         public void TouchPoint(Vector2 screen)
         {
             if(!Owner.CanControl||InputLocked||ProductUI!=null&&ProductUI.BlockWorldInput)return;
+            ProductUI?.OnGameplayInteraction();
             climbingStep=null;tubeIntent=false;
             Ray ray=Owner.View.ScreenPointToRay(screen);
             int chosen=-1;float selection=.042f;
@@ -731,7 +733,6 @@ namespace GravityBox.Venom
             if(Owner==null)return;
             if(ProductUI!=null&&ProductUI.Showcase){ProductUI.FrameShowcase();return;}
             if(Owner.Completed){Owner.Celebration.Frame(Screen.width,Screen.height);return;}
-            if(COgheBossIntro.OwnsCamera)return;   // a Boss level's opening tour flies the camera itself
             CameraRig.Frame(Screen.width,Screen.height,Time.unscaledDeltaTime,false,Screen.safeArea);
         }
         private void OnGUI()

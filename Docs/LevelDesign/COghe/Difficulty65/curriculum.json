@@ -1,0 +1,527 @@
+{
+  "revision": "2026-10-15",
+  "difficultyStatus": "Author estimates and curriculum, not novice playtest results",
+  "bossPositions": [
+    10,
+    21,
+    32,
+    43,
+    54,
+    65
+  ],
+  "chains": [
+    {
+      "skill": "lift",
+      "intro": "08",
+      "practice": [
+        "09"
+      ],
+      "combine": [
+        "10",
+        "13",
+        "G3",
+        "E11"
+      ]
+    },
+    {
+      "skill": "cargo_order",
+      "intro": "N22",
+      "practice": [
+        "N29",
+        "12"
+      ],
+      "combine": [
+        "B1",
+        "29"
+      ]
+    },
+    {
+      "skill": "split_and_hold",
+      "intro": "16",
+      "practice": [
+        "N13",
+        "N18"
+      ],
+      "combine": [
+        "B1",
+        "17",
+        "G5",
+        "20"
+      ]
+    },
+    {
+      "skill": "pipe",
+      "intro": "14",
+      "practice": [
+        "N15"
+      ],
+      "combine": [
+        "17",
+        "E10",
+        "26",
+        "N43"
+      ]
+    },
+    {
+      "skill": "ceiling",
+      "intro": "G3",
+      "practice": [
+        "G4"
+      ],
+      "combine": [
+        "G5"
+      ]
+    },
+    {
+      "skill": "gears",
+      "intro": "N41",
+      "practice": [
+        "N44",
+        "N48"
+      ],
+      "combine": [
+        "N47",
+        "N42",
+        "N43",
+        "N49",
+        "N50"
+      ]
+    },
+    {
+      "skill": "swing",
+      "intro": "18",
+      "practice": [
+        "N23"
+      ],
+      "combine": [
+        "E10",
+        "26"
+      ]
+    },
+    {
+      "skill": "counterweight",
+      "intro": "21",
+      "practice": [
+        "N25"
+      ],
+      "combine": [
+        "N34"
+      ]
+    },
+    {
+      "skill": "quarters",
+      "intro": "N31",
+      "practice": [
+        "N33",
+        "N35"
+      ],
+      "combine": [
+        "N40",
+        "N34",
+        "N50"
+      ]
+    },
+    {
+      "skill": "motor_load",
+      "intro": "N45",
+      "practice": [
+        "N49"
+      ],
+      "combine": [
+        "N50"
+      ]
+    }
+  ],
+  "levels": [
+    {
+      "position": 1,
+      "key": "01",
+      "previousPosition": 1,
+      "intent": "Chạm đích, bò đến lỗ trên kính."
+    },
+    {
+      "position": 2,
+      "key": "02",
+      "previousPosition": 2,
+      "intent": "Luyện bò và chuyển từ sàn lên tường."
+    },
+    {
+      "position": 3,
+      "key": "03",
+      "previousPosition": 3,
+      "intent": "Học orbit để thấy đích bị che."
+    },
+    {
+      "position": 4,
+      "key": "04",
+      "previousPosition": 4,
+      "intent": "Học kéo một tay nắm, một cửa."
+    },
+    {
+      "position": 5,
+      "key": "05",
+      "previousPosition": 5,
+      "intent": "Luyện kéo; học mở nắp trước khi kéo."
+    },
+    {
+      "position": 6,
+      "key": "K01",
+      "previousPosition": 6,
+      "intent": "Một thùng chắn: học đẩy/kéo khối."
+    },
+    {
+      "position": 7,
+      "key": "06",
+      "previousPosition": 7,
+      "intent": "Luyện nắp và leo; giới thiệu cầu ròng rọc."
+    },
+    {
+      "position": 8,
+      "key": "08",
+      "previousPosition": 9,
+      "intent": "Bài thang riêng: lên, kéo, xuống."
+    },
+    {
+      "position": 9,
+      "key": "09",
+      "previousPosition": 17,
+      "intent": "Luyện thang với cầu/chốt đã học; không thêm kỹ năng."
+    },
+    {
+      "position": 10,
+      "key": "10",
+      "previousPosition": 10,
+      "intent": "Boss 10 giữ nguyên thiết kế đã chốt; màn 8–9 chuẩn bị thang và cầu."
+    },
+    {
+      "position": 11,
+      "key": "G1",
+      "previousPosition": 12,
+      "intent": "Bài nghỉ sau Boss: leo kính lấy tay nắm."
+    },
+    {
+      "position": 12,
+      "key": "K02",
+      "previousPosition": 13,
+      "intent": "Luyện ba khối trượt trên sàn."
+    },
+    {
+      "position": 13,
+      "key": "G2",
+      "previousPosition": 14,
+      "intent": "Luyện đường leo khi có lớp phủ trơn."
+    },
+    {
+      "position": 14,
+      "key": "N22",
+      "previousPosition": 11,
+      "intent": "Học chuẩn bị hàng trước khi xe cập bến."
+    },
+    {
+      "position": 15,
+      "key": "N29",
+      "previousPosition": 26,
+      "intent": "Luyện thứ tự khối trên/khối dưới, chuẩn bị tháp Boss."
+    },
+    {
+      "position": 16,
+      "key": "16",
+      "previousPosition": 18,
+      "intent": "Học Q chia đôi, chọn phần, giữ hai nút, nhập lại."
+    },
+    {
+      "position": 17,
+      "key": "N13",
+      "previousPosition": 20,
+      "intent": "Luyện một phần giữ, phần kia làm việc; buông sai có thể làm lại."
+    },
+    {
+      "position": 18,
+      "key": "N18",
+      "previousPosition": 57,
+      "intent": "Luyện hợp thể: nửa thân thử khối nặng rồi cả thân kéo được."
+    },
+    {
+      "position": 19,
+      "key": "13",
+      "previousPosition": 16,
+      "intent": "Kết hợp thang đã học với chở thùng; không thêm thao tác."
+    },
+    {
+      "position": 20,
+      "key": "12",
+      "previousPosition": 27,
+      "intent": "Luyện thứ tự khối cao/thấp trước tháp Boss."
+    },
+    {
+      "position": 21,
+      "key": "B1",
+      "previousPosition": 21,
+      "intent": "Boss tháp khối: đồng thời chốt, xếp trên trước, nhập lại kéo cả tháp."
+    },
+    {
+      "position": 22,
+      "key": "14",
+      "previousPosition": 15,
+      "intent": "Học một đường ống và nắp, không phân tách."
+    },
+    {
+      "position": 23,
+      "key": "N15",
+      "previousPosition": 19,
+      "intent": "Luyện ống: chuẩn bị bậc trước khi sang phòng."
+    },
+    {
+      "position": 24,
+      "key": "K03",
+      "previousPosition": 23,
+      "intent": "Bài khối dài, luyện không gian sàn."
+    },
+    {
+      "position": 25,
+      "key": "07",
+      "previousPosition": 8,
+      "intent": "Vận dụng cầu/chốt ở hố, leo ra được nếu rơi."
+    },
+    {
+      "position": 26,
+      "key": "G3",
+      "previousPosition": 25,
+      "intent": "Học đường qua trần bằng tấm cầu trần."
+    },
+    {
+      "position": 27,
+      "key": "N41",
+      "previousPosition": 22,
+      "intent": "Học ghép bánh răng liên tục để truyền lực."
+    },
+    {
+      "position": 28,
+      "key": "N44",
+      "previousPosition": 28,
+      "intent": "Luyện bánh răng, khám phá bánh đệm đổi chiều."
+    },
+    {
+      "position": 29,
+      "key": "17",
+      "previousPosition": 29,
+      "intent": "Kết hợp giữ nút và chui ống sau hai bài luyện ống."
+    },
+    {
+      "position": 30,
+      "key": "G4",
+      "previousPosition": 30,
+      "intent": "Luyện chuỗi kệ/trần và nút chốt trước Boss."
+    },
+    {
+      "position": 31,
+      "key": "22",
+      "previousPosition": 31,
+      "intent": "Luyện bãi chờ, xếp ba mảnh đường."
+    },
+    {
+      "position": 32,
+      "key": "G5",
+      "previousPosition": 32,
+      "intent": "Boss relay: giữ P → qua trần/B → giữ D → đổi phần/C → leo/A → nhập/thoát."
+    },
+    {
+      "position": 33,
+      "key": "18",
+      "previousPosition": 33,
+      "intent": "Học bám dây và chọn bến rộng."
+    },
+    {
+      "position": 34,
+      "key": "N23",
+      "previousPosition": 35,
+      "intent": "Luyện căn vị trí bến trước khi đu."
+    },
+    {
+      "position": 35,
+      "key": "E10",
+      "previousPosition": 34,
+      "intent": "Kết hợp đu với ống đã quen."
+    },
+    {
+      "position": 36,
+      "key": "21",
+      "previousPosition": 36,
+      "intent": "Học đối trọng qua khay tải."
+    },
+    {
+      "position": 37,
+      "key": "N25",
+      "previousPosition": 37,
+      "intent": "Luyện thêm tải để khay đủ nặng."
+    },
+    {
+      "position": 38,
+      "key": "N48",
+      "previousPosition": 39,
+      "intent": "Luyện truyền lực hai tầng trục."
+    },
+    {
+      "position": 39,
+      "key": "N47",
+      "previousPosition": 38,
+      "intent": "Kết hợp hai máy dùng chung một bánh."
+    },
+    {
+      "position": 40,
+      "key": "K04",
+      "previousPosition": 40,
+      "intent": "Nhịp nghỉ: tháo khối theo lớp."
+    },
+    {
+      "position": 41,
+      "key": "15",
+      "previousPosition": 41,
+      "intent": "Ống ngã ba: chọn nhánh, quay lại được."
+    },
+    {
+      "position": 42,
+      "key": "E11",
+      "previousPosition": 42,
+      "intent": "Luyện giữ thang/đổi người trước Boss hợp tác."
+    },
+    {
+      "position": 43,
+      "key": "20",
+      "previousPosition": 43,
+      "intent": "Boss phối hợp nhiều khoang; kỹ năng đều đã xuất hiện."
+    },
+    {
+      "position": 44,
+      "key": "K05",
+      "previousPosition": 44,
+      "intent": "Luyện khối vuông sau Boss."
+    },
+    {
+      "position": 45,
+      "key": "N42",
+      "previousPosition": 45,
+      "intent": "Hai xe bánh răng chia sẻ ngã tư."
+    },
+    {
+      "position": 46,
+      "key": "K06",
+      "previousPosition": 46,
+      "intent": "Khối dây chuyền, quan sát thứ tự."
+    },
+    {
+      "position": 47,
+      "key": "N26",
+      "previousPosition": 47,
+      "intent": "Học tải nửa thân trên ván nghiêng."
+    },
+    {
+      "position": 48,
+      "key": "N31",
+      "previousPosition": 48,
+      "intent": "Học Q lần hai và đồng hồ phần tư."
+    },
+    {
+      "position": 49,
+      "key": "N33",
+      "previousPosition": 51,
+      "intent": "Luyện nhập hai phần tư thành nửa ngay sau bài phần tư."
+    },
+    {
+      "position": 50,
+      "key": "K07",
+      "previousPosition": 50,
+      "intent": "Bài khối xen kẽ để giảm tải trí nhớ."
+    },
+    {
+      "position": 51,
+      "key": "26",
+      "previousPosition": 49,
+      "intent": "Vận dụng đu/ống với hai vai trò."
+    },
+    {
+      "position": 52,
+      "key": "N35",
+      "previousPosition": 52,
+      "intent": "Luyện ghép ba phần tư và giữ phần còn lại."
+    },
+    {
+      "position": 53,
+      "key": "N43",
+      "previousPosition": 53,
+      "intent": "Kết hợp hộp số với chọn nhánh ống."
+    },
+    {
+      "position": 54,
+      "key": "N40",
+      "previousPosition": 54,
+      "intent": "Boss cân ba phần tư sau hai bài luyện ghép khối lượng."
+    },
+    {
+      "position": 55,
+      "key": "N46",
+      "previousPosition": 24,
+      "intent": "Đổi ngữ cảnh: bàn xoay mang hàng, không thêm kỹ năng điều khiển."
+    },
+    {
+      "position": 56,
+      "key": "N45",
+      "previousPosition": 55,
+      "intent": "Học tải của người chạy máy ảnh hưởng lực."
+    },
+    {
+      "position": 57,
+      "key": "N49",
+      "previousPosition": 56,
+      "intent": "Luyện hai động cơ cộng lực."
+    },
+    {
+      "position": 58,
+      "key": "N32",
+      "previousPosition": 58,
+      "intent": "Vận dụng khối nặng trước, tách sau."
+    },
+    {
+      "position": 59,
+      "key": "K08",
+      "previousPosition": 59,
+      "intent": "Luyện đưa khối đi rồi trả lại."
+    },
+    {
+      "position": 60,
+      "key": "N34",
+      "previousPosition": 60,
+      "intent": "Kết hợp khối lượng với bập bênh chở bạn."
+    },
+    {
+      "position": 61,
+      "key": "K09",
+      "previousPosition": 61,
+      "intent": "Kho chật, thử sai có thể đảo chiều."
+    },
+    {
+      "position": 62,
+      "key": "29",
+      "previousPosition": 62,
+      "intent": "Ráp nhiều phần vào khung trước khi nâng."
+    },
+    {
+      "position": 63,
+      "key": "K10",
+      "previousPosition": 63,
+      "intent": "Mê cung thùng, bài lập kế hoạch dài."
+    },
+    {
+      "position": 64,
+      "key": "N19",
+      "previousPosition": 64,
+      "intent": "Luyện đổi vai người giữ, chuẩn bị Boss cuối."
+    },
+    {
+      "position": 65,
+      "key": "N50",
+      "previousPosition": 65,
+      "intent": "Boss hộp số, phối hợp các hệ đã luyện."
+    }
+  ]
+}

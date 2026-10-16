@@ -1,37 +1,27 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace GravityBox.Venom
 {
     /// <summary>
-    /// Boss levels open with a short tour (Mrk): the camera glides into the glass box, close past its mechanisms like a
-    /// walk through a room, ends at the exit, pulls back into the game's own view (a dolly-zoom from perspective into the
-    /// orthographic framing, so the hand-over is seamless), then a hazard banner sweeps across: "WARNING · VERY HARD LEVEL".
-    /// The level waits paused underneath; a tap skips to the banner. Presentation only.
+    /// Boss levels show the existing warning at the normal gameplay angle. No opening camera tour or zoom.
+    /// The level waits paused underneath the short banner; presentation never changes the puzzle state.
     /// </summary>
     public sealed class COgheBossIntro : MonoBehaviour
     {
         public static COgheBossIntro Current { get; private set; }
-        /// <summary>While true the campaign camera rig leaves the view alone.</summary>
-        public static bool OwnsCamera => Current != null && Current.camera != null && !Current.handedBack;
         public float Speed = 1;
         /// <summary>Previews: frame for this target size instead of the screen, and draw the banner through the camera.</summary>
         public static Vector2Int? PreviewSize;
         public float Clock { get; private set; }
         public bool Finished { get; private set; }
-        public float TourLength { get; private set; }
-        public const float DiveIn = 1.1f, Leg = 1.35f, PullBack = 1.15f, Warning = 2.7f;   // Mrk: approach and zoom out a bit faster
+        public const float Warning = 2.7f;
 
         private VenomCampaign game;
         private Action done;
         private new Camera camera;
-        private bool pausedByUs, handedBack, started;
-        private readonly List<Vector3> eyes = new List<Vector3>(8), looks = new List<Vector3>(8);
-        private Vector3 restPosition, restLook; private Quaternion restRotation; private float restSize, restNear, restFar;
-        private float tourFov = 50;
+        private bool pausedByUs, started;
         // banner
         private GameObject canvasGo;
         private RectTransform band, title, subtitle;
@@ -52,125 +42,21 @@ namespace GravityBox.Venom
             if (game == null || game.Owner == null) { Finish(); return; }
             camera = game.Owner.View;
             if (!game.Owner.Paused) { game.Owner.TogglePause(); pausedByUs = true; }
-            // the game's own view, where the tour must end
+            // Establish the authored gameplay view once; the campaign rig keeps ownership throughout.
             game.CameraRig.Reset();
             int w = PreviewSize?.x ?? Screen.width, h = PreviewSize?.y ?? Screen.height;
             game.CameraRig.Frame(w, h, 0, true, PreviewSize.HasValue ? new Rect(0, 0, w, h) : Screen.safeArea);
-            restPosition = camera.transform.position; restRotation = camera.transform.rotation; restSize = camera.orthographicSize;
-            restNear = camera.nearClipPlane; restFar = camera.farClipPlane;
-            Vector3 boxCentre = game.Root.TransformPoint(game.CameraRig.OverviewBounds.center);
-            restLook = restPosition + camera.transform.forward * Vector3.Dot(boxCentre - restPosition, camera.transform.forward);
-            BuildTour(boxCentre);
-            TourLength = DiveIn + Leg * Mathf.Max(1, eyes.Count - 1);
-            camera.orthographic = false; camera.nearClipPlane = .01f; camera.farClipPlane = 30; camera.fieldOfView = tourFov;
             BuildBanner();
             started = true;
-        }
-
-        /// <summary>The camera's stops inside the box: close to up to four prominent mechanisms in a short walk, then the
-        /// exit. The tour dives in from the game's own view and pulls back out to it.</summary>
-        private void BuildTour(Vector3 boxCentre)
-        {
-            var bounds = game.CameraRig.OverviewBounds;   // the shell, in the box's own space
-            Vector3 forward = camera.transform.forward, flatToCamera = Vector3.ProjectOnPlane(-forward, game.Root.up).normalized;
-            var targets = new List<(Vector3 centre, float size)>();
-            foreach (var mechanism in game.Mechanisms)
-            {
-                if (mechanism == null || !mechanism.isActiveAndEnabled) continue;
-                var renderers = mechanism.GetComponentsInChildren<Renderer>();
-                if (renderers.Length == 0) continue;
-                var b = renderers[0].bounds; foreach (var r in renderers) b.Encapsulate(r.bounds);
-                float size = b.size.magnitude;
-                if (size < .03f || size > 1.2f) continue;
-                bool near = false;
-                for (int i = 0; i < targets.Count; i++) if (Vector3.Distance(targets[i].centre, b.center) < .1f) { near = true; if (size > targets[i].size) targets[i] = (b.center, size); }
-                if (!near) targets.Add((b.center, size));
-            }
-            targets.Sort((a, b) => b.size.CompareTo(a.size));
-            if (targets.Count > 4) targets.RemoveRange(4, targets.Count - 4);
-            var sizes = new List<(Vector3 centre, float size)>(targets);
-            // a short walk: start from the creature, always the nearest next stop
-            var ordered = new List<Vector3>(); Vector3 from = game.Motion.Centre(0);
-            while (targets.Count > 0)
-            {
-                int best = 0; for (int i = 1; i < targets.Count; i++) if (Vector3.Distance(from, targets[i].centre) < Vector3.Distance(from, targets[best].centre)) best = i;
-                ordered.Add(targets[best].centre); from = targets[best].centre; targets.RemoveAt(best);
-            }
-            ordered.Add(game.Owner.Outlet.position);
-            eyes.Clear(); looks.Clear();
-            foreach (var target in ordered)
-            {
-                Vector3 toCentre = Vector3.ProjectOnPlane(boxCentre - target, game.Root.up);
-                Vector3 back = (toCentre.normalized + flatToCamera).normalized;
-                if (back.sqrMagnitude < .1f) back = flatToCamera;
-                float size = target == game.Owner.Outlet.position ? .3f : .05f;   // the exit: step back so its cover fits
-                foreach (var t in sizes) if (Vector3.Distance(t.centre, target) < .001f) size = t.size;
-                Vector3 eye = target + back * Mathf.Clamp(.14f + size * .55f, .17f, .32f) + game.Root.up * .09f;
-                // stay inside the glass
-                Vector3 local = game.Root.InverseTransformPoint(eye), min = bounds.min + Vector3.one * .03f, max = bounds.max - Vector3.one * .03f;
-                local = new Vector3(Mathf.Clamp(local.x, min.x, max.x), Mathf.Clamp(local.y, min.y + .04f, max.y), Mathf.Clamp(local.z, min.z, max.z));
-                eyes.Add(game.Root.TransformPoint(local)); looks.Add(target);
-            }
         }
 
         private void Update()
         {
             if (!started || Finished) return;
             if (game == null || game.Owner == null) { Finish(); return; }
-            float dt = Mathf.Min(Time.unscaledDeltaTime, 1f / 20) * Speed;
-            bool tap = (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame) || (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame);
-            if (tap && Clock < TourLength + PullBack) { Clock = TourLength + PullBack; HandBack(); }
-            Clock += dt;
-            if (Clock < DiveIn) Between(eyes[0], looks[0], 1 - Mathf.SmoothStep(0, 1, Clock / DiveIn), true);
-            else if (Clock < TourLength) Tour((Clock - DiveIn) / (TourLength - DiveIn));
-            else if (Clock < TourLength + PullBack) Between(eyes[eyes.Count - 1], looks[looks.Count - 1], Mathf.SmoothStep(0, 1, (Clock - TourLength) / PullBack), false);
-            else
-            {
-                HandBack();
-                Banner((Clock - TourLength - PullBack) / Warning);
-                if (Clock >= TourLength + PullBack + Warning) Finish();
-            }
-        }
-
-        private void Tour(float u)
-        {
-            if (eyes.Count == 1) { camera.transform.SetPositionAndRotation(eyes[0], Quaternion.LookRotation(looks[0] - eyes[0], game.Root.up)); camera.fieldOfView = tourFov; return; }
-            float s = Mathf.Clamp01(u) * (eyes.Count - 1);
-            int i = Mathf.Min(Mathf.FloorToInt(s), eyes.Count - 2); float f = Mathf.SmoothStep(0, 1, s - i) * .35f + (s - i) * .65f;
-            Vector3 eye = CatmullRom(eyes, i, f), look = CatmullRom(looks, i, f);
-            camera.transform.SetPositionAndRotation(eye, Quaternion.LookRotation(look - eye, game.Root.up));
-            camera.fieldOfView = tourFov;
-        }
-
-        /// <summary>Between a stop (k = 0) and the game's view (k = 1): rotation and look point blend while the camera
-        /// backs away and narrows its lens, until a 6 m, ~6° perspective matches the orthographic framing; at k = 1 the
-        /// real orthographic camera takes over with no visible jump.</summary>
-        private void Between(Vector3 stopEye, Vector3 stopLook, float k, bool diving)
-        {
-            if (diving && k >= .999f) { camera.orthographic = true; camera.transform.SetPositionAndRotation(restPosition, restRotation); camera.orthographicSize = restSize; return; }
-            camera.orthographic = false;
-            float stopDistance = Vector3.Distance(stopEye, stopLook), stopHalf = stopDistance * Mathf.Tan(tourFov * .5f * Mathf.Deg2Rad);
-            Quaternion stopRotation = Quaternion.LookRotation(stopLook - stopEye, game.Root.up);
-            Quaternion rotation = Quaternion.Slerp(stopRotation, restRotation, k);
-            Vector3 look = Vector3.Lerp(stopLook, restLook, k);
-            float distance = Mathf.Lerp(stopDistance, 6f, k * k), half = Mathf.Lerp(stopHalf, restSize, k);
-            camera.fieldOfView = 2 * Mathf.Atan(half / distance) * Mathf.Rad2Deg;
-            camera.transform.SetPositionAndRotation(look - rotation * Vector3.forward * distance, rotation);
-        }
-
-        private void HandBack()
-        {
-            if (handedBack || camera == null) return;
-            handedBack = true;
-            camera.orthographic = true; camera.orthographicSize = restSize; camera.nearClipPlane = restNear; camera.farClipPlane = restFar;
-            camera.transform.SetPositionAndRotation(restPosition, restRotation);
-        }
-
-        private static Vector3 CatmullRom(List<Vector3> p, int i, float t)
-        {
-            Vector3 p0 = p[Mathf.Max(0, i - 1)], p1 = p[i], p2 = p[Mathf.Min(p.Count - 1, i + 1)], p3 = p[Mathf.Min(p.Count - 1, i + 2)];
-            float t2 = t * t, t3 = t2 * t;
-            return .5f * (2 * p1 + (p2 - p0) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (3 * p1 - p0 - 3 * p2 + p3) * t3);
+            Clock += Mathf.Min(Time.unscaledDeltaTime, 1f / 20) * Speed;
+            Banner(Mathf.Clamp01(Clock / Warning));
+            if (Clock >= Warning) Finish();
         }
 
         // The warning banner ---------------------------------------------------------------------------------------------------
@@ -255,7 +141,7 @@ namespace GravityBox.Venom
         private void Finish()
         {
             if (Finished) return;
-            Finished = true; HandBack();
+            Finished = true;
             if (pausedByUs && game != null && game.Owner != null && game.Owner.Paused) game.Owner.TogglePause();
             if (Current == this) Current = null;
             var callback = done; done = null; callback?.Invoke();
@@ -264,7 +150,7 @@ namespace GravityBox.Venom
 
         private void OnDestroy()
         {
-            if (!Finished) { HandBack(); if (pausedByUs && game != null && game.Owner != null && game.Owner.Paused) game.Owner.TogglePause(); }
+            if (!Finished && pausedByUs && game != null && game.Owner != null && game.Owner.Paused) game.Owner.TogglePause();
             if (Current == this) Current = null;
             if (stripeTexture != null) Destroy(stripeTexture);
             if (vignetteTexture != null) Destroy(vignetteTexture);

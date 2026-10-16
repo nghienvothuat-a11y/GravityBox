@@ -20,8 +20,10 @@ Keep presentation separate from puzzle physics and state.
 
 Spatial glass rule (14/10/2026): bare glass always grips, including walls and roof.
 Only visible slick coatings remove adhesion; their meshes must match `SlipRegions`.
-This supersedes the 09/10 non-climbable-glass proposal. Opening display levels 1–6
-have wall exits, no floor perimeter tape or auxiliary grip boards; display 7 uses
+This supersedes the 09/10 non-climbable-glass proposal. Opening display levels 1–5
+have wall exits; display 6 (K01, user correction 15/10/2026) has a floor exit
+under the red crate, with no switches, buttons or exit shutter. Opening 1–6 have
+no floor perimeter tape or auxiliary grip boards; display 7 uses
 bare glass at its switch and coatings to prevent bypassing the pulley bridge.
 Keep authoring and saved scenes consistent; verify solves and wall/roof shortcuts.
 See `Docs/Verification/COgheGlassRule/README.md`.

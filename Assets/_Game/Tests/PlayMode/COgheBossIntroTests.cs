@@ -6,54 +6,74 @@ using UnityEngine;
 using UnityEngine.TestTools;
 namespace GravityBox.Tests
 {
- // Boss levels: the opening tour holds the level paused, flies the camera and hands it back exactly to the game's view.
+ // The warning must not take over the camera, move tissue or leave the level paused.
  public sealed partial class COgheSpatialCampaignTests
  {
-  [UnityTest] public IEnumerator BossIntroToursThenHandsTheViewBack()
+  [UnityTest] public IEnumerator BossWarningsKeepTheGameplayCameraStill()
   {
-   yield return Load(10);
-   Assert.IsTrue(game.Definition.Boss,"Position 10 is a Boss level");
-   game.CameraRig.Frame(720,1280,0,true);var view=game.Owner.View;
-   COgheBossIntro.PreviewSize=new Vector2Int(720,1280);
-   try
+   string[] scenes={"COgheSpatial10","COgheSpatialPlusB1","COgheSpatialPlusG5","COgheSpatial20","COgheSpatialPlusN40","COgheSpatialPlusN50"};
+   foreach(string scene in scenes)
    {
-    bool done=false;var intro=COgheBossIntro.Play(game,()=>done=true);
-    yield return null;yield return null;
-    Assert.IsTrue(game.Owner.Paused,"The level waits under the tour");Assert.IsTrue(COgheBossIntro.OwnsCamera);
-    Assert.IsFalse(view.orthographic,"The tour looks through a perspective lens");
-    var before=game.Motion.Centre(0);
-    intro.Speed=6;float start=Time.realtimeSinceStartup;
-    while(!done&&Time.realtimeSinceStartup-start<10)yield return null;
-    Assert.IsTrue(done,"It ends by itself");Assert.IsFalse(game.Owner.Paused,"Then the level starts");
-    Assert.IsTrue(view.orthographic,"Back to the game's view");Assert.IsFalse(COgheBossIntro.OwnsCamera);
-    Assert.AreEqual(before,game.Motion.Centre(0),"Nothing in the box moved");
+    yield return LoadScene(scene);
+    Assert.IsTrue(game.Definition.Boss,scene);
+    game.enabled=false; // isolate the warning from normal viewport/aspect updates
+    COgheBossIntro.PreviewSize=new Vector2Int(720,1280);
+    COgheBossIntro intro=null;
+    try
+    {
+     game.CameraRig.Reset();game.CameraRig.Frame(720,1280,0,true,new Rect(0,0,720,1280));
+     var view=game.Owner.View;var position=view.transform.position;var rotation=view.transform.rotation;
+     float size=view.orthographicSize,near=view.nearClipPlane,far=view.farClipPlane,fov=view.fieldOfView;
+     var centre=game.Motion.Centre(0);int callbacks=0;
+     intro=COgheBossIntro.Play(game,()=>callbacks++);intro.Speed=6;
+     yield return null;yield return null;
+     Assert.IsTrue(game.Owner.Paused,"The level waits under the warning: "+scene);
+     float deadline=Time.realtimeSinceStartup+5;
+     while(!intro.Finished&&Time.realtimeSinceStartup<deadline)
+     {
+      Assert.IsTrue(view.orthographic,scene+" never switches to perspective");
+      Assert.Less(Vector3.Distance(position,view.transform.position),.00001f,scene+" position");
+      Assert.Less(Quaternion.Angle(rotation,view.transform.rotation),.001f,scene+" rotation");
+      Assert.AreEqual(size,view.orthographicSize,.00001f,scene+" zoom");
+      Assert.AreEqual(near,view.nearClipPlane);Assert.AreEqual(far,view.farClipPlane);Assert.AreEqual(fov,view.fieldOfView);
+      Assert.AreEqual(centre,game.Motion.Centre(0),scene+" tissue stays put");
+      yield return null;
+     }
+     Assert.AreEqual(1,callbacks,scene+" completes exactly once");
+     Assert.IsNull(COgheBossIntro.Current);Assert.IsFalse(game.Owner.Paused,scene+" hands over to play");
+     Assert.IsTrue(view.orthographic);Assert.AreEqual(size,view.orthographicSize,.00001f);
+     Assert.Less(Vector3.Distance(position,view.transform.position),.00001f);
+     // Player-controlled orbit/zoom remain owned by the ordinary rig after the warning.
+     game.enabled=true;
+    }
+    finally{if(intro!=null)Object.Destroy(intro.gameObject);COgheBossIntro.PreviewSize=null;}
    }
-   finally{COgheBossIntro.PreviewSize=null;}
   }
 
-  // Frames of the whole intro at 30 fps: Artifacts/BossIntro/frame_#####.png
-  [Explicit("Renders the Boss intro")]
+  [Explicit("Renders the static Boss warning at two portrait sizes")]
   [UnityTest] public IEnumerator RenderBossIntro()
   {
-   yield return Load(10);
-   COgheBossIntro.PreviewSize=new Vector2Int(540,1170);
-   string root="Artifacts/BossIntro";if(Directory.Exists(root))Directory.Delete(root,true);Directory.CreateDirectory(root);
-   var rt=RenderTexture.GetTemporary(540,1170,24);var tex=new Texture2D(540,1170,TextureFormat.RGB24,false);
-   try
+   string root="Artifacts/BossStaticCamera/Frames";Directory.CreateDirectory(root);
+   foreach(var size in new[]{new Vector2Int(720,1280),new Vector2Int(720,1612)})
    {
-    var view=game.Owner.View;view.aspect=540f/1170;
-    var intro=COgheBossIntro.Play(game,null);intro.Speed=0;yield return null;yield return null;view.aspect=540f/1170;
-    float end=intro.TourLength+COgheBossIntro.PullBack+COgheBossIntro.Warning;int frame=0;
-    for(float t=0;t<end;t+=1f/30)
+    yield return Load(10);game.enabled=false;
+    COgheBossIntro.PreviewSize=size;
+    var rt=RenderTexture.GetTemporary(size.x,size.y,24);var tex=new Texture2D(size.x,size.y,TextureFormat.RGB24,false);
+    COgheBossIntro intro=null;
+    try
     {
-     intro.Seek(t);view.aspect=540f/1170;Canvas.ForceUpdateCanvases();
-     Grab(view,rt,tex,$"{root}/frame_{frame++:00000}.png");
-     if(frame%30==0)yield return null;
+     var view=game.Owner.View;view.aspect=(float)size.x/size.y;
+     intro=COgheBossIntro.Play(game,null);intro.Speed=0;yield return null;yield return null;
+     foreach(float t in new[]{0f,1.1f,2.4f})
+     {
+      intro.Seek(t);Canvas.ForceUpdateCanvases();
+      Grab(view,rt,tex,$"{root}/{size.x}x{size.y}-{t:F1}.png");
+     }
+     intro.Seek(COgheBossIntro.Warning+.1f);yield return null;
+     Grab(view,rt,tex,$"{root}/{size.x}x{size.y}-play.png");
     }
-    File.WriteAllText($"{root}/timing.txt",$"tour {intro.TourLength:F2} pull {COgheBossIntro.PullBack} warning {COgheBossIntro.Warning}");
-    intro.Seek(end+1);
+    finally{if(intro!=null)Object.Destroy(intro.gameObject);COgheBossIntro.PreviewSize=null;RenderTexture.ReleaseTemporary(rt);Object.Destroy(tex);}
    }
-   finally{COgheBossIntro.PreviewSize=null;RenderTexture.ReleaseTemporary(rt);Object.Destroy(tex);}
   }
  }
 }

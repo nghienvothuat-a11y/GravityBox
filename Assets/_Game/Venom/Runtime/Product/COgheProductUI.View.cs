@@ -24,7 +24,7 @@ namespace GravityBox.Venom
         {
             if(!started)return;
             if(Page!=COgheProductPage.Style)CloseStyle();
-            Clear(ref popupRoot);Clear(ref pageRoot);dynamicRoot=null;dropsLabel=null;
+            Clear(ref popupRoot);Clear(ref pageRoot);dynamicRoot=null;dropsLabel=null;dropsIcon=null;dropsBox=null;
             PlaceBanner();
             if(toast!=null)Destroy(toast.transform.parent.gameObject);toast=null;
             pageRoot=art.Rect(safe,"Page "+Page,new Rect(0,0,width,height));
@@ -37,6 +37,7 @@ namespace GravityBox.Venom
                 case COgheProductPage.Style:StyleView();break;
             }
             if(Popup!=COgheProductPopup.None)PopupView();
+            LayoutHint();
         }
         private void MainMenuView()
         {
@@ -70,11 +71,11 @@ namespace GravityBox.Venom
         }
         private void GameView()
         {
-            Top();HintButton();art.Button(pageRoot,"Overview",new Rect(width-72,height-82,48,48),COgheIcon.Overview,()=>Game.CameraRig.Overview());
+            Top();HintButton();art.Button(pageRoot,"Overview",new Rect(width-72,height-82,48,48),COgheIcon.Overview,()=>{OnGameplayInteraction();Game.CameraRig.Overview();});
             if(Game.CameraRig.ShowZones)
             {
                 float x=24;int count=Game.CameraRig.ZoneCount;
-                for(int i=0;i<count;i++){int zone=i;art.Button(pageRoot,"Inspect zone "+(i+1),new Rect(x+i*56,88,48,48),COgheIcon.Circle,()=>Game.CameraRig.SelectZone(zone));art.Label(pageRoot,"Zone "+(i+1),(i+1).ToString(),new Rect(x+i*56,88,48,48),12);}
+                for(int i=0;i<count;i++){int zone=i;art.Button(pageRoot,"Inspect zone "+(i+1),new Rect(x+i*56,88,48,48),COgheIcon.Circle,()=>{OnGameplayInteraction();Game.CameraRig.SelectZone(zone);});art.Label(pageRoot,"Zone "+(i+1),(i+1).ToString(),new Rect(x+i*56,88,48,48),12);}
             }
             BuildContextControls();
         }
@@ -95,7 +96,7 @@ namespace GravityBox.Venom
                     int group=Game.Matter.Groups[i];if(shownGroups[group]||Game.Matter.Escaped[i])continue;shownGroups[group]=true;
                     int count=0;for(int j=0;j<32;j++)if(Game.Matter.Groups[j]==group)count++;
                     int anchor=i;bool chosen=group==Game.Matter.Groups[Game.Motion.Selected];if(chosen)selected=slot;
-                    var b=art.Button(content,"Fragment "+(slot+1),new Rect(slot*80,0,74,52),COgheIcon.Circle,()=>{Game.SelectFragment(anchor);BuildContextControls();},null,false,chosen);
+                    var b=art.Button(content,"Fragment "+(slot+1),new Rect(slot*80,0,74,52),COgheIcon.Circle,()=>{OnGameplayInteraction();Game.SelectFragment(anchor);BuildContextControls();},null,false,chosen);
                     // Mass, not ordinal, is meaningful when the quantum machine divides again.
                     foreach(var image in b.GetComponentsInChildren<Image>())if(image.gameObject!=b.gameObject)image.enabled=false;
                     art.Label(b.transform,"Mass",Mathf.RoundToInt(count*100f/32)+"%",new Rect(0,0,74,52),13,chosen?COgheUIArt.Teal:COgheUIArt.Ink);
@@ -150,7 +151,7 @@ namespace GravityBox.Venom
             {
                 int earned=tripleTaken?victoryDrops+COgheEconomy.TripleExtra:victoryDrops;
                 var reward=art.Rect(pageRoot,"Victory reward",new Rect(width*.5f-74,height-184,148,32));
-                DropIcon(reward,new Rect(0,3,26,26));
+                COgheRewardFx.Shine(DropIcon(reward,new Rect(0,3,26,26)).rectTransform,rewardFxAt);
                 art.Label(reward,"Drops earned","+"+earned+" Drops",new Rect(34,0,114,32),17,COgheUIArt.Teal,TextAnchor.MiddleLeft);
             }
             TripleButton();

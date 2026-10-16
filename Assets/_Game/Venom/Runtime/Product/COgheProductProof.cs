@@ -214,15 +214,16 @@ namespace GravityBox.Venom
             if(!phone)Screen.SetResolution(720,1612,FullScreenMode.Windowed);yield return new WaitForSecondsRealtime(1);
             yield return Capture("13-tall-menu");ui.Play();if(COgheIntro.Playing){replay=FindFirstObjectByType<COgheIntro>();while(!replay.Started)yield return null;replay.Speed=30;replay.Skip();while(COgheIntro.Playing)yield return null;}
             yield return Capture("14-tall-game");ui.ShowPopup(COgheProductPopup.Pause);yield return Capture("15-tall-pause");
-            // test-build level picker, then a Boss level's opening tour and warning
+            // test-build level picker, then a Boss level's warning at the gameplay angle
             ui.ShowPopup(COgheProductPopup.Levels);yield return Capture("19-test-levels");
-            ui.LoadForTest(10);yield return new WaitForSecondsRealtime(3f);
+            ui.LoadForTest(10);yield return null;
+            while(FindFirstObjectByType<VenomCampaign>()?.Definition.Order!=10)yield return null;
+            yield return null;
             game=FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;
-            if(COgheBossIntro.Current==null){Fail("Boss level opened without its tour");yield break;}
-            yield return Capture("20-boss-tour");
-            var boss=COgheBossIntro.Current;boss.Seek(boss.TourLength+COgheBossIntro.PullBack+1.1f);yield return Capture("21-boss-warning");
+            if(COgheBossIntro.Current==null){Fail("Boss level opened without its warning");yield break;}
+            var boss=COgheBossIntro.Current;boss.Speed=0;boss.Seek(1.1f);yield return Capture("21-boss-warning");boss.Speed=1;
             float bossEnd=Time.realtimeSinceStartup+10;while(COgheBossIntro.Current!=null&&Time.realtimeSinceStartup<bossEnd)yield return null;
-            if(COgheBossIntro.Current!=null||game.Owner.Paused){Fail("Boss tour did not hand over");yield break;}
+            if(COgheBossIntro.Current!=null||game.Owner.Paused){Fail("Boss warning did not hand over");yield break;}
             yield return Capture("22-boss-level");
             // first-level guides: the exit arrow (1), "Hold to rotate" (3), the handle to pull (4)
             int shot=23;

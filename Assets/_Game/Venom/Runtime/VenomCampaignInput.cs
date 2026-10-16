@@ -83,6 +83,7 @@ namespace GravityBox.Venom
             if(viewGestureBlocked){pointerDown=false;touchFinger=-1;viewTouchSuppressed=true;viewPinchDistance=0;return true;}
             if(live>=2)
             {
+                ProductUI?.OnGameplayInteraction();
                 pointerDown=pointerMoved=false;touchFinger=-1;Owner.Rotation.EndDrag();
                 viewTouchSuppressed=true;
                 float distance=Vector2.Distance(first.screenPosition,second.screenPosition);

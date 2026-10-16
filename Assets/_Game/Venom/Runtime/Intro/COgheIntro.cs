@@ -56,11 +56,15 @@ namespace GravityBox.Venom
         };
 
         private static COgheIntro current;
+        /// <summary>Opt-in first-launch fixture; never touches the player's intro preference.</summary>
+        public static bool? SeenOverrideForTests;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetTestOverride() { SeenOverrideForTests = null; }
         public static bool Playing => current != null;
         public static bool Seen
         {
-            get => PlayerPrefs.GetInt(SeenKey, 0) == 1;
-            set { PlayerPrefs.SetInt(SeenKey, value ? 1 : 0); PlayerPrefs.Save(); }
+            get => SeenOverrideForTests ?? (PlayerPrefs.GetInt(SeenKey, 0) == 1);
+            set { if(SeenOverrideForTests.HasValue){SeenOverrideForTests=value;return;}PlayerPrefs.SetInt(SeenKey, value ? 1 : 0); PlayerPrefs.Save(); }
         }
         /// <summary>The intro ends on level 1's box, so it can only play (or be replayed) there.</summary>
         public static bool Fits(VenomCampaign g) => g != null && g.Definition != null && g.Definition.ProgressKey == Catalog && g.Definition.Order == 1 && !g.Home;
@@ -120,6 +124,7 @@ namespace GravityBox.Venom
         {
             for (float waited = 0; game != null && (game.Owner == null || game.Matter == null) && waited < 5; waited += Time.unscaledDeltaTime)
                 yield return null;   // the level is still starting
+            if (Finished) yield break;
             if (game == null || game.Owner == null || game.Matter == null) { Finish(); yield break; }
             // everything is loaded before the level is paused and the clock runs: no layer arrives mid-shot, and a
             // failure leaves the level playable instead of paused under nothing
@@ -149,9 +154,9 @@ namespace GravityBox.Venom
             if (!Started || Finished) return;
             if (!game.Owner.Paused)
             {
-                // Back / Escape toggled the pause: take it as a skip, and keep the level waiting under the comic
+                // Back / Escape hands straight over, just like the Skip button.
                 Skip();
-                if (!game.Owner.Completed && !game.Owner.Lost) game.Owner.TogglePause();
+                return;
             }
             if (!running) { running = true; if (score != null) score.Play(); return; }   // picture and score start together
             Clock += Mathf.Min(Time.unscaledDeltaTime, 1f / 20) * Speed;               // a slow frame cannot eat a shot
@@ -159,12 +164,11 @@ namespace GravityBox.Venom
             if (Clock >= Length) Finish();
         }
 
-        /// <summary>Jumps to COghe seated in the drawn box: a skip still ends on the dissolve into the game.</summary>
+        /// <summary>Skip hands over immediately. Natural playback still finishes with the ink dissolve.</summary>
         public void Skip()
         {
-            if (Clock >= SkipTo) return;
-            Clock = SkipTo;
-            if (score != null && score.clip != null) score.time = Mathf.Min(SkipTo, score.clip.length - .01f);
+            Clock = Length;
+            Finish();
         }
 
         private void Finish()
@@ -176,6 +180,8 @@ namespace GravityBox.Venom
             if (VenomCampaignSave.PersistenceEnabled) Seen = true;
             if (current == this) current = null;
             var callback=completed;completed=null;callback?.Invoke();
+            // The press that skipped the comic must not also command the glass underneath it.
+            if(game!=null)game.CancelPointer();
             Destroy(gameObject);
         }
 

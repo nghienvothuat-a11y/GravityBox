@@ -88,7 +88,7 @@ namespace GravityBox.Tests
     // Out through the exit hole (a low exit beside a wall the wander walked along): only fair where the exit is open,
     // and then the exit tap finishes the level; this wander is over.
     // Use the actual shell. Crate chambers are .84 x .70 m; the old .80 x .60 constants falsely called their
-    // perfectly valid corner positions an escape (K01 now has a closed wall exit while wandering).
+    // perfectly valid corner positions an escape (the crate chambers are wider than the pilot box).
     if(Array.Exists(game.Surfaces,p=>p!=null&&p.ExteriorGlass&&!p.IsCurved&&p.DistanceInside(at)<-.002f))
     {
      File.AppendAllText(log,$"out through the exit near {Local(target):F3}\n");

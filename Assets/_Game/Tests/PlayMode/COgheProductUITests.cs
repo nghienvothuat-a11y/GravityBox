@@ -336,11 +336,12 @@ namespace GravityBox.Tests
                 game=Object.FindFirstObjectByType<VenomCampaign>();ui=game.ProductUI;
                 if(game.Definition.Boss)
                 {
-                    // Boss levels open with their tour and warning first, the level paused underneath
-                    var boss=COgheBossIntro.Current;Assert.IsNotNull(boss,scenes[i]+" opens with its tour");Assert.AreEqual(COgheProductPage.Intro,ui.Page,scenes[i]);
+                    // Boss levels open with their warning first, at the gameplay angle, the level paused underneath
+                    var boss=COgheBossIntro.Current;Assert.IsNotNull(boss,scenes[i]+" opens with its warning");Assert.AreEqual(COgheProductPage.Intro,ui.Page,scenes[i]);
                     boss.Speed=30;float until=Time.realtimeSinceStartup+6;
-                    while(COgheBossIntro.Current!=null&&Time.realtimeSinceStartup<until)yield return null;
-                    Assert.IsNull(COgheBossIntro.Current,scenes[i]+" tour ends");Assert.IsFalse(game.Owner.Paused,scenes[i]);
+                    while(COgheBossIntro.Current!=null&&Time.realtimeSinceStartup<until)
+                    {Assert.IsTrue(game.Owner.View.orthographic,scenes[i]+" keeps its gameplay lens");yield return null;}
+                    Assert.IsNull(COgheBossIntro.Current,scenes[i]+" warning ends");Assert.IsFalse(game.Owner.Paused,scenes[i]);
                 }
                 Assert.IsNotNull(ui,scenes[i]);Assert.AreEqual(COgheProductPage.Game,ui.Page,scenes[i]);
                 Assert.AreEqual(i+1,game.Definition.Order);Canvas.ForceUpdateCanvases();

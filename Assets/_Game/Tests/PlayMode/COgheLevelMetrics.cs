@@ -43,6 +43,7 @@ namespace GravityBox.Tests
    string only=Environment.GetEnvironmentVariable("COGHE_METRIC_LEVELS");
    var levels=string.IsNullOrEmpty(only)?Enumerable.Range(1,order.Length).ToArray():Array.ConvertAll(only.Split(','),int.Parse);
    Directory.CreateDirectory("Artifacts/Metrics");string path="Artifacts/Metrics/levels.jsonl";if(string.IsNullOrEmpty(only)&&File.Exists(path))File.Delete(path);
+   var failures=new List<string>();
    foreach(int n in levels)
    {
     yield return LoadScene(order[n-1]);
@@ -54,8 +55,10 @@ namespace GravityBox.Tests
     foreach(var m in game.Owner.Apparatus.GetComponentsInChildren<COgheMechanism>(true)){string k=m.GetType().Name;kinds[k]=kinds.TryGetValue(k,out int c)?c+1:1;}
     string mech=string.Join(",",kinds.Select(p=>$"\"{p.Key}\":{p.Value}"));
     string key=Path.GetFileNameWithoutExtension(order[n-1]).Replace("COgheSpatialPlus","").Replace("COgheSpatial","");
+    if(!game.Owner.Completed||!string.IsNullOrEmpty(error))failures.Add($"{n} ({key}): {error}");
     File.AppendAllText(path,$"{{\"pos\":{n},\"key\":\"{key}\",\"title\":\"{game.Definition.Title.Replace('"','\'')}\",\"taps\":{metricTaps},\"mechanismTaps\":{game.MechanismTaps},\"partSelections\":{game.PartSelections},\"seconds\":{seconds:F1},\"maxParts\":{metricParts},\"turnDegrees\":{metricTurn:F0},\"solved\":{(game.Owner.Completed?"true":"false")},\"error\":\"{error}\",\"mechanisms\":{{{mech}}}}}\n");
    }
+   Assert.That(failures,Is.Empty,"Reference solves failed: "+string.Join("; ",failures));
   }
  }
 }

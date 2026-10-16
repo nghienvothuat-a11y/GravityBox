@@ -47,7 +47,8 @@ namespace GravityBox.Editor
    NewPlus("N18","Nửa thân không đủ sức","Khối 100% cần cả thân COghe; một nửa chỉ gồng được.",PlusN18),
    NewPlus("N15","Chuẩn bị trước khi đi","Tay nắm chỉ ở phòng này: việc gì ở đây thì làm trước khi đi.",PlusN15),
    NewPlus("N19","Người giữ có việc thứ hai","Người giữ được thả ra thì còn làm được việc khác.",PlusN19),
-  }.Concat(CrateDesigns.Select((d,k)=>NewPlus(d.key,d.title,d.lesson,c=>PlusCrate(c,k))))   // crate levels 51–60
+  }.Concat(CrateDesigns.Select((d,k)=>NewPlus(d.key,k==0?"Lỗ dưới thùng":d.title,
+   k==0?"Dời thùng đỏ để lộ lỗ thoát bên dưới.":d.lesson,c=>PlusCrate(c,k))))
    // New levels go at the END of this list: a level's generated meshes are numbered by its index here (BuildSpatialPlus,
    // meshSerial), so an insertion shifts every later level onto another level's mesh files (chapter 3, 06/10/2026: the
    // new N levels overwrote the meshes of crate levels 51–54).

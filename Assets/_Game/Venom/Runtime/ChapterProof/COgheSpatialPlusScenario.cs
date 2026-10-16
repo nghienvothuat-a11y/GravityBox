@@ -9,8 +9,8 @@ namespace GravityBox.Venom.ChapterProof
  // tap (fragment selection uses the public selection API). No pose, topology, gate or win state is assigned.
  public sealed class COgheSpatialPlusScenario
  {
-  readonly VenomCampaign game;readonly Func<Vector3,IEnumerator> tap;readonly Func<float,Func<bool>,string,IEnumerator> until;readonly COgheSpatialNextScenario s;
-  public COgheSpatialPlusScenario(VenomCampaign g,Func<Vector3,IEnumerator> t,Func<float,Func<bool>,string,IEnumerator> u,Func<float,IEnumerator> o=null){game=g;tap=t;until=u;s=new COgheSpatialNextScenario(g,t,u,o);}
+  readonly VenomCampaign game;readonly Func<Vector3,IEnumerator> tap;readonly Func<float,Func<bool>,string,IEnumerator> until;readonly COgheSpatialNextScenario s;readonly Func<float,IEnumerator> orbit;
+  public COgheSpatialPlusScenario(VenomCampaign g,Func<Vector3,IEnumerator> t,Func<float,Func<bool>,string,IEnumerator> u,Func<float,IEnumerator> o=null){game=g;tap=t;until=u;orbit=o;s=new COgheSpatialNextScenario(g,t,u,o);}
   Vector3 W(float x,float y,float z)=>game.Root.TransformPoint(new Vector3(x,y,z));
   int Selected=>game.Motion.Selected;
   T Find<T>() where T:Component=>s.Find<T>();
@@ -71,17 +71,33 @@ namespace GravityBox.Venom.ChapterProof
    yield return s.Go(W(.29f,-.01f,.02f),"Over the roof plate and down onto the right shelf (beside B, not on it)");
    yield return Pull("B","B opens the exit shutter");
   }
+  IEnumerator Turn(float degrees){if(orbit!=null)yield return orbit(degrees);else{game.CameraRig.Orbit(-degrees*3,720);yield return null;}}
   IEnumerator G5()
   {
    var q=Find<COgheQuantumSplitter>();var plate=s.Slider("Roof plate");
    yield return s.Split(q,Selected);int holder=q.LastLeft,climber=q.LastRight;
    yield return s.Walk(holder,W(.20f,-.30f,-.16f),"The holder stands on P");
    yield return until(15,()=>plate.AtEnd,"P holds the roof plate across the strip");
-   yield return s.Walk(climber,W(.29f,-.01f,.02f),"The climber goes up the bare back-left corner, over the roof plate, onto the right shelf");
-   game.SelectFragment(climber);yield return Pull("B","B opens the exit shutter");
-   yield return s.Walk(climber,W(.28f,-.30f,.05f),"Down the right glass to the floor");
-   yield return s.Walk(holder,W(.12f,-.30f,.0f),"The holder steps off P");
-   yield return s.Merge(W(.05f,-.30f,.05f));
+   yield return s.Walk(climber,W(-.33f,-.30f,.24f),"Approach the bare back-left corner");
+   yield return Turn(-90);
+   yield return s.Walk(climber,W(-.40f,.05f,.24f),"Climb the bare glass toward the roof");
+   yield return Turn(90);
+   yield return s.Walk(climber,W(.29f,-.01f,.02f),"The climber crosses the roof to the far shelf");
+   game.SelectFragment(climber);yield return Pull("B","B arms the floor relay");
+   yield return s.Walk(climber,W(.33f,-.02f,-.13f),"D takes over from P while the first half leaves");
+   yield return until(15,()=>s.Slider("D relay pin").AtEnd,"B and D together release C");
+   game.SelectFragment(holder);yield return Pull("C","The former holder can now pull C");
+   yield return s.Walk(holder,W(-.33f,-.30f,.24f),"Return to the bare back-left corner");
+   yield return Turn(-90);
+   yield return s.Walk(holder,W(-.40f,.05f,.24f),"Climb the bare glass again");
+   yield return Turn(90);
+   yield return s.Walk(holder,W(-.25f,-.05f,.30f),"Climb the glass to the newly released A");
+   game.SelectFragment(holder);yield return Pull("A","A secures the roof and opens the final exit");
+   // Return to the open foreground floor, clear of Q and of the final mouth at the back-right.
+   yield return s.Walk(holder,W(.10f,-.30f,-.20f),"First half returns inside, away from Q and the exit");
+   yield return s.Walk(climber,W(.05f,-.30f,-.24f),"The far holder is now free to leave D");
+   yield return s.Merge(W(.12f,-.30f,.18f));
+   yield return Turn(180); // look beneath the far shelf to see the final mouth from the rear
   }
   IEnumerator E01()
   {

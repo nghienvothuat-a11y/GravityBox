@@ -14,6 +14,9 @@ namespace GravityBox.Venom
         public Vector3 StandOffset = new Vector3(0, 0, -.067f);
         public Vector3 TouchSize = new Vector3(.108f, .075f, .18f);
         public bool PickHandleOnly;
+        /// <summary>Compact switches accept their entire physical casing, not just the coloured grip.
+        /// Bridges and other walkable carriers keep their authored handle-only selection.</summary>
+        public bool TouchControlBody;
         public bool TwoSided;
         // A one-way latch: once it rests at its end it is part of the scenery — it ignores taps (they fall through to
         // the surface behind it) and cannot be pulled back.
@@ -110,12 +113,14 @@ namespace GravityBox.Venom
         private Vector3 pinRest;
         private Vector3 stance;
         private bool backSide;
+        private Collider[] controlShapes = System.Array.Empty<Collider>();
         private int across;   // a crate taken by a long side: +1 / −1 (0: by an end, backSide)
 
         public override void InitializeMechanism(VenomCampaign game)
         {
             owner = game; stance=StandOffset; if (InterlockPin != null) pinRest = InterlockPin.localPosition;
             pendingLag = System.Array.IndexOf(game.Mechanisms, Rail) < System.Array.IndexOf(game.Mechanisms, this);
+            controlShapes = TouchControlBody ? Rail.Body.GetComponentsInChildren<Collider>() : System.Array.Empty<Collider>();
         }
         public override void ResetMechanism(VenomCampaign game)
         {
@@ -169,10 +174,25 @@ namespace GravityBox.Venom
                     new Plane(WorkingSurface.Normal,face).Raycast(ray,out float faceDistance)&&faceDistance<=nearestSolidDistance+.002f;
             }
             Vector3 primary=Handle!=null?Handle.position:Rail.Body.position;
+            if(TryTouchControlBody(game,ray,nearestSolidDistance))return true;
             bool hit=Visible(PickHandleOnly?primary:Rail.Body.position+WorkingSurface.Normal*.023f,PickHandleOnly?primary:Rail.Body.position+WorkingSurface.Normal*.037f);
             // A whole-carriage pick box already covers both handles; a TouchSize box around the far handle would reach past the carriage.
             if(!hit&&(!PickHandleOnly||AlternateHandle==null||!Visible(AlternateHandle.position,AlternateHandle.position)))return false;
             if (Request(game.Motion.Selected)) game.Feedback.ShowCommand(HandPoint, WorkingSurface.Normal, Rail.transform);
+            return true;
+        }
+        private bool HitsControlBody(Ray ray,float obstruction)
+        {
+            foreach(var shape in controlShapes)
+                if(shape!=null&&shape.enabled&&shape.gameObject.activeInHierarchy&&!shape.isTrigger&&shape.attachedRigidbody==Rail.Body&&
+                   shape.Raycast(ray,out _,obstruction+.002f))return true;
+            return false;
+        }
+        /// <summary>Exact casing hits take priority over neighbouring grips' forgiving pick envelopes.</summary>
+        public bool TryTouchControlBody(VenomCampaign game,Ray ray,float obstruction)
+        {
+            if(!TouchControlBody||CrateFaces||OneWay&&Rail.AtEnd||!HitsControlBody(ray,obstruction))return false;
+            if(Request(game.Motion.Selected))game.Feedback.ShowCommand(HandPoint,WorkingSurface.Normal,Rail.transform);
             return true;
         }
         private float HalfAlong(Vector3 a) => Mathf.Abs(a.x) * CrateSize.x * .5f + Mathf.Abs(a.y) * CrateSize.y * .5f + Mathf.Abs(a.z) * CrateSize.z * .5f;

@@ -142,7 +142,7 @@ namespace GravityBox.Venom.ChapterProof
     var o=game.Motion.Get(actor);
     if(o!=null&&Vector3.Distance(Root.TransformPoint(o.Target),world+Root.TransformDirection(offset))<.06f)yield break;
    }
-   throw new InvalidOperationException($"No visible floor command for part {actor} at {Root.InverseTransformPoint(world):F3}; activity={game.Activity}");
+   throw new InvalidOperationException($"No visible floor command for part {actor} at {Root.InverseTransformPoint(world):F3}; activity={game.Activity}; lost={game.Owner.Lost} failure={game.Failure}; escaped={game.Matter.EscapedCount}; centre={Root.InverseTransformPoint(game.Motion.Centre(actor)):F3}; target={game.Motion.Get(actor)?.Target}; yaw={game.CameraRig.OrbitYaw}");
   }
   // Like Command, but tries several destinations and never throws (used for re-taps).
   public bool CommandOk;

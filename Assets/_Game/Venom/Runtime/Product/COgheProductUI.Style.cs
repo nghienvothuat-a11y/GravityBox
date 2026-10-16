@@ -351,6 +351,7 @@ namespace GravityBox.Venom
         // The screen --------------------------------------------------------------------------------------------------------
         private void StyleView()
         {
+            inkGuideCard = null;
             var s = COgheStyle.Current;
             art.Button(pageRoot, "Back", new Rect(24, 25, 52, 52), COgheIcon.Back, LeaveStyle);
             art.Label(pageRoot, "Style title", "Style", new Rect(85, 20, width - 210, 40), 19);
@@ -486,7 +487,7 @@ namespace GravityBox.Venom
                 }
             }
             var scroll = viewport.gameObject.AddComponent<ScrollRect>(); scroll.viewport = viewport; scroll.content = content;
-            scroll.horizontal = false; scroll.vertical = true; scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.horizontal = false; scroll.vertical = !inkGuide; scroll.movementType = ScrollRect.MovementType.Clamped;
             scroll.verticalNormalizedPosition = styleScroll;
             scroll.onValueChanged.AddListener(v => styleScroll = v.y);
         }
@@ -505,6 +506,7 @@ namespace GravityBox.Venom
                 var icon = new GameObject("Icon", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
                 var ir = icon.rectTransform; ir.SetParent(box.transform, false); ir.anchorMin = ir.anchorMax = new Vector2(0, 1); ir.pivot = new Vector2(0, 1);
                 ir.anchoredPosition = new Vector2((r.width - size) * .5f, -4); ir.sizeDelta = new Vector2(size, size);
+                if (id == "INK_OCEAN") inkGuideCard = ir;
                 icon.sprite = ItemIcon(id, "COgheStyle/Icons/"); icon.preserveAspect = true; icon.raycastTarget = false;
                 icon.color = open ? Color.white : new Color(1, 1, 1, .45f);
             }

@@ -28,6 +28,9 @@ namespace GravityBox.Venom
             // 0/1: choose a free ink; 2: hold on the body; 3: inspect the saved result; 4: finished.
             public int InkGuideStep;
             public List<string> Retried = new List<string>();
+            // Preserve unlock milestones from the pre-15/10 order; completed puzzles still use stable IDs.
+            public int PacingRevision;
+            public List<int> ReachedBeforePacing = new List<int>();
         }
 
         private const string Key = "coghe.shop.v1";
@@ -54,6 +57,7 @@ namespace GravityBox.Venom
                 }
                 state.Owned ??= new List<string>(); state.Paid ??= new List<string>(); state.GiftDay ??= ""; state.AdDay ??= "";
                 state.Retried ??= new List<string>(); state.Understood ??= new List<string>();
+                state.ReachedBeforePacing ??= new List<int>();
                 return state;
             }
         }
@@ -174,7 +178,13 @@ namespace GravityBox.Venom
         /// </summary>
         public static void Migrate(VenomCampaign game)
         {
-            if (Current.Migrated || game == null || game.Progress == null) return;
+            if (game == null || game.Progress == null) return;
+            if (Current.PacingRevision < 1)
+            {
+                COgheProgressionMilestones.Capture(game, Current.ReachedBeforePacing);
+                Current.PacingRevision = 1; Save();
+            }
+            if (Current.Migrated) return;
             Current.Migrated = true;
             if (game.Progress.Completed.Count > 0 && !COgheHomeRoom.UnlockedLevelOverride.HasValue)
                 foreach (var item in COgheEconomy.Items)

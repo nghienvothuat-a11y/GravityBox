@@ -50,7 +50,9 @@ same authored `SlipRegions` drive grip and the coating mesh; presentation must
 not invent decorative bands over physically different regions. Keep the middle
 of an uncoated pane clear, and never hide a no-grip flag behind clear glass.
 Opening levels 1–6 have no floor perimeter tape or extra ivory grip boards; their
-exits are in glass walls. Level 7's wall control sits on bare glass with visible
+exits are in glass walls except display 6 (K01, user correction 15/10/2026): a real
+floor opening covered by the red crate, revealed by moving it, with no switch,
+button or exit shutter. Level 7's wall control sits on bare glass with visible
 coating separating the departure and receiving sides of the pulley bridge.
 This supersedes the 09/10 non-climbable glass proposal. Existing mechanism colours,
 circuits, glass lighting, number plaque and creature design remain approved.
@@ -85,6 +87,48 @@ and [native Unity verification](../../Verification/COgheProductUI/README.md).
   on Play. Never use decorative movement to alter puzzle state.
 - Full furniture shopping is a later Home feature; current Home retains Feed and
   Play. It must not show a working purchase flow without the corresponding system.
+
+### Reward polish and first-ink guidance — 15/10/2026
+
+Reuse the existing amber, outlined arrow and target ring for the ink lesson:
+Ocean syringe → hold/release on the live creature → Done → continue playing.
+The guide follows the real target after layout/camera changes, never intercepts
+input, hides under popups and resumes the saved lesson step.
+Unlocks get two brief mint/gold/coral fireworks beside the item panel, not a
+full-screen flash. Earned Drops get a small warm glint and counter pulse. Effects
+play once per event, survive layout changes without restarting, expire on UI time
+and never pay rewards or advance a level. Use UI geometry/shared materials;
+no realtime lights, bloom, screen shake or new particle systems. Keep the victory
+dance and the existing next-level text unobstructed.
+
+### First launch and control targeting — 15/10/2026
+
+A fresh player opens directly into the intro and then level 1, with no Play gate.
+Skip immediately hands over to level 1; natural playback retains the existing
+dissolve. Returning players retain Main Menu and resume/save behaviour. A legacy
+save with completed levels must not be treated as new just because the intro flag
+is absent. Explicit intro replay still returns to Main Menu.
+
+Opening operation cards fade in over 0.4 s and out over 0.3 s on unscaled UI time.
+The first accepted play gesture starts dismissal without consuming the gesture.
+Close, timeout and pause also fade out; resizing must not restart the animation.
+Keep English copy, the existing ivory panel and the separate gameplay arrows.
+
+Compact switch casings accept taps on their existing physical faces as well as
+the coloured grip. This only requests the existing approach/operate task: locks,
+finite force, paths, load checks and opaque occlusion still apply. Bridges, decks,
+crates and outputs keep their distinct walk/handle rules. Do not enlarge selection
+to the entire rail, cable or linked door. Cache collider references at initialization;
+no additional colliders or scene scans every frame. See
+[verification](../../Verification/COgheFirstPlayControls/README.md).
+
+### Boss entry camera — 16/10/2026
+
+Boss levels begin at their authored gameplay angle. Keep the existing short warning
+banner, with the puzzle paused underneath, then hand over to play. No opening
+camera tour, dive, orbit or automatic zoom. The regular camera rig retains ownership;
+manual orbit/zoom and victory framing keep their existing behaviour. This supersedes
+the earlier Boss fly-through presentation, including replay and menu-resume entry.
 
 ## 1. Identity and hierarchy
 

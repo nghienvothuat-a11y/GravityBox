@@ -12,6 +12,7 @@ namespace GravityBox.Venom
         /// <summary>How to operate the mechanism a teaching level introduces: shown with no button, never the answer.</summary>
         public static readonly Dictionary<string, string> Operation = new Dictionary<string, string>
         {
+            ["coghe.spatial.plus.k01"] = "Tap a crate to push or pull it.",
             ["coghe.spatial.pilot.01"] = "Tap a spot to send COghe there.",
             ["coghe.spatial.pilot.02"] = "COghe can crawl on glass.",
             ["coghe.spatial.pilot.03"] = "Drag to look around the box.",
@@ -33,6 +34,7 @@ namespace GravityBox.Venom
         /// <summary>The answer, revealed by the Hint button.</summary>
         public static readonly Dictionary<string, string> Solution = new Dictionary<string, string>
         {
+            ["coghe.spatial.plus.k01"] = "Move the tall crate out of the way, then slide the red crate aside to reveal the exit underneath. Send COghe down through the hole.",
             ["coghe.spatial.pilot.05"] = "Pull the yellow lever on the floor first: it flips open the yellow box over the handle on the wall.",
             ["coghe.spatial.pilot.06"] = "Climb up and pull the yellow handle on the wall: it flips open the yellow box over the winch. Then turn the winch.",
             ["coghe.spatial.pilot.07"] = "The yellow pin that locks the bridge is pulled by the yellow lever down in the pit. Pull it there, then slide the bridge.",

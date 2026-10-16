@@ -130,7 +130,7 @@ namespace GravityBox.Editor
             var rail = ExpansionRail(c, label + " carriage", start, axis, travel, 0, new Vector3(.068f, .026f, .054f), .035f, .010f, false, true);
             rail.LatchAtStart = rail.LatchAtEnd = true;
             var prop = rail.GetComponent<VenomMovableProp>(); prop.Manipulable = false;
-            var task = rail.gameObject.AddComponent<COgheTapRail>(); task.Rail = rail; task.Handle = prop.ManipulationGrip; task.WorkingSurface = floor;
+            var task = rail.gameObject.AddComponent<COgheTapRail>(); task.Rail = rail; task.Handle = prop.ManipulationGrip; task.WorkingSurface = floor; task.TouchControlBody = true;
             task.Label = label; task.StandOffset = new Vector3(0, 0, -.053f);
             TapLabel(rail.transform, label, new Vector3(0, .038f, -.030f));
             foreach (float end in new[] { 0f, travel })

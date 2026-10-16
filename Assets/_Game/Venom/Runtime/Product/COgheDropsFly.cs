@@ -31,7 +31,7 @@ namespace GravityBox.Venom
             var go = new GameObject("Drops fly", typeof(RectTransform));
             var rect = go.GetComponent<RectTransform>(); rect.SetParent(parent, false);
             rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one; rect.offsetMin = rect.offsetMax = Vector2.zero;
-            var fly = go.AddComponent<COgheDropsFly>(); fly.Build(drop, font, from, to, Mathf.Max(1, icons), amount, arrived, seed);
+            var fly = go.AddComponent<COgheDropsFly>(); fly.Build(drop, font, from, to, Mathf.Clamp(icons, 1, 16), amount, arrived, seed);
             return fly;
         }
 
@@ -47,6 +47,7 @@ namespace GravityBox.Venom
                 im.sprite = sprite; im.preserveAspect = true; im.raycastTarget = false; if (sprite == null) im.color = COgheUIArt.Teal;
                 var r = im.rectTransform; r.SetParent(transform, false); r.anchorMin = r.anchorMax = Vector2.zero; r.pivot = Vector2.one * .5f;
                 r.sizeDelta = Vector2.one * R(20, 28); r.anchoredPosition = from; r.gameObject.SetActive(false);
+                if (i < 4) COgheRewardFx.Shine(r, Time.unscaledTime + i * .045f); // bounded glints even on the largest reward
                 drops[i] = r; start[i] = from;
                 float angle = R(30, 150) * Mathf.Deg2Rad; burst[i] = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * R(40, 90);
                 delay[i] = i * .045f; travel[i] = R(.55f, .75f);

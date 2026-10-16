@@ -97,6 +97,7 @@ namespace GravityBox.Venom
                 foreach(var m in Mechanisms)if(m.isActiveAndEnabled&&m.ClaimsTapWhileHolding(ray,obstruction)){ReleaseProp();return m.TryTouch(this,ray,obstruction);}
                 return false;
             }
+            foreach(var rail in tapRails)if(rail.isActiveAndEnabled&&rail.TryTouchControlBody(this,ray,obstruction))return true;
             foreach(var m in Mechanisms)if(m.isActiveAndEnabled&&m.TryTouch(this,ray,obstruction))return true;
             return false;
         }

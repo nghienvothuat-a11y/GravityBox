@@ -81,7 +81,14 @@ namespace GravityBox.Venom
             COgheAds.BannerChanged += OnBannerChanged;
             COgheAds.AvailabilityChanged += OnBannerChanged;
             if(COgheProductMode.ReplayIntroOnLoad){COgheProductMode.ReplayIntroOnLoad=false;PlayIntro(true);}
-            else if(!COgheProductMode.SessionStarted){COgheProductMode.SessionStarted=true;ShowMenu();}
+            else if(!COgheProductMode.SessionStarted)
+            {
+                COgheProductMode.SessionStarted=true;
+                // A fresh player meets COghe before the menu. Existing progress is never reset by a missing intro flag.
+                if(!COgheIntro.Seen && Game.Progress.Completed.Count==0)
+                {if(Game.Definition.Order==1)PlayIntro(false);else Load(1);}
+                else ShowMenu();
+            }
             else if(Game.Definition.Order==1&&!COgheIntro.Seen){PlayIntro(false);}
             else if(Game.Definition.Boss){PlayBossIntro();}
             else{Rebuild();}
@@ -123,7 +130,7 @@ namespace GravityBox.Venom
             var k=Keyboard.current;
             if(Page==COgheProductPage.Intro)
             {
-                if(k!=null&&k.escapeKey.wasPressedThisFrame){FindFirstObjectByType<COgheIntro>()?.Skip();var boss=COgheBossIntro.Current;if(boss!=null&&boss.Clock<boss.TourLength+COgheBossIntro.PullBack)boss.Seek(boss.TourLength+COgheBossIntro.PullBack);}
+                if(k!=null&&k.escapeKey.wasPressedThisFrame){FindFirstObjectByType<COgheIntro>()?.Skip();}
                 return true;
             }
             if(k!=null&&(k.escapeKey.wasPressedThisFrame||k.pKey.wasPressedThisFrame))
@@ -201,7 +208,7 @@ namespace GravityBox.Venom
             if(leaving||Page!=COgheProductPage.Victory||Popup!=COgheProductPopup.None||COgheAds.Showing||victoryNextRequested)return;
             victoryNextRequested=true;tripleUntil=0;Rebuild();
         }
-        /// <summary>Boss levels open with a tour of the box and a warning, the level paused underneath.</summary>
+        /// <summary>Boss levels show a short warning at the gameplay angle, the level paused underneath.</summary>
         private void PlayBossIntro()
         {
             MenuShadows(false);Page=COgheProductPage.Intro;Popup=COgheProductPopup.None;canvas.gameObject.SetActive(false);

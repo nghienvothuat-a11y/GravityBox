@@ -43,7 +43,7 @@ namespace GravityBox.Venom
             if (game == null || game.ProductUI == null) { Debug.LogError("Bonus reel: no menu"); Application.Quit(1); yield break; }
             if (second) { yield return Second(game, heard, sounds); yield break; }
             if (trailer) { yield return Trailer(game, heard, sounds); yield break; }
-            // the first boss (its tour plays first, unrecorded)
+            // the first boss (its warning plays first, unrecorded)
             int boss = FirstBoss(game.ProductUI);
             game.ProductUI.LoadForTest(boss);
             for (int i = 0; i < 600 && (game == null || game.Definition.Order != boss || game.ProductUI == null || game.ProductUI.Page != COgheProductPage.Game); i++)

@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 namespace GravityBox.Tests
 {
- // The opening comic: plays over level 1 with the level paused, hands over to a running level, skips to the dissolve,
+ // The opening comic: plays over level 1 with the level paused, hands over to a running level, skips immediately,
  // never starts by itself in tests, and has every layer it names.
  public sealed partial class COgheSpatialCampaignTests
  {
@@ -46,13 +46,13 @@ namespace GravityBox.Tests
    Assert.IsFalse(game.Owner.Paused,"The level runs after the dissolve");Assert.AreEqual(1,Time.timeScale);
    Assert.AreEqual(seen,COgheIntro.Seen,"Without a save the seen flag is untouched");
   }
-  [UnityTest] public IEnumerator IntroSkipLandsOnTheDissolveAndReplaysFromPause()
+  [UnityTest] public IEnumerator IntroSkipImmediatelyHandsOverAndReplaysFromPause()
   {
    yield return Load(1);
    game.Owner.TogglePause();   // replayed from the pause screen
    yield return StartIntro(1);
    var intro=Object.FindFirstObjectByType<COgheIntro>();
-   intro.Skip();Assert.AreEqual(COgheIntro.SkipTo,intro.Clock,.01f);
+   intro.Skip();Assert.AreEqual(COgheIntro.Length,intro.Clock,.01f);Assert.IsFalse(COgheIntro.Playing);
    intro.Speed=4;
    float start=Time.realtimeSinceStartup;
    while(COgheIntro.Playing&&Time.realtimeSinceStartup-start<5)yield return null;

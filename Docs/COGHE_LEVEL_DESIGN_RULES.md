@@ -30,7 +30,9 @@ bám được, kể cả tường và nóc. Chỉ vùng có lớp vật liệu t
 COghe rơi/trượt theo trọng lực, không có lực bò trên vùng đó. Thay thế “kính không
 bám được” của phương án A ngày 09/10. `SlipRegions` là dữ liệu vùng phủ thực,
 hình lớp phủ phải khớp dữ liệu, không dùng một dải trang trí để đại diện cả tấm kính.
-Màn hiển thị 1–6 có lỗ trên tường kính, không có dải trơn quanh sàn hoặc tấm bám phụ.
+Màn hiển thị 1–5 có lỗ trên tường kính. Theo sửa đổi 15/10/2026, riêng màn 6 (K01)
+có lỗ ở sàn dưới khối đỏ: dời khối để lộ lỗ và thoát xuống, không công tắc, nút hay
+cửa che lỗ. Màn 1–6 không có dải trơn quanh sàn hoặc tấm bám phụ.
 Màn 7 đặt công tắc trực tiếp trên kính và dùng lớp trơn ngăn bò vòng qua cầu ròng rọc.
 Các màn sau giữ cơ quan/chuỗi giải, đặt lớp phủ tại đường tắt cần ngăn và kiểm tra lại
 lời giải cùng khả năng phục hồi. Mã content khác số màn: 6 = K01, 7 = 06.

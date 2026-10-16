@@ -26,6 +26,7 @@ namespace GravityBox.Venom
         private bool rotateLesson;
         private float clock;
         private Target shown = Target.Exit;
+        private System.Func<Vector2?> uiTarget;
 
         public Target Pointing { get; private set; }
         public bool RotateLearned { get; private set; }
@@ -53,13 +54,7 @@ namespace GravityBox.Venom
             root = (RectTransform)transform; root.SetParent(safe, false); root.SetAsFirstSibling();   // under the HUD and popups
             root.anchorMin = Vector2.zero; root.anchorMax = Vector2.one; root.pivot = Vector2.zero; root.offsetMin = root.offsetMax = Vector2.zero;
             GetComponent<CanvasGroup>().blocksRaycasts = false;
-            MakeSprites();
-
-            var arrowLayer = Layer("Arrow layer"); arrowGroup = arrowLayer.gameObject.AddComponent<CanvasGroup>(); arrowGroup.alpha = 0;
-            ring = Child(arrowLayer, "Target ring", new Vector2(44, 44), new Vector2(.5f, .5f));
-            ringImage = ring.gameObject.AddComponent<Image>(); ringImage.sprite = ringSprite; ringImage.color = Amber; ringImage.raycastTarget = false;
-            arrow = Child(arrowLayer, "Guide arrow", new Vector2(30, 45), new Vector2(.5f, 0));   // pivot on the tip
-            var im = arrow.gameObject.AddComponent<Image>(); im.sprite = arrowSprite; im.raycastTarget = false;
+            BuildArrow();
 
             if (number == 4)
                 foreach (var rail in game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())
@@ -78,6 +73,31 @@ namespace GravityBox.Venom
             }
         }
 
+        /// <summary>Reuse the gameplay arrow for a UI lesson. Target coordinates are screen pixels;
+        /// returning null hides it under popups. This layer never receives pointer input.</summary>
+        public static COgheGuide CreateUI(RectTransform parent, System.Func<Vector2?> target)
+        {
+            var go = new GameObject("Ink guide arrow", typeof(RectTransform), typeof(CanvasGroup));
+            var g = go.AddComponent<COgheGuide>();
+            g.root = (RectTransform)go.transform; g.root.SetParent(parent, false);
+            g.root.anchorMin = Vector2.zero; g.root.anchorMax = Vector2.one;
+            g.root.pivot = Vector2.zero; g.root.offsetMin = g.root.offsetMax = Vector2.zero;
+            go.GetComponent<CanvasGroup>().blocksRaycasts = false;
+            g.uiTarget = target; g.BuildArrow(); return g;
+        }
+
+        private void BuildArrow()
+        {
+            MakeSprites();
+
+            var arrowLayer = Layer("Arrow layer"); arrowGroup = arrowLayer.gameObject.AddComponent<CanvasGroup>(); arrowGroup.alpha = 0;
+            ring = Child(arrowLayer, "Target ring", new Vector2(44, 44), new Vector2(.5f, .5f));
+            ringImage = ring.gameObject.AddComponent<Image>(); ringImage.sprite = ringSprite; ringImage.color = Amber; ringImage.raycastTarget = false;
+            arrow = Child(arrowLayer, "Guide arrow", new Vector2(30, 45), new Vector2(.5f, 0));   // pivot on the tip
+            var im = arrow.gameObject.AddComponent<Image>(); im.sprite = arrowSprite; im.raycastTarget = false;
+
+        }
+
         private RectTransform Layer(string name) => Child(root, name, Vector2.zero, Vector2.zero, true);
         private static RectTransform Child(RectTransform parent, string name, Vector2 size, Vector2 pivot, bool stretch = false)
         {
@@ -88,6 +108,18 @@ namespace GravityBox.Venom
 
         private void LateUpdate()
         {
+            if (uiTarget != null)
+            {
+                clock += Mathf.Min(Time.unscaledDeltaTime, .05f);
+                var point = uiTarget();
+                arrowGroup.alpha = Mathf.MoveTowards(arrowGroup.alpha, point.HasValue ? 1 : 0, Time.unscaledDeltaTime * Fade);
+                if (point.HasValue)
+                {
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(root, point.Value, null, out var local);
+                    PlacePoint(local - root.rect.min, root.rect.size, false, 8, root.rect.height - 8);
+                }
+                return;
+            }
             if (game == null || game.Owner == null || game.Matter == null) return;
             bool live = ui.Page == COgheProductPage.Game && ui.Popup == COgheProductPopup.None && !game.Owner.Paused;
             float dt = Mathf.Min(game.Owner.Paused ? Time.unscaledDeltaTime : Time.deltaTime, .05f);   // game time; fades still run under Pause
@@ -129,9 +161,13 @@ namespace GravityBox.Venom
             bool behind = screen.z < 0;
             if (behind) screen = new Vector3(Screen.width - screen.x, Screen.height - screen.y, 0);
             RectTransformUtility.ScreenPointToLocalPointInRectangle(root, screen, null, out var local);
-            var p = local - root.rect.min; TargetPoint = p;
-            // the HUD keeps the top bar and the bottom row; the arrow stays clear of both
-            float left = 26, right = size.x - 26, bottom = 70, top = size.y - 92;
+            PlacePoint(local - root.rect.min, size, behind, 70, size.y - 92);
+        }
+
+        private void PlacePoint(Vector2 p, Vector2 size, bool behind, float bottom, float top)
+        {
+            TargetPoint = p;
+            float left = 26, right = size.x - 26;
             TargetOnScreen = !behind && p.x >= left && p.x <= right && p.y >= bottom && p.y <= top;
             float bob = 7 + 9 * Mathf.Abs(Mathf.Sin(clock * Mathf.PI / .7f));
             if (TargetOnScreen)

@@ -1,0 +1,95 @@
+{
+  "revision": "floor exit beneath red crate, user correction 15/10/2026",
+  "playmode": {
+    "passed": "9",
+    "total": "9",
+    "duration": "19.9148078",
+    "cases": [
+      {
+        "name": "ABlockedCrateIsRefusedAtOnce",
+        "result": "Passed"
+      },
+      {
+        "name": "ACrateTakenByALongSideSlidesWithCOgheBesideIt",
+        "result": "Passed"
+      },
+      {
+        "name": "CrateRevealExposesFloorExitAndResets",
+        "result": "Passed"
+      },
+      {
+        "name": "Spatial05Solve",
+        "result": "Passed"
+      },
+      {
+        "name": "Spatial06Solve",
+        "result": "Passed"
+      },
+      {
+        "name": "Spatial10Solve",
+        "result": "Passed"
+      },
+      {
+        "name": "SpatialPlusK01Solve",
+        "result": "Passed"
+      },
+      {
+        "name": "SpatialPlusK01Wander",
+        "result": "Passed"
+      },
+      {
+        "name": "TheSameEndOfACrateTappedTwicePushesThenPulls",
+        "result": "Passed"
+      }
+    ]
+  },
+  "native": {
+    "utc": "2026-10-15T14:07:33.5637770Z",
+    "unity": "6000.3.19f1",
+    "buildGuid": "3a326c412ea045268dd07a50c8f8eb01",
+    "device": "Mac17,2",
+    "os": "Mac OS X 26.5.1",
+    "gpu": "Apple M5",
+    "api": "Metal",
+    "execution": "Normal player loop; InputSystem touch events; screenshots excluded from frame samples. Author replay, not novice evidence.",
+    "graphicProfile": "Current",
+    "width": 720,
+    "height": 1280,
+    "passed": 1,
+    "failed": 0,
+    "levels": [
+      {
+        "level": 6,
+        "escaped": 32,
+        "fragments": 1,
+        "taps": 3,
+        "frames": 792,
+        "over33": 2,
+        "over50": 0,
+        "gcCollections": 13,
+        "passed": true,
+        "skinMs": 5.195656313131319,
+        "gameStepMs": 0.5746108585858577,
+        "graphMs": 0.0850681818181818,
+        "routeMs": 0.003760858585858586,
+        "maxGraphMs": 10.6978,
+        "seconds": 13.592517852783203,
+        "fps": 59.47569274902344,
+        "p50Ms": 16.666793823242188,
+        "p95Ms": 16.7217960357666,
+        "p99Ms": 17.313627243041992,
+        "maxMs": 33.380794525146484,
+        "peakAllocatedBytes": 79596430,
+        "error": ""
+      }
+    ],
+    "errors": [],
+    "fadeSamples": [],
+    "cooperation": []
+  },
+  "scope": {
+    "changedScenes": [
+      "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusK01.unity"
+    ]
+  }
+}

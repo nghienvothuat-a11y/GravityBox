@@ -122,12 +122,12 @@ namespace GravityBox.Editor
    ExitShutter(c,b.Rail,"B exit shutter",Vector3.back,.10f);   // toward the front corner: COghe comes down the right glass behind the exit
   }
 
-  // G5 · Hai nửa trên trần (boss): Q halves COghe. The roof plate covers the slick strip only while pad P is held (no
-  // latch): one half holds it, the other climbs the bare back-left corner, crosses the roof and pulls B on the right shelf
-  // (the exit, at the foot of the back glass near the start, opens); it comes down, the holder lets go, they merge, leave.
+  // G5 · Two-stage relay boss: Q halves COghe; P supports the first crossing. B + D release C,
+  // then C releases A on the back glass. A secures the roof and opens the exit; both halves return and merge.
   static void PlusG5(ExpansionContext c)
   {
-   c.Exit=new Vector3(-.26f,-.245f,.30f);c.Outward=Vector3.forward;c.Spawn=new Vector3(-.16f,-.25f,-.255f);NextShell(c,.10f,false);   // in front of Q: its back is closed
+   // Keep the final mouth away from A's descent: opening it must not suck in the working half before reunion.
+   c.Exit=new Vector3(.26f,-.245f,.30f);c.Outward=Vector3.forward;c.Spawn=new Vector3(-.16f,-.25f,-.255f);NextShell(c,.10f,false);   // in front of Q: its back is closed
    Band(c,1,-.40f,.40f);Band(c,2,-.40f,.40f);Band(c,4,-.30f,.30f);Band(c,3,-.30f,.10f);   // the left wall's back corner is bare
    foreach(int pane in new[]{1,2})Tape(c,pane,-.05f,.13f,-.23f,.10f);
    Tape(c,0,-.05f,.13f,-.30f,.30f);
@@ -135,10 +135,26 @@ namespace GravityBox.Editor
    NextQuantum(c,new Vector3(-.16f,-.30f,-.16f));
    var pad=ExpansionPad(c,"P",new Vector3(.20f,-.298f,-.16f),.009f,.10f);   // clear of Q's trays and of the climber's corner
    var plate=RoofPlate(c,"Roof plate",new Vector3(-.17f,.094f,0),Vector3.right,.21f,new Vector3(.20f,.006f,.56f));
-   PlusLatch(c,"P holds the roof plate out",new[]{pad},plate,false,false);
-   var right=ChapterLedge(c,"Right shelf",new Vector3(.33f,-.03f,.12f),new Vector3(.14f,.02f,.24f));
-   var b=ViewTask(c,"B",new Vector3(.33f,-.007f,.12f),Vector3.forward,.08f,right);
-   ExitShutter(c,b.Rail,"B exit shutter");
+   // Relay: the first half holds P, the second crosses and operates B, then takes the remote pad D.
+   // D takes over the roof and, together with B, releases C on the starting floor. The first half can now leave P,
+   // pull C and climb to A on the glass. A secures the roof and opens the final exit. Both halves must return and merge inside.
+   var right=ChapterLedge(c,"Right shelf",new Vector3(.33f,-.03f,.05f),new Vector3(.14f,.02f,.50f));
+   var b=ViewTask(c,"B",new Vector3(.33f,-.007f,.12f),Vector3.forward,.06f,right);
+   var farPad=ExpansionPad(c,"D",new Vector3(.33f,-.018f,-.13f),.009f,.095f);
+   var relayPin=PlusGate(c,"D relay pin",new Vector3(.11f,-.285f,.04f),Vector3.up,.035f,new Vector3(.018f,.025f,.018f));
+   var relay=PlusLatch(c,"B and D release C",new[]{farPad},relayPin,false,false);relay.Rails=new[]{b.Rail};
+   var relayControl=ViewTask(c,"C",new Vector3(.02f,-.277f,.04f),Vector3.right,.06f,c.Surfaces[0]);
+   relayControl.RequiredRail=relayPin;relayControl.RequiredEnd=true;
+   var a=ViewTask(c,"A",new Vector3(-.25f,.02f,.268f),Vector3.right,.06f,Pane(c,2));
+   a.StandOffset=new Vector3(0,-.068f,0);a.TouchSize=new Vector3(.10f,.08f,.07f);
+   var pin=PlusGate(c,"C upper pin",new Vector3(-.15f,.02f,.274f),Vector3.up,.035f,new Vector3(.018f,.025f,.018f));
+   ViewLink(c,relayControl.Rail,pin,false,null);a.RequiredRail=pin;a.RequiredEnd=true;
+   var hold=PlusLatch(c,"P or D or A holds the roof plate",new[]{pad,farPad},plate,true,false);hold.Rails=new[]{a.Rail};
+   ExitShutter(c,a.Rail,"A exit shutter",Vector3.left); // park inward, clear of the right enclosure pane
+   NextTrace("D",new Vector3(.33f,-.0192f,-.13f),new Vector3(.39f,-.0192f,-.13f),new Vector3(.399f,-.2992f,-.13f),new Vector3(.11f,-.2992f,.04f));
+   PlusStep(1,c.Spawn);PlusStep(2,new Vector3(.20f,-.30f,-.16f));PlusStep(3,new Vector3(.33f,-.02f,-.04f));
+   PlusStep(4,new Vector3(.33f,-.02f,-.13f));PlusStep(5,new Vector3(.02f,-.30f,.04f));PlusStep(6,new Vector3(-.25f,-.05f,.30f));
+
   }
  }
 }

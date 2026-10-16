@@ -1,5 +1,7 @@
 # COghe — 5 màn bò trên kính (G1–G5)
 
+**Revision 15/10/2026:** thứ tự 65 màn và Boss G5 đã được điều chỉnh. Xem [nhịp học hiện hành](../Difficulty65/README.md) và [Boss 32 relay](../Difficulty65/BOSS32.md). Bảng điểm và lời giải G5 bên dưới là bản 12/10, không mô tả revision này.
+
 Trạng thái: **Đã dựng** (12/10/2026), ở vị trí 12, 14, 25, 30, 32 của thứ tự 65 màn đã chốt. Hình dưới đây là blockout
 lúc thiết kế (`GlassCrawlMocks`); chỗ bản dựng khác thiết kế ghi ở mục [Đã dựng](#đã-dựng-12102026).
 

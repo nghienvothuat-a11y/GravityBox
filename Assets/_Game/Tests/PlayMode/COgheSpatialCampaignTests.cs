@@ -45,7 +45,7 @@ namespace GravityBox.Tests
             foreach(var w in game.Owner.Apparatus.GetComponentsInChildren<COgheSwingTransfer>())tasks+=$"; swing {w.Label} phase={w.Phase} actor={w.Actor} msg={w.LastMessage} landings={w.Landings} misses={w.Misses}";
             foreach(var b in game.Owner.Apparatus.GetComponentsInChildren<COgheSeesawBridge>())tasks+=$"; span {b.name} tension={b.Tension:F3} caught={b.Caught} angle={b.AngleToLevel:F1}";
             foreach(var q in game.Owner.Apparatus.GetComponentsInChildren<COgheQuantumSplitter>())tasks+=$"; Q {q.Phase} splits={q.Splits} msg={q.LastMessage} requested={q.Requested} armedInside={q.ArmedInside} order={(q.Requested>=0&&game.Motion.Get(q.Requested)!=null)}";
-            {var seen=new System.Collections.Generic.HashSet<int>();for(int i=0;i<32;i++)if(!game.Matter.Escaped[i]&&seen.Add(game.Matter.Groups[i])){int n=0;for(int j=0;j<32;j++)if(game.Matter.Groups[j]==game.Matter.Groups[i])n++;tasks+=$"; part p{i}×{n}@{game.Root.InverseTransformPoint(game.Motion.Centre(i)):F2}";}}
+            {var seen=new System.Collections.Generic.HashSet<int>();for(int i=0;i<32;i++)if(!game.Matter.Escaped[i]&&seen.Add(game.Matter.Groups[i])){int n=0;for(int j=0;j<32;j++)if(game.Matter.Groups[j]==game.Matter.Groups[i])n++;tasks+=$"; part p{i}×{n}@{game.Root.InverseTransformPoint(game.Motion.Centre(i)):F2}";var order=game.Motion.Get(i);if(order!=null)tasks+=$" target={order.Target} route={order.Cursor}/{order.Path.Count} path={string.Join(" > ",order.Path)}";}}
             Capture(game.Definition.Order,"result");
             // The merged body at the unlocked exit: the evidence frame for a solved level.
             if(reason=="Exit physically unlocked"&&done())Capture(game.Definition.Order,"ready");

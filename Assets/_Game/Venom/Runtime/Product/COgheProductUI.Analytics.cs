@@ -7,7 +7,7 @@ namespace GravityBox.Venom
         private readonly COgheLevelAttempt attempt = new COgheLevelAttempt();
         private bool background;
 
-        // Called only for the playable page, after an intro / Boss tour has ended.
+        // Called only for the playable page, after an intro / Boss warning has ended.
         private void TrackAttempt()
         {
             if (Page != COgheProductPage.Game) return;

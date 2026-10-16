@@ -133,6 +133,7 @@ namespace GravityBox.Venom
         {
             if (UnlockedLevelOverride.HasValue) return level <= UnlockedLevelOverride.Value;
             var progress = game != null ? game.Progress : null; if (progress == null) return false;
+            if (COgheShop.Current.ReachedBeforePacing.Contains(level)) return true;
             if (catalog == null) catalog = Resources.Load<COgheProductCatalog>("COgheUI/Catalog");
             if (catalog != null && level <= catalog.Levels.Length && catalog.Levels[level - 1] != null) return progress.Completed.Contains(catalog.Levels[level - 1].Id);
             return progress.Completed.Count >= level;

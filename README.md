@@ -1,5 +1,14 @@
 # COghe — Day Lab Puzzle Prototype
 
+**Camera Boss, 16/10/2026:** bỏ đoạn camera bay/quay và zoom khi vào Boss; giữ cảnh báo ngắn ở góc chơi bình thường. [Kiểm chứng 6 Boss và luồng 65 màn](Docs/Verification/COgheBossEntry/README.md).
+
+**Màn 6 — lỗ dưới khối đỏ, sửa lại 15/10/2026:** bỏ toàn bộ công tắc, nút, nắp và cửa; dời khối đỏ để lộ lỗ trên sàn rồi cho COghe thoát xuống. Giữ ID K01 và tiến độ cũ. [Thiết kế](Docs/LevelDesign/COghe/CrateReveal6/README.md) · [Kiểm chứng](Docs/Verification/COgheCrateReveal6/README.md).
+
+**Mở đầu và thao tác, 15/10/2026:** lần đầu vào intro → màn 1; Skip vào thẳng màn 1. Hướng dẫn fade in/out, tự mờ khi bắt đầu thao tác; chạm cả vỏ công tắc để COghe đi tới vận hành. [Chi tiết và kiểm chứng](Docs/Verification/COgheFirstPlayControls/README.md).
+
+**Nhịp học 65 màn và VFX, 15/10/2026:** [thứ tự/mục tiêu từng màn](Docs/LevelDesign/COghe/Difficulty65/README.md), thang/cầu luyện ở 8–9, **Boss 10 giữ nguyên** theo yêu cầu mới nhất; Boss 32 thêm bàn giao hai vai trò. [Kiểm chứng gameplay](Docs/Verification/COgheDifficulty65/README.md). Bài tiêm màu dùng mũi tên từng bước; mở khóa có pháo hoa nhỏ, giọt thưởng lóe sáng. [Review UI/VFX](Docs/Verification/COgheRewardPolish/README.md).
+
+
 **Animation Home, 15/10/2026:** đầu quái vật mọc dần từ vũng nhầy, nhe nanh và thè lưỡi rồi tan lại; bỏ thân người. Lưỡi rộng ×2, giữ nhịp uốn mềm của bản cũ. Tái sử dụng kết quả dựng da/mặt, có kiểm chứng trực tiếp trên iPhone. [Video Unity và số đo](Docs/Verification/COgheMonsterHead/README.md).
 
 **Ống và mạch, 14/10/2026:** vận tốc chui ống ×1,5; mạch và chân tiếp điểm bám mặt kính/sàn/bệ thật. Đã rà 65 màn, giữ nguyên dữ liệu vật lý cơ quan. [Kiểm chứng và ảnh runtime](Docs/Verification/COghePipeCircuits/README.md).

@@ -30,10 +30,8 @@ namespace GravityBox.Editor
   {
    var design = CrateDesigns[k];
    c.Exit = CrateGrid(CrateHole.x + .5f, CrateHole.y + .5f); c.Outward = Vector3.down;
-   bool wallExit = k == 0;
-   if (wallExit) { c.Exit = new Vector3(.30f, -.09f, CrateBoxDepth * .5f); c.Outward = Vector3.forward; }
    c.Spawn = CrateGrid(design.spawn.x + .5f, design.spawn.z + .5f) + Vector3.up * .05f;
-   CrateShell(c, wallExit);
+   CrateShell(c);
    var floor = c.Surfaces[0];
    for (int i = 0; i < design.crates.Length; i++)
    {
@@ -76,11 +74,6 @@ namespace GravityBox.Editor
     // Any face takes a tap; the grid check needs the crate's size and the floor (root space, cell corners at the edges).
     task.CrateFaces = true; task.CrateSize = size; task.CrateCell = CrateCell;
     task.ArenaMin = new Vector2(-CrateBoxWidth * .5f, -CrateBoxDepth * .5f); task.ArenaMax = new Vector2(CrateBoxWidth * .5f, CrateBoxDepth * .5f);
-    if (wallExit && cr.red)
-    {
-     var gate = ViewGate(c, "B coral shutter", c.Exit + Vector3.back * .020f, Vector3.left, .15f, new Vector3(.13f, .14f, .018f));
-     ViewLink(c, rail, gate, true, ViewExitSurface(c));
-    }
    }
    // Printed grid on the floor: the cells the crates slide in.
    for (int x = 0; x <= 6; x++) PlusGridLine(c, CrateGrid(x, 0), CrateGrid(x, 5));
@@ -94,17 +87,18 @@ namespace GravityBox.Editor
    line.localRotation = Quaternion.LookRotation(d, Vector3.up);
   }
 
-  /// <summary>Crate glass chamber: K01 teaches a wall exit; later crate puzzles retain their approved floor exits.</summary>
-  static void CrateShell(ExpansionContext c, bool wallExit = false)
+  /// <summary>Crate glass chamber: the red crate covers the real floor exit, including display 6 (15/10/2026).</summary>
+  static void CrateShell(ExpansionContext c)
   {
    float bx = CrateBoxWidth * .5f, bz = CrateBoxDepth * .5f;
-   Panel(c.Root, "Laboratory floor", new Vector3(0, -.30f, 0), Vector3.up, new Vector2(CrateBoxWidth, CrateBoxDepth), stone, !wallExit, new Vector2(-c.Exit.x, c.Exit.z), c.Owner.ApertureRadius, c.Surfaces);
+   Panel(c.Root, "Laboratory floor", new Vector3(0, -.30f, 0), Vector3.up, new Vector2(CrateBoxWidth, CrateBoxDepth), stone, true,
+    new Vector2(-c.Exit.x, c.Exit.z), c.Owner.ApertureRadius, c.Surfaces);
    const float top = .10f; float mid = (top - .30f) * .5f, height = top + .30f;
    var pos = new[] { new Vector3(0, top, 0), new Vector3(0, mid, -bz), new Vector3(0, mid, bz), new Vector3(-bx, mid, 0), new Vector3(bx, mid, 0) };
    var normal = new[] { Vector3.down, Vector3.forward, Vector3.back, Vector3.right, Vector3.left };
    for (int i = 0; i < 5; i++)
    {
-    var p = Panel(c.Root, "Outer pane " + i, pos[i], normal[i], i == 0 ? new Vector2(CrateBoxWidth, CrateBoxDepth) : new Vector2(i < 3 ? CrateBoxWidth : CrateBoxDepth, height), glass, wallExit && i == 2, new Vector2(-c.Exit.x, c.Exit.y - mid), wallExit && i == 2 ? c.Owner.ApertureRadius : 0, c.Surfaces);
+    var p = Panel(c.Root, "Outer pane " + i, pos[i], normal[i], i == 0 ? new Vector2(CrateBoxWidth, CrateBoxDepth) : new Vector2(i < 3 ? CrateBoxWidth : CrateBoxDepth, height), glass, false, Vector2.zero, 0, c.Surfaces);
     p.ExteriorGlass = true; p.Selectable = true; p.Slippery = true;
    }
   }

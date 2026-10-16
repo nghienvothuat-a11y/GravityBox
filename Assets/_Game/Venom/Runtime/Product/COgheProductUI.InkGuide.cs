@@ -10,6 +10,7 @@ namespace GravityBox.Venom
         private bool NeedsInkGuide => StyleUnlocked && COgheShop.Current.InkGuideStep < 4;
         private bool styleFromMenu, inkGuide;
         private Text inkGuideText;
+        private RectTransform inkGuideCard;
 
         /// <summary>The coloring stage is independent of the furnished Home unlocked by Boss 10.</summary>
         public void OpenStyleFromMenu()
@@ -25,7 +26,7 @@ namespace GravityBox.Venom
             if (inkGuide)
             {
                 if (COgheShop.Current.InkGuideStep == 0) COgheShop.SetInkGuideStep(1);
-                styleInk = "INK_OCEAN";
+                styleInk = "INK_OCEAN"; styleScroll = 1;
                 COgheAnalytics.Log("ink_guide_start", "step", COgheShop.Current.InkGuideStep);
             }
             Rebuild();
@@ -38,7 +39,25 @@ namespace GravityBox.Venom
             if (styleMix != null) styleMix.gameObject.SetActive(false);
             var card = art.Box(pageRoot, "Ink lesson", new Rect(16, styleStageBottom + 3, width - 32, 61), COgheUIArt.Mint);
             inkGuideText = art.Label(card.transform, "Instruction", "", new Rect(12, 2, width - 56, 57), 12, COgheUIArt.Ink);
+            COgheGuide.CreateUI(pageRoot, InkGuideTarget);
             RefreshInkGuide();
+        }
+
+        private Vector2? InkGuideTarget()
+        {
+            if (!inkGuide || Page != COgheProductPage.Style || Popup != COgheProductPopup.None) return null;
+            int step = COgheShop.Current.InkGuideStep;
+            RectTransform target = step < 2 ? inkGuideCard : step >= 3 ? styleDoneGroup.transform as RectTransform : null;
+            if (target != null)
+                return RectTransformUtility.WorldToScreenPoint(null, target.TransformPoint(target.rect.center));
+            if (step == 2 && Surface != null)
+            {
+                var points = Surface.DrawnParticles;
+                if (points == null || points.Length == 0) return null;
+                Vector3 centre = Vector3.zero; foreach (var p in points) centre += p;
+                return Game.Owner.View.WorldToScreenPoint(centre / points.Length);
+            }
+            return null;
         }
 
         private void RefreshInkGuide()
@@ -54,7 +73,7 @@ namespace GravityBox.Venom
             inkGuideText.text = step < 2 ? "1 / 3 · Choose your ink\nTap the Ocean syringe below. This color is free." :
                 step < 3 ? (injecting && held >= .6f ? "2 / 3 · Now lift your finger\nThe ink spreads through COghe and saves automatically." :
                     "2 / 3 · Press and hold on COghe\nHold to inject. Move your finger to color another spot.") :
-                "3 / 3 · Your color is saved\nUndo reverses a hold. Rinse removes colors. Tap Done.";
+                "3 / 3 · Ready to play\nTap Done to save your color and continue.";
         }
 
         private void FinishInkGuide()

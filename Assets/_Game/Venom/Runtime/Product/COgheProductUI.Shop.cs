@@ -12,6 +12,10 @@ namespace GravityBox.Venom
     public sealed partial class COgheProductUI
     {
         private Sprite dropSprite;
+        private float rewardFxAt = -100, unlockFxAt = -100;
+        private bool unlockFxPlayed;
+        private int observedDrops = -1;
+        private RectTransform dropsIcon;
         private Text dropsLabel; private int dropsShown = -1;
         private RectTransform dropsBox; private int dropsPending; private float dropsBumpAt = -10;   // Drops still flying in (the bonus)
         private string offerId; private System.Action offerBought;
@@ -50,7 +54,8 @@ namespace GravityBox.Venom
             dropsBox = box.rectTransform; dropsBox.pivot = Vector2.one * .5f; dropsBox.anchoredPosition += new Vector2(r.width * .5f, -r.height * .5f);   // pulses from its middle
             var b = box.gameObject.AddComponent<Button>(); b.targetGraphic = box;
             b.onClick.AddListener(() => { COgheAudio.UiTap(); offerId = null; Popup = COgheProductPopup.Buy; Rebuild(); });
-            DropIcon(box.transform, new Rect(8, (r.height - 26) * .5f, 26, 26));
+            dropsIcon = DropIcon(box.transform, new Rect(8, (r.height - 26) * .5f, 26, 26)).rectTransform;
+            COgheRewardFx.Shine(dropsIcon, rewardFxAt);
             int balance = COgheShop.Drops - dropsPending;
             dropsLabel = art.Label(box.transform, "Balance", balance.ToString(), new Rect(38, 0, r.width - 44, r.height), 15, null, TextAnchor.MiddleLeft);
             dropsLabel.font = art.BoldFont; dropsShown = balance;
@@ -58,6 +63,13 @@ namespace GravityBox.Venom
         private void TickShop()
         {
             int balance = COgheShop.Drops - dropsPending;
+            if (observedDrops >= 0 && balance > observedDrops)
+            {
+                rewardFxAt = Time.unscaledTime; dropsBumpAt = Time.time;
+                if (dropsIcon != null && dropsIcon.GetComponentInChildren<COgheRewardFx>() == null)
+                    COgheRewardFx.Shine(dropsIcon, rewardFxAt);
+            }
+            observedDrops = balance;
             if (dropsLabel != null && dropsShown != balance) { dropsShown = balance; dropsLabel.text = dropsShown.ToString(); }
             if (dropsBox != null) { float k = Time.time - dropsBumpAt; dropsBox.localScale = Vector3.one * (1 + (k >= 0 && k < .5f ? .16f * Mathf.Exp(-k * 9) : 0)); }
             if (bannerDirty && !injecting) { bannerDirty = false; Rebuild(); }
@@ -87,6 +99,8 @@ namespace GravityBox.Venom
         {
             var then = offerBought; offerId = null; offerBought = null;
             Resume(); then?.Invoke();   // the Items menu had paused the room
+            if (pageRoot != null && Popup != COgheProductPopup.Unlocks)
+                COgheRewardFx.Fireworks(pageRoot, Time.unscaledTime);
         }
         /// <summary>A button whose icon is the droplet (prices in Drops).</summary>
         private Button DropButton(Transform parent, string name, Rect r, string label, System.Action click, bool primary = true)
@@ -191,13 +205,15 @@ namespace GravityBox.Venom
         private void BeginVictory(string levelId, int order)
         {
             victoryLevel = levelId;
+            unlockFxPlayed = false; unlockFxAt = -100;
             string key = "win:" + levelId; bool first = !COgheShop.Paid(key);
             victoryDrops = COgheShop.Earn(key, COgheShop.WinReward(levelId), "level_win");
+            if (victoryDrops > 0) rewardFxAt = Time.unscaledTime;
             COgheAds.NoteWin();
             victoryUnlocks.Clear(); victoryHome = false; victoryAdChecked = false; victoryNextRequested = false; tripleTaken = false;
             if (first)
             {
-                foreach (var item in COgheEconomy.Items) if (item.Level == order) { victoryUnlocks.Add(item.Id); COgheAnalytics.Log("item_unlock", "item", item.Id); }
+                foreach (var item in COgheEconomy.Items) if (item.Level == order && !COgheShop.Current.ReachedBeforePacing.Contains(order)) { victoryUnlocks.Add(item.Id); COgheAnalytics.Log("item_unlock", "item", item.Id); }
                 victoryHome = Game.Progress.RevealHome;
                 if (victoryHome) COgheAnalytics.Log("feature_unlock", "feature", "home");
             }
@@ -208,7 +224,11 @@ namespace GravityBox.Venom
         private bool VictoryReady()
         {
             if (COgheAds.Showing) return false;
-            if (victoryUnlocks.Count > 0 || victoryHome) { Popup = COgheProductPopup.Unlocks; Rebuild(); return false; }
+            if (victoryUnlocks.Count > 0 || victoryHome)
+            {
+                if (!unlockFxPlayed) { unlockFxPlayed = true; unlockFxAt = Time.unscaledTime; COgheAudio.Happy(); }
+                Popup = COgheProductPopup.Unlocks; Rebuild(); return false;
+            }
             if (victoryBonus > 0) { StartBonus(victoryBonus, true); return false; }   // after a boss: the bonus "Hiểu ra"
             if (NeedsInkGuide) { OpenStyleFromMenu(); return false; }
             if (!victoryAdChecked)
@@ -230,7 +250,7 @@ namespace GravityBox.Venom
                 COgheAds.Rewarded("victory_triple", COgheReward.Victory(victoryLevel), ok =>
                 {
                     if (this == null) return;
-                    if (ok) { tripleTaken = true; COgheAudio.Happy(); }
+                    if (ok) { tripleTaken = true; rewardFxAt = Time.unscaledTime; COgheAudio.Happy(); }
                     tripleUntil = 0; Rebuild();
                 });
             }, true);
@@ -239,6 +259,7 @@ namespace GravityBox.Venom
         /// <summary>What this win unlocked: gifts are already yours, the rest can be bought (or taken for an ad) now or later.</summary>
         private void UnlocksPopup(RectTransform panel, float w, float h)
         {
+            COgheRewardFx.Fireworks(panel, unlockFxAt);
             PopupTitle(panel, w, "New for COghe!");
             float y = 70;
             if (victoryHome)
