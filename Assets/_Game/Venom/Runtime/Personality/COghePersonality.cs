@@ -68,7 +68,7 @@ namespace GravityBox.Venom
         public void ResetState()
         {
             Act = COgheAct.None; Fade = 1; tantrumPending = releasing = false; idle = 0; lastSim = -1;
-            nextActAt = IdleBeforeFirstAct; for (int i = 0; i < taps.Length; i++) taps[i] = -100;
+            nextActAt = IdleBeforeFirstAct; cameraMovedAt = -1; for (int i = 0; i < taps.Length; i++) taps[i] = -100;
             pendingTrick = null; journeysSeen = -1; airborne = 0; lastCentreAt = -1; for (int i = 0; i < reactedAt.Length; i++) reactedAt[i] = -100;
             lastCommands = game != null && game.Feedback != null ? game.Feedback.CommandCount : 0;
         }
@@ -102,7 +102,8 @@ namespace GravityBox.Venom
             lastSim = now;
             if (dt <= 0) return;                                         // paused
             lastDt = dt;
-            if (game.Home) { UpdateHome(dt); return; }
+            TrickOverlay();
+            if (game.Home) { HomeTrickEvents(now); UpdateHome(dt); return; }
 
             bool commanded = game.Feedback != null && game.Feedback.CommandCount != lastCommands;
             if (game.Feedback != null) lastCommands = game.Feedback.CommandCount;
@@ -186,7 +187,10 @@ namespace GravityBox.Venom
         /// <summary>Plays <paramref name="trick"/> now (its trigger, a test or a review reel).</summary>
         public void PlayTrick(COgheTrick trick)
         {
-            Trick = trick; TrickPlays[(int)trick]++;
+            Trick = trick; TrickPlays[(int)trick]++; flashedAt = -1;
+            if (trick == COgheTrick.RockPaperScissors) TrickVariant = TrickPlays[(int)trick] % 3;   // who plays what, and who wins
+            if (trick == COgheTrick.Mimic && !mimicSet) DefaultMimic();
+            mimicSet = false;
             Begin(COgheAct.Trick, COgheTricks.Length(trick));
         }
         /// <summary>The player tapped COghe itself (whole, in a level): a wink.</summary>
@@ -196,6 +200,76 @@ namespace GravityBox.Venom
         /// <summary>The player restarted the level (Restart, or Try again after a failure): the third in a row and COghe
         /// turns its back and sulks once the level runs again (Emotion). A win clears the count.</summary>
         public void NoteRetry() { if (++retries >= 3) { retries = 0; sulkAfterRetry = true; } }
+        /// <summary>The player turned or zoomed the camera: once they stop, COghe strikes a pose for it (Emotion).</summary>
+        public void NoteCameraMove() { if (game != null && game.Matter != null && COgheTricks.Available(COgheTrick.Selfie)) cameraMovedAt = game.Matter.SimulationTime; }
+        private float cameraMovedAt = -1, flashedAt = -1;
+        /// <summary>Rock–paper–scissors: which hands are shown (0..2).</summary>
+        public int TrickVariant { get; private set; }
+        /// <summary>Mimic: what it copies (a box, else a handle) and where that is, for its eyes.</summary>
+        public bool MimicBox { get; private set; } = true;
+        public Vector3 MimicTarget { get; private set; }
+        private bool mimicSet;
+        // a crate or a handle within reach of the body: the nearest
+        private bool FindMimicTarget(out Vector3 at, out bool box)
+        {
+            at = default; box = true; float best = float.MaxValue;
+            foreach (var m in game.Mechanisms)
+            {
+                if (!(m is COgheTapRail rail) || rail.Rail == null) continue;
+                Vector3 p = rail.CrateFaces ? rail.Rail.Body.position : rail.HandPoint;
+                float reach = rail.CrateFaces ? rail.CrateSize.magnitude * .5f + .1f : .14f, d = Vector3.ProjectOnPlane(p - centre, up).magnitude;
+                if (d > reach || d >= best) continue;
+                best = d; at = p; box = rail.CrateFaces;
+            }
+            return best < float.MaxValue;
+        }
+        private void DefaultMimic()
+        {
+            MimicBox = true; MimicTarget = centre + CameraFlat() * .2f;
+            if (room != null)
+            {
+                float best = float.MaxValue;
+                foreach (var item in room.Items)
+                {
+                    if (item == null || !item.Root.activeInHierarchy) continue;
+                    var c = room.BoundsOf(item).center; float d = Vector3.Distance(c, centre);
+                    if (d < best) { best = d; MimicTarget = c; }
+                }
+            }
+            else if (FindMimicTarget(out var at, out bool box)) { MimicTarget = at; MimicBox = box; }
+        }
+        // At Home: the breath heart for a 2 s hold on COghe, and a pose for the camera once the player has turned or zoomed it.
+        private void HomeTrickEvents(float now)
+        {
+            if (room == null || bonusPhase != BonusPhase.None) return;
+            bool page = game.ProductUI == null || game.ProductUI.Page == COgheProductPage.Home;
+            bool free = (home == HomeState.Rest || home == HomeState.User || home == HomeState.Walk || home == HomeState.Play) && (Act == COgheAct.None || Act == COgheAct.Home && home == HomeState.Play);
+            if (page && free && game.BodyHeld >= 2f && COgheTricks.Available(COgheTrick.BreathHeart))
+            {
+                game.ConsumePointer(); StopPlaying(); game.Motion.Cancel(0); home = HomeState.Rest; homeTimer = 0; homeNext = 3;
+                PlayTrick(COgheTrick.BreathHeart); return;
+            }
+            if (cameraMovedAt < 0 || now - cameraMovedAt < .6f) return;
+            cameraMovedAt = -1;
+            if (page && free && Act == COgheAct.None && game.Motion.Get(0) == null && now - reactedAt[(int)COgheTrick.Selfie] > 20)
+            { reactedAt[(int)COgheTrick.Selfie] = now; PlayTrick(COgheTrick.Selfie); }
+        }
+        // What some tricks put on the screen: the selfie's flash, the fog and heart of the breath heart.
+        private COgheTrickOverlay overlay;
+        /// <summary>The flash and the breath on the glass (tests).</summary>
+        public COgheTrickOverlay OverlayForTests => overlay;
+        private void TrickOverlay()
+        {
+            if (Act != COgheAct.Trick || life == null || game.Owner.View == null) return;
+            if (overlay == null && (Trick == COgheTrick.Selfie || Trick == COgheTrick.BreathHeart)) overlay = COgheTrickOverlay.Create(transform);
+            if (Trick == COgheTrick.Selfie && Time >= .9f && flashedAt < 0) { flashedAt = Time; overlay.Flash(); }
+            if (Trick == COgheTrick.BreathHeart && Time > .8f)
+            {
+                var view = game.Owner.View; Vector3 at = view.WorldToScreenPoint(life.TrickAnchor); if (at.z <= 0) return;
+                float radius = 1.5f * Vector2.Distance(at, view.WorldToScreenPoint(life.TrickAnchor + view.transform.right * life.TrickSpan));
+                overlay.Breath(at, radius, Smooth01(.8f, 1.5f, Time), Mathf.Clamp01((Time - 1.7f) / 2.3f));
+            }
+        }
         private void QueueTrick(COgheTrick trick, float now)
         { if (!Enabled || !COgheTricks.Available(trick) || now - reactedAt[(int)trick] < 8) return; pendingTrick = trick; pendingTrickAt = now; }
         // a device finished (a clap), a fall (puffing up), and whatever the player set off, once the body is at rest
@@ -225,6 +299,9 @@ namespace GravityBox.Venom
             else if (slick > 0 && vertical > -.08f && speed < .05f)
             { if (slick > .25f && COgheTricks.Available(COgheTrick.Skater)) QueueTrick(COgheTrick.Skater, now); slick = 0; }
             if (vertical > -.08f) airborne = 0;
+            // the player turned or zoomed the camera and has let go: a selfie, not more than every 20 s
+            if (cameraMovedAt >= 0 && now - cameraMovedAt > .6f)
+            { cameraMovedAt = -1; if (now - reactedAt[(int)COgheTrick.Selfie] > 20) QueueTrick(COgheTrick.Selfie, now); }
             if (pendingTrick.HasValue && now - pendingTrickAt > 5) pendingTrick = null;
             if (!pendingTrick.HasValue || game.Owner.Completed || game.Owner.Lost || !Ready(true)) return false;
             reactedAt[(int)pendingTrick.Value] = now; PlayTrick(pendingTrick.Value); pendingTrick = null; return true;
@@ -247,6 +324,11 @@ namespace GravityBox.Venom
                 case COgheTrick.Flex: At(from, to, .3f, "creature_grumble", .3f); At(from, to, 1.05f, "creature_tada", .45f); At(from, to, 1.85f, "creature_ack_2", .4f); break;
                 case COgheTrick.BubblePop: At(from, to, .35f, "creature_hm", .35f); At(from, to, 2.0f, "creature_pop", .65f); At(from, to, 2.35f, "creature_ack_2", .35f); break;
                 case COgheTrick.Skater: At(from, to, .1f, "creature_slide", .45f); At(from, to, 1.45f, "creature_curious_1", .4f); At(from, to, 2.0f, "creature_hm", .35f); break;
+                case COgheTrick.Selfie: At(from, to, .15f, "creature_hi", .4f); At(from, to, .9f, "mech_latch", .55f); At(from, to, 1.3f, "creature_happy", .35f); break;
+                case COgheTrick.Juggle: At(from, to, .35f, "creature_split", .35f); for (int k = 0; k < 7; k++) At(from, to, 1.05f + k * .45f, "xylo_" + (k % 3 * 2), .3f); At(from, to, 4.0f, "creature_merge", .35f); break;
+                case COgheTrick.Mimic: At(from, to, .2f, "creature_curious_2", .4f); At(from, to, .7f, "creature_pop", .45f); At(from, to, 1.4f, "creature_ack_3", .35f); At(from, to, 2.6f, "creature_merge", .3f); break;
+                case COgheTrick.RockPaperScissors: At(from, to, .25f, "creature_split", .45f); for (int k = 0; k < 3; k++) At(from, to, 1.0f + k * .4f, "xylo_" + (k * 2), .4f); At(from, to, 2.1f, "creature_pop", .55f); At(from, to, 2.45f, "creature_tada", .4f); At(from, to, 2.7f, "creature_hmph", .35f); At(from, to, 4.1f, "creature_merge_full", .4f); break;
+                case COgheTrick.BreathHeart: At(from, to, .3f, "creature_curious_1", .35f); At(from, to, .85f, "creature_whoosh", .5f); At(from, to, 1.75f, "creature_slide", .3f); At(from, to, 4.05f, "xylo_5", .45f); At(from, to, 4.3f, "creature_happy", .45f); break;
             }
         }
 
@@ -266,6 +348,9 @@ namespace GravityBox.Venom
             float body = .036f;
             bool room = life.Clearance(centre, up, .15f) && life.Clearance(centre + up * .05f, Right(), .06f) && life.Clearance(centre + up * .05f, -Right(), .06f);
             bool nearWall = FindWall(.12f, false);
+            // beside a crate or a handle, now and then it copies its shape (Emotion; no random draw unless it can)
+            if (idle < IdleBeforeDoze && COgheTricks.Available(COgheTrick.Mimic) && FindMimicTarget(out var thing, out bool box) && rnd.NextDouble() < .5)
+            { MimicTarget = thing; MimicBox = box; mimicSet = true; PlayTrick(COgheTrick.Mimic); nextActAt = idle + 8f + (float)rnd.NextDouble() * 6f; return; }
             // an idle trick (groove, sneeze) instead of the usual act, once COghe knows one
             int idleTricks = (COgheTricks.Available(COgheTrick.Groove) ? 1 : 0) + (COgheTricks.Available(COgheTrick.Sneeze) ? 1 : 0);
             if (idle < IdleBeforeDoze && room && idleTricks > 0 && rnd.NextDouble() < .35)

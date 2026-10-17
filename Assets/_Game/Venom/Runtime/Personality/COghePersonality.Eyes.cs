@@ -35,6 +35,10 @@ namespace GravityBox.Venom
                     case COgheTrick.TailChase:   // eyes on the tail, then rolling round dizzily
                         if (life != null) look = life.TrickFocus;
                         return Time < 2.4f ? COgheMood.Focus : Time < 3.35f ? COgheMood.Surprised : COgheMood.Happy;
+                    case COgheTrick.Juggle: if (life != null && Time > .5f && Time < 4.0f) look = life.TrickFocus; return Time < 4.0f ? COgheMood.Focus : COgheMood.Happy;
+                    case COgheTrick.Mimic: if (Time < .6f) { look = MimicTarget; return COgheMood.Focus; } return COgheMood.Happy;   // a look at it, then "ta-da"
+                    case COgheTrick.RockPaperScissors: return Time > .3f && Time < 4.3f ? COgheMood.Hidden : COgheMood.Happy;   // two minis, no single face
+                    case COgheTrick.BreathHeart: if (life != null && Time > 1.6f && Time < 4.1f) look = life.TrickFocus; return Time < 1.6f ? COgheMood.Focus : COgheMood.Love;
                     case COgheTrick.BubblePop: return Time < 2.0f ? COgheMood.Focus : Time < 2.6f ? COgheMood.Surprised : COgheMood.Happy;
                     case COgheTrick.Skater: return Time > 1.4f && Time < 2.1f ? COgheMood.Surprised : COgheMood.Happy;   // "oops"
                     default: return COgheMood.Happy;

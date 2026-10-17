@@ -84,7 +84,7 @@ namespace GravityBox.Venom
         public bool HomeZoom => homeZoom;
         private float homeYaw; private bool homeZoom;
         public void OrbitHome(float pixels) { homeYaw = Mathf.Repeat(homeYaw - pixels / Mathf.Max(1, Screen.width) * 240 + 180, 360) - 180; }
-        public void ToggleHomeZoom() { homeZoom = !homeZoom; Rebuild(); }
+        public void ToggleHomeZoom() { homeZoom = !homeZoom; Game.Personality?.NoteCameraMove(); Rebuild(); }
 
         /// <summary>The Home camera: the whole room seen from the player's chosen side, leaning in on the item in play or
         /// the one being previewed, or close on COghe while zoomed in.</summary>

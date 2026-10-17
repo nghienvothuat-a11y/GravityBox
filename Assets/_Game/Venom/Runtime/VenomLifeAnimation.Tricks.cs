@@ -26,6 +26,11 @@ namespace GravityBox.Venom
                 case COgheTrick.Moonwalk: return Moonwalk(points, count, ground, floor, t, e, p.Length);
                 case COgheTrick.Flex: return Flex(points, supports, weights, count, ground, floor, t, e);
                 case COgheTrick.TailChase: return TailChase(points, supports, weights, count, centre, ground, floor, t, e);
+                case COgheTrick.Selfie: return Selfie(points, count, ground, floor, t, e);
+                case COgheTrick.Juggle: return Juggle(points, count, ground, floor, t, e);
+                case COgheTrick.Mimic: return Mimic(p, points, count, ground, floor, t, e);
+                case COgheTrick.RockPaperScissors: return RockPaperScissors(p, points, supports, weights, count, ground, floor, t, e);
+                case COgheTrick.BreathHeart: return BreathHeart(points, count, ground, floor, t, e);
                 case COgheTrick.BubblePop: return BubblePop(points, supports, weights, count, ground, t, e);
                 case COgheTrick.Skater: return Skater(points, count, ground, floor, t, e);
             }
@@ -331,6 +336,186 @@ namespace GravityBox.Venom
                 Limb(root, root + turn * (actRight * (side * s * .35f)), tip - turn * (actRight * (side * s * .25f)), tip, s * .17f * arms, s * .12f * arms, floor, actUp);
                 TendrilCount++;
             }
+            return count;
+        }
+
+        /// <summary>The breath heart's fog patch on the glass (world) and its half size: the overlay is placed there.</summary>
+        public Vector3 TrickAnchor { get; private set; }
+        public float TrickSpan { get; private set; }
+
+        // Lv 8 · Selfie: the player turned or zoomed the camera; COghe strikes a pose for it, head on one side and a tendril up
+        // in a V beside its face; click, flash; it holds the pose a moment.
+        private int Selfie(Vector3[] points, int count, Vector3 ground, Vector3 floor, float t, float e)
+        {
+            float s = BodyHalfWidth(points, count, ground);
+            float pose = Smooth(.05f, .4f, t) * (1 - Smooth(2.1f, 2.5f, t)) * e;
+            float snap = t > .85f ? Mathf.Sin(Mathf.Clamp01((t - .85f) / .25f) * Mathf.PI) : 0;
+            float top = PoseBody(points, count, ground, 1.06f + .04f * snap, Quaternion.AngleAxis(12 * pose, actToCamera) * Quaternion.AngleAxis(-6 * pose, actRight), actUp * (s * .04f * pose), 1, e);
+            Vector3 root = ground + actUp * (top * .55f) + actRight * (s * .6f);
+            Vector3 wrist = root + actRight * (s * .3f) + actUp * (s * (.55f + .06f * snap)) + actToCamera * (s * .25f);
+            Limb(root, root + actRight * (s * .25f), wrist - actUp * (s * .22f), wrist, s * .19f * pose, s * .14f * pose, floor, actUp, false);
+            // the V: two little fingers spread apart
+            for (int f = -1; f <= 1; f += 2)
+            {
+                Vector3 tip = wrist + (actUp * .85f + actRight * (.12f + .32f * f)) * (s * .58f * pose);
+                Limb(wrist, Vector3.Lerp(wrist, tip, .35f), Vector3.Lerp(wrist, tip, .7f), tip, s * .14f * pose, s * .1f * pose, floor, actUp);
+                TendrilCount++;
+            }
+            TendrilCount++;
+            return count;
+        }
+
+        // Lv 9 · Juggle (Home): it pinches three droplets off its top and juggles them in a cascade over its head, two tendril
+        // hands throwing and catching, eyes on the balls; then catches them back in, one by one.
+        private int Juggle(Vector3[] points, int count, Vector3 ground, Vector3 floor, float t, float e)
+        {
+            float s = BodyHalfWidth(points, count, ground);
+            float hands = Smooth(.2f, .6f, t) * (1 - Smooth(3.9f, 4.4f, t)) * e;
+            float top = PoseBody(points, count, ground, 1 - .04f * hands, Quaternion.identity, Vector3.zero, 1, e);
+            Vector3 home = ground + actUp * (top * .85f), over = ground + actUp * (top + s * .25f) + actToCamera * (s * .3f);
+            float w = s * .85f, h = s * 1.1f;
+            Vector3 left = over - actRight * w, right = over + actRight * w;
+            const float period = .9f;
+            float catchL = 0, catchR = 0;
+            for (int i = 0; i < 3; i++)
+            {
+                float born = .3f + i * .22f, back = 3.6f + i * .2f;
+                if (t < born || t > back + .4f) continue;
+                float phase = Mathf.Max(0, t - .7f) / period + i / 3f, f = phase - Mathf.Floor(phase);
+                bool toRight = f < .5f; float u = (toRight ? f : f - .5f) * 2;
+                Vector3 from = toRight ? left : right, to = toRight ? right : left;
+                Vector3 at = Vector3.Lerp(from, to, u) + actUp * (h * 4 * u * (1 - u));
+                if (toRight) catchR = Mathf.Max(catchR, Smooth(.85f, 1, u)); else catchL = Mathf.Max(catchL, Smooth(.85f, 1, u));
+                at = Vector3.Lerp(home, at, Smooth(born, born + .4f, t));       // pinched off the top
+                float gone = Smooth(back, back + .4f, t);
+                at = Vector3.Lerp(at, home, gone);                                // and taken back in
+                if (i == 0) TrickFocus = at;
+                // a lone skin source this far from the body is too faint to draw: the droplet is a little closed capsule
+                float r = s * .13f * (1 - .5f * gone) * e;
+                for (int end = -1; end <= 1; end += 2)
+                {
+                    Vector3 axis = actUp * (end * r * .8f);
+                    Limb(at, at + axis * .33f, at + axis * .66f, at + axis, r, r, floor, actUp);
+                }
+            }
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Vector3 shoulder = ground + actUp * (top * .55f) + actRight * (side * s * .7f);
+                Vector3 hand = (side < 0 ? left : right) - actUp * (s * (.25f + .12f * (side < 0 ? catchL : catchR)));
+                Limb(shoulder, shoulder + actRight * (side * s * .25f), hand - actUp * (s * .25f), hand, s * .17f * hands, s * .12f * hands, floor, actUp);
+                TendrilCount++;
+            }
+            return count;
+        }
+
+        // Lv 9 · Mimic: beside a crate it turns into a little box, beside a handle into a lever; it glances at the real thing,
+        // becomes it with a wiggle, then flows back.
+        private int Mimic(COghePersonality p, Vector3[] points, int count, Vector3 ground, Vector3 floor, float t, float e)
+        {
+            float s = BodyHalfWidth(points, count, ground);
+            float morph = Smooth(.55f, .95f, t) * (1 - Smooth(2.4f, 2.9f, t)) * e, wiggle = morph * Mathf.Sin(t * 9);
+            TrickFocus = p.MimicTarget;
+            if (p.MimicBox)
+            {
+                // each source moved into a box of its own size (axes: right, up, toward the camera), out toward its faces so
+                // the skin is a block with rounded edges; a little hop as it becomes one
+                float hx = s * .78f, hy = s * .72f, hop = Mathf.Sin(Mathf.Clamp01((t - .7f) / .35f) * Mathf.PI);
+                Vector3 c = ground + actUp * (hy + s * .12f * hop);
+                var turn = Quaternion.AngleAxis(7 * wiggle, actUp);
+                float far = 1e-5f;
+                for (int i = 0; i < count; i++) far = Mathf.Max(far, Vector3.Distance(transform.TransformPoint(points[i]), c));
+                for (int i = 0; i < count; i++)
+                {
+                    Vector3 w = transform.TransformPoint(points[i]), d = w - c;
+                    float x = Vector3.Dot(d, actRight), y = Vector3.Dot(d, actUp), z = Vector3.Dot(d, actToCamera);
+                    float m = Mathf.Max(Mathf.Abs(x), Mathf.Abs(y), Mathf.Abs(z));
+                    if (m < 1e-5f) continue;
+                    float k = Mathf.Lerp(.55f, 1f, d.magnitude / far) * .82f / m;
+                    Vector3 boxed = c + turn * (actRight * (x * k * hx) + actUp * (y * k * hy) + actToCamera * (z * k * hx));
+                    points[i] = transform.InverseTransformPoint(Vector3.Lerp(w, boxed, morph));
+                }
+                return count;
+            }
+            // a handle: a low base, a post and a grip bar across its top
+            float top = PoseBody(points, count, ground, 1 - .35f * morph, Quaternion.AngleAxis(8 * wiggle, actToCamera), Vector3.zero, 1, e);
+            Vector3 post = ground + actUp * (top * .8f), head = post + actUp * (s * .75f * morph) + actRight * (s * .06f * wiggle);
+            Limb(post, post + actUp * (s * .25f * morph), head - actUp * (s * .2f * morph), head, s * .13f * morph, s * .11f * morph, floor, actUp, false);
+            Vector3 bar = (actRight * .9f + actToCamera * .2f).normalized * (s * .4f * morph);
+            Limb(head - bar, head - bar * .4f, head + bar * .4f, head + bar, s * .11f * morph, s * .11f * morph, floor, actUp);
+            TendrilCount += 2;
+            return count;
+        }
+
+        // Lv 10 · Rock–paper–scissors (Home): it splits into two minis that shake their fists three times ("oẳn, tù, tì!"),
+        // then show their hands; the winner bounces, the loser droops; then they flow back together.
+        private int RockPaperScissors(COghePersonality p, Vector3[] points, float[] supports, float[] weights, int count, Vector3 ground, Vector3 floor, float t, float e)
+        {
+            float s = BodyHalfWidth(points, count, ground);
+            float split = Smooth(.2f, .7f, t) * (1 - Smooth(3.8f, 4.5f, t)) * e;
+            float Bump(float at) => Mathf.Clamp01(1 - Mathf.Abs(t - at) / .14f);
+            float shake = Mathf.Max(Bump(1.0f), Mathf.Max(Bump(1.4f), Bump(1.8f))) * (t < 2.0f ? 1 : 0), shown = Smooth(2.05f, 2.2f, t);
+            // hands (0 rock, 1 paper, 2 scissors) for the left and the right mini, and who wins
+            int left = p.TrickVariant == 0 ? 2 : p.TrickVariant == 1 ? 1 : 2, right = p.TrickVariant == 0 ? 0 : p.TrickVariant == 1 ? 0 : 1;
+            bool leftWins = (left == 0 && right == 2) || (left == 1 && right == 0) || (left == 2 && right == 1);
+            float after = Smooth(2.3f, 2.6f, t) * (1 - Smooth(3.5f, 3.8f, t));
+            Vector3 cl = Vector3.zero, cr = Vector3.zero; int nl = 0, nr = 0;
+            for (int i = 0; i < count; i++) { Vector3 w = transform.TransformPoint(points[i]); if (Vector3.Dot(w - ground, actRight) < 0) { cl += w; nl++; } else { cr += w; nr++; } }
+            cl /= Mathf.Max(1, nl); cr /= Mathf.Max(1, nr);
+            float apart = s * .62f * split;
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 w = transform.TransformPoint(points[i]); bool isLeft = Vector3.Dot(w - ground, actRight) < 0;
+                Vector3 own = isLeft ? cl : cr; int side = isLeft ? -1 : 1; bool wins = isLeft == leftWins;
+                float bounce = wins ? Mathf.Abs(Mathf.Sin((t - 2.3f) * 9)) * after : 0, droop = wins ? 0 : after;
+                Vector3 d = (w - own) * (1 - .12f * split);
+                d = Vector3.ProjectOnPlane(d, actUp) * (1 + .15f * droop) + actUp * (Vector3.Dot(d, actUp) * (1 - .3f * droop));
+                Vector3 moved = own + d + actRight * (side * apart) + actUp * (s * (.12f * shake + .25f * bounce));
+                points[i] = transform.InverseTransformPoint(Vector3.Lerp(w, moved, split));
+            }
+            int n = count;
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Vector3 c = ground + actRight * (side * (apart + s * .3f * split));
+                Vector3 root = c + actUp * (s * .6f) - actRight * (side * s * .2f), wrist = root - actRight * (side * s * .45f) + actUp * (s * (.35f + .25f * shake)) + actToCamera * (s * .3f);
+                float r = s * .17f * split;
+                Limb(root, root + actUp * (s * .15f), wrist - actUp * (s * .1f), wrist, r, r * .85f, floor, actUp, false); TendrilCount++;
+                int hand = side < 0 ? left : right; Vector3 toward = -actRight * side;
+                if (shown < .5f || hand == 0)
+                { if (n < MaxSources) { points[n] = transform.InverseTransformPoint(wrist); supports[n] = s * .23f * split; weights[n++] = split > .05f ? 1.4f : 0; } }
+                else
+                {
+                    int fingers = hand == 1 ? 4 : 2;
+                    for (int f = 0; f < fingers; f++)
+                    {
+                        float spread = fingers == 2 ? (f == 0 ? -.35f : .35f) : -.6f + f * .4f;
+                        Vector3 dir = (toward * .7f + actUp * .7f + actToCamera * .1f).normalized;
+                        Vector3 tip = wrist + (Quaternion.AngleAxis(spread * 60, actToCamera) * dir) * (s * .5f * shown);
+                        Limb(wrist, Vector3.Lerp(wrist, tip, .35f), Vector3.Lerp(wrist, tip, .7f), tip, s * .11f * split, s * .08f * split, floor, actUp); TendrilCount++;
+                    }
+                }
+            }
+            return n;
+        }
+
+        // Lv 10 · Breath heart (Home, a finger held on COghe for 2 s): it rises up to the glass, breathes a patch of fog onto it
+        // and draws a heart in the fog with the tip of a tendril, then sinks back, pleased. The fog itself is on the screen
+        // (COgheTrickOverlay), placed at TrickAnchor.
+        private int BreathHeart(Vector3[] points, int count, Vector3 ground, Vector3 floor, float t, float e)
+        {
+            float s = BodyHalfWidth(points, count, ground);
+            float rise = Smooth(.1f, .8f, t) * (1 - Smooth(4.6f, 5.5f, t)) * e, breath = Smooth(.8f, 1.05f, t) * (1 - Smooth(1.35f, 1.7f, t));
+            float top = PoseBody(points, count, ground, 1 + .1f * rise + .08f * breath, Quaternion.AngleAxis(-8 * breath, actRight),
+                actToCamera * (s * .3f * rise) + actUp * (s * .25f * rise), 1, e);
+            Vector3 centre = ground + actUp * (top * .95f + s * .45f) + actToCamera * (s * 1.1f);
+            TrickAnchor = centre; TrickSpan = s * .55f;
+            float drawn = Mathf.Clamp01((t - 1.7f) / 2.3f), arm = Smooth(1.5f, 1.8f, t) * (1 - Smooth(4.1f, 4.5f, t)) * e;
+            float a = drawn * Mathf.PI * 2, sn = Mathf.Sin(a);
+            var heart = new Vector2(16 * sn * sn * sn, 13 * Mathf.Cos(a) - 5 * Mathf.Cos(2 * a) - 2 * Mathf.Cos(3 * a) - Mathf.Cos(4 * a)) / 17f;
+            Vector3 tip = centre + actRight * (heart.x * s * .5f) + actUp * (heart.y * s * .5f + s * .05f);
+            TrickFocus = tip;
+            Vector3 root = ground + actUp * (top * .6f) + actRight * (s * .45f) + actToCamera * (s * .5f);
+            Limb(root, root + actUp * (s * .3f) + actToCamera * (s * .2f), tip - actToCamera * (s * .25f), tip, s * .15f * arm, s * .08f * arm, floor, actUp);
+            TendrilCount++;
             return count;
         }
 

@@ -98,7 +98,7 @@ namespace GravityBox.Venom
             for (int k = first; k < COgheTricks.Built; k++)
             {
                 var trick = (COgheTrick)k;
-                if (trick == COgheTrick.YuckFace) continue;   // a meal, below
+                if (trick == COgheTrick.YuckFace || trick == COgheTrick.Selfie || trick == COgheTrick.BreathHeart) continue;   // a meal, a camera turn, a hold: below
                 if (p.Act != COgheAct.None && p.Act != COgheAct.Trick) p.Force(COgheAct.None);   // not one of Home's own shows
                 marks.AppendLine($"{frame} home {trick}");
                 p.PlayTrick(trick); yield return Frames(Mathf.CeilToInt(COgheTricks.Length(trick) * 30) + 8);
@@ -112,7 +112,26 @@ namespace GravityBox.Venom
                 yield return Frames(Mathf.CeilToInt(COgheTricks.Length(COgheTrick.YuckFace) * 30) + 15);
                 COghePersonality.YuckForTests = false;
             }
+            if (first >= 15)
+            {
+                // the selfie: the player turns the room and lets go
+                for (int i = 0; i < 30 * 6 && (p.Act != COgheAct.None || game.Motion.Get(0) != null); i++) yield return null;
+                Vector2 from = new Vector2(Screen.width * .5f, Screen.height * .3f);
+                marks.AppendLine($"{frame} turn"); game.BeginPointer(from);
+                for (int k = 1; k <= 20; k++) { game.MovePointer(from + Vector2.right * (k * 9)); yield return null; }
+                game.EndPointer(from + Vector2.right * 180);
+                for (int i = 0; i < 30 * 4 && !(p.Act == COgheAct.Trick && p.Trick == COgheTrick.Selfie); i++) yield return null;
+                marks.AppendLine($"{frame} home Selfie"); yield return Frames(Mathf.CeilToInt(COgheTricks.Length(COgheTrick.Selfie) * 30) + 10);
+                // the breath heart: a finger held on COghe
+                for (int i = 0; i < 30 * 8 && (p.Act != COgheAct.None || game.Motion.Get(0) != null); i++) yield return null;
+                Vector2 on = game.Owner.View.WorldToScreenPoint(game.Motion.Centre(0));
+                marks.AppendLine($"{frame} hold"); game.BeginPointer(on);
+                for (int i = 0; i < 30 * 4 && !(p.Act == COgheAct.Trick && p.Trick == COgheTrick.BreathHeart); i++) yield return null;
+                marks.AppendLine($"{frame} home BreathHeart"); yield return Frames(8); game.EndPointer(on);
+                yield return Frames(Mathf.CeilToInt(COgheTricks.Length(COgheTrick.BreathHeart) * 30) + 45);
+            }
             capturing = false; Time.captureFramerate = 0;
+            if (first >= 15) { yield return TricksFourth(game, marks); yield break; }
             if (first >= 10) { yield return TricksThird(game, marks); yield break; }
             if (first >= 5) { yield return TricksSecond(game, marks); yield break; }
             // in G2, each on its own trigger: a tap on COghe (wink), the slick tape (raspberry), handle A (clap once done), and a
@@ -226,6 +245,50 @@ namespace GravityBox.Venom
             { if (t.Busy) break; yield return Touch(game, spot); yield return Frames(6); }
             for (int i = 0; i < 30 * 40 && t.CompletedJourneys == 0; i++) yield return null;
             yield return Reaction(COgheTrick.Flex, 30 * 8);
+            capturing = false; Time.captureFramerate = 0; COgheTricks.AllForTests = false;
+            File.WriteAllText(Path.Combine(output, "marks.txt"), marks.ToString());
+            File.WriteAllText(Path.Combine(output, "native-result.json"), "{\"result\":\"passed\",\"frames\":" + frame + "}");
+            Application.Quit(0);
+        }
+
+        /// <summary>Batch 4 in the levels: the mimic beside K01's crate, the selfie after a camera turn in G2.</summary>
+        private IEnumerator TricksFourth(VenomCampaign game, System.Text.StringBuilder marks)
+        {
+            var ui = game.ProductUI; COgheTricks.AllForTests = true;
+            IEnumerator Open(string id)
+            {
+                int order = Array.FindIndex(ui.Catalog.Levels, l => l != null && l.Id == id) + 1;
+                ui.LoadForTest(order);
+                for (int i = 0; i < 600 && (game == null || game.Definition.Order != order || game.ProductUI == null || game.ProductUI.Page != COgheProductPage.Game); i++)
+                { yield return new WaitForSecondsRealtime(.05f); game = FindFirstObjectByType<VenomCampaign>(); }
+                ui = game.ProductUI; yield return new WaitForSecondsRealtime(2f);
+            }
+            IEnumerator Reaction(COgheTrick trick, int limit)
+            {
+                var p = game.Personality;
+                for (int i = 0; i < limit && !(p.Act == COgheAct.Trick && p.Trick == trick); i++) yield return null;
+                if (p.Act == COgheAct.Trick && p.Trick == trick) marks.AppendLine($"{frame} level {trick}");
+                for (int i = 0; i < 30 * 6 && p.Act != COgheAct.None; i++) yield return null;
+                yield return Frames(15);
+            }
+            yield return Open("coghe.spatial.plus.k01");
+            if (game.Definition.Id != "coghe.spatial.plus.k01") { Fail("K01 did not open"); yield break; }
+            Time.captureFramerate = 30; capturing = true; StartCoroutine(CaptureFrames());
+            yield return Frames(10); marks.AppendLine($"{frame} beside");
+            var t = game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>().First(r => r.Rail.name == "Crate 1");
+            Vector3 body = t.Rail.Body.position, beside = body + Vector3.ProjectOnPlane(game.Motion.Centre(0) - body, game.Root.up).normalized * (t.CrateSize.magnitude * .5f + .03f);
+            var local = game.Root.InverseTransformPoint(beside); local.y = -.30f;
+            yield return Touch(game, game.Root.TransformPoint(local));
+            yield return Reaction(COgheTrick.Mimic, 30 * 60);
+            capturing = false; Time.captureFramerate = 0;
+            yield return Open("coghe.spatial.plus.g2");
+            if (game.Definition.Id != "coghe.spatial.plus.g2") { Fail("G2 did not open"); yield break; }
+            Time.captureFramerate = 30; capturing = true; StartCoroutine(CaptureFrames());
+            yield return Frames(15); marks.AppendLine($"{frame} turn");
+            Vector2 from = new Vector2(Screen.width * .5f, Screen.height * .3f); game.BeginPointer(from);
+            for (int k = 1; k <= 20; k++) { game.MovePointer(from + Vector2.right * (k * 9)); yield return null; }
+            game.EndPointer(from + Vector2.right * 180);
+            yield return Reaction(COgheTrick.Selfie, 30 * 8);
             capturing = false; Time.captureFramerate = 0; COgheTricks.AllForTests = false;
             File.WriteAllText(Path.Combine(output, "marks.txt"), marks.ToString());
             File.WriteAllText(Path.Combine(output, "native-result.json"), "{\"result\":\"passed\",\"frames\":" + frame + "}");

@@ -158,5 +158,91 @@ namespace GravityBox.Tests
    }
    finally{COgheTricks.AllForTests=false;COgheHomeRoom.UnlockedLevelOverride=null;}
   }
+
+  // Batch 4 (Mrk 17/10/2026). The player turns the camera (a real drag) and lets go: COghe poses for a selfie, with a flash.
+  [UnityTest,Timeout(600000)] public IEnumerator SelfieAfterTheCameraTurns()
+  {
+   COgheTricks.AllForTests=true;
+   try
+   {
+    yield return LoadPlus("G2");yield return Settle(2f);
+    var p=game.Personality;var from=new Vector2(Screen.width*.5f,Screen.height*.35f);
+    game.BeginPointer(from);
+    for(int k=1;k<=12;k++){game.MovePointer(from+Vector2.right*(k*12));yield return Settle(.05f);}
+    game.EndPointer(from+Vector2.right*144);
+    yield return TickUntil(()=>p.Act==COgheAct.Trick&&p.Trick==COgheTrick.Selfie,8,"A pose once the camera stops");
+    yield return TickUntil(()=>p.Time>1f,3,"to the click");
+    Assert.IsNotNull(p.OverlayForTests);Assert.IsTrue(p.OverlayForTests.Flashing,"The camera flashes");
+   }
+   finally{COgheTricks.AllForTests=false;}
+  }
+
+  // Idle beside a crate (K01's crate 1), COghe now and then turns itself into a little box.
+  [UnityTest,Timeout(600000)] public IEnumerator MimicBesideACrate()
+  {
+   COgheTricks.AllForTests=true;
+   try
+   {
+    yield return LoadPlus("K01");yield return Settle(1.5f);
+    var p=game.Personality;
+    var t=game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>().First(r=>r.Rail.name=="Crate 1");
+    Vector3 body=t.Rail.Body.position,beside=body+Vector3.ProjectOnPlane(game.Motion.Centre(0)-body,game.Root.up).normalized*(t.CrateSize.magnitude*.5f+.03f);
+    yield return Tap(game.Root.TransformPoint(Vector3.Scale(game.Root.InverseTransformPoint(beside),new Vector3(1,0,1))+Vector3.down*.30f));
+    yield return TickUntil(()=>game.Motion.Get(0)==null,20,"Beside the crate");
+    yield return TickUntil(()=>p.Act==COgheAct.Trick&&p.Trick==COgheTrick.Mimic,60,"It mimics the crate");
+    Assert.IsTrue(p.MimicBox,"A crate makes a box");
+    Assert.IsTrue(game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>().Any(r=>r.CrateFaces&&Vector3.Distance(p.MimicTarget,r.Rail.Body.position)<.01f),"and it looks at the crate it copies");
+   }
+   finally{COgheTricks.AllForTests=false;}
+  }
+
+  // Home: a finger held on COghe for 2 s (a real press): it fogs the glass and draws a heart in it; letting go is not a tap,
+  // and the fog and heart clear away.
+  [UnityTest,Timeout(600000)] public IEnumerator BreathHeartAfterAHold()
+  {
+   COgheTricks.AllForTests=true;
+   try
+   {
+    yield return EnterFurnishedHome(65);yield return Frames(20);
+    var p=game.Personality;
+    for(int f=0;f<30*10&&(p.Act!=COgheAct.None||game.Motion.Get(0)!=null);f++)yield return Frames(1);
+    Vector2 at=game.Owner.View.WorldToScreenPoint(game.Motion.Centre(0));
+    game.BeginPointer(at);
+    for(int f=0;f<30*4&&!(p.Act==COgheAct.Trick&&p.Trick==COgheTrick.BreathHeart);f++)yield return Frames(1);
+    Assert.IsTrue(p.Act==COgheAct.Trick&&p.Trick==COgheTrick.BreathHeart,"Held 2 s: the breath heart");
+    Assert.GreaterOrEqual(game.BodyHeld,2f,"after a real 2 s hold");
+    game.EndPointer(at);yield return Frames(2);
+    Assert.AreEqual(COgheTrick.BreathHeart,p.Trick,"Letting go is not a tap");Assert.AreEqual(COgheAct.Trick,p.Act);
+    float heart=0;
+    for(int f=0;f<30*8&&p.Act==COgheAct.Trick;f++){yield return Frames(1);if(p.OverlayForTests!=null)heart=Mathf.Max(heart,p.OverlayForTests.Heart);}
+    Assert.Greater(heart,.9f,"A whole heart drawn in the fog");
+    p.OverlayForTests.AgeForTests(COgheTrickOverlay.FogFade+.5f);
+    Assert.AreEqual(0,p.OverlayForTests.Fog);Assert.AreEqual(0,p.OverlayForTests.Heart,"and it clears away");
+   }
+   finally{COgheTricks.AllForTests=false;COgheHomeRoom.UnlockedLevelOverride=null;}
+  }
+
+  // Home shows: juggling (eyes on the balls) and rock–paper–scissors (who wins changes each game); presentation only.
+  [UnityTest,Timeout(600000)] public IEnumerator HomeJuggleAndRockPaperScissors()
+  {
+   COgheTricks.AllForTests=true;
+   try
+   {
+    yield return EnterFurnishedHome(65);yield return Frames(20);
+    var p=game.Personality;var start=game.Motion.Centre(0);
+    p.PlayTrick(COgheTrick.Juggle);bool looked=false;
+    for(int f=0;f<30*6&&p.Act==COgheAct.Trick;f++){yield return Frames(1);if(p.Time>1&&p.Time<3.5f){p.EyeMood(game.Matter.Groups[0],out var look);looked|=look.HasValue;}}
+    Assert.IsTrue(looked,"Eyes on the balls");
+    var games=new System.Collections.Generic.List<int>();
+    for(int g=0;g<3;g++)
+    {
+     p.PlayTrick(COgheTrick.RockPaperScissors);games.Add(p.TrickVariant);
+     for(int f=0;f<30*7&&p.Act==COgheAct.Trick;f++)yield return Frames(1);
+    }
+    CollectionAssert.AreEquivalent(new[]{0,1,2},games,"Every pairing comes round");
+    Assert.Less(Vector3.Distance(start,game.Motion.Centre(0)),.03f,"Presentation only: the body stays put");
+   }
+   finally{COgheTricks.AllForTests=false;COgheHomeRoom.UnlockedLevelOverride=null;}
+  }
  }
 }

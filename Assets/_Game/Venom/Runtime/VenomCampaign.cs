@@ -67,7 +67,18 @@ namespace GravityBox.Venom
         private float tubeProgress;
         private readonly float[] tubeOffsets=new float[CohesiveOrganism.ParticleCount];
         private Vector3 lastVelocity;
-        private bool pointerDown,pointerMoved;
+        private bool pointerDown,pointerMoved,pointerOnBody,pointerConsumed;private float pointerDownAt;
+        /// <summary>Seconds the finger has rested on COghe without moving (0 when it is not).</summary>
+        public float BodyHeld=>pointerDown&&!pointerMoved&&pointerOnBody&&Matter!=null?Matter.SimulationTime-pointerDownAt:0;
+        /// <summary>The press became something else (a long hold): its release is not a tap.</summary>
+        public void ConsumePointer(){pointerConsumed=true;}
+        private bool OnBody(Vector2 screen)
+        {
+            if(Matter==null||Owner==null||Owner.View==null)return false;
+            Ray ray=Owner.View.ScreenPointToRay(screen);
+            for(int i=0;i<32;i++){Vector3 p=Matter.Bodies[i].position;if(Vector3.Cross(p-ray.origin,ray.direction).magnitude<.042f)return true;}
+            return false;
+        }
         private Vector2 pointerStart,pointerPrevious;
         private int touchFinger=-1;
         public COgheControlFeedback Feedback {get;private set;}
@@ -567,17 +578,18 @@ namespace GravityBox.Venom
         private bool PlayArea(Vector2 p)
         {return ProductUI!=null?ProductUI.AllowsWorldPointer(p):CameraRig.AllowsPointer(p,Screen.width,Screen.height);}
         public void CancelPointer()=>ResetPointerInput();
-        public void BeginPointer(Vector2 p){if(!Owner.CanControl||InputLocked||!PlayArea(p))return;ProductUI?.OnGameplayInteraction();LastInputTime=Matter.SimulationTime;pointerDown=true;pointerMoved=false;pointerStart=pointerPrevious=p;}
+        public void BeginPointer(Vector2 p){if(!Owner.CanControl||InputLocked||!PlayArea(p))return;ProductUI?.OnGameplayInteraction();LastInputTime=Matter.SimulationTime;pointerDown=true;pointerMoved=false;pointerConsumed=false;pointerOnBody=OnBody(p);pointerDownAt=Matter.SimulationTime;pointerStart=pointerPrevious=p;}
         public void MovePointer(Vector2 p)
         {
             if(!pointerDown)return;
             if(!pointerMoved&&(p-pointerStart).magnitude>10*Screen.width/540f){pointerMoved=true;if(Definition.CanRotate&&!Cutting)Owner.Rotation.BeginDrag();}
+            if(pointerMoved&&(Home&&ProductUI!=null||Definition.ViewOnly||Definition.CanRotate&&!Cutting))Personality?.NoteCameraMove();   // a selfie (Emotion)
             if(pointerMoved&&Home&&ProductUI!=null)ProductUI.OrbitHome(p.x-pointerPrevious.x);   // Home turns like a level
             else if(pointerMoved&&Definition.ViewOnly)CameraRig.Orbit(p.x-pointerPrevious.x,Screen.width);
             else if(pointerMoved&&Definition.CanRotate&&!Cutting)Owner.Rotation.Drag((p-pointerPrevious)/Mathf.Min(Screen.width,Screen.height),Owner.View.transform.up,Owner.View.transform.right);
             pointerPrevious=p;
         }
-        public void EndPointer(Vector2 p){MovePointer(p);if(pointerDown&&!pointerMoved){Personality?.NoteTap();TouchPoint(p);}pointerDown=false;Owner.Rotation.EndDrag();}
+        public void EndPointer(Vector2 p){MovePointer(p);if(pointerDown&&!pointerMoved&&!pointerConsumed){Personality?.NoteTap();TouchPoint(p);}pointerDown=false;Owner.Rotation.EndDrag();}
         private void Update()
         {
             if(Owner==null)return;

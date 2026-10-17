@@ -22,7 +22,7 @@ namespace GravityBox.Venom
         {
             float before=ZoomScale;var camera=game.Owner.View;Vector3 centre=game.Root.TransformPoint(OverviewBounds.center);
             var plane=new Plane(camera.transform.forward,centre);var ray=camera.ScreenPointToRay(screen);
-            Pinch(ratio);
+            Pinch(ratio);game.Personality?.NoteCameraMove();
             if(plane.Raycast(ray,out float distance))viewOffset+=(ray.GetPoint(distance)-centre-viewOffset)*(1-ZoomScale/before);
             viewOffset=Vector3.ClampMagnitude(viewOffset,OverviewBounds.extents.magnitude*.75f);
             Frame(Screen.width,Screen.height,0,true,Screen.safeArea);
@@ -76,6 +76,7 @@ namespace GravityBox.Venom
         }
         public void ToggleFollow()
         {
+            game.Personality?.NoteCameraMove();
             if(game.Definition.ViewOnly&&!game.Home){Overview();return;}
             if(game.Zoom){game.Zoom=false;Zone=-1;}
             else {game.Zoom=true;Zone=-1;}

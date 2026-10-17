@@ -331,7 +331,7 @@ namespace GravityBox.Venom
         }
         public void ToggleZoom()
         {
-            if(Campaign!=null){Campaign.Zoom=!Campaign.Zoom;return;}
+            if(Campaign!=null){Campaign.Zoom=!Campaign.Zoom;Campaign.Personality?.NoteCameraMove();return;}
             if(!WallCrawl || Completed)return;
             GetComponent<VenomInput>().CancelGesture();FollowView.Toggle();
         }

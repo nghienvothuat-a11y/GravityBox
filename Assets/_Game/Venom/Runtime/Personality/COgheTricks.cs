@@ -16,7 +16,7 @@ namespace GravityBox.Venom
     {
         public const int Count = 20;
         /// <summary>Tricks built so far (the review batches); later ones never play until they exist.</summary>
-        public const int Built = 15;
+        public const int Built = 20;
         public static float Length(COgheTrick t)
         {
             switch (t)
@@ -36,6 +36,11 @@ namespace GravityBox.Venom
                 case COgheTrick.Flex: return 3.2f;
                 case COgheTrick.BubblePop: return 3.4f;
                 case COgheTrick.Skater: return 2.6f;
+                case COgheTrick.Selfie: return 2.6f;
+                case COgheTrick.Juggle: return 4.6f;
+                case COgheTrick.Mimic: return 3.0f;
+                case COgheTrick.RockPaperScissors: return 5.0f;
+                case COgheTrick.BreathHeart: return 6.0f;
                 default: return 3f;
             }
         }
