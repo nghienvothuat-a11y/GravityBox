@@ -32,6 +32,11 @@ namespace GravityBox.Venom
                     case COgheTrick.PuffUp: return COgheMood.Sulky;
                     case COgheTrick.Sneeze: return Time < 1.05f ? COgheMood.Sleepy : Time < 2.1f ? COgheMood.Surprised : COgheMood.Happy;
                     case COgheTrick.BackTurnSulk: if (Time < 2.0f) return COgheMood.Hidden; look = null; return COgheMood.Sulky;   // its back, then a sulky look round
+                    case COgheTrick.TailChase:   // eyes on the tail, then rolling round dizzily
+                        if (life != null) look = life.TrickFocus;
+                        return Time < 2.4f ? COgheMood.Focus : Time < 3.35f ? COgheMood.Surprised : COgheMood.Happy;
+                    case COgheTrick.BubblePop: return Time < 2.0f ? COgheMood.Focus : Time < 2.6f ? COgheMood.Surprised : COgheMood.Happy;
+                    case COgheTrick.Skater: return Time > 1.4f && Time < 2.1f ? COgheMood.Surprised : COgheMood.Happy;   // "oops"
                     default: return COgheMood.Happy;
                 }
             }
@@ -74,6 +79,7 @@ namespace GravityBox.Venom
                         default: return COgheMood.Happy;
                     }
                 case HomeState.Eat:
+                    if (yuck && eating && Time > .62f) return Time < 2.15f ? COgheMood.Sulky : Time < 2.55f ? COgheMood.Surprised : COgheMood.Normal;
                     if (meal != null) { look = eating ? mealFrom : meal.Position; return COgheMood.Focus; }
                     return COgheMood.Happy;
                 case HomeState.Play:

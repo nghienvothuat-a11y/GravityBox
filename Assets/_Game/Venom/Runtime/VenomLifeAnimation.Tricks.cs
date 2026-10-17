@@ -24,6 +24,10 @@ namespace GravityBox.Venom
                 case COgheTrick.BellyDrum: return BellyDrum(points, supports, weights, count, ground, floor, t, e);
                 case COgheTrick.BackTurnSulk: return BackTurnSulk(points, count, ground, floor, t, e);
                 case COgheTrick.Moonwalk: return Moonwalk(points, count, ground, floor, t, e, p.Length);
+                case COgheTrick.Flex: return Flex(points, supports, weights, count, ground, floor, t, e);
+                case COgheTrick.TailChase: return TailChase(points, supports, weights, count, centre, ground, floor, t, e);
+                case COgheTrick.BubblePop: return BubblePop(points, supports, weights, count, ground, t, e);
+                case COgheTrick.Skater: return Skater(points, count, ground, floor, t, e);
             }
             return count;
         }
@@ -200,6 +204,131 @@ namespace GravityBox.Venom
                 // the pose: one arm up at the end
                 Vector3 shoulder = foot + actUp * (top * .7f) + actRight * (s * .5f), tip = shoulder + actUp * (s * 1.1f) + actRight * (s * .3f);
                 Limb(shoulder, shoulder + actUp * (s * .4f), tip - actUp * (s * .3f), tip, s * .17f * e * spin, s * .13f * e * spin, floor, actUp);
+                TendrilCount++;
+            }
+            return count;
+        }
+
+        /// <summary>Where a trick wants the eyes to look (world): the tail in a tail chase, a dizzy circle after it.</summary>
+        public Vector3 TrickFocus { get; private set; }
+
+        private static Vector3 Bezier(Vector3 a, Vector3 b, Vector3 c, Vector3 d, float t)
+        { float u = 1 - t; return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d; }
+
+        // Lv 6 · Tail chase (Home): a little tail grows at its side and it spins after it, faster and faster, eyes on the
+        // tail; it catches it with a pounce, the tail melts back in, and it wobbles round dizzily before shaking it off.
+        private int TailChase(Vector3[] points, float[] supports, float[] weights, int count, Vector3 centre, Vector3 ground, Vector3 floor, float t, float e)
+        {
+            float s = BodyHalfWidth(points, count, ground);
+            float run = Mathf.Clamp01((t - .35f) / 2.0f), angle = 720 * Mathf.Pow(run, 1.5f);
+            float tail = Smooth(.1f, .45f, t) * (1 - Smooth(2.4f, 2.75f, t)) * e;
+            float pounce = t > 2.3f ? Mathf.Sin(Mathf.Clamp01((t - 2.3f) / .3f) * Mathf.PI) : 0;
+            float dizzy = Smooth(2.45f, 2.6f, t) * (1 - Smooth(3.1f, 3.4f, t)), shake = t > 3.35f ? Mathf.Sin((t - 3.35f) * 40) * Mathf.Exp(-(t - 3.35f) * 7) : 0;
+            Vector3 dir = Quaternion.AngleAxis(angle, actUp) * actRight;
+            Vector3 lean = Quaternion.AngleAxis(t * 520, actUp) * actRight;
+            var turn = Quaternion.AngleAxis(angle * .35f, actUp) * Quaternion.AngleAxis(9 * dizzy, lean) * Quaternion.AngleAxis(14 * shake, actUp);
+            Vector3 circle = Quaternion.AngleAxis(angle - 90, actUp) * actRight * (s * .1f * Smooth(.4f, .8f, t) * (1 - pounce));
+            float top = PoseBody(points, count, ground, 1 - .14f * pounce + .03f * Mathf.Sin(angle * Mathf.Deg2Rad * 2) * tail, turn, circle, 1, e);
+            Vector3 at = ground + circle;
+            // the tail: out of the side the spin is leaving behind, curling up at the tip and wagging
+            Vector3 root = at + actUp * (top * .3f) + dir * (s * .75f);
+            Vector3 sideways = Vector3.Cross(actUp, dir);
+            Vector3 tip = root + dir * (s * 1.0f * tail) + actUp * (s * .7f * tail) + sideways * (s * .18f * Mathf.Sin(t * 14) * tail);
+            Limb(root - dir * (s * .2f), root + dir * (s * .5f * tail), tip - actUp * (s * .3f * tail), tip, s * .22f * tail, s * .1f * tail, floor, actUp);
+            TendrilCount++;
+            int n = count;
+            if (n < MaxSources)
+            { points[n] = transform.InverseTransformPoint(tip); supports[n] = s * .16f * tail; weights[n++] = tail > .05f ? 1.4f : 0; }   // a round tuft
+            TrickFocus = t < 2.45f ? tip : centre + actUp * (s * .6f) + Quaternion.AngleAxis(t * 700, actUp) * actRight * (s * .5f);
+            return n;
+        }
+
+        // Lv 7 · Flex: after a heavy job it stands tall; two smooth arms swell out of its sides and curl up into biceps,
+        // pumped twice with a proud little bounce, then melt back in.
+        private int Flex(Vector3[] points, float[] supports, float[] weights, int count, Vector3 ground, Vector3 floor, float t, float e)
+        {
+            float s = BodyHalfWidth(points, count, ground);
+            float grow = Smooth(.1f, .7f, t) * (1 - Smooth(2.6f, 3.15f, t)) * e;
+            float curl = Smooth(.45f, .95f, t) * (1 - Smooth(2.45f, 2.85f, t));
+            float Pulse(float a, float b) => Smooth(a, a + .3f, t) * (1 - Smooth(b - .3f, b, t));
+            float pump = Mathf.Max(Pulse(.95f, 1.6f), Pulse(1.7f, 2.4f));
+            float top = PoseBody(points, count, ground, 1 + .08f * grow + .03f * pump, Quaternion.AngleAxis(-5 * grow, actRight), actUp * (s * .04f * pump), 1, e);
+            int n = count;
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Vector3 outward = actRight * side;
+                Vector3 shoulder = ground + actUp * (top * .58f) + outward * (s * .55f);
+                // straight out at first, then the forearm curls up: one smooth curve from the shoulder to the fist
+                Vector3 elbow = shoulder + outward * (s * .8f * grow) + actToCamera * (s * .1f);
+                Vector3 straight = elbow + outward * (s * .45f * grow);
+                Vector3 curled = elbow + actUp * (s * (.62f + .08f * pump) * grow) - outward * (s * .12f) + actToCamera * (s * .05f);
+                Vector3 fist = Vector3.Lerp(straight, curled, curl);
+                Vector3 c1 = shoulder + outward * (s * .5f * grow), c2 = elbow + outward * (s * .12f * grow) + actUp * (s * .02f);
+                Limb(shoulder, c1, c2, fist, s * .24f * grow, s * .17f * grow, floor, actUp, false);
+                TendrilCount++;
+                // the fist and the biceps are part of the liquid skin: round, and the biceps swells on each pump
+                if (n + 1 < MaxSources)
+                {
+                    points[n] = transform.InverseTransformPoint(fist); supports[n] = s * .24f * grow; weights[n++] = grow > .05f ? 1.4f : 0;
+                    Vector3 biceps = Bezier(shoulder, c1, c2, fist, .4f) + actUp * (s * (.05f + .1f * curl));
+                    points[n] = transform.InverseTransformPoint(biceps); supports[n] = s * (.12f + .08f * curl + .12f * pump) * grow; weights[n++] = grow > .05f ? 1.4f : 0;
+                }
+            }
+            return n;
+        }
+
+        // Lv 7 · Bubble pop (Home): it blows a glossy bubble that swells and wobbles in front of its face, then pops in its
+        // face, a splash of droplets raining back onto it.
+        private int BubblePop(Vector3[] points, float[] supports, float[] weights, int count, Vector3 ground, float t, float e)
+        {
+            float s = BodyHalfWidth(points, count, ground);
+            float blow = Smooth(.3f, 1.9f, t), popped = t >= 2.0f ? 1 : 0;
+            float flinch = t > 2.0f ? Mathf.Sin(Mathf.Clamp01((t - 2.0f) / .35f) * Mathf.PI) : 0;
+            float top = PoseBody(points, count, ground, 1 + .05f * Mathf.Sin(t * 9) * blow * (1 - popped) - .12f * flinch,
+                Quaternion.AngleAxis(-8 * blow * (1 - popped) + 10 * flinch, actRight), Vector3.zero, 1, e);
+            int n = count;
+            Vector3 mouth = ground + actUp * (top * .55f) + actToCamera * (s * .85f);
+            if (popped == 0 && blow > .02f && n < MaxSources)
+            {
+                float r = BodyRadius * (.15f + 1.0f * blow) * (1 + .08f * Mathf.Sin(t * 14) * blow);
+                points[n] = transform.InverseTransformPoint(mouth + actToCamera * (r * .8f) + actUp * (r * .15f));
+                supports[n] = r; weights[n++] = 1.5f * e;
+            }
+            else if (popped > 0 && t < 2.9f)
+            {
+                float u = Mathf.Clamp01((t - 2.0f) / .9f);
+                for (int k = 0; k < 5 && n < MaxSources; k++)
+                {
+                    float a = k / 5f * Mathf.PI * 2 + .4f;
+                    Vector3 outward = (actRight * Mathf.Cos(a) + actUp * (Mathf.Sin(a) * .7f) + actToCamera * .4f).normalized;
+                    Vector3 burst = mouth + actToCamera * (BodyRadius * .8f) + outward * (BodyRadius * (.3f + 1.4f * Smooth(0, .4f, u)));
+                    Vector3 back = ground + actUp * (top * .7f) + actRight * (Mathf.Cos(a) * s * .5f);
+                    float size = .2f * (1 - Smooth(.75f, 1f, u));
+                    points[n] = transform.InverseTransformPoint(Vector3.Lerp(burst, back, Smooth(.35f, 1f, u)));
+                    supports[n] = BodyRadius * size; weights[n++] = size > .03f ? 1.4f * e : 0;
+                }
+            }
+            return n;
+        }
+
+        // Lv 8 · Skater: landing from a slide on a slick coating it glides on like a figure skater, arms out wide, wobbles
+        // ("oops!") and steadies itself where it stands.
+        private int Skater(Vector3[] points, int count, Vector3 ground, Vector3 floor, float t, float e)
+        {
+            float s = BodyHalfWidth(points, count, ground);
+            float glide = Smooth(0, 1.3f, t) * (1 - Smooth(1.9f, 2.5f, t));
+            float oops = t > 1.4f && t < 2.2f ? Mathf.Sin((t - 1.4f) * 22) * (1 - Mathf.InverseLerp(1.4f, 2.2f, t)) : 0;
+            float pose = Smooth(.05f, .35f, t) * (1 - Smooth(1.45f, 1.7f, t)) * e;
+            var turn = Quaternion.AngleAxis(-10 * pose + 22 * oops, actToCamera) * Quaternion.AngleAxis(25 * Mathf.Sin(t * 2.4f) * pose, actUp);
+            Vector3 travel = actRight * (s * .35f * glide);
+            float top = PoseBody(points, count, ground, 1.08f, turn, travel, .92f, e);
+            Vector3 at = ground + travel;
+            float arms = Mathf.Max(pose, Mathf.Abs(oops) * e);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Vector3 root = at + turn * (actUp * (top * .6f) + actRight * (side * s * .6f));
+                Vector3 tip = root + turn * (actRight * (side * s * (1.0f + .1f * Mathf.Sin(t * 5 + side)))) + actUp * (s * ((side < 0 ? .25f : -.05f) + .3f * oops * side));
+                Limb(root, root + turn * (actRight * (side * s * .35f)), tip - turn * (actRight * (side * s * .25f)), tip, s * .17f * arms, s * .12f * arms, floor, actUp);
                 TendrilCount++;
             }
             return count;

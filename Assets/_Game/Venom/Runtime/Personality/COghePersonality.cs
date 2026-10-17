@@ -178,10 +178,15 @@ namespace GravityBox.Venom
         private readonly float[] reactedAt = new float[COgheTricks.Count];
         private int retries; private bool sulkAfterRetry;
         private Vector3 lastCentre;
+        private int heavySeen = -1; private float slick;
+        /// <summary>Seconds of the current slide on a slick coating (tests).</summary>
+        public float SlideSeconds => slick;
+        /// <summary>Each trick's plays this level (tests and the review reel).</summary>
+        public readonly int[] TrickPlays = new int[COgheTricks.Count];
         /// <summary>Plays <paramref name="trick"/> now (its trigger, a test or a review reel).</summary>
         public void PlayTrick(COgheTrick trick)
         {
-            Trick = trick;
+            Trick = trick; TrickPlays[(int)trick]++;
             Begin(COgheAct.Trick, COgheTricks.Length(trick));
         }
         /// <summary>The player tapped COghe itself (whole, in a level): a wink.</summary>
@@ -196,14 +201,30 @@ namespace GravityBox.Venom
         // a device finished (a clap), a fall (puffing up), and whatever the player set off, once the body is at rest
         private bool TrickEvents(float now, float dt)
         {
-            int journeys = 0; foreach (var m in game.Mechanisms) if (m is COgheTapRail rail) journeys += rail.CompletedJourneys;
-            if (journeysSeen >= 0 && journeys > journeysSeen) QueueTrick(COgheTrick.Clap, now);
-            journeysSeen = journeys;
+            int journeys = 0, heavy = 0;
+            foreach (var m in game.Mechanisms) if (m is COgheTapRail rail) { journeys += rail.CompletedJourneys; if (COgheTricks.Heavy(rail)) heavy += rail.CompletedJourneys; }
+            // a heavy job done (a crate pushed, a load hauled): a flex once COghe knows it, else the usual clap
+            if (journeysSeen >= 0 && journeys > journeysSeen)
+                QueueTrick(heavy > heavySeen && COgheTricks.Available(COgheTrick.Flex) ? COgheTrick.Flex : COgheTrick.Clap, now);
+            journeysSeen = journeys; heavySeen = heavy;
             // a fall: dropping fast (a crawl down glass is slower) for a moment, then landing
             Vector3 body = game.Motion.Centre(game.Motion.Selected);   // the simulated body (the skin is not drawn whole mid-fall)
             float vertical = dt > 0 && lastCentreAt >= 0 ? Vector3.Dot(body - lastCentre, game.Root.up) / dt : 0; lastCentre = body; lastCentreAt = now;
             if (vertical < -.35f && !game.InTube && !game.Attached) airborne += dt;
-            else { if (airborne > .08f && vertical > -.08f) QueueTrick(COgheTrick.PuffUp, now); if (vertical > -.08f) airborne = 0; }
+            else if (airborne > .08f && vertical > -.08f && slick <= .25f) QueueTrick(COgheTrick.PuffUp, now);
+            // a slide on a slick coating (down a taped wall, along a slick face; not a fall brushing past one): a skater's
+            // landing instead of puffing up
+            int slipping = 0, gripping = 0;
+            for (int i = 0; i < 32; i++)
+            {
+                if (game.Matter.Groups[i] != game.Matter.Groups[game.Motion.Selected] || !game.Motion.Support(i, out _, out _, out _)) continue;
+                if (game.Motion.HasGrip(i)) gripping++; else slipping++;
+            }
+            float moving = dt > 0 && lastCentreAt >= 0 ? speed : 0;
+            if (slipping >= 3 && slipping > gripping && (moving > .08f || vertical < -.15f) && vertical > -.35f && !game.InTube && !game.Attached) slick += dt;
+            else if (slick > 0 && vertical > -.08f && speed < .05f)
+            { if (slick > .25f && COgheTricks.Available(COgheTrick.Skater)) QueueTrick(COgheTrick.Skater, now); slick = 0; }
+            if (vertical > -.08f) airborne = 0;
             if (pendingTrick.HasValue && now - pendingTrickAt > 5) pendingTrick = null;
             if (!pendingTrick.HasValue || game.Owner.Completed || game.Owner.Lost || !Ready(true)) return false;
             reactedAt[(int)pendingTrick.Value] = now; PlayTrick(pendingTrick.Value); pendingTrick = null; return true;
@@ -222,6 +243,10 @@ namespace GravityBox.Venom
                 case COgheTrick.BellyDrum: for (int k = 0; k < 8; k++) At(from, to, .45f + k * .25f, "lab_far_thud", .45f); At(from, to, 2.65f, "creature_gulp", .5f); break;
                 case COgheTrick.BackTurnSulk: At(from, to, .45f, "creature_hmph", .55f); At(from, to, 2.05f, "creature_hm", .35f); break;
                 case COgheTrick.Moonwalk: At(from, to, .2f, "creature_slide", .4f); At(from, to, 1.6f, "creature_slide", .35f); At(from, to, 3.3f, "creature_tada", .45f); break;
+                case COgheTrick.TailChase: At(from, to, .3f, "creature_curious_1", .4f); At(from, to, 1.2f, "creature_slide", .35f); At(from, to, 2.4f, "creature_pop", .55f); At(from, to, 2.75f, "creature_hm", .35f); At(from, to, 3.45f, "creature_happy", .4f); break;
+                case COgheTrick.Flex: At(from, to, .3f, "creature_grumble", .3f); At(from, to, 1.05f, "creature_tada", .45f); At(from, to, 1.85f, "creature_ack_2", .4f); break;
+                case COgheTrick.BubblePop: At(from, to, .35f, "creature_hm", .35f); At(from, to, 2.0f, "creature_pop", .65f); At(from, to, 2.35f, "creature_ack_2", .35f); break;
+                case COgheTrick.Skater: At(from, to, .1f, "creature_slide", .45f); At(from, to, 1.45f, "creature_curious_1", .4f); At(from, to, 2.0f, "creature_hm", .35f); break;
             }
         }
 

@@ -98,11 +98,22 @@ namespace GravityBox.Venom
             for (int k = first; k < COgheTricks.Built; k++)
             {
                 var trick = (COgheTrick)k;
+                if (trick == COgheTrick.YuckFace) continue;   // a meal, below
                 if (p.Act != COgheAct.None && p.Act != COgheAct.Trick) p.Force(COgheAct.None);   // not one of Home's own shows
                 marks.AppendLine($"{frame} home {trick}");
                 p.PlayTrick(trick); yield return Frames(Mathf.CeilToInt(COgheTricks.Length(trick) * 30) + 8);
             }
+            if (first <= (int)COgheTrick.YuckFace && (int)COgheTrick.YuckFace < COgheTricks.Built)
+            {
+                // the yuck face is a meal: feed COghe and watch the first ball
+                COghePersonality.YuckForTests = true; yield return Frames(10); game.FeedHome();
+                for (int i = 0; i < 30 * 20 && p.TrickPlays[(int)COgheTrick.YuckFace] == 0; i++) yield return null;
+                marks.AppendLine($"{frame} home YuckFace");
+                yield return Frames(Mathf.CeilToInt(COgheTricks.Length(COgheTrick.YuckFace) * 30) + 15);
+                COghePersonality.YuckForTests = false;
+            }
             capturing = false; Time.captureFramerate = 0;
+            if (first >= 10) { yield return TricksThird(game, marks); yield break; }
             if (first >= 5) { yield return TricksSecond(game, marks); yield break; }
             // in G2, each on its own trigger: a tap on COghe (wink), the slick tape (raspberry), handle A (clap once done), and a
             // drop off the high shelf (puff up); then the idle groove
@@ -168,6 +179,54 @@ namespace GravityBox.Venom
             if (game.Owner.Celebration.Active) { game.Owner.Celebration.SetVariantForTests(3); marks.AppendLine($"{frame} win Moonwalk"); }
             yield return Frames(Mathf.CeilToInt(VenomCelebration.Duration * 30) + 20);
             capturing = false; Time.captureFramerate = 0;
+            File.WriteAllText(Path.Combine(output, "marks.txt"), marks.ToString());
+            File.WriteAllText(Path.Combine(output, "native-result.json"), "{\"result\":\"passed\",\"frames\":" + frame + "}");
+            Application.Quit(0);
+        }
+
+        /// <summary>Batch 3 in the levels: the skater's glide after the slide on G2's tape, the flex after K01's first crate.</summary>
+        private IEnumerator TricksThird(VenomCampaign game, System.Text.StringBuilder marks)
+        {
+            var ui = game.ProductUI; COgheTricks.AllForTests = true;
+            IEnumerator Open(string id)
+            {
+                int order = Array.FindIndex(ui.Catalog.Levels, l => l != null && l.Id == id) + 1;
+                ui.LoadForTest(order);
+                for (int i = 0; i < 600 && (game == null || game.Definition.Order != order || game.ProductUI == null || game.ProductUI.Page != COgheProductPage.Game); i++)
+                { yield return new WaitForSecondsRealtime(.05f); game = FindFirstObjectByType<VenomCampaign>(); }
+                ui = game.ProductUI; yield return new WaitForSecondsRealtime(2f);
+            }
+            IEnumerator Reaction(COgheTrick trick, int limit)
+            {
+                var p = game.Personality;
+                for (int i = 0; i < limit && !(p.Act == COgheAct.Trick && p.Trick == trick); i++) yield return null;
+                if (p.Act == COgheAct.Trick && p.Trick == trick) marks.AppendLine($"{frame} level {trick}");
+                for (int i = 0; i < 30 * 6 && p.Act != COgheAct.None; i++) yield return null;
+                yield return Frames(15);
+            }
+            yield return Open("coghe.spatial.plus.g2");
+            if (game.Definition.Id != "coghe.spatial.plus.g2") { Fail("G2 did not open"); yield break; }
+            Time.captureFramerate = 30; capturing = true; StartCoroutine(CaptureFrames());
+            yield return Frames(15); marks.AppendLine($"{frame} slide");
+            yield return Touch(game, game.Root.TransformPoint(new Vector3(.10f, -.03f, .20f)));
+            yield return Reaction(COgheTrick.Skater, 30 * 25);
+            capturing = false; Time.captureFramerate = 0;
+            yield return Open("coghe.spatial.plus.k01");
+            if (game.Definition.Id != "coghe.spatial.plus.k01") { Fail("K01 did not open"); yield break; }
+            Time.captureFramerate = 30; capturing = true; StartCoroutine(CaptureFrames());
+            yield return Frames(15); marks.AppendLine($"{frame} crate");
+            // K01's first push: crate 1 toward cell (2, 2), tapped on its top by the face toward that cell, as the solve does
+            var t = game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>().First(r => r.Rail.name == "Crate 1");
+            Vector3 cell = game.Root.TransformPoint(new Vector3(ChapterProof.COgheCrateRoutes.GridX + 2.5f * ChapterProof.COgheCrateRoutes.Cell, -.30f, ChapterProof.COgheCrateRoutes.GridZ + 2.5f * ChapterProof.COgheCrateRoutes.Cell));
+            Vector3 body = t.Rail.Body.position, along = t.Rail.WorldAxis, up = game.Root.up, across = Vector3.Cross(up, along).normalized, size = t.CrateSize, toCell = cell - body;
+            float Half(Vector3 d) { var l = t.Rail.Frame.InverseTransformDirection(d); return Mathf.Abs(l.x) * size.x * .5f + Mathf.Abs(l.z) * size.z * .5f; }
+            float onAxis = Vector3.Dot(toCell, along); bool byEnd = Mathf.Abs(onAxis) >= Half(along) - .01f;
+            Vector3 face = byEnd ? along * Mathf.Sign(onAxis) : across * Mathf.Sign(Vector3.Dot(toCell, across)); float half = Half(face);
+            foreach (var spot in new[] { body + face * half * .78f + up * size.y * .5f, body + face * half * .66f + up * size.y * .5f, body + face * half + up * size.y * .1f })
+            { if (t.Busy) break; yield return Touch(game, spot); yield return Frames(6); }
+            for (int i = 0; i < 30 * 40 && t.CompletedJourneys == 0; i++) yield return null;
+            yield return Reaction(COgheTrick.Flex, 30 * 8);
+            capturing = false; Time.captureFramerate = 0; COgheTricks.AllForTests = false;
             File.WriteAllText(Path.Combine(output, "marks.txt"), marks.ToString());
             File.WriteAllText(Path.Combine(output, "native-result.json"), "{\"result\":\"passed\",\"frames\":" + frame + "}");
             Application.Quit(0);

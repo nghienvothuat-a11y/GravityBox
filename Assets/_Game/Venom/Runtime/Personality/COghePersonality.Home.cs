@@ -202,7 +202,8 @@ namespace GravityBox.Venom
         }
 
         private static readonly COgheTrick[] HomeTricks = { COgheTrick.Groove, COgheTrick.Wink, COgheTrick.Raspberry, COgheTrick.Clap,
-            COgheTrick.Sneeze, COgheTrick.Peekaboo, COgheTrick.BellyDrum, COgheTrick.BackTurnSulk, COgheTrick.Moonwalk };
+            COgheTrick.Sneeze, COgheTrick.Peekaboo, COgheTrick.BellyDrum, COgheTrick.BackTurnSulk, COgheTrick.Moonwalk,
+            COgheTrick.TailChase, COgheTrick.BubblePop };
         private void GoTo(COgheHomeItem item)
         {
             target = item; secondApproach = false; home = HomeState.Walk; walkLimit = 9;
@@ -608,7 +609,9 @@ namespace GravityBox.Venom
         }
 
         // Eating (Mrk: Feed throws steel balls; COghe goes to where each one stops and eats it) -----------------------------
-        private COgheFeedBall meal; private int mealTries; private bool eating, lastMeal; private Vector3 mealFrom;
+        private COgheFeedBall meal; private int mealTries; private bool eating, lastMeal, yuck; private Vector3 mealFrom;
+        /// <summary>Tests and the review reel: every meal (but the last) gets the yuck face once COghe knows it.</summary>
+        public static bool YuckForTests;
         private void StopEating()
         {
             if (eating && meal != null) game.HomeFeedBalls?.Consume(meal);   // half swallowed: finish it
@@ -656,11 +659,16 @@ namespace GravityBox.Venom
         {
             food.Take(meal); mealFrom = meal.Position; eating = true;
             lastMeal = food.Balls.Count <= 1;
-            Begin(COgheAct.Home, lastMeal ? 1.75f : 1.35f);
+            // now and then, once it knows the yuck face (Emotion): it pulls a face at the ball, shakes its head, then gulps it
+            // down anyway (no random draw before then, so Home is unchanged without it)
+            yuck = !lastMeal && COgheTricks.Available(COgheTrick.YuckFace) && (YuckForTests || rnd.Next(4) == 0);
+            if (yuck) TrickPlays[(int)COgheTrick.YuckFace]++;
+            Begin(COgheAct.Home, yuck ? COgheTricks.Length(COgheTrick.YuckFace) : lastMeal ? 1.75f : 1.35f);
             Pose = default; Pose.Turn = Quaternion.identity; Pose.Squash = 1; Pose.Axis = up; Pose.Bubble = -1;
         }
         private void EatPose(float t)
         {
+            if (yuck) { YuckPose(t); return; }
             const float s = .036f;
             var p = new COgheSkinPose { Blend = 1, Centre = centre, Turn = Quaternion.identity, Axis = up, Squash = 1, Bubble = -1 };
             Vector3 dir = Vector3.ProjectOnPlane(mealFrom - centre, up); dir = dir.sqrMagnitude > 1e-6f ? dir.normalized : CameraFlat();
@@ -682,6 +690,38 @@ namespace GravityBox.Venom
             if (Crossed(.32f, 100, t)) COgheAudio.Instance?.Play("creature_grab", .35f, 0, .1f);
             if (Crossed(.8f, 100, t)) COgheAudio.Instance?.Play("creature_gulp", .55f, 0, .1f);
             if (lastMeal && Crossed(1.25f, 100, t)) COgheAudio.Instance?.Play("creature_happy", .45f, 0, .2f);
+            Pose = p;
+        }
+
+        // The yuck face: the ball reeled to its mouth, it leans away with a pulled face and shakes its head, holds the ball off
+        // at arm's length; then, with a sigh, gulps it down anyway and shudders.
+        private void YuckPose(float t)
+        {
+            const float s = .036f;
+            var p = new COgheSkinPose { Blend = 1, Centre = centre, Turn = Quaternion.identity, Axis = up, Squash = 1, Bubble = -1 };
+            Vector3 dir = Vector3.ProjectOnPlane(mealFrom - centre, up); dir = dir.sqrMagnitude > 1e-6f ? dir.normalized : CameraFlat();
+            Vector3 mouth = centre + dir * (s * .7f) + up * (s * .35f);
+            float reach = Smooth01(.05f, .3f, t), pull = Smooth01(.3f, .62f, t);
+            float recoil = Smooth01(.62f, .8f, t) * (1 - Smooth01(1.95f, 2.15f, t)), swallow = Smooth01(2.15f, 2.35f, t);
+            float shake = Smooth01(.85f, 1f, t) * (1 - Smooth01(1.65f, 1.8f, t));
+            Vector3 held = mouth + dir * (s * .45f * recoil) + up * (s * .15f * recoil);
+            Vector3 ballAt = Vector3.Lerp(Vector3.Lerp(mealFrom, held, pull), centre + up * (s * .2f), swallow);
+            if (meal != null)
+            {
+                if (t < 2.35f) meal.Place(ballAt, Mathf.Lerp(1, .7f, pull) * (1 - swallow));
+                else { game.HomeFeedBalls?.Consume(meal); meal = null; BallsEaten++; game.GreetHomeQuietly(); }
+            }
+            p.Tendrils = t < 2.2f ? 1 : 0; p.TipA = t < .3f ? Vector3.Lerp(centre + dir * s, mealFrom, reach) : ballAt;
+            p.Centre = centre - dir * (s * .3f * recoil) + dir * (s * .2f * swallow * (1 - Smooth01(2.35f, 2.6f, t)));
+            p.Axis = t < 2.4f ? Vector3.Slerp(up, -dir, .25f * recoil).normalized : up;
+            p.Turn = Quaternion.AngleAxis(17 * Mathf.Sin((t - .85f) * 19) * shake, up);
+            float shudder = t > 2.35f ? Mathf.Sin((t - 2.35f) * 38) * Mathf.Exp(-(t - 2.35f) * 6) : 0;
+            p.Squash = 1 + .07f * recoil + .12f * shudder;
+            if (Crossed(.32f, 100, t)) COgheAudio.Instance?.Play("creature_grab", .35f, 0, .1f);
+            if (Crossed(.72f, 100, t)) COgheAudio.Instance?.Play("creature_grumble", .45f, 0, .1f);
+            if (Crossed(1.2f, 100, t)) COgheAudio.Instance?.Play("creature_hmph", .45f, 0, .1f);
+            if (Crossed(2.25f, 100, t)) COgheAudio.Instance?.Play("creature_gulp", .55f, 0, .1f);
+            if (Crossed(2.5f, 100, t)) COgheAudio.Instance?.Play("creature_hm", .35f, 0, .2f);
             Pose = p;
         }
 
