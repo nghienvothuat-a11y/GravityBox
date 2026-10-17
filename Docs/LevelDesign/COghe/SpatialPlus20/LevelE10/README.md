@@ -21,6 +21,7 @@
 ### Đã dựng: thay đổi so với thiết kế
 
 - Ống vào chuồng vòng qua trên vách chuồng (bản đầu xuyên vách).
+- 17/10/2026, luật kính 14/10: dải phủ ở kính trước (chỗ vách chuồng) và kính sau (chỗ bờ đầu) rộng hơn về phía phòng, để COghe không bò kính vào chuồng và không rơi vắt qua vách chuồng ([kiểm chứng](../../../../Verification/COgheGlassRule/README.md)).
 
 ## 2. Mục tiêu trải nghiệm và vị trí trong tiến trình
 

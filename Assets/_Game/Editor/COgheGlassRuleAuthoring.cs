@@ -73,6 +73,13 @@ namespace GravityBox.Editor
                 if(pane.HasSlipRegion)Add(pane,rects,pane.SlipRegion);
                 // A swing teaches crossing the gap: a continuous stripe closes the bare-glass route between banks.
                 if(key=="18") DividerStripe(pane,root,rects,.10f);
+                if(key=="10") LiftCoatings(pane,game,root,rects);
+                // E10 (17/10/2026): the 9 cm stripes are narrower than COghe's reach. Slipping off the one where the exit
+                // pen's wall meets the front glass, the body fell across that wall with a drop inside the pen (trapped);
+                // from the start bank's corner it reached past the back one and crawled the back and right glass to the
+                // pen. Both are wider on the room side.
+                if(key=="E10"&&root.InverseTransformPoint(pane.transform.position).z<-.2f) RoomStripe(pane,root,rects,0f,.07f);
+                if(key=="E10"&&root.InverseTransformPoint(pane.transform.position).z>.2f) RoomStripe(pane,root,rects,-.115f,-.045f);
                 pane.Slippery=false;pane.HasSlipRegion=false;pane.SlipRegions=rects.Distinct().ToArray();
             }
         }
@@ -96,6 +103,38 @@ namespace GravityBox.Editor
                 float floor=pane.transform.InverseTransformPoint(root.TransformPoint(new Vector3(0,-.30f,0))).y;
                 Add(pane,rects,Rect.MinMaxRect(lo,floor,hi,floor+.16f));
             }
+        }
+
+        // Boss 10 (17/10/2026): the lift deck rides beside the back glass, and the bare glass from its edge climbed to the far
+        // balcony past the missing bridge. Coat the glass along the deck's edge over its whole ride, a band wider on each side
+        // (COghe reaches past the deck's corner) and the usual band above the top.
+        static void LiftCoatings(VenomSurfacePatch pane,VenomCampaign game,Transform root,List<Rect> rects)
+        {
+            foreach(var lift in game.GetComponent<VenomLevelController>().Apparatus.GetComponentsInChildren<COghePassengerLift>(true))
+            {
+                var rail=lift.Rail;if(rail==null)continue;
+                Vector3 bottom=-rail.WorldAxis*rail.Position,top=rail.WorldAxis*(rail.Travel-rail.Position);
+                foreach(var deck in rail.GetComponentsInChildren<VenomSurfacePatch>(true).Where(p=>root.InverseTransformDirection(p.Normal).y>.9f))
+                {
+                    var low=Corners(deck).Select(v=>pane.transform.InverseTransformPoint(v+bottom)).ToArray();
+                    var high=Corners(deck).Select(v=>pane.transform.InverseTransformPoint(v+top)).ToArray();
+                    for(int i=0;i<4;i++)
+                    {
+                        var a=low[i];var b=low[(i+1)%4];
+                        if(Mathf.Abs(a.z)>.04f||Mathf.Abs(b.z)>.04f)continue;
+                        float up=Mathf.Max(high[i].y,high[(i+1)%4].y);
+                        Add(pane,rects,Rect.MinMaxRect(Mathf.Min(a.x,b.x)-Band,Mathf.Min(a.y,b.y),Mathf.Max(a.x,b.x)+Band,up+Band));
+                    }
+                }
+            }
+        }
+
+        // A full-height stripe between root x0 and x1 on a front or back pane.
+        static void RoomStripe(VenomSurfacePatch pane,Transform root,List<Rect> rects,float x0,float x1)
+        {
+            var a=pane.transform.InverseTransformPoint(root.TransformPoint(new Vector3(x0,0,0)));
+            var b=pane.transform.InverseTransformPoint(root.TransformPoint(new Vector3(x1,0,0)));
+            Add(pane,rects,Rect.MinMaxRect(Mathf.Min(a.x,b.x),-pane.Size.y*.5f,Mathf.Max(a.x,b.x),pane.Size.y*.5f));
         }
 
         static void DividerStripe(VenomSurfacePatch pane,Transform root,List<Rect> rects,float halfWidth)

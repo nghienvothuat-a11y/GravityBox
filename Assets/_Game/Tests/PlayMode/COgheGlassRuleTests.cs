@@ -27,8 +27,14 @@ namespace GravityBox.Tests
                 }
                 if(game.Definition.Order<=6)
                 {
-                    Assert.IsTrue(glass.Any(p=>p.Hole),name+": opening exit must be in glass");
-                    Assert.Greater(game.Root.InverseTransformPoint(game.Owner.Outlet.position).y,-.13f,name+": exit requires a climb");
+                    // 1–5 exit through a wall; display 6 (K01) exits through the floor under the red crate (Mrk 15/10/2026)
+                    float exitY=game.Root.InverseTransformPoint(game.Owner.Outlet.position).y;
+                    if(game.Definition.Order<=5)
+                    {
+                        Assert.IsTrue(glass.Any(p=>p.Hole),name+": opening exit must be in glass");
+                        Assert.Greater(exitY,-.13f,name+": exit requires a climb");
+                    }
+                    else Assert.Less(exitY,-.25f,name+": K01 exits through the floor");
                     Assert.IsTrue(glass.All(p=>!p.HasSlipRegion&&(p.SlipRegions==null||p.SlipRegions.Length==0)),name+": no perimeter coating in opening levels");
                     Assert.IsFalse(game.Surfaces.Any(p=>p.name.StartsWith("Climb board")||p.name=="Service panel"),name+": no auxiliary grip board");
                 }

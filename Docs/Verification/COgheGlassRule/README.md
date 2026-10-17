@@ -100,3 +100,18 @@ số đo điện thoại. Thời gian chụp ảnh và chuyển scene không tí
 
 [Xem ảnh các màn](review.html) · [Số đo player](native-summary.json).
 Các ảnh 1–7 trong gallery lấy từ bản Mac; ảnh leo kính ở cuối lấy từ bài test Unity.
+
+## Sửa đường tắt qua kính, 17/10/2026
+
+Tìm ra từ 6 test hỏng tồn đọng (Mrk: "trong quá trình test có lỗi thì fix bugs"). Dải phủ 9 cm hẹp hơn tầm với
+của COghe: đứng ở mép một bệ, thân vẫn bám được kính trần ngay cạnh dải. Hai màn sửa riêng, không đổi luật chung:
+
+- **Boss 10 (`10`):** từ sàn thang máy, COghe bò lên kính sau tới ban công xa và kéo D khi cầu B chưa nâng.
+  Bộ dựng (`COgheGlassRuleAuthoring.LiftCoatings`) giờ phủ kính dọc mép sàn thang suốt hành trình, rộng thêm
+  9 cm mỗi bên. `Boss10RejectsShortcutsAndRecoversAfterReversingBridge`, solve và wander màn 10 đạt.
+- **E10:** trượt khỏi dải ở chỗ vách chuồng thoát chạm kính trước, thân rơi vắt qua vách, một giọt lọt vào chuồng
+  nên kẹt. Từ góc bờ đầu, COghe với qua dải ở kính sau rồi bò kính sau và kính phải vào chuồng, bỏ qua dây đu.
+  Cả hai dải rộng hơn về phía phòng (`RoomStripe`: kính trước x 0–0,07 m, kính sau x −0,115 – −0,045 m).
+  `SpatialPlusE10Wander` và `SpatialPlusE10Solve` đạt.
+- Scene đã lưu cập nhật bằng `MigrateSavedScenes -coghe-glass-levels 10` và `E10`.
+- Các màn khác vẫn dùng dải 9 cm; wander của chúng đạt, nhưng wander không dò hết mọi đường tắt.

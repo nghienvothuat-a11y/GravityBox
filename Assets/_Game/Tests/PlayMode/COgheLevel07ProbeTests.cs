@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using GravityBox.Venom;
 using NUnit.Framework;
 using UnityEngine;
@@ -142,20 +143,20 @@ namespace GravityBox.Tests
    finally{COgheEyes.Enabled=eyesWere;COgheEyes.Trace=clipEyes=false;}
   }
 
-  // Plan A (Mrk, 09/10/2026): glass is never climbable. A tap on the glass is marked slippery where it landed, and COghe
-  // still goes to the foot of it; a tap on a cream climb board is a plain walk.
+  // Glass rule (Mrk 14/10/2026, superseding plan A): bare glass grips; only a visible coating is slick. A tap on bare
+  // glass is a plain climb; a tap on a coating is marked "slippery" where it landed and COghe still goes toward it.
   [UnityTest] public IEnumerator SlickGlassTapIsMarked()
   {
-   yield return Load(5);yield return Wait(1);
-   var board=System.Array.Find(game.Surfaces,f=>f!=null&&f.name=="Climb board A");
-   Assert.IsNotNull(board);Assert.IsFalse(board.Slippery,"The cream board grips");
-   yield return Tap(board.transform.position);
-   Assert.IsFalse(game.Feedback.SlickVisible,"A tap on a cream board is a plain walk");
-   var pane=System.Array.Find(game.Surfaces,f=>f!=null&&f.name=="Outer pane 2");   // the back glass, facing the view
-   Assert.IsTrue(System.Array.TrueForAll(game.Surfaces,f=>f==null||!f.ExteriorGlass||f.Slippery),"Every pane is slick glass");
-   var point=pane.Closest(game.Root.TransformPoint(new Vector3(-.10f,.20f,.30f)));   // above the climb boards
-   Assert.IsFalse(pane.Grip(point));
-   yield return Tap(point);
+   yield return LoadPlus("G2");yield return Wait(1);
+   var tape=game.Root.TransformPoint(new Vector3(.40f,-.265f,.15f));   // the coating at the foot of the right glass
+   var pane=game.Surfaces.Where(f=>f!=null&&f.ExteriorGlass).OrderBy(f=>Vector3.Distance(f.Closest(tape),tape)).First();
+   var coated=pane.Closest(tape);var bare=pane.Closest(game.Root.TransformPoint(new Vector3(.40f,-.05f,.15f)));
+   Assert.IsFalse(pane.Grip(coated),"The coating is slick");Assert.IsTrue(pane.Grip(bare),"The glass above it is bare");
+   yield return Tap(bare);
+   Assert.IsFalse(game.Feedback.SlickVisible,"A tap on bare glass is a plain climb");
+   Assert.IsNotNull(game.Motion.Get(0),"COghe goes for the bare glass");
+   yield return Wait(1.5f);
+   yield return Tap(coated);
    Assert.IsTrue(game.Feedback.SlickVisible,"The slick tap is marked");
    Assert.IsNotNull(game.Motion.Get(0),"COghe still goes toward it");
    yield return null;
