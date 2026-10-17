@@ -106,3 +106,14 @@ Code:
 - Lời giải mẫu: `COgheSpatialPlusScenario` (`N22`, `N25`, `N26`, `N29`).
 - Thứ tự: `SpatialOrder`.
 - Lệnh dựng: `GenerateChapterTwoLevels -coghe-plus-levels N22,N25,N26,N29`.
+
+## Sửa 17/10/2026: hố của màn 25 (`N25`)
+
+- **Lỗi:** COghe một mình xuống khay (chưa có thùng) thì khay lún hết 6,6 cm. Vách hố trơn (tím), nên COghe kẹt dưới
+  hố, chạm đâu cũng không ra; chỉ Retry mới thoát. Test `SpatialPlusN25Wander` lộ ra lỗi này khi thứ tự chạm kết thúc ở hố.
+- **Sửa:** bốn vách trong của hố thành vách ngà leo được (`PitWallsClimbable`); bốn mặt ngoài của bệ vẫn trơn.
+  - Leo ra khỏi hố không mở đường tắt nào: mặt bệ là chỗ COghe vừa đi xuống.
+  - Lời giải vẫn như cũ (thùng + COghe trên khay → ván thăng bằng, lẫy bắt).
+- Cảnh đã lưu cập nhật bằng `VenomCampaignBuilder.MigrateN25PitWalls`.
+- Màn 21 dùng cùng phòng nhưng hố 12 cm nhỏ hơn thân COghe, nên COghe đứng ở mép và đi ra được; không đổi.
+- Kiểm chứng: `SpatialPlusN25Solve` và `SpatialPlusN25Wander` đạt; xuống khay một mình rồi chạm mặt bệ thì COghe leo ra.

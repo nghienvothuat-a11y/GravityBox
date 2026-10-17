@@ -747,11 +747,41 @@ namespace GravityBox.Editor
    hinge.useSpring=true;hinge.spring=new JointSpring{spring=PlankSpring,damper=PlankSpring*.05f,targetPosition=0};
   }
   const float PinCrateMass=.02f,PlankSpring=.10f;
+  static readonly Rect N25Pit=new Rect(-.34f,.02f,.12f,.24f);
+  // N25's pit walls climb (17/10/2026): alone on the tray COghe sinks it 6.6 cm, and inside slick walls that was a trap only
+  // Retry undid (SpatialPlusN25Wander). Climbing out opens no route: the deck top is where it came from. The deck's outer
+  // sides stay slick.
+  static void PitWallsClimbable(System.Collections.Generic.IEnumerable<VenomSurfacePatch> surfaces,Rect pit,Material ivory)
+  {
+   foreach(var f in surfaces)
+   {
+    if(f==null||f.name!="Load deck side")continue;
+    var p=f.transform.localPosition;
+    bool across=(Mathf.Abs(p.x-pit.xMin)<.002f||Mathf.Abs(p.x-pit.xMax)<.002f)&&p.z>pit.yMin&&p.z<pit.yMax;
+    bool along=(Mathf.Abs(p.z-pit.yMin)<.002f||Mathf.Abs(p.z-pit.yMax)<.002f)&&p.x>pit.xMin&&p.x<pit.xMax;
+    if(!across&&!along)continue;
+    f.Slippery=false;
+    var r=f.GetComponent<Renderer>();if(r!=null&&ivory!=null)r.sharedMaterial=ivory;
+   }
+  }
+  /// <summary>The saved N25 scene gets the climbable pit walls (-executeMethod).</summary>
+  public static void MigrateN25PitWalls()
+  {
+   var scene=UnityEditor.SceneManagement.EditorSceneManager.OpenScene(SpatialContentPath("N25"));
+   var game=Object.FindFirstObjectByType<VenomCampaign>();
+   int before=game.Surfaces.Count(f=>f!=null&&f.name=="Load deck side"&&!f.Slippery);
+   PitWallsClimbable(game.Surfaces,N25Pit,AssetDatabase.LoadAssetAtPath<Material>(SpatialFolder+"/Ivory bodies.mat"));
+   int after=game.Surfaces.Count(f=>f!=null&&f.name=="Load deck side"&&!f.Slippery);
+   if(after-before!=4)throw new System.InvalidOperationException($"N25: expected 4 pit walls, changed {after-before}");
+   UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene);
+   Debug.Log("N25 PIT WALLS CLIMBABLE: 4");
+  }
   // Level 21's room with a long tray (24 cm pit): the crate takes its near end, COghe fits on the far end.
   static void PlusN25Room(ExpansionContext c)
   {
    c.Exit=new Vector3(.40f,-.132f,.12f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.30f,-.15f,-.18f);NextShell(c,.30f,true);var floor=c.Surfaces[0];
-   var deck=NextDeckWithPit(c,"Load deck",new Rect(-.40f,-.30f,.25f,.60f),-.20f,new Rect(-.34f,.02f,.12f,.24f));
+   var deck=NextDeckWithPit(c,"Load deck",new Rect(-.40f,-.30f,.25f,.60f),-.20f,N25Pit);
+   PitWallsClimbable(c.Surfaces,N25Pit,AssetDatabase.LoadAssetAtPath<Material>(SpatialFolder+"/Ivory bodies.mat"));
    NextPlinth(c,"Exit platform",new Vector3(.275f,-.25f,.125f),new Vector3(.25f,.10f,.35f));
    NextStairs(c,"Gap recovery stairs",new Vector3(-.15f,0,-.26f),Vector3.right,-.20f,.08f,2,.06f);
    var tray=ExpansionRail(c,"Load tray",new Vector3(-.28f,-.215f,.14f),Vector3.down,.066f,0,new Vector3(.115f,.026f,.235f),.01f,.004f,true,false);
