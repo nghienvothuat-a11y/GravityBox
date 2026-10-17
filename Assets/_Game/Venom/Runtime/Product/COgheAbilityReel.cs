@@ -91,8 +91,11 @@ namespace GravityBox.Venom
             ui.OpenHome(); yield return new WaitForSecondsRealtime(4f);
             yield return Press(ui, "Zoom in"); yield return new WaitForSecondsRealtime(1.5f);   // close on COghe
             var p = game.Personality; if (p == null) { Fail("no personality"); yield break; }
+            var args = Environment.GetCommandLineArgs(); int at = Array.IndexOf(args, "-coghe-trick-first");
+            int first = at >= 0 && at + 1 < args.Length && int.TryParse(args[at + 1], out int f) ? f : 0;
+            COgheShop.Current.Emotion = Mathf.CeilToInt(COgheTricks.Built / 2f);
             Time.captureFramerate = 30; capturing = true; StartCoroutine(CaptureFrames());
-            for (int k = 0; k < COgheTricks.Built; k++)
+            for (int k = first; k < COgheTricks.Built; k++)
             {
                 var trick = (COgheTrick)k;
                 if (p.Act != COgheAct.None && p.Act != COgheAct.Trick) p.Force(COgheAct.None);   // not one of Home's own shows
@@ -100,6 +103,7 @@ namespace GravityBox.Venom
                 p.PlayTrick(trick); yield return Frames(Mathf.CeilToInt(COgheTricks.Length(trick) * 30) + 8);
             }
             capturing = false; Time.captureFramerate = 0;
+            if (first >= 5) { yield return TricksSecond(game, marks); yield break; }
             // in G2, each on its own trigger: a tap on COghe (wink), the slick tape (raspberry), handle A (clap once done), and a
             // drop off the high shelf (puff up); then the idle groove
             int g2 = Array.FindIndex(ui.Catalog.Levels, l => l != null && l.Id == "coghe.spatial.plus.g2") + 1;
@@ -128,6 +132,41 @@ namespace GravityBox.Venom
             yield return Frames(20); marks.AppendLine($"{frame} level Groove"); p.PlayTrick(COgheTrick.Groove);
             yield return Frames(Mathf.CeilToInt(COgheTricks.Length(COgheTrick.Groove) * 30) + 20);
             COgheTricks.AllForTests = false;
+            capturing = false; Time.captureFramerate = 0;
+            File.WriteAllText(Path.Combine(output, "marks.txt"), marks.ToString());
+            File.WriteAllText(Path.Combine(output, "native-result.json"), "{\"result\":\"passed\",\"frames\":" + frame + "}");
+            Application.Quit(0);
+        }
+
+        /// <summary>Batch 2 in the levels: an idle sneeze, the sulk after three retries in a row, the moonwalk win dance.</summary>
+        private IEnumerator TricksSecond(VenomCampaign game, System.Text.StringBuilder marks)
+        {
+            var ui = game.ProductUI;
+            int g2 = Array.FindIndex(ui.Catalog.Levels, l => l != null && l.Id == "coghe.spatial.plus.g2") + 1;
+            ui.LoadForTest(g2);
+            for (int i = 0; i < 600 && (game == null || game.Definition.Order != g2 || game.ProductUI == null || game.ProductUI.Page != COgheProductPage.Game); i++)
+            { yield return new WaitForSecondsRealtime(.05f); game = FindFirstObjectByType<VenomCampaign>(); }
+            if (game == null || game.Definition.Order != g2) { Fail("G2 did not open"); yield break; }
+            ui = game.ProductUI; var p = game.Personality; yield return new WaitForSecondsRealtime(2f);
+            Time.captureFramerate = 30; capturing = true; StartCoroutine(CaptureFrames());
+            yield return Frames(15); marks.AppendLine($"{frame} level Sneeze"); p.PlayTrick(COgheTrick.Sneeze);
+            yield return Frames(Mathf.CeilToInt(COgheTricks.Length(COgheTrick.Sneeze) * 30) + 15);
+            for (int k = 0; k < 3; k++) { marks.AppendLine($"{frame} retry {k + 1}"); ui.ShowPopup(COgheProductPopup.Restart); ui.Confirm(); yield return Frames(k < 2 ? 50 : 10); }
+            for (int i = 0; i < 30 * 8 && !(p.Act == COgheAct.Trick && p.Trick == COgheTrick.BackTurnSulk); i++) yield return null;
+            marks.AppendLine($"{frame} level BackTurnSulk");
+            for (int i = 0; i < 30 * 6 && p.Act != COgheAct.None; i++) yield return null;
+            yield return Frames(15);
+            capturing = false; Time.captureFramerate = 0;
+            // a win (level 1: tap the exit) with the moonwalk dance
+            ui.LoadForTest(1);
+            for (int i = 0; i < 600 && (game == null || game.Definition.Order != 1 || game.ProductUI == null || game.ProductUI.Page != COgheProductPage.Game); i++)
+            { yield return new WaitForSecondsRealtime(.05f); game = FindFirstObjectByType<VenomCampaign>(); }
+            yield return new WaitForSecondsRealtime(2f);
+            Time.captureFramerate = 30; capturing = true; StartCoroutine(CaptureFrames());
+            yield return Touch(game, game.Owner.Outlet.position);
+            for (int i = 0; i < 30 * 30 && !game.Owner.Celebration.Active; i++) yield return null;
+            if (game.Owner.Celebration.Active) { game.Owner.Celebration.SetVariantForTests(3); marks.AppendLine($"{frame} win Moonwalk"); }
+            yield return Frames(Mathf.CeilToInt(VenomCelebration.Duration * 30) + 20);
             capturing = false; Time.captureFramerate = 0;
             File.WriteAllText(Path.Combine(output, "marks.txt"), marks.ToString());
             File.WriteAllText(Path.Combine(output, "native-result.json"), "{\"result\":\"passed\",\"frames\":" + frame + "}");

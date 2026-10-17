@@ -233,7 +233,7 @@ namespace GravityBox.Venom
         public void Confirm()
         {
             var action=Popup;Popup=COgheProductPopup.None;
-            if(action==COgheProductPopup.Restart||action==COgheProductPopup.Failure){attempt.Abandon("restart");attempt.Retry();COgheShop.NoteRetry(Game.Definition.Id);Game.ResetLevel();Page=COgheProductPage.Game;Rebuild();}
+            if(action==COgheProductPopup.Restart||action==COgheProductPopup.Failure){attempt.Abandon("restart");attempt.Retry();COgheShop.NoteRetry(Game.Definition.Id);Game.Personality?.NoteRetry();Game.ResetLevel();Page=COgheProductPage.Game;Rebuild();}
             else if(action==COgheProductPopup.LeaveHome)EnterHome();
             else ShowMenu();
         }

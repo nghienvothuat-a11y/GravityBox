@@ -16,7 +16,7 @@ namespace GravityBox.Venom
         private float sizeStart, startedAt;
         public bool Active { get; private set; }
         public int Variant { get; private set; } = -1;
-        public string VariantName => Variant == 0 ? "Vẫy chào" : Variant == 1 ? "Nhảy vỗ xúc tu" : "Xoay bung pháo hoa";
+        public string VariantName => Variant == 0 ? "Vẫy chào" : Variant == 1 ? "Nhảy vỗ xúc tu" : Variant == 2 ? "Xoay bung pháo hoa" : "Moonwalk";
         public float Elapsed => Active ? Mathf.Max(0, level.Organism.SimulationTime-startedAt) : 0;
         public bool ReadyForNext => Active && Elapsed >= Duration;
         public Vector3 Up => cameraRotation * Vector3.up;
@@ -30,9 +30,13 @@ namespace GravityBox.Venom
             if (Active || !level.Completed || level.Organism.EscapedCount != CohesiveOrganism.ParticleCount) return;
             Active = true; startedAt = level.Organism.SimulationTime;
             // Draw from the other two poses after the first victory. The player
-            // still gets a random celebration without seeing an immediate repeat.
-            int roll = Random.Range(0, previousVariant < 0 ? 3 : 2);
-            Variant = previousVariant < 0 ? roll : roll >= previousVariant ? roll+1 : roll;
+            // still gets a random celebration without seeing an immediate repeat
+            // (after a moonwalk: any of the three).
+            bool fresh = previousVariant < 0 || previousVariant > 2;
+            int roll = Random.Range(0, fresh ? 3 : 2);
+            Variant = fresh ? roll : roll >= previousVariant ? roll+1 : roll;
+            // the Emotion moonwalk (ability cards): half the wins once COghe knows it, never twice in a row
+            if (COgheTricks.Available(COgheTrick.Moonwalk) && previousVariant != 3 && Random.value < .5f) Variant = 3;
             previousVariant = Variant;
             cameraStart = level.View.transform.position; cameraRotation = level.View.transform.rotation;
             sizeStart = level.View.orthographicSize;
@@ -111,7 +115,7 @@ namespace GravityBox.Venom
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD || COGHE_TEST_TOOLS
-        public void SetVariantForTests(int variant) { Variant = Mathf.Clamp(variant, 0, 2); }
+        public void SetVariantForTests(int variant) { Variant = Mathf.Clamp(variant, 0, 3); }
 #endif
     }
 }

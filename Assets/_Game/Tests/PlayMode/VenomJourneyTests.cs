@@ -134,7 +134,7 @@ namespace GravityBox.Tests
             Assert.That(level.Organism.GetComponentsInChildren<Renderer>().All(r=>!r.forceRenderingOff),Is.True);
             var positions=level.Organism.Bodies.Select(b=>b.position).ToArray();
             var names=new HashSet<string>();
-            for(int variant=0;variant<3;variant++)
+            for(int variant=0;variant<4;variant++)   // 3: the Emotion moonwalk
             {
                 level.Celebration.SetVariantForTests(variant);skin.Rebuild(false);
                 Assert.That(level.Celebration.Variant,Is.EqualTo(variant));

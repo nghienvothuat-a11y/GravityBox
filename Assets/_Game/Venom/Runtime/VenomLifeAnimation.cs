@@ -361,20 +361,24 @@ namespace GravityBox.Venom
             for(int i=0;i<count;i++)centre+=transform.TransformPoint(points[i])/count;
             int variant=victory.Variant;
             float beat=(time-.12f)*Mathf.PI*(variant==1?4.3f:3.2f);
+            bool moon=variant==3;   // the Emotion moonwalk (ability cards): a backward glide, sliding feet, a spin and a pose
             float pulse=Mathf.Sin(beat);
-            float hop=Mathf.Pow(Mathf.Max(0,pulse),variant==1?1.15f:1.5f);
+            float hop=moon?0:Mathf.Pow(Mathf.Max(0,pulse),variant==1?1.15f:1.5f);
             float stretch=variant==0
                 ? 1+energy*(.14f*pulse+.1f*hop)
                 : variant==1
                     ? 1+energy*(.24f*hop-.11f*Mathf.Max(0,-pulse))
                     : 1+energy*(.08f*Mathf.Sin(beat*1.5f)+.05f);
-            Quaternion sway=variant==0
+            if(moon)stretch=1+energy*.04f*Mathf.Sin(beat*2);
+            Quaternion sway=moon
+                ? Quaternion.AngleAxis(360*Smooth(3.2f,3.8f,time),up)*Quaternion.AngleAxis(-9*energy*(1-Smooth(3.2f,3.8f,time)),forward)
+                : variant==0
                 ? Quaternion.AngleAxis(Mathf.Sin(beat*.5f)*14*energy,forward)
                 : variant==1
                     ? Quaternion.AngleAxis(Mathf.Sin(beat)*7*energy,forward)
                     : Quaternion.AngleAxis(time*105*energy,up)*Quaternion.AngleAxis(Mathf.Sin(beat*.5f)*19*energy,forward);
             float hopHeight=variant==1?.026f:variant==0?.015f:.010f;
-            float sideTravel=variant==2?Mathf.Sin(beat*.5f)*.008f:Mathf.Sin(beat*.5f)*.005f;
+            float sideTravel=moon?-.06f*Smooth(.4f,3.1f,time)+.06f*Smooth(3.9f,4.6f,time):variant==2?Mathf.Sin(beat*.5f)*.008f:Mathf.Sin(beat*.5f)*.005f;
             Vector3 lifted=centre+up*(hop*hopHeight*scale*energy)+right*(sideTravel*energy);
             float top=0;
             for(int i=0;i<count;i++)
@@ -408,8 +412,28 @@ namespace GravityBox.Venom
                 float phase=beat*.5f+arm*.85f;
                 Vector3 root=lifted+right*(sign*.015f*scale)+up*(top*.3f)+forward*((arm/2-.5f)*.018f*scale);
                 float reach=(arm<2?.070f:.055f)*scale*energy;
-                Vector3 p1,p2,tip;
-                if(variant==1)
+                Vector3 p1,p2,tip;float thick=1;
+                if(moon)
+                {
+                    // two feet slide in turn on the floor; after the spin one arm goes up for the pose
+                    bool foot=arm<2; float slide=Mathf.Sin(time*6.5f+(arm%2)*Mathf.PI)*(1-Smooth(3.2f,3.6f,time));
+                    if(foot)
+                    {
+                        // below the body, so they read as feet
+                        root=lifted+right*(sign*.014f*scale)-up*(top*.55f)+forward*(.006f*scale);
+                        p1=root-up*(top*.25f);p2=root-up*(top*.45f)+right*(slide*.014f*scale);
+                        tip=root-up*(top*.65f+.01f*scale)+right*(slide*.03f*scale)+forward*(.008f*scale);thick=1.7f;
+                    }
+                    else
+                    {
+                        // no shoulder arms while gliding (they read as horns); one comes up for the pose
+                        float pose=Smooth(3.6f,4.0f,time)*(arm==3?1:.2f);thick=arm==3?Smooth(3.4f,3.7f,time):0;
+                        p1=root+right*(sign*reach*.4f)+up*(reach*(.1f+.5f*pose));
+                        p2=root+right*(sign*reach*(.5f-.2f*pose))+up*(reach*(.4f+.6f*pose));
+                        tip=root+right*(sign*reach*(.45f-.25f*pose))+up*(reach*(.35f+.85f*pose));
+                    }
+                }
+                else if(variant==1)
                 {
                     // Paired tips repeatedly meet above the head like soft hands.
                     float clap=Mathf.SmoothStep(0,1,(Mathf.Cos(beat*1.35f+arm/2*.8f)+1)*.5f);
@@ -434,7 +458,7 @@ namespace GravityBox.Venom
                     tip=root+right*(sign*reach*(.55f+Mathf.Sin(phase)*.28f))
                         +up*(reach*(.9f+Mathf.Cos(phase)*.15f))+forward*(Mathf.Sin(phase+arm)*reach*.16f);
                 }
-                Tube(root,p1,p2,tip,up,lifted-up*.12f,scale*energy*1.3f);
+                Tube(root,p1,p2,tip,up,lifted-up*.12f,scale*energy*1.3f*thick);
                 TendrilCount++;RaisedTendrilCount++;
             }
             return count+6;

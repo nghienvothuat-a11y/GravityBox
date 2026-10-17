@@ -201,7 +201,8 @@ namespace GravityBox.Venom
             Begin(act, act == COgheAct.Melt ? 2.3f : 2.9f);
         }
 
-        private static readonly COgheTrick[] HomeTricks = { COgheTrick.Groove, COgheTrick.Wink, COgheTrick.Raspberry, COgheTrick.Clap };
+        private static readonly COgheTrick[] HomeTricks = { COgheTrick.Groove, COgheTrick.Wink, COgheTrick.Raspberry, COgheTrick.Clap,
+            COgheTrick.Sneeze, COgheTrick.Peekaboo, COgheTrick.BellyDrum, COgheTrick.BackTurnSulk, COgheTrick.Moonwalk };
         private void GoTo(COgheHomeItem item)
         {
             target = item; secondApproach = false; home = HomeState.Walk; walkLimit = 9;

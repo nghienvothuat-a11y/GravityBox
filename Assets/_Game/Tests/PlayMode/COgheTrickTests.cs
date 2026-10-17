@@ -56,5 +56,21 @@ namespace GravityBox.Tests
    }
    finally{COgheTricks.AllForTests=false;}
   }
+
+  // three retries in a row of the same level: COghe turns its back and sulks once the level is running again
+  [UnityTest,Timeout(600000)] public IEnumerator ThreeRetriesInARowMakeCOgheSulk()
+  {
+   COgheTricks.AllForTests=true;
+   try
+   {
+    yield return LoadPlus("G2");yield return Settle(1.5f);
+    var p=game.Personality;
+    for(int k=0;k<2;k++){p.NoteRetry();game.ResetLevel();yield return Settle(2.5f);}
+    Assert.AreNotEqual(COgheTrick.BackTurnSulk,p.Trick,"Two retries: nothing yet");
+    p.NoteRetry();game.ResetLevel();
+    yield return TickUntil(()=>p.Act==COgheAct.Trick&&p.Trick==COgheTrick.BackTurnSulk,8,"The third retry: it turns its back");
+   }
+   finally{COgheTricks.AllForTests=false;}
+  }
  }
 }

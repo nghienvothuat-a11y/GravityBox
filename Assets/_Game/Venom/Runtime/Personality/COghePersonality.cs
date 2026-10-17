@@ -94,7 +94,11 @@ namespace GravityBox.Venom
             EnsureEyes();
             if (!Enabled || (game.Home && room == null)) { if (Act != COgheAct.None || tantrumPending) EndAct(); return; }
             float now = game.Matter.SimulationTime, dt = lastSim < 0 ? 0 : now - lastSim;
-            if (dt < -.05f) { ResetState(); lastSim = now; return; }   // Retry rewinds the simulation clock
+            if (dt < -.05f)                                              // Retry rewinds the simulation clock
+            {
+                ResetState(); lastSim = now;
+                return;
+            }
             lastSim = now;
             if (dt <= 0) return;                                         // paused
             lastDt = dt;
@@ -120,6 +124,8 @@ namespace GravityBox.Venom
                 return;
             }
 
+            if (over) retries = 0;
+            if (sulkAfterRetry && now > 1.5f) { sulkAfterRetry = false; QueueTrick(COgheTrick.BackTurnSulk, now); }
             if (TrickEvents(now, dt)) return;
 
             // A burst of taps: take the controls, let the body finish its move, then throw a fit.
@@ -170,6 +176,7 @@ namespace GravityBox.Venom
         // the same reaction (a tap, a fall, a device done) is not repeated within 8 s; different ones may follow each other
         private COgheTrick? pendingTrick; private float pendingTrickAt, airborne, lastCentreAt = -1; private int journeysSeen = -1;
         private readonly float[] reactedAt = new float[COgheTricks.Count];
+        private int retries; private bool sulkAfterRetry;
         private Vector3 lastCentre;
         /// <summary>Plays <paramref name="trick"/> now (its trigger, a test or a review reel).</summary>
         public void PlayTrick(COgheTrick trick)
@@ -181,6 +188,9 @@ namespace GravityBox.Venom
         public void NoteBodyTap() { if (game != null && game.Matter != null) QueueTrick(COgheTrick.Wink, game.Matter.SimulationTime); }
         /// <summary>The player sent COghe somewhere it cannot go (slick glass, no route): a raspberry.</summary>
         public void NoteUnreachable() { if (game != null && game.Matter != null) QueueTrick(COgheTrick.Raspberry, game.Matter.SimulationTime); }
+        /// <summary>The player restarted the level (Restart, or Try again after a failure): the third in a row and COghe
+        /// turns its back and sulks once the level runs again (Emotion). A win clears the count.</summary>
+        public void NoteRetry() { if (++retries >= 3) { retries = 0; sulkAfterRetry = true; } }
         private void QueueTrick(COgheTrick trick, float now)
         { if (!Enabled || !COgheTricks.Available(trick) || now - reactedAt[(int)trick] < 8) return; pendingTrick = trick; pendingTrickAt = now; }
         // a device finished (a clap), a fall (puffing up), and whatever the player set off, once the body is at rest
@@ -207,6 +217,11 @@ namespace GravityBox.Venom
                 case COgheTrick.Raspberry: At(from, to, .82f, "creature_slide", .5f); At(from, to, 1.3f, "creature_grumble", .3f); At(from, to, 1.9f, "creature_hm", .35f); break;
                 case COgheTrick.Clap: for (int k = 0; k < 3; k++) At(from, to, .58f + k * .35f, "creature_pop", .38f); At(from, to, 1.75f, "creature_happy", .4f); break;
                 case COgheTrick.PuffUp: At(from, to, .2f, "creature_grumble", .45f); At(from, to, .78f, "creature_land", .5f); At(from, to, 1.18f, "creature_land", .5f); At(from, to, 1.8f, "creature_hmph", .55f); break;
+                case COgheTrick.Sneeze: At(from, to, .3f, "creature_hm", .35f); At(from, to, .72f, "creature_hm", .4f); At(from, to, 1.08f, "creature_splat", .55f); At(from, to, 2.55f, "creature_merge", .35f); break;
+                case COgheTrick.Peekaboo: At(from, to, .05f, "creature_melt", .45f); At(from, to, .8f, "creature_curious_1", .4f); At(from, to, 1.38f, "creature_pop", .6f); At(from, to, 1.45f, "monster_rise", .35f); break;
+                case COgheTrick.BellyDrum: for (int k = 0; k < 8; k++) At(from, to, .45f + k * .25f, "lab_far_thud", .45f); At(from, to, 2.65f, "creature_gulp", .5f); break;
+                case COgheTrick.BackTurnSulk: At(from, to, .45f, "creature_hmph", .55f); At(from, to, 2.05f, "creature_hm", .35f); break;
+                case COgheTrick.Moonwalk: At(from, to, .2f, "creature_slide", .4f); At(from, to, 1.6f, "creature_slide", .35f); At(from, to, 3.3f, "creature_tada", .45f); break;
             }
         }
 
@@ -226,8 +241,14 @@ namespace GravityBox.Venom
             float body = .036f;
             bool room = life.Clearance(centre, up, .15f) && life.Clearance(centre + up * .05f, Right(), .06f) && life.Clearance(centre + up * .05f, -Right(), .06f);
             bool nearWall = FindWall(.12f, false);
-            if (idle < IdleBeforeDoze && room && COgheTricks.Available(COgheTrick.Groove) && rnd.NextDouble() < .35)
-            { PlayTrick(COgheTrick.Groove); nextActAt = idle + 8f + (float)rnd.NextDouble() * 6f; return; }
+            // an idle trick (groove, sneeze) instead of the usual act, once COghe knows one
+            int idleTricks = (COgheTricks.Available(COgheTrick.Groove) ? 1 : 0) + (COgheTricks.Available(COgheTrick.Sneeze) ? 1 : 0);
+            if (idle < IdleBeforeDoze && room && idleTricks > 0 && rnd.NextDouble() < .35)
+            {
+                var pick = !COgheTricks.Available(COgheTrick.Sneeze) ? COgheTrick.Groove : !COgheTricks.Available(COgheTrick.Groove) ? COgheTrick.Sneeze
+                    : rnd.Next(2) == 0 ? COgheTrick.Groove : COgheTrick.Sneeze;
+                PlayTrick(pick); nextActAt = idle + 8f + (float)rnd.NextDouble() * 6f; return;
+            }
             COgheAct act;
             if (idle >= IdleBeforeDoze) act = COgheAct.Doze;
             else if (!sawWave && room) act = COgheAct.Wave;

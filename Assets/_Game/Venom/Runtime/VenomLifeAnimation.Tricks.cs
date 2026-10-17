@@ -20,6 +20,10 @@ namespace GravityBox.Venom
                 case COgheTrick.Groove: return Groove(points, count, centre, ground, floor, t, e);
                 case COgheTrick.Clap: return Clap(points, count, centre, ground, floor, t, e);
                 case COgheTrick.PuffUp: return PuffUp(points, supports, weights, count, centre, ground, floor, t, e);
+                case COgheTrick.Sneeze: return Sneeze(points, supports, weights, count, ground, t, e);
+                case COgheTrick.BellyDrum: return BellyDrum(points, supports, weights, count, ground, floor, t, e);
+                case COgheTrick.BackTurnSulk: return BackTurnSulk(points, count, ground, floor, t, e);
+                case COgheTrick.Moonwalk: return Moonwalk(points, count, ground, floor, t, e, p.Length);
             }
             return count;
         }
@@ -111,6 +115,96 @@ namespace GravityBox.Venom
             return n;
         }
 
+        // Lv 3 · Sneeze: "ah… ah…" (it stretches up, head back) then "choo!": it lunges, a droplet flies out, lands, and slides
+        // back into it.
+        private int Sneeze(Vector3[] points, float[] supports, float[] weights, int count, Vector3 ground, float t, float e)
+        {
+            float s = BodyHalfWidth(points, count, ground);
+            float ah = Mathf.Max(Smooth(.15f, .45f, t) * (1 - Smooth(.5f, .62f, t)) * .6f, Smooth(.6f, .98f, t)) * (1 - Smooth(1.02f, 1.12f, t));
+            float choo = Mathf.Sin(Mathf.Clamp01((t - 1.02f) / .4f) * Mathf.PI);
+            float squash = 1 + .16f * ah - .2f * choo;
+            var turn = Quaternion.AngleAxis(-12 * ah + 16 * choo, actRight);
+            PoseBody(points, count, ground, squash, turn, actToCamera * (s * .25f * choo), 1, e);
+            int n = count;
+            if (t > 1.05f && t < 2.6f && n < MaxSources)
+            {
+                // flies out toward the camera and to the side, bounces once, then slides home along the floor
+                Vector3 away = (actToCamera * .8f + actRight * .6f).normalized * (s * 2.1f);
+                float fly = Smooth(1.05f, 1.55f, t), home = Smooth(1.9f, 2.6f, t);
+                Vector3 at = ground + away * fly * (1 - home) + actUp * (s * (.35f * Mathf.Sin(Mathf.Clamp01((t - 1.05f) / .5f) * Mathf.PI) + .12f));
+                float size = .32f * (1 - Smooth(2.4f, 2.6f, t));
+                points[n] = transform.InverseTransformPoint(at); supports[n] = BodyRadius * size; weights[n++] = size > .04f ? 1.5f * e : 0;
+            }
+            return n;
+        }
+
+        // Lv 4 · Belly drum (Home): two tendrils drum on its belly in turn, the belly jiggles, then a burp bubble pops.
+        private int BellyDrum(Vector3[] points, float[] supports, float[] weights, int count, Vector3 ground, Vector3 floor, float t, float e)
+        {
+            float s = BodyHalfWidth(points, count, ground), hit = 0;
+            for (int k = 0; k < 8; k++) hit = Mathf.Max(hit, Mathf.Clamp01(1 - Mathf.Abs(t - (.45f + k * .25f)) / .09f));
+            float burp = Mathf.Sin(Mathf.Clamp01((t - 2.55f) / .35f) * Mathf.PI);
+            float top = PoseBody(points, count, ground, 1 - .05f * hit + .06f * burp, Quaternion.AngleAxis(-5 * e, actRight), Vector3.zero, 1 + .05f * burp, e);
+            float arms = Smooth(.2f, .4f, t) * (1 - Smooth(2.45f, 2.7f, t)) * e;
+            for (int side = -1; side <= 1; side += 2)
+            {
+                int beat = Mathf.FloorToInt((t - .45f) / .25f + .5f);
+                bool mine = (beat & 1) == (side < 0 ? 0 : 1);
+                float down = mine ? Mathf.Clamp01(1 - Mathf.Abs(t - (.45f + beat * .25f)) / .12f) : 0;
+                Vector3 root = ground + actUp * (top * .62f) + actRight * (side * s * .7f);
+                Vector3 belly = ground + actUp * (top * .42f) + actToCamera * (s * .78f) + actRight * (side * s * .28f);
+                Vector3 tip = Vector3.Lerp(belly + actToCamera * (s * .35f) + actUp * (s * .25f), belly, down);
+                Limb(root, root + actRight * (side * s * .25f) + actToCamera * (s * .2f), tip + actUp * (s * .2f), tip, s * .18f * arms, s * .16f * arms, floor, actUp);
+                TendrilCount++;
+            }
+            int n = count;
+            if (t > 2.6f && n < MaxSources)
+            {
+                float u = Mathf.Clamp01((t - 2.6f) / .6f), size = .38f * Smooth(0, .5f, u) * (u < .92f ? 1 : 0);
+                points[n] = transform.InverseTransformPoint(ground + actUp * (top + s * (.1f + .5f * u)) + actToCamera * (s * .3f));
+                supports[n] = BodyRadius * size; weights[n++] = size > .04f ? 1.4f * e : 0;
+            }
+            return n;
+        }
+
+        // Lv 5 · Back-turn sulk: it slumps away from the player and will not look (no eyes), "hmph", then peeks back sulkily.
+        private int BackTurnSulk(Vector3[] points, int count, Vector3 ground, Vector3 floor, float t, float e)
+        {
+            float away = Smooth(.1f, .5f, t) * (1 - Smooth(2.0f, 2.5f, t) * .6f), shiver = t > .45f && t < .9f ? Mathf.Sin(t * 70) * .015f : 0;
+            var turn = Quaternion.AngleAxis(16 * away, actRight) * Quaternion.AngleAxis(shiver * 60, actUp);
+            PoseBody(points, count, ground, 1 - .14f * away, turn, -actToCamera * (BodyRadius * .3f * away), 1, e);
+            return count;
+        }
+
+        // Lv 5 · Moonwalk (Home; the win dance has its own): it stands up on two little feet, glides backward with them
+        // sliding in turn, then spins back to where it stood (the body itself never moves) and poses.
+        private int Moonwalk(Vector3[] points, int count, Vector3 ground, Vector3 floor, float t, float e, float length)
+        {
+            float s = BodyHalfWidth(points, count, ground), glide = Smooth(.3f, 2.9f, t) * (1 - Smooth(2.9f, 3.5f, t)), spin = Smooth(3.0f, 3.5f, t);
+            Vector3 travel = -actRight * (s * .4f * glide);   // close up at Home it still stays in frame
+            var turn = Quaternion.AngleAxis(360 * spin, actUp) * Quaternion.AngleAxis(-8 * Smooth(.2f, .5f, t) * (1 - spin), actToCamera);
+            float stand = s * .45f * Smooth(.05f, .35f, t) * (1 - Smooth(length - .55f, length - .15f, t));
+            float top = PoseBody(points, count, ground, 1.12f + .04f * Mathf.Sin(t * 12), turn, travel + actUp * stand, .88f, e);
+            Vector3 foot = ground + travel;
+            for (int side = -1; side <= 1; side += 2)
+            {
+                // at the front edge of the raised body, where the camera (from above) sees under it
+                float slide = Mathf.Sin(t * 6.5f + (side < 0 ? 0 : Mathf.PI)) * (1 - spin);
+                Vector3 root = foot + actUp * (stand * .9f) + actRight * (side * s * .35f) + actToCamera * (s * .7f);
+                Vector3 tip = foot + actUp * (BodyRadius * .1f) + actRight * (side * s * .35f + s * .45f * slide) + actToCamera * (s * .85f);
+                Limb(root, root - actUp * (stand * .4f), tip + actUp * (stand * .3f), tip, s * .17f * e, s * .15f * e, floor, actUp);
+                TendrilCount++;
+            }
+            if (spin > .5f)
+            {
+                // the pose: one arm up at the end
+                Vector3 shoulder = foot + actUp * (top * .7f) + actRight * (s * .5f), tip = shoulder + actUp * (s * 1.1f) + actRight * (s * .3f);
+                Limb(shoulder, shoulder + actUp * (s * .4f), tip - actUp * (s * .3f), tip, s * .17f * e * spin, s * .13f * e * spin, floor, actUp);
+                TendrilCount++;
+            }
+            return count;
+        }
+
         /// <summary>The face tricks: a small monster head (lower than the Home monster, so it fits a level) that smiles and
         /// winks with a flick of the tongue, or blows a raspberry with the tongue out and waggling.</summary>
         private static MonsterPose TrickFacePose(COgheTrick trick, float t, float length)
@@ -120,6 +214,18 @@ namespace GravityBox.Venom
             m.Rise = .58f * m.Morph; m.HeadScale = 1.05f;
             m.Face = Ease(.22f, .55f, t) * (1 - Ease(length - .6f, length - .25f, t));
             m.Writhe = .015f * m.Rise; m.Phase = t * 2f;
+            if (trick == COgheTrick.Peekaboo)
+            {
+                // melted to a puddle, eyes peek out and look around; then "boo!": it shoots up as a grinning fanged head
+                float pop = Ease(1.35f, 1.6f, t) * (1 - Ease(length - .8f, length - .2f, t));
+                m.Rise = Mathf.Lerp(.06f, .95f, pop) * m.Morph; m.Gather = .6f * Ease(0, .4f, t) * (1 - pop);
+                m.HeadScale = Mathf.Lerp(.8f, 1.22f, pop);
+                m.Face = Ease(.55f, .85f, t) * (1 - Ease(length - .6f, length - .25f, t));
+                float peek = (1 - pop) * m.Face; m.Squint = .35f * peek; m.HeadYaw = 18 * Mathf.Sin(t * 3.5f) * peek;
+                m.Mouth = pop; m.Fangs = pop; m.Jaw = .1f + .6f * pop; m.Tongue = .35f * pop * Ease(1.6f, 2.0f, t);
+                m.Zoom = .1f * pop; m.HeadPitch = -6 * pop;
+                return m;
+            }
             if (trick == COgheTrick.Wink)
             {
                 m.Mouth = .7f * m.Face; m.Fangs = .45f * m.Face;

@@ -27,7 +27,13 @@ namespace GravityBox.Venom
             if (Act == COgheAct.Trick)
             {
                 if (COgheTricks.UsesFace(Trick)) return COgheMood.Hidden;          // the monster face has its own eyes
-                return Trick == COgheTrick.PuffUp ? COgheMood.Sulky : COgheMood.Happy;
+                switch (Trick)
+                {
+                    case COgheTrick.PuffUp: return COgheMood.Sulky;
+                    case COgheTrick.Sneeze: return Time < 1.05f ? COgheMood.Sleepy : Time < 2.1f ? COgheMood.Surprised : COgheMood.Happy;
+                    case COgheTrick.BackTurnSulk: if (Time < 2.0f) return COgheMood.Hidden; look = null; return COgheMood.Sulky;   // its back, then a sulky look round
+                    default: return COgheMood.Happy;
+                }
             }
             if (Act != COgheAct.None && Act != COgheAct.Home) return COgheMood.Hidden;   // a shape, a wave, the monster, a melt, a tantrum
             if (Act == COgheAct.Home && Pose.Morph > .15f) return COgheMood.Hidden;      // a heart, a bonus word
