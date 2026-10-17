@@ -70,7 +70,7 @@ namespace GravityBox.Venom
             for (int i = 0; i < touches.Length; i++) touches[i] = -100;
             warmth = 0; lastTouch = -100; userPlay = affectionHearts = false; greetPending = true; greetStep = 0;
         }
-        internal void LeaveHome() { bonusPhase = BonusPhase.None; bonusRounds = null; room = null; home = HomeState.Rest; playing = target = null; eating = false; meal = null; EndAct(); }
+        internal void LeaveHome() { bonusPhase = BonusPhase.None; bonusRounds = null; toy = null; gagBall = null; gag = COgheGag.None; toyPop = -1; room = null; home = HomeState.Rest; playing = target = null; eating = false; meal = null; EndAct(); }
 
         /// <summary>The player tapped COghe itself.</summary>
         public void TouchedInHome(Vector3 point)
@@ -97,8 +97,9 @@ namespace GravityBox.Venom
         /// <summary>The player tapped a piece of furniture, or chose it in the item menu: go and play with it.</summary>
         public void PlayWith(COgheHomeItem item)
         {
-            if (room == null || item == null || !room.Present(item)) return;
-            if (InBonus) { BonusHeard(COgheBonusAnswer.Item, item.Id); return; }
+            if (room == null || item == null) return;
+            if (InBonus) { if (item.Root.activeInHierarchy) BonusHeard(COgheBonusAnswer.Item, item.Id); return; }   // a toy out for its game counts too
+            if (!room.Present(item)) return;
             StopPlaying(); GoTo(item); userPlay = true;   // chosen by the player: it thanks them after
         }
 
@@ -114,6 +115,7 @@ namespace GravityBox.Venom
             if (OnStage) { room.Step(); return; }
             room.Step();
             Reveal(dt);
+            StepToys(dt);
             stateTime += dt;
             bool commanded = game.Feedback != null && game.Feedback.CommandCount != lastCommands;
             if (game.Feedback != null) lastCommands = game.Feedback.CommandCount;
@@ -216,7 +218,7 @@ namespace GravityBox.Venom
             float length = item.Id switch
             {
                 "BED" => 7f, "DUMBBELL" => 5.2f, "BALL" => 6.8f, "MIRROR" => 5.8f, "SWING" => 6.5f, "SLIDE" => 4.4f, "TV" => 6f,
-                "XYLOPHONE" => 5f, "TRAMPOLINE" => 5.5f, "HAMMOCK" => 7f, "WHEEL" => 6f, "AQUARIUM" => 5.5f, "SHADOW_LAMP" => 6f, _ => 4.8f,
+                "XYLOPHONE" => 5f, "TRAMPOLINE" => 5.5f, "HAMMOCK" => 7f, "WHEEL" => 6f, "AQUARIUM" => 5.5f, "SHADOW_LAMP" => 6f, COgheToys.Drum => 5.2f, _ => 4.8f,
             };
             if (item.Id == "MIRROR" || item.Id == "SHADOW_LAMP") Shape = PickShape();
             if (item.Id == "BALL")
@@ -367,6 +369,9 @@ namespace GravityBox.Venom
                 }
                 case "BALL":
                     BallGame(item, t, ref p);
+                    break;
+                case COgheToys.Drum:
+                    DrumPlayPose(item, t, ref p);
                     break;
                 case "MIRROR":
                 {
@@ -734,6 +739,7 @@ namespace GravityBox.Venom
             var weights = item.Part("Weights"); if (weights != null) weights.localPosition = new Vector3(0, .3f, 0);
             var ball = item.Part("Ball"); if (ball != null) ball.localPosition = new Vector3(0, .45f, 0);
             var fish = item.Part("Fish"); if (fish != null) fish.localPosition = new Vector3(0, .88f, 0);
+            if (item.Id == COgheToys.Drum) { var head = item.Part("Head"); if (head != null) head.localPosition = new Vector3(0, DrumHeadY, 0); }
         }
 
         /// <summary>Something was just bought for the room: pop it in now and go to it.</summary>

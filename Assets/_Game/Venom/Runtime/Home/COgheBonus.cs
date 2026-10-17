@@ -15,11 +15,18 @@ namespace GravityBox.Venom
         public COgheShape? NumberShape => Count >= 2 && Count <= 3 ? COgheShape.One + (Count - 1) : (COgheShape?)null;
     }
 
-    /// <summary>One question: a sentence of words, done in its order or in any order.</summary>
+    /// <summary>One question: a sentence of words, done in its order or in any order; or (the last one of a chapter, Mrk
+    /// 17/10/2026) a game played together with a toy (<see cref="Toy"/>), which the player keeps.</summary>
     public sealed class COgheBonusRound
     {
         public readonly COgheBonusAsk[] Words; public readonly bool Ordered;
+        /// <summary>The toy of a game round (<see cref="COgheToys"/>), or null for a sentence.</summary>
+        public readonly string Toy;
+        public bool IsGame => Toy != null;
         public COgheBonusRound(bool ordered, params COgheBonusAsk[] words) { Ordered = ordered; Words = words; }
+        private COgheBonusRound(string toy) { Toy = toy; Words = new COgheBonusAsk[0]; Ordered = true; }
+        /// <summary>A game with <paramref name="toy"/>: COghe plays a beat on it, the player plays it back.</summary>
+        public static COgheBonusRound Game(string toy) => new COgheBonusRound(toy);
     }
 
     /// <summary>
@@ -31,6 +38,8 @@ namespace GravityBox.Venom
     /// The answers only use what every player has (a touch, Feed, the gift ball), so no bonus depends on what was bought; the
     /// chapters grow by putting words together: one word, two in any order, an order, a number, all of them, and (the sixth
     /// chapter, Mrk 12/10/2026) a number on most words.
+    /// A wrong answer is a little comedy of what COghe got instead (it spits the food out, giggles at a touch, the ball bonks
+    /// it), then it asks again (Mrk 17/10/2026). Chapter 2 ends with a game on a new toy, the drum (<see cref="COgheToys"/>).
     /// </summary>
     public static class COgheBonus
     {
@@ -45,8 +54,9 @@ namespace GravityBox.Venom
         {
             // 1 (Home has just opened): one word each
             new[] { One(Cuddle()), One(Play()), One(Food()) },
-            // 2: two things at once, in any order
-            new[] { Both(Cuddle(), Food()), Both(Play(), Cuddle()), Both(Food(), Play()) },
+            // 2: two things at once, in any order; then the drum, played together (Mrk 17/10/2026: the last question is a
+            // game with a new toy, which the player keeps)
+            new[] { Both(Cuddle(), Food()), Both(Play(), Cuddle()), COgheBonusRound.Game(COgheToys.Drum) },
             // 3: in COghe's order
             new[] { InOrder(Food(), Cuddle()), InOrder(Cuddle(), Play(), Food()), InOrder(Play(), Food(), Cuddle()) },
             // 4: how many (exactly: one too many and it counts again)

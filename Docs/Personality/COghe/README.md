@@ -242,3 +242,30 @@ Play tiếp câu chưa hoàn tất. Checkpoint câu và hoàn tất lưu độc 
 paid keys cũ vẫn hợp lệ, không xóa tiến độ level. Các mô tả “optional/skippable” ở
 phần lịch sử phía trên không còn áp dụng. Style tách khỏi Home, mở sau màn 8; Home
 vẫn sau Boss 10. [Biên bản](../../Verification/COgheChapterProgression/README.md).
+
+### Override 17/10/2026 — Đồ chơi và trò hài trong “Hiểu COghe” (Mrk)
+
+Mrk chốt: dòng đồ chơi riêng có animation riêng; đáp sai thì COghe làm trò hài; câu cuối mỗi chương là chơi cùng COghe.
+Bản mẫu cho chương 2, chờ Mrk duyệt clip `OUTBOX/COGHE_HIEURA_TOYS_2026_10_17` (máy của Claude).
+
+- **Đồ chơi (`COgheToys`):** không bán, không nằm trong 14 món nội thất, không mở theo màn. Thắng trò chơi trong
+  “Hiểu ra” thì đồ chơi thành của người chơi (`COgheShop.Grant`, nguồn `bonus_toy`), ở lại trong Nhà. Chạm vào nó ở Nhà
+  thì COghe ra chơi. Trống (`TOY_DRUM`) nằm cạnh chỗ COghe đứng hỏi, hơi lùi về sau.
+- **Câu cuối chương 2 = trò trống** (`COgheBonusRound.Game`, thay câu “nấm + bóng”):
+  - Trống bật ra cạnh COghe, nó gõ một tiếng rồi giật mình.
+  - Ba nhịp 2 / 3 / 4 tiếng; người chơi chạm trống gõ lại. Chỉ tính đủ số tiếng, không tính nhanh chậm, không đếm giờ.
+  - Gõ thừa: COghe bịt tai rồi gõ lại nhịp đó. Chạm COghe hay bấm Feed thay vì trống: một trò hài, rồi gõ lại nhịp.
+  - Đúng cả ba: cùng gõ tự do 5,4 giây (mỗi lần người chơi gõ, COghe nhảy), rồi vui, trả thưởng câu 3 như cũ, rồi cảm ơn.
+  - Bỏ ngang: trống cất đi; vào lại thì chơi lại từ trò trống.
+  - Chạm trống được ưu tiên hơn chạm COghe (`VenomCampaign.TouchPoint` → `ToyTouch`); vùng chạm rộng hơn trống 3,5 cm.
+- **Đáp sai = trò hài theo thứ COghe nhận được** (`COgheGag`, mọi chương), thay cho cái lắc đầu:
+  - Bị cho ăn: bắt viên bi, phồng má, nhè ra (`Spit`).
+  - Chạm quả bóng: bóng nảy tới cộc vào đầu (`Bonk`).
+  - Bị chạm khi muốn ăn: cười nhột rồi bụng sôi (`GiggleRumble`).
+  - Bị chạm khi muốn bóng hay trống: cười nhột rồi chỉ vào món đó (`GigglePoint`).
+  - Cho ăn thừa: nấc cụt rồi ợ bong bóng (`Hiccup`). Vuốt thừa: cười lăn lộn (`GiggleRoll`).
+  - Món đồ khác: lắc đầu như cũ (`Nope`).
+  - Camera lại gần trong lúc diễn (`GagFrame`). Sai 2 lần vẫn hiện gợi ý chữ.
+- **Chưa làm:** chương 1 chuyền bóng; đồ chơi chương 3–6; trống thành từ trong câu hỏi từ chương 3; câu hỏi cho chương 7+.
+- **Kiểm tra:** `COgheToyTests`. Bản Mac: `-coghe-toy-reel <thư mục>` quay trò trống và các trò hài (PNG 30 khung/s,
+  `sounds.txt`, `marks.txt`).

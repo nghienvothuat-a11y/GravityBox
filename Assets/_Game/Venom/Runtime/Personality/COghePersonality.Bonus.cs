@@ -8,16 +8,19 @@ namespace GravityBox.Venom
     /// in body shapes, a sentence of words played one after another (a number first, as raised tendrils, when it wants it
     /// several times). The player answers by doing it: a touch, Feed, the ball.
     /// - A word done (not the last): a quick thumbs-up; a counted answer flashes the count so far on its tendrils; reaching
-    ///   the number, it waits a moment to check, and one too many gets a shake and the count starts again.
+    ///   the number, it waits a moment to check, and one too many gets a gag (hiccups, a giggling roll) and the count starts
+    ///   again.
     /// - The whole question done: joy at once (a jump with a whole turn, a beating heart; the UI pays it at the top of the
     ///   jump), then the thing itself (it plays with the ball, catches and gulps the food), then the next question.
-    /// - A wrong answer (or the wrong order): only a gentle shake, then it asks again.
+    /// - A wrong answer (or the wrong order): a little comedy about what it got instead (<see cref="COgheGag"/>, Mrk
+    ///   17/10/2026), then it asks again.
+    /// - A game round (the drum, <see cref="COgheToys"/>): see COghePersonality.Toys.
     /// After the last question it thanks the player (<see cref="FinalePose"/>). While the bonus runs, COghe does not wander or
     /// obey floor taps; touches, items and Feed are its answers.
     /// </summary>
     public sealed partial class COghePersonality
     {
-        private enum BonusPhase { None, Arrive, Ask, No, Hop, Count, Confirm, Gulp, Joy, Action, Front, Finale, Done }
+        private enum BonusPhase { None, Arrive, Ask, No, Hop, Count, Confirm, Gulp, Joy, Action, Front, Finale, Done, ToyIntro, ToyShow, ToyListen, ToyGood, ToyJam, Gag }
         public const float JoyLength = 1.5f, JoyRewardAt = .3f, GulpLength = 1.57f, ConfirmLength = 1.3f;
         public const float FinaleLength = 6.2f, FinaleHeartsAt = 2.3f, FinaleConfettiAt = 3.55f, FinalePrizeAt = 4.75f;
         private const float WordSlot = 1.25f, SentenceRest = .7f;
@@ -85,6 +88,7 @@ namespace GravityBox.Venom
         public void EndBonus()
         {
             if (bonusPhase == BonusPhase.None) return;
+            EndToyGame();
             bonusPhase = BonusPhase.None; bonusRounds = null; heartsDue = confettiDue = prizeDue = false; joyDue = 0; activeWord = -1; gulpsQueued = 0;
             gulpForWord = shakeAfterGulp = false;
             if (room != null) { StopPlaying(); EndAct(); home = HomeState.Rest; homeTimer = 0; homeNext = 1.5f; }
@@ -112,13 +116,14 @@ namespace GravityBox.Venom
         {
             var words = bonusRounds != null && bonusRound < BonusRounds ? bonusRounds[bonusRound].Words : null;
             if (words == null) return;
+            if (CurrentIsGame) { ToyHeard(answer, item); return; }
             string said = answer == COgheBonusAnswer.Item ? item : answer.ToString();
             // a number being counted: more of the same (one too many once it is reached), or something else breaks it off
             if (activeWord >= 0 && (bonusPhase == BonusPhase.Ask || bonusPhase == BonusPhase.Count || bonusPhase == BonusPhase.Gulp || bonusPhase == BonusPhase.Confirm))
             {
                 var counted = words[activeWord];
-                if (!counted.Accepts(answer, item)) { Wrong(said); return; }
-                if (wordCount[activeWord] >= counted.Count) { COgheAnalytics.Log("bonus_answer", "round", bonusRound + 1, "answer", said, "correct", false, "too_many", true); Wrong(said); return; }
+                if (!counted.Accepts(answer, item)) { Wrong(answer, item, false); return; }
+                if (wordCount[activeWord] >= counted.Count) { COgheAnalytics.Log("bonus_answer", "round", bonusRound + 1, "answer", said, "correct", false, "too_many", true); Wrong(answer, item, true); return; }
                 CountOne(answer, said); return;
             }
             if (bonusPhase != BonusPhase.Ask) return;   // busy (walking back, reacting): the tap is not an answer
@@ -126,19 +131,20 @@ namespace GravityBox.Venom
             int match = -1;
             for (int i = 0; i < words.Length; i++)
                 if (!wordDone[i] && words[i].Accepts(answer, item) && (!bonusRounds[bonusRound].Ordered || i == first)) { match = i; break; }
-            if (match < 0) { COgheAnalytics.Log("bonus_answer", "round", bonusRound + 1, "answer", said, "correct", false); Wrong(said); return; }
+            if (match < 0) { COgheAnalytics.Log("bonus_answer", "round", bonusRound + 1, "answer", said, "correct", false); Wrong(answer, item, false); return; }
             if (words[match].Count > 1) { activeWord = match; CountOne(answer, said); return; }
             COgheAnalytics.Log("bonus_answer", "round", bonusRound + 1, "answer", said, "correct", true);
             CompleteWord(match);
         }
 
-        private void Wrong(string said)
+        private void Wrong(COgheBonusAnswer answer, string item, bool tooMany)
         {
             BonusMisses++;
+            var expected = BonusAsk;                                               // what it wanted, before a count is dropped
             if (activeWord >= 0) { wordCount[activeWord] = 0; activeWord = -1; }   // a count broken off (or one too many): count again
-            if (bonusPhase == BonusPhase.Gulp) { shakeAfterGulp = true; return; }   // it finishes its mouthful; the shake follows
-            bonusPhase = BonusPhase.No; bonusTime = 0; Begin(COgheAct.Home, .9f);
-            COgheAudio.Instance?.Play("creature_hm", .45f, 0, .15f);
+            var g = ChooseGag(answer, item, tooMany, expected);
+            if (bonusPhase == BonusPhase.Gulp) { pendingGag = g; shakeAfterGulp = true; return; }   // it finishes its mouthful; the gag follows
+            StartGag(g);
         }
 
         private void CountOne(COgheBonusAnswer answer, string said)
@@ -191,6 +197,7 @@ namespace GravityBox.Venom
 
         private void Ask()
         {
+            if (CurrentIsGame) { StartToyShow(); return; }
             bonusPhase = BonusPhase.Ask; bonusTime = 0; Begin(COgheAct.Home, 1e6f);
             // the sentence: the number being counted, or what is left to do (in order: from the next word on)
             sentence.Clear();
@@ -220,7 +227,7 @@ namespace GravityBox.Venom
         /// <summary>The last ball is eaten: a shake if the count broke off meanwhile, on after a word's food, else the count goes on.</summary>
         private void EndGulp()
         {
-            if (shakeAfterGulp) { shakeAfterGulp = gulpForWord = false; bonusPhase = BonusPhase.No; bonusTime = 0; Begin(COgheAct.Home, .9f); COgheAudio.Instance?.Play("creature_hm", .45f, 0, .15f); return; }
+            if (shakeAfterGulp) { shakeAfterGulp = gulpForWord = false; StartGag(pendingGag == COgheGag.Spit ? COgheGag.Hiccup : pendingGag); return; }   // no second ball to spit: it hiccups
             if (gulpForWord) { gulpForWord = false; if (roundDone) NextBonusRound(); else Ask(); return; }
             AfterCounted();
         }
@@ -238,6 +245,7 @@ namespace GravityBox.Venom
                     if (game.Motion.Get(0) != null && bonusTime < (front ? 4 : 7)) return true;
                     game.Motion.StopAll();
                     if (front) { bonusPhase = BonusPhase.Finale; bonusTime = 0; Begin(COgheAct.Home, FinaleLength); return true; }
+                    if (CurrentIsGame) { StartToyGame(); return true; }
                     Ask(); COgheAudio.Instance?.Play("creature_curious_1", .4f, 0, .15f);
                     return true;
                 }
@@ -288,7 +296,7 @@ namespace GravityBox.Venom
                 case BonusPhase.Done:
                     return true;   // it rests, content, until the player continues
             }
-            return false;
+            return UpdateToy(dt);   // the toy game and the gags
         }
 
         private void NextBonusRound()

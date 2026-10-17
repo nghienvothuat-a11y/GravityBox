@@ -64,12 +64,12 @@ namespace GravityBox.Tests
                 game.TouchPoint(ScreenOf(game.HomeRoom.Root.TransformPoint(new Vector3(.2f, 0, -.4f)))); yield return null;
                 Assert.IsNull(game.Motion.Get(0), "Floor taps do not move it during the bonus"); Assert.IsTrue(p.BonusAsking);
 
-                // a wrong answer: a gentle no (and no food thrown), then the same question again
+                // a wrong answer: a little comedy (Mrk 17/10: it spits the food out; no meal is thrown), then the same question
                 yield return Click("Feed");
-                Assert.AreEqual(1, p.BonusMisses); Assert.AreEqual(0, p.BonusRound); Assert.IsFalse(game.HomeFeedBalls.Active, "A wrong Feed throws nothing");
-                yield return AwaitBonus(() => p.BonusAsking, 3, "It asks again");
+                Assert.AreEqual(1, p.BonusMisses); Assert.AreEqual(0, p.BonusRound); Assert.AreEqual(COgheGag.Spit, p.Gag); Assert.AreEqual(1, game.HomeFeedBalls.Balls.Count, "Only the ball it spits out: a wrong Feed throws no meal");
+                yield return AwaitBonus(() => p.BonusAsking, 6, "It asks again");
                 yield return Click("Feed");
-                yield return AwaitBonus(() => p.BonusAsking, 3, "and again");
+                yield return AwaitBonus(() => p.BonusAsking, 6, "and again");
                 Assert.IsTrue(ui.GetComponentsInChildren<Text>().Any(t => t.text == "It wants a cuddle: tap COghe."), "Two misses: a hint");
 
                 // the heart it holds up: a touch on it

@@ -42,6 +42,7 @@ namespace GravityBox.Venom
         {
             var item = new COgheHomeItem { Id = id };
             foreach (var c in Catalog) if (c.id == id) { item.Name = c.name; item.UnlockLevel = c.level; }
+            if (COgheToys.Is(id)) item.Name = COgheToys.Name(id);   // a toy: owned from its "Hiểu ra" game, no level
             item.Root = new GameObject("Home item " + id);
             item.Root.transform.SetParent(parent, false);
             item.Root.transform.localScale = Vector3.one * W;
@@ -136,6 +137,28 @@ namespace GravityBox.Venom
                     var b = Group("ShapeB", new Vector3(.38f, .88f, -.266f)); k.Paint(Amber).Ellipse(Vector3.zero, .22f, .18f, 10); Bake("Screen shape B", b);
                     item.Approach = new Vector3(0, 0, -1.35f);
                     break;
+                case COgheToys.Drum:
+                {
+                    // a little hand drum, a third shorter than COghe so it reaches over the rim: coral shell between two
+                    // slate hoops, ivory cords laced in a zigzag, and a pale skin that dips when it is struck ("Head")
+                    k.Paint(Coral).Cylinder(.34f, .34f, .05f, .41f, 16);
+                    k.Paint(Slate).Cylinder(.37f, .37f, 0, .08f, 16); k.Cylinder(.37f, .37f, .38f, .45f, 16);
+                    k.Paint(Ivory);
+                    for (int i = 0; i < 8; i++)
+                    {
+                        float a0 = i * Mathf.PI / 4, a1 = a0 + Mathf.PI / 8, a2 = a0 + Mathf.PI / 4;
+                        Vector3 top0 = new Vector3(Mathf.Cos(a0) * .355f, .38f, Mathf.Sin(a0) * .355f), bottom = new Vector3(Mathf.Cos(a1) * .355f, .08f, Mathf.Sin(a1) * .355f);
+                        Vector3 top1 = new Vector3(Mathf.Cos(a2) * .355f, .38f, Mathf.Sin(a2) * .355f);
+                        k.Rod(top0, bottom, .018f, 5); k.Rod(bottom, top1, .018f, 5);
+                    }
+                    Bake("Drum shell");
+                    var skin = Group("Head", new Vector3(0, .45f, 0));
+                    k.Paint("#f6f1e6").Cylinder(.33f, .33f, -.02f, .012f, 16);
+                    k.Paint(Amber).Cylinder(.1f, .1f, .012f, .016f, 10);   // the spot to strike
+                    Bake("Drum head", skin);
+                    item.Approach = new Vector3(-1.1f, 0, -.4f);         // beside it, where COghe stands for the "Hiểu ra" game
+                    break;
+                }
                 case "XYLOPHONE":
                 {
                     k.Paint(Ivory).Box(new Vector3(0, .12f, -.3f), new Vector3(2.2f, .12f, .1f)); k.Box(new Vector3(0, .12f, .3f), new Vector3(2.2f, .12f, .1f));

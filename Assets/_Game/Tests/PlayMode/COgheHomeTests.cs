@@ -21,8 +21,8 @@ namespace GravityBox.Tests
    try
    {
     yield return EnterFurnishedHome(16);
-    var room=game.HomeRoom;Assert.AreEqual(14,room.Items.Count);
-    foreach(var item in room.Items)Assert.AreEqual(item.UnlockLevel<=16,item.Root.activeSelf,item.Id+" shows only once earned");
+    var room=game.HomeRoom;Assert.AreEqual(COgheHomeItems.Catalog.Length+COgheToys.Catalog.Length,room.Items.Count,"The 14 items and the toys");
+    foreach(var item in room.Items)if(!COgheToys.Is(item.Id))Assert.AreEqual(item.UnlockLevel<=16,item.Root.activeSelf,item.Id+" shows only once earned");
     var mirror=room.Find("MIRROR");room.ShowGhost(mirror);
     Assert.IsTrue(mirror.Root.activeSelf,"A locked item can be previewed");
     foreach(var r in mirror.Root.GetComponentsInChildren<Renderer>())Assert.AreEqual("Home ghost",r.sharedMaterial.name);

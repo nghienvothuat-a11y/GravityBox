@@ -69,6 +69,16 @@ namespace GravityBox.Venom
                     case BonusPhase.Joy: case BonusPhase.Hop: case BonusPhase.Done: return COgheMood.Happy;
                     case BonusPhase.Finale: return COgheMood.Love;
                     case BonusPhase.Gulp: if (meal != null) look = meal.Position; return COgheMood.Focus;
+                    case BonusPhase.Gag: { look = GagLook(out var mood); return mood; }
+                    case BonusPhase.ToyIntro:
+                        if (toy != null && bonusTime < .85f) { look = room.BoundsOf(toy).center; return COgheMood.Focus; }
+                        return bonusTime > 1.42f && bonusTime < 1.8f ? COgheMood.Surprised : COgheMood.Happy;   // startled by its own BOOM
+                    case BonusPhase.ToyShow: if (toy != null) look = room.BoundsOf(toy).center; return COgheMood.Focus;
+                    case BonusPhase.ToyListen:
+                        // its eyes go from the drum to the player and back, and to the drum at every strike
+                        if (toy != null && (bonusTime - toyLastHit < .5f || Mathf.Repeat(bonusTime, 2.4f) < 1.0f)) { look = room.BoundsOf(toy).center; return COgheMood.Focus; }
+                        return COgheMood.Happy;
+                    case BonusPhase.ToyGood: case BonusPhase.ToyJam: return COgheMood.Happy;
                 }
             }
             switch (home)

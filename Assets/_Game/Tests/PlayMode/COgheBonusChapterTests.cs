@@ -28,6 +28,8 @@ namespace GravityBox.Tests
    for(int chapter=1;chapter<=6;chapter++)
    {
     var rounds=COgheBonus.Rounds(chapter);Assert.IsNotNull(rounds,"Chapter "+chapter);Assert.AreEqual(3,rounds.Length);
+    // a game round's toy is given by the game itself (COgheToys), never bought
+    foreach(var round in rounds)if(round.IsGame)Assert.IsTrue(COgheToys.Is(round.Toy));else Assert.IsNotEmpty(round.Words);
     foreach(var round in rounds)foreach(var word in round.Words)
     {
      Assert.That(word.Count,Is.InRange(1,3),"A number COghe can show on its tendrils");
@@ -60,8 +62,8 @@ namespace GravityBox.Tests
     yield return StartBonusInHome(3);var p=game.Personality;
     // food, then a cuddle: the cuddle first is the wrong order
     p.TouchedInHome(p.SkinCentre);
-    yield return BonusUntil(()=>p.BonusMisses==1&&p.BonusAsking,5,"Wrong order: a gentle no, and it asks again");
-    Assert.AreEqual(0,p.BonusWordsDone);
+    yield return BonusUntil(()=>p.BonusMisses==1&&p.BonusAsking,6,"Wrong order: a giggle and a rumbling belly (it wants food), and it asks again");
+    Assert.AreEqual(COgheGag.GiggleRumble,p.LastGag);Assert.AreEqual(0,p.BonusWordsDone);
     int eaten=p.BallsEaten;p.BonusFeed();
     yield return BonusUntil(()=>p.BallsEaten>eaten&&p.BonusAsking&&p.BonusWordsDone==1,10,"Food first, then");
     p.TouchedInHome(p.SkinCentre);
@@ -79,8 +81,8 @@ namespace GravityBox.Tests
     // three is one too many: a shake, and the count starts again
     int eaten=p.BallsEaten;p.BonusFeed();p.BonusFeed();p.BonusFeed();
     Assert.AreEqual(1,p.BonusMisses);Assert.AreEqual(0,p.BonusCounted);
-    yield return BonusUntil(()=>p.BonusAsking,10,"It eats the two, shakes, asks again");
-    Assert.AreEqual(eaten+2,p.BallsEaten);Assert.AreEqual(0,p.BonusRound);
+    yield return BonusUntil(()=>p.BonusAsking,12,"It eats the two, hiccups (too full), asks again");
+    Assert.AreEqual(COgheGag.Hiccup,p.LastGag);Assert.AreEqual(eaten+2,p.BallsEaten);Assert.AreEqual(0,p.BonusRound);
     // exactly two, then waiting: it checks, and it is right
     p.BonusFeed();p.BonusFeed();
     yield return BonusUntil(()=>p.BonusRound==1,15,"Exactly two: the next question");

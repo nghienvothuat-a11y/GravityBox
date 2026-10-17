@@ -10,7 +10,7 @@ namespace GravityBox.Venom
     /// </summary>
     public sealed partial class COgheProductUI
     {
-        private int victoryBonus, bonusChapter, bonusNext, bonusDrops, bonusShownRound = -1, bonusShownMisses = -1;
+        private int victoryBonus, bonusChapter, bonusNext, bonusDrops, bonusShownRound = -1, bonusShownMisses = -1, bonusShownToy = -1;
         private bool bonusFromVictory, bonusPaid, bonusThanksShown, bonusPopupShown;
         private int bonusEarned;   // everything this bonus paid: the rounds and the prize
         /// <summary>The bonus being played in Home (its chapter), or 0.</summary>
@@ -42,7 +42,7 @@ namespace GravityBox.Venom
         {
             var p = Game.Personality;
             if (p == null || !p.InBonus) { if (!bonusPaid) { bonusChapter = 0; Rebuild(); } return; }
-            if (p.BonusRound != bonusShownRound || p.BonusMisses != bonusShownMisses || p.BonusThanking != bonusThanksShown) Rebuild();
+            if (p.BonusRound != bonusShownRound || p.BonusMisses != bonusShownMisses || p.BonusThanking != bonusThanksShown || p.ToyStateKey != bonusShownToy) Rebuild();
             // each right answer pays at once (Mrk 07/10), at the top of COghe's jump of joy: little hearts, and the Drops fly
             // out of it into the counter
             int joy = p.TakeBonusJoy();
@@ -120,6 +120,7 @@ namespace GravityBox.Venom
         {
             var p = Game.Personality;
             bonusShownRound = p != null ? p.BonusRound : 0; bonusShownMisses = p != null ? p.BonusMisses : 0; bonusThanksShown = p != null && p.BonusThanking;
+            bonusShownToy = p != null ? p.ToyStateKey : 0;
             art.Button(pageRoot, "Bonus back", new Rect(24, 25, 52, 52), COgheIcon.Back, LeaveBonus);
             art.Label(pageRoot, "Bonus title", "Understand COghe", new Rect(85, 25, width - 170, 52), 19);
             art.Button(pageRoot, "Pause", new Rect(width - 76, 25, 52, 52), COgheIcon.Pause, () => ShowPopup(COgheProductPopup.Pause));
@@ -134,6 +135,18 @@ namespace GravityBox.Venom
             string line = bonusThanksShown || p == null || p.BonusFinished ? "" : BonusPrompts[Mathf.Clamp(bonusChapter - 1, 0, BonusPrompts.Length - 1)];
             var ask = p?.BonusAsk;
             if (ask.HasValue && bonusShownMisses >= 2 && !bonusThanksShown) line = BonusHint(ask.Value);
+            if (p != null && p.InToyGame && !bonusThanksShown)
+            {
+                // the game with the toy: what to do now, in a few words; while it is the player's turn, one dot per strike
+                line = p.ToyListening ? "Your turn: play it back!" : p.ToyJamming ? "Play along with COghe!" : "Listen to COghe's drum…";
+                if (bonusShownMisses >= 2 && p.ToyListening) line = "Tap the drum " + p.ToyBeats + " times, like COghe.";
+                if (p.ToyListening)
+                    for (int i = 0, n = p.ToyBeats; i < n; i++)
+                    {
+                        var dot = art.Box(pageRoot, "Beat " + (i + 1), new Rect(width * .5f - n * 15 + i * 30 + 5, 168, 20, 20), i < p.ToyTaps ? new Color(.74f, .47f, .44f) : new Color(.9f, .9f, .87f));
+                        dot.pixelsPerUnitMultiplier = 4;
+                    }
+            }
             art.Label(pageRoot, "Bonus ask", line, new Rect(24, 136, width - 48, 26), 13, COgheUIArt.Muted);
             float y = height - 152;
             MenuEntry(width * .5f - 28, y, "Feed", COgheIcon.Food, () => { Game.FeedHome(); COgheAudio.UiTap(); });

@@ -28,6 +28,8 @@ namespace GravityBox.Venom
             { "SLIDE", (.33f, .2f, 0) }, { "AQUARIUM", (.3f, -.3f, 90) }, { "TRAMPOLINE", (.3f, -.57f, 90) }, { "TROPHY", (.34f, -.78f, 90) },
             // the aisle
             { "BALL", (.02f, .28f, 0) }, { "DUMBBELL", (0, -.28f, 0) }, { "XYLOPHONE", (0, -.66f, 0) },
+            // toys (COgheToys): beside the spot where COghe stands for "Hiểu ra", a little behind it so both stay in view
+            { COgheToys.Drum, (.11f, -.02f, 0) },
         };
 
         public readonly Transform Root;
@@ -47,10 +49,11 @@ namespace GravityBox.Venom
             Root = new GameObject("COghe home room").transform; Root.SetParent(parent, false); Root.localPosition = new Vector3(0, -.3f, 0);
             materials = new COgheHomeMaterials(lit, glass);
             BuildShell(wall);
-            foreach (var entry in COgheHomeItems.Catalog)
+            var ids = new List<string>(); foreach (var entry in COgheHomeItems.Catalog) ids.Add(entry.id); foreach (var toy in COgheToys.Catalog) ids.Add(toy.id);
+            foreach (var id in ids)
             {
-                var item = COgheHomeItems.Build(entry.id, Root, materials);
-                var place = Layout[entry.id];
+                var item = COgheHomeItems.Build(id, Root, materials);
+                var place = Layout[id];
                 item.Root.transform.localPosition = new Vector3(place.x, 0, place.z);
                 item.Root.transform.localRotation = Quaternion.Euler(0, place.yaw, 0);
                 Items.Add(item);
@@ -121,10 +124,13 @@ namespace GravityBox.Venom
         // Unlocks -----------------------------------------------------------------------------------------------------------
         /// <summary>In the room: its level is reached and it is owned (bought or a gift; Mrk 02/10: an item must be bought to
         /// appear).</summary>
-        public bool Present(COgheHomeItem item) => Available(item) && COgheShop.Owns(item.Id);
-        /// <summary>Its level is reached: owned, or for sale.</summary>
-        public bool Available(COgheHomeItem item) => LevelReached(item.UnlockLevel);
-        public bool ForSale(COgheHomeItem item) => Available(item) && !COgheShop.Owns(item.Id);
+        public bool Present(COgheHomeItem item) => COgheToys.Is(item.Id) ? COgheToys.Owns(item.Id) : Available(item) && COgheShop.Owns(item.Id);
+        /// <summary>Its level is reached: owned, or for sale. A toy has no level: only its "Hiểu ra" game gives it.</summary>
+        public bool Available(COgheHomeItem item) => COgheToys.Is(item.Id) || LevelReached(item.UnlockLevel);
+        public bool ForSale(COgheHomeItem item) => !COgheToys.Is(item.Id) && Available(item) && !COgheShop.Owns(item.Id);
+        /// <summary>A toy brought out for its game before it is owned (or put away again if the game was left).</summary>
+        public void ShowToy(COgheHomeItem toy, bool shown) { if (toy == null || toy == ghost) return; toyOut = shown ? toy : null; toy.Root.SetActive(shown || Present(toy)); }
+        private COgheHomeItem toyOut;
         /// <summary>Show what is owned now (after a purchase); new items stay hidden (scale 0) for their reveal.</summary>
         public void Refresh() { foreach (var item in Items) if (item != ghost) item.Root.SetActive(Present(item)); }
         public bool LevelReached(int level) => Reached(game, level);
@@ -190,7 +196,7 @@ namespace GravityBox.Venom
             COgheHomeItem best = null; float nearest = float.MaxValue;
             foreach (var item in Items)
             {
-                if (!Present(item) || !item.Root.activeSelf) continue;
+                if (!(Present(item) || item == toyOut) || !item.Root.activeSelf) continue;
                 var b = bounds[item]; b.Expand(.01f);
                 if (b.IntersectRay(ray, out float d) && d < nearest) { nearest = d; best = item; }
             }

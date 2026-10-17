@@ -115,6 +115,8 @@ namespace GravityBox.Venom
                 // the bonus: COghe and the aisle (the ball behind it) while it asks; close on it as it says thank you
                 var p = Game.Personality;
                 if (p.BonusCloseUp) { target = p.SkinCentre + Vector3.up * .03f; targetSize = .2f; rate = 2.6f; }
+                else if (p.GagFrame(out var gagTarget, out float gagSize)) { target = gagTarget; targetSize = gagSize; rate = 3f; }   // closer for a gag
+                else if (p.ToyFocus.HasValue) { target = p.ToyFocus.Value; targetSize = .28f; rate = 2.4f; }   // COghe and its toy, close
                 else if (p.BonusBusy || p.BonusThanking) { target = p.SkinCentre; targetSize = Mathf.Min(size, .36f); }
                 else { target = Vector3.Lerp(room.Root.TransformPoint(new Vector3(0, .03f, .3f)), p.SkinCentre, .55f); targetSize = Mathf.Min(size, .44f); }
             }

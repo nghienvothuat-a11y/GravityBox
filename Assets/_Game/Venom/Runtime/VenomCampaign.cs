@@ -643,6 +643,7 @@ namespace GravityBox.Venom
             }
             // the bonus "Hiểu ra": a touch on the shape COghe holds up counts too, and floor taps do not send it walking
             bool bonus=Home&&Personality!=null&&Personality.InBonus;
+            if(bonus&&Personality.ToyTouch(ray))return;   // the "Hiểu ra" drum game: a tap on (or near) the drum strikes it
             if(Home&&(chosen>=0||bonus&&Personality.BonusHit(ray))){habitat?.Greet();if(Personality!=null&&habitat?.Room!=null)Personality.TouchedInHome(chosen>=0?Matter.Bodies[chosen].position:Personality.SkinCentre);return;}
             if(Home&&Personality!=null&&habitat?.Room!=null){var item=habitat.Room.Pick(ray);if(item!=null){Personality.PlayWith(item);return;}}
             if(bonus)return;
