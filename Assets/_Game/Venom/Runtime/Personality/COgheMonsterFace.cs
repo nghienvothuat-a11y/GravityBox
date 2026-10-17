@@ -199,7 +199,7 @@ namespace GravityBox.Venom
                     Vector2 a = EyeShape[(j + EyeShape.Length - 1) % EyeShape.Length], b = EyeShape[j],
                         c = EyeShape[(j + 1) % EyeShape.Length], d = EyeShape[(j + 2) % EyeShape.Length];
                     Vector2 q0 = .5f * ((2 * b) + (-a + c) * u + (2 * a - 5 * b + 4 * c - d) * u * u + (-a + 3 * b - 3 * c + d) * u * u * u);
-                    float open = 1 - .94f * Mathf.Clamp01(rig.Blink);
+                    float open = 1 - .94f * Mathf.Clamp01(Mathf.Max(rig.Blink, side < 0 ? rig.Wink : 0));   // a wink shuts one eye
                     Vector2 q = new Vector2(q0.x * side, q0.y * (1 - .55f * Mathf.Max(0, squint)) * open) * (size * 1.35f * ring / rings);
                     Vector3 p = OnSkin(middle.x + q.x, middle.y + q.y), normal = life.SkinNormal(p);
                     v.Add(p + normal * .0017f); n.Add(normal);
@@ -226,7 +226,7 @@ namespace GravityBox.Venom
                 // the middle bends and the tip follows instead of holding a fixed curl.
                 float envelope=u*Mathf.SmoothStep(0,1,u/.18f), curl=.25f*u*u*u*u;
                 float lift=.27f*Mathf.Sin(t*3.2f-u*5.5f)*envelope+curl;
-                float side=.09f*Mathf.Sin(t*2.4f-u*4f)*envelope;
+                float side=.09f*Mathf.Sin(t*2.4f-u*4f)*envelope+.22f*rig.Waggle*Mathf.Sin(t*24f-u*5f)*envelope;   // a raspberry waggles it
                 tonguePath[k]=root+rig.Forward*(length*u)+Vector3.down*(length*.20f*u*u)
                     +rig.Up*(length*lift)+rig.Right*(length*side);
             }

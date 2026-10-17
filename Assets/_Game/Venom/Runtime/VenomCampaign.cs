@@ -634,6 +634,7 @@ namespace GravityBox.Venom
             if(Home&&(chosen>=0||bonus&&Personality.BonusHit(ray))){habitat?.Greet();if(Personality!=null&&habitat?.Room!=null)Personality.TouchedInHome(chosen>=0?Matter.Bodies[chosen].position:Personality.SkinCentre);return;}
             if(Home&&Personality!=null&&habitat?.Room!=null){var item=habitat.Room.Pick(ray);if(item!=null){Personality.PlayWith(item);return;}}
             if(bonus)return;
+            if(chosen>=0&&Matter.TotalFragmentCount==1)Personality?.NoteBodyTap();   // a tap on COghe itself: a wink (Emotion)
             bool selectedTissueHit=chosen>=0&&Matter.TotalFragmentCount>1;
             // Switching bodies still takes priority. Re-selecting the active
             // body must not hide its nearby handle after the idle release, or
@@ -712,9 +713,12 @@ namespace GravityBox.Venom
                 if(patch!=null)
                 {
                     // Slick glass (plan A): COghe still goes to the foot of it; the tap is marked "slippery".
-                    if(patch.ExteriorGlass&&!patch.Grip(hit.point))Feedback?.ShowSlick(hit.point);
+                    bool slick=patch.ExteriorGlass&&!patch.Grip(hit.point);
+                    if(slick)Feedback?.ShowSlick(hit.point);
                     var proxy=hit.collider.GetComponent<COgheSurfacePickProxy>();
-                    MoveTo(proxy!=null?proxy.CommandPoint(patch,hit.point):hit.point,patch);return;
+                    int moves=Motion.MoveCount;MoveTo(proxy!=null?proxy.CommandPoint(patch,hit.point):hit.point,patch);
+                    if(slick||Motion.MoveCount!=moves&&!Motion.LastMoveReachable)Personality?.NoteUnreachable();   // somewhere it cannot go: a raspberry (Emotion)
+                    return;
                 }
                 return; // An opaque cover intercepts commands to the mechanism behind it.
             }

@@ -187,12 +187,21 @@ namespace GravityBox.Venom
                 game.Motion.Move(0, room.WanderPoint(rnd));
                 return;
             }
-            // a little show on the spot
+            // a little show on the spot: half the time one of its Emotion tricks, once it has some (no extra random draw
+            // before then, so a player without tricks sees the same Home as before)
+            int known = 0;
+            foreach (var t in HomeTricks) if (COgheTricks.Available(t)) known++;
+            if (known > 0 && rnd.Next(2) == 0)
+            {
+                int pick = rnd.Next(known);
+                foreach (var t in HomeTricks) if (COgheTricks.Available(t) && pick-- == 0) { PlayTrick(t); return; }
+            }
             COgheAct act = rnd.Next(3) == 0 ? COgheAct.Wave : rnd.Next(2) == 0 ? COgheAct.Shape : COgheAct.Melt;
             if (act == COgheAct.Shape) Shape = PickShape();
             Begin(act, act == COgheAct.Melt ? 2.3f : 2.9f);
         }
 
+        private static readonly COgheTrick[] HomeTricks = { COgheTrick.Groove, COgheTrick.Wink, COgheTrick.Raspberry, COgheTrick.Clap };
         private void GoTo(COgheHomeItem item)
         {
             target = item; secondApproach = false; home = HomeState.Walk; walkLimit = 9;

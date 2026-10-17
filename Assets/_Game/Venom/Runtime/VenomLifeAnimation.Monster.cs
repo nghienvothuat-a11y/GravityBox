@@ -13,6 +13,8 @@ namespace GravityBox.Venom
         public Vector3 JawHead, JawUp, JawForward; public float Jaw;
         /// <summary>Squint and blink (0 open .. 1 shut), how far the tongue is out (0..1), seconds into the act.</summary>
         public float Squint, Blink, Mouth, Fangs, Tongue, Time;
+        /// <summary>One eye shut (a wink, 0..1) and a fast side-to-side waggle of the tongue (a raspberry, 0..1).</summary>
+        public float Wink, Waggle;
         /// <summary>The menu camera: the middle and height of the whole monster, how far to lean in on the face, a shake.</summary>
         public Vector3 Focus; public float Height, Zoom, Shake;
     }
@@ -36,6 +38,7 @@ namespace GravityBox.Venom
         private struct MonsterPose
         {
             public float Gather, Rise, Morph, Face, Mouth, Fangs, Yaw, HeadYaw, HeadPitch, HeadRoll, Lean, Writhe, Phase, Jaw, Tongue, Blink, HeadScale, Zoom;
+            public float Squint, Wink, Waggle;   // Emotion tricks
         }
 
         private static float Ease(float a, float b, float t) => Smooth(a, b, t);
@@ -118,9 +121,12 @@ namespace GravityBox.Venom
         private void Part(Vector3 q, float support) => Src(q.x, q.y, q.z, support);
 
         private int MonsterAct(COghePersonality p, Vector3[] points, float[] supports, float[] weights, int count, Vector3 centre, Vector3 ground, Vector3 up, Vector3 floor, float t)
+            => MonsterBody(p, MonsterPoseAt(t, p.Length), points, supports, weights, count, centre, ground, up, floor, t);
+
+        /// <summary>The monster (or a small one, for a trick) posed as <paramref name="m"/>.</summary>
+        private int MonsterBody(COghePersonality p, in MonsterPose m, Vector3[] points, float[] supports, float[] weights, int count, Vector3 centre, Vector3 ground, Vector3 up, Vector3 floor, float t)
         {
             float s = BodyRadius;
-            var m = MonsterPoseAt(t, p.Length);
             BuildMonster(m, t);
             float e = m.Morph * p.Fade;
             for (int i = 0; i < count; i++)
@@ -158,7 +164,7 @@ namespace GravityBox.Venom
             Monster.Size = s * monsterScale; Monster.Jaw = m.Jaw;
             Monster.JawHead = ToWorld(JawPart(HeadMid, m.Jaw), ground, s);
             Monster.JawUp = Dir(head * (JawTurn(m.Jaw) * Vector3.up)).normalized; Monster.JawForward = Dir(head * (JawTurn(m.Jaw) * Vector3.forward)).normalized;
-            Monster.Squint = -.06f * m.Jaw; Monster.Blink = m.Blink;
+            Monster.Squint = m.Squint - .06f * m.Jaw; Monster.Blink = m.Blink; Monster.Wink = m.Wink * p.Fade; Monster.Waggle = m.Waggle * p.Fade;
             Monster.Mouth = m.Mouth * p.Fade; Monster.Fangs = m.Fangs * p.Fade; Monster.Tongue = m.Tongue * m.Face * p.Fade;
             Monster.Focus = ToWorld(new Vector3(0, 1.25f * m.Rise, 0), ground, s); Monster.Height = 3.1f * s * Mathf.Max(e, .4f);
             Monster.Zoom = m.Zoom * p.Fade; Monster.Shake = 0;

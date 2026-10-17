@@ -72,6 +72,9 @@ namespace GravityBox.Venom
         public void Cancel(int anchor)
         {for(int i=0;i<32;i++)if(orders[i]!=null&&game.Matter.Groups[i]==game.Matter.Groups[anchor])orders[i]=null;}
         public void StopAll(){System.Array.Clear(orders,0,32);}
+        /// <summary>The last <see cref="Move"/> found a route on the surfaces (false: no route; it heads straight for it).</summary>
+        public bool LastMoveReachable {get;private set;}=true;
+        public int MoveCount {get;private set;}
         private VenomSurfacePatch[] glassCheckedFor;private bool climbableGlass;
         /// <summary>The level's glass is climbable, with slick tape where it is not (<see cref="VenomSurfacePatch.SlipRegions"/>).</summary>
         private bool ClimbableGlass()
@@ -227,8 +230,9 @@ namespace GravityBox.Venom
             // survive the transient contacts made on the way down. It will be replanned
             // from the first stable footprint instead of being discarded by a second peel.
             o.AwaitingContact=grips<2||recovering;
+            LastMoveReachable=true;MoveCount++;
             if(game.Definition.Passive&&!game.Home)o.Path.Add(o.Target);
-            else FindPath(Centre(anchor),world,o.Path,o.AvoidSlippery);
+            else LastMoveReachable=FindPath(Centre(anchor),world,o.Path,o.AvoidSlippery);
             orders[anchor]=o;
         }
         public bool FindPath(Vector3 start,Vector3 goal,List<Vector3> path,bool avoidSlippery=false,bool quiet=false)
