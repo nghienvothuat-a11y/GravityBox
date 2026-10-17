@@ -28,6 +28,10 @@ namespace GravityBox.Venom
     /// </summary>
     public static class COgheHomeItems
     {
+        /// <summary>The horn's three buttons along it (W units) and their height; the balloons' places in the bunch.</summary>
+        public static readonly float[] HornKeyX = { -.36f, -.12f, .12f };
+        public const float HornKeyY = .44f;
+        public static readonly Vector3[] BalloonSpots = { new Vector3(-.22f, 1.7f, .05f), new Vector3(.02f, 2.0f, -.06f), new Vector3(.26f, 1.75f, .07f) };
         public const float W = .1f;   // COghe's relaxed width at Home (measured on the live skin: ~10-12 cm, not the 7 cm first briefed)
         public static readonly (string id, string name, int level)[] Catalog =
         {
@@ -157,6 +161,46 @@ namespace GravityBox.Venom
                     k.Paint(Amber).Cylinder(.1f, .1f, .012f, .016f, 10);   // the spot to strike
                     Bake("Drum head", skin);
                     item.Approach = new Vector3(-1.1f, 0, -.4f);         // beside it, where COghe stands for the "Hiểu ra" game
+                    break;
+                }
+                case COgheToys.Horn:
+                {
+                    // a toy trumpet lying on two little feet: an ivory mouthpiece on the left, a brass tube, three big round
+                    // buttons on top (coral, teal, blue: "Key0".."Key2", they sink when pressed) and a wide bell on the right
+                    k.Paint(Slate).Box(new Vector3(-.32f, .06f, 0), new Vector3(.12f, .12f, .24f), .02f); k.Box(new Vector3(.22f, .06f, 0), new Vector3(.12f, .12f, .24f), .02f);
+                    k.Paint(Amber).Rod(new Vector3(-.62f, .2f, 0), new Vector3(.34f, .2f, 0), .08f, 10);
+                    k.Paint(Ivory).Rod(new Vector3(-.8f, .2f, 0), new Vector3(-.6f, .2f, 0), .04f, 8, .075f);
+                    foreach (float x in HornKeyX) k.At(new Vector3(x, 0, 0)).Paint(Amber).Cylinder(.085f, .085f, .2f, HornKeyY - .02f, 10);
+                    k.At(new Vector3(.32f, .2f, 0), Quaternion.Euler(0, 0, -90)).Paint(Amber).Lathe(new[] { new Vector2(.075f, 0), new Vector2(.1f, .14f), new Vector2(.17f, .26f), new Vector2(.3f, .36f), new Vector2(.34f, .4f), new Vector2(.29f, .39f), new Vector2(0, .3f) }, 14);
+                    k.At(Vector3.zero); Bake("Horn body");
+                    string[] hornColours = { Coral, Teal, Blue };
+                    for (int i = 0; i < 3; i++)
+                    {
+                        var hornKey = Group("Key" + i, new Vector3(HornKeyX[i], HornKeyY, 0));
+                        k.Paint(hornColours[i]).Puck(.13f, .13f, -.03f, .06f, 14, .025f); Bake("Horn key " + i, hornKey);
+                    }
+                    item.Approach = new Vector3(-1.5f, 0, -.2f);   // by its mouthpiece, where COghe stands for "Hiểu ra"
+                    break;
+                }
+                case COgheToys.Balloon:
+                {
+                    // a bunch of three balloons (coral, amber, teal: "Balloon0".."Balloon2") on ivory strings ("String0".."String2")
+                    // tied to a little slate weight
+                    k.Paint(Slate).Puck(.15f, .15f, 0, .12f, 12, .03f); k.Paint(Ivory).Cylinder(.155f, .155f, .05f, .08f, 12);
+                    Bake("Balloon weight");
+                    string[] balloonColours = { Coral, Amber, Teal };
+                    var tie = new Vector3(0, .12f, 0);
+                    for (int i = 0; i < 3; i++)
+                    {
+                        var balloon = Group("Balloon" + i, BalloonSpots[i]);
+                        k.Paint(balloonColours[i]).Ico(Vector3.zero, new Vector3(.3f, .37f, .3f), 1);
+                        k.Cylinder(.05f, .05f, -.43f, -.35f, 8, .6f);   // the knot
+                        Bake("Balloon " + i, balloon);
+                        var line = Group("String" + i, tie);
+                        k.Paint(Ivory).Rod(Vector3.zero, BalloonSpots[i] - tie - new Vector3(0, .42f, 0), .012f, 5);
+                        Bake("Balloon string " + i, line);
+                    }
+                    item.Approach = new Vector3(-.9f, 0, -.6f);
                     break;
                 }
                 case "XYLOPHONE":

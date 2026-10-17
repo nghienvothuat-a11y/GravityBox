@@ -219,7 +219,7 @@ namespace GravityBox.Venom
             float length = item.Id switch
             {
                 "BED" => 7f, "DUMBBELL" => 5.2f, "BALL" => 6.8f, "MIRROR" => 5.8f, "SWING" => 6.5f, "SLIDE" => 4.4f, "TV" => 6f,
-                "XYLOPHONE" => 5f, "TRAMPOLINE" => 5.5f, "HAMMOCK" => 7f, "WHEEL" => 6f, "AQUARIUM" => 5.5f, "SHADOW_LAMP" => 6f, COgheToys.Drum => 5.2f, _ => 4.8f,
+                "XYLOPHONE" => 5f, "TRAMPOLINE" => 5.5f, "HAMMOCK" => 7f, "WHEEL" => 6f, "AQUARIUM" => 5.5f, "SHADOW_LAMP" => 6f, COgheToys.Drum => 5.2f, COgheToys.Horn => 4.9f, COgheToys.Balloon => 5.8f, _ => 4.8f,
             };
             if (item.Id == "MIRROR" || item.Id == "SHADOW_LAMP") Shape = PickShape();
             if (item.Id == "BALL")
@@ -373,6 +373,12 @@ namespace GravityBox.Venom
                     break;
                 case COgheToys.Drum:
                     DrumPlayPose(item, t, ref p);
+                    break;
+                case COgheToys.Horn:
+                    HornPlayPose(item, t, ref p);
+                    break;
+                case COgheToys.Balloon:
+                    BalloonPlayPose(item, t, ref p);
                     break;
                 case "MIRROR":
                 {
@@ -741,6 +747,8 @@ namespace GravityBox.Venom
             var ball = item.Part("Ball"); if (ball != null) ball.localPosition = new Vector3(0, .45f, 0);
             var fish = item.Part("Fish"); if (fish != null) fish.localPosition = new Vector3(0, .88f, 0);
             if (item.Id == COgheToys.Drum) { var head = item.Part("Head"); if (head != null) head.localPosition = new Vector3(0, DrumHeadY, 0); }
+            if (item.Id == COgheToys.Horn) ResetHorn(item);
+            if (item.Id == COgheToys.Balloon) ResetBalloons(item);
         }
 
         /// <summary>Something was just bought for the room: pop it in now and go to it.</summary>

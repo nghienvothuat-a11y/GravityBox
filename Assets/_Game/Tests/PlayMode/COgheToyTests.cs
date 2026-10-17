@@ -146,6 +146,62 @@ namespace GravityBox.Tests
    finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;COgheShop.ResetForTests();}
   }
 
+  private IEnumerator TapToy(Vector3 world){game.TouchPoint(game.Owner.View.WorldToScreenPoint(world));yield return Frames(1);}
+
+  // Chapter 3's last question: the horn, COghe's tune played back in order (Mrk 17/10/2026).
+  [UnityTest] public IEnumerator HornGameIsPlayedBackInOrder()
+  {
+   try
+   {
+    yield return HomeWithoutTheDrum();
+    var p=game.Personality;var horn=game.HomeRoom.Find(COgheToys.Horn);Assert.IsFalse(horn.Root.activeSelf,"Not the player's yet");
+    p.BeginBonus(COgheBonus.Rounds(3),2);
+    yield return BonusUntil(()=>p.ToyWaitingForPlayer,15,"The horn pops out and COghe plays its first tune");
+    Assert.IsTrue(horn.Root.activeSelf);Assert.AreEqual(2,p.ToyBeats);
+    // the wrong button first: a honk, and the tune again
+    int wrong=(p.ToyTune[0]+1)%3;yield return TapToy(horn.Part("Key"+wrong).position);
+    Assert.AreEqual(COgheGag.Blooper,p.Gag);
+    for(int tune=0;tune<3;tune++)
+    {
+     yield return BonusUntil(()=>p.ToyWaitingForPlayer&&p.Gag==COgheGag.None,15,"Tune "+(tune+1));
+     foreach(int key in p.ToyTune){yield return TapToy(horn.Part("Key"+key).position);yield return Frames(8);}
+     yield return BonusUntil(()=>!p.ToyListening,4,"Played back in order");
+    }
+    yield return BonusUntil(()=>p.ToyJamming,8,"The fanfare together");
+    yield return BonusUntil(()=>p.BonusThanking||p.BonusFinished,15,"Won");
+    Assert.IsTrue(COgheToys.Owns(COgheToys.Horn),"The horn is the player's");Assert.AreEqual(1,p.BonusMisses);
+   }
+   finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;COgheShop.ResetForTests();}
+  }
+
+  // Chapter 4's last question: the balloons, just as many puffs as COghe shows (Mrk 17/10/2026).
+  [UnityTest] public IEnumerator BalloonGameCountsThePuffs()
+  {
+   try
+   {
+    yield return HomeWithoutTheDrum();
+    var p=game.Personality;var bunch=game.HomeRoom.Find(COgheToys.Balloon);
+    p.BeginBonus(COgheBonus.Rounds(4),2);
+    yield return BonusUntil(()=>p.ToyWaitingForPlayer,15,"A limp balloon, and the count on COghe's tendrils");
+    Assert.AreEqual(2,p.ToyBeats);
+    // one puff too many: it pops in COghe's face, and a new balloon comes
+    for(int i=0;i<3;i++){yield return TapToy(p.ToyTapPoint);yield return Frames(6);}
+    Assert.AreEqual(COgheGag.Pop,p.Gag);
+    for(int b=0;b<3;b++)
+    {
+     yield return BonusUntil(()=>p.ToyWaitingForPlayer&&p.Gag==COgheGag.None,15,"Balloon "+(b+1));
+     int n=p.ToyBeats;for(int i=0;i<n;i++){yield return TapToy(p.ToyTapPoint);yield return Frames(8);}
+     yield return BonusUntil(()=>!p.ToyListening,4,"Just enough: tied, it floats to the bunch");
+    }
+    yield return BonusUntil(()=>p.ToyJamming,8,"Up with the balloons");
+    yield return TapToy(p.ToyTapPoint);
+    yield return BonusUntil(()=>p.BonusThanking||p.BonusFinished,15,"Won");
+    Assert.IsTrue(COgheToys.Owns(COgheToys.Balloon),"The bunch is the player's");Assert.AreEqual(1,p.BonusMisses);
+    for(int i=0;i<3;i++)Assert.Less(Vector3.Distance(bunch.Part("Balloon"+i).localPosition,COgheHomeItems.BalloonSpots[i]),1e-3f,"Back in the bunch");
+   }
+   finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;COgheShop.ResetForTests();}
+  }
+
   [Test] public void OldSavesThatFinishedChapterTwoGetTheDrum()
   {
    try

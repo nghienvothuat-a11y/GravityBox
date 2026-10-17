@@ -8,11 +8,11 @@ namespace GravityBox.Venom
     /// </summary>
     public static class COgheToys
     {
-        public const string Drum = "TOY_DRUM";
+        public const string Drum = "TOY_DRUM", Horn = "TOY_HORN", Balloon = "TOY_BALLOON";
         /// <summary>Each toy and the chapter whose "Hiểu ra" game gives it.</summary>
         public static readonly (string id, string name, int chapter)[] Catalog =
         {
-            (Drum, "Drum", 2),
+            (Drum, "Drum", 2), (Horn, "Horn", 3), (Balloon, "Balloons", 4),
         };
 
         public static bool Is(string id)

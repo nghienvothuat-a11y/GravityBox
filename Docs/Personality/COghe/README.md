@@ -278,7 +278,21 @@ Bản mẫu cho chương 2, chờ Mrk duyệt clip `OUTBOX/COGHE_HIEURA_TOYS_202
   - Chạm trống đúng lượt thì COghe ra gõ. Gõ trống lúc không muốn thì COghe giật mình nhảy dựng, lườm trống rồi nhún vai
     (`Startle`). Lúc nào chạm trống cũng có tiếng.
 - **Save cũ:** đã xong “Hiểu ra” chương 2 trước khi có trống thì được tặng trống (`COgheToys.GrantEarned`, lúc dựng Nhà).
-- **Chưa làm:** đồ chơi chương 3–6 (kèn, bóng bay, con quay, hộp nhạc); câu hỏi cho chương 7+.
+- **Câu cuối chương 3 = kèn** (đợt 2, `TOY_HORN`):
+  - Kèn nằm bên trái chỗ COghe đứng, miệng thổi hướng về nó. Có 3 nút to: san hô, xanh lục lam, xanh nhạt; mỗi nút một nốt.
+  - COghe bấm một giai điệu, người chơi bấm lại đúng thứ tự. Ba giai điệu: 0-2, 2-0-1, 1-2-0.
+  - Chạm vào vùng kèn thì tính là bấm nút gần nhất.
+  - Bấm sai nút: kèn kêu "oẹt", COghe giật lùi, mắt tròn, rồi cười (`Blooper`). Sau đó COghe bấm lại giai điệu.
+  - Đủ ba giai điệu: hai bên cùng thổi kèn; mỗi lần người chơi chạm thì COghe nhảy. Ở Nhà, chạm kèn thì COghe ra thổi một
+    bài.
+- **Câu cuối chương 4 = bóng bay** (đợt 2, `TOY_BALLOON`, chùm bóng sau cái trống):
+  - COghe lấy ra một quả bóng xẹp và giơ số xúc tu bằng số lần cần thổi: 2, rồi 3, rồi 3. Mỗi lần người chơi chạm vào bóng
+    là một lần thổi, bóng to dần.
+  - Đủ số rồi chờ một chút: COghe buộc bóng, bóng bay về chùm.
+  - Thổi thừa: bóng nổ "bụp" vào mặt COghe, COghe bị thổi bẹp rồi cười (`Pop`), rồi lấy quả mới, vẫn đếm số cũ.
+  - Đủ ba quả: COghe cầm dây cả chùm bay lên; mỗi lần người chơi chạm thì bay cao hơn. Ở Nhà, chạm chùm bóng thì COghe bay
+    lên cùng bóng.
+- **Chưa làm:** đồ chơi chương 5–6 (con quay, hộp nhạc); câu hỏi cho chương 7+.
 - **Kiểm tra:** `COgheToyTests`. Bản Mac: `-coghe-toy-reel <thư mục>` quay trò trống và các trò hài,
-  `-coghe-toy-reel2 <thư mục>` quay trống trong câu hỏi (PNG 30 khung/s, `sounds.txt`, `marks.txt`; tối đa
+  `-coghe-toy-reel2 <thư mục>` quay trống trong câu hỏi, `-coghe-toy-reel3 <thư mục>` quay kèn và bóng bay (PNG 30 khung/s, `sounds.txt`, `marks.txt`; tối đa
   9000 khung).

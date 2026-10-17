@@ -39,8 +39,9 @@ namespace GravityBox.Venom
     /// chapters grow by putting words together: one word, two in any order, an order, a number, all of them, and (the sixth
     /// chapter, Mrk 12/10/2026) a number on most words.
     /// A wrong answer is a little comedy of what COghe got instead (it spits the food out, giggles at a touch, the ball bonks
-    /// it), then it asks again (Mrk 17/10/2026). Chapter 2 ends with a game on a new toy, the drum
-    /// (<see cref="COgheToys"/>), which is a word from chapter 3 on. A ball game (<c>Game("BALL")</c>) exists for later
+    /// it), then it asks again (Mrk 17/10/2026). Chapters 2, 3 and 4 end with a game on a new toy (the drum,
+    /// the horn, the balloons); the drum
+    /// (<see cref="COgheToys"/>) is a word from chapter 3 on. A ball game (<c>Game("BALL")</c>) exists for later
     /// chapters; chapter 1 stays as it was (Mrk 17/10/2026).
     /// </summary>
     public static class COgheBonus
@@ -61,10 +62,10 @@ namespace GravityBox.Venom
             // 2: two things at once, in any order; then the drum, played together (Mrk 17/10/2026: the last question is a
             // game with a new toy, which the player keeps)
             new[] { Both(Cuddle(), Food()), Both(Play(), Cuddle()), COgheBonusRound.Game(COgheToys.Drum) },
-            // 3: in COghe's order (the drum is a word now)
-            new[] { InOrder(Food(), Cuddle()), InOrder(Cuddle(), Drum(), Food()), InOrder(Play(), Food(), Cuddle()) },
-            // 4: how many (exactly: one too many and it counts again)
-            new[] { One(Food(2)), One(Drum(3)), One(Food(3)) },
+            // 3: in COghe's order (the drum is a word now); then the horn: COghe's tune played back in order
+            new[] { InOrder(Food(), Cuddle()), InOrder(Cuddle(), Drum(), Food()), COgheBonusRound.Game(COgheToys.Horn) },
+            // 4: how many (exactly: one too many and it counts again); then the balloons: just as many puffs
+            new[] { One(Food(2)), One(Drum(3)), COgheBonusRound.Game(COgheToys.Balloon) },
             // 5: all of it
             new[] { InOrder(Cuddle(2), Play()), InOrder(Drum(2), Food(), Cuddle()), InOrder(Food(2), Cuddle(), Play()) },
             // 6: every word counts

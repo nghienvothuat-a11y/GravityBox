@@ -28,8 +28,9 @@ namespace GravityBox.Venom
             { "SLIDE", (.33f, .2f, 0) }, { "AQUARIUM", (.3f, -.3f, 90) }, { "TRAMPOLINE", (.3f, -.57f, 90) }, { "TROPHY", (.34f, -.78f, 90) },
             // the aisle
             { "BALL", (.02f, .28f, 0) }, { "DUMBBELL", (0, -.28f, 0) }, { "XYLOPHONE", (0, -.66f, 0) },
-            // toys (COgheToys): beside the spot where COghe stands for "Hiểu ra", a little behind it so both stay in view
-            { COgheToys.Drum, (.11f, -.02f, 0) },
+            // toys (COgheToys): beside the spot where COghe stands for "Hiểu ra" (the drum on its right, the horn on its left
+            // with the mouthpiece toward it), the balloons' bunch behind the drum
+            { COgheToys.Drum, (.11f, -.02f, 0) }, { COgheToys.Horn, (-.15f, -.08f, 180) }, { COgheToys.Balloon, (.17f, .14f, 0) },
         };
 
         public readonly Transform Root;
