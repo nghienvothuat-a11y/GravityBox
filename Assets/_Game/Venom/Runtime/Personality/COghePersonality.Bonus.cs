@@ -117,6 +117,7 @@ namespace GravityBox.Venom
             var words = bonusRounds != null && bonusRound < BonusRounds ? bonusRounds[bonusRound].Words : null;
             if (words == null) return;
             if (CurrentIsGame) { ToyHeard(answer, item); return; }
+            if (answer == COgheBonusAnswer.Item && item == COgheToys.Drum) DrumStrike(true);   // the drum always sounds when tapped
             string said = answer == COgheBonusAnswer.Item ? item : answer.ToString();
             // a number being counted: more of the same (one too many once it is reached), or something else breaks it off
             if (activeWord >= 0 && (bonusPhase == BonusPhase.Ask || bonusPhase == BonusPhase.Count || bonusPhase == BonusPhase.Gulp || bonusPhase == BonusPhase.Confirm))
@@ -335,7 +336,15 @@ namespace GravityBox.Venom
                 }
             }
             p.Morph = form; p.Shape = shape; shownShape = shape; shownMorph = form;
-            if (shape == COgheShape.Ball)
+            if (shape == COgheShape.Drum)
+            {
+                // the drum word: it bobs as if struck, two beats a second, a soft drum sound with each while it is held up
+                float beat = Mathf.Repeat(local, .5f), hit = Mathf.Exp(-beat * 12) * form;
+                p.Centre = centre - up * (s * .12f * hit); p.Squash = 1 - .05f * hit;
+                p.Turn = Quaternion.AngleAxis(4 * Mathf.Sin(t * 2), CameraFlat());
+                if (form > .6f && Crossed(.25f, .5f, local)) COgheAudio.Instance?.Play("drum_lo", .22f, 0, .2f);
+            }
+            else if (shape == COgheShape.Ball)
             {
                 // a cartoon ball bouncing on the spot: high, stretched as it flies, squashed flat as it lands
                 float u = Mathf.Repeat(local / .7f, 1), height = 4 * u * (1 - u), speed = Mathf.Abs(1 - 2 * u);

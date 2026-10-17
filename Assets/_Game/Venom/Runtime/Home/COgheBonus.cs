@@ -39,32 +39,36 @@ namespace GravityBox.Venom
     /// chapters grow by putting words together: one word, two in any order, an order, a number, all of them, and (the sixth
     /// chapter, Mrk 12/10/2026) a number on most words.
     /// A wrong answer is a little comedy of what COghe got instead (it spits the food out, giggles at a touch, the ball bonks
-    /// it), then it asks again (Mrk 17/10/2026). Chapter 2 ends with a game on a new toy, the drum (<see cref="COgheToys"/>).
+    /// it), then it asks again (Mrk 17/10/2026). Chapter 2 ends with a game on a new toy, the drum
+    /// (<see cref="COgheToys"/>), which is a word from chapter 3 on. A ball game (<c>Game("BALL")</c>) exists for later
+    /// chapters; chapter 1 stays as it was (Mrk 17/10/2026).
     /// </summary>
     public static class COgheBonus
     {
         private static COgheBonusAsk Cuddle(int n = 1) => new COgheBonusAsk(COgheShape.Heart, COgheBonusAnswer.Touch, null, n);
         private static COgheBonusAsk Food(int n = 1) => new COgheBonusAsk(COgheShape.Mushroom, COgheBonusAnswer.Feed, null, n);
         private static COgheBonusAsk Play() => new COgheBonusAsk(COgheShape.Ball, COgheBonusAnswer.Item, "BALL");
+        /// <summary>The drum, a word from chapter 3 on (chapter 2's game gives it to every player).</summary>
+        private static COgheBonusAsk Drum(int n = 1) => new COgheBonusAsk(COgheShape.Drum, COgheBonusAnswer.Item, COgheToys.Drum, n);
         private static COgheBonusRound One(COgheBonusAsk word) => new COgheBonusRound(true, word);
         private static COgheBonusRound Both(COgheBonusAsk a, COgheBonusAsk b) => new COgheBonusRound(false, a, b);
         private static COgheBonusRound InOrder(params COgheBonusAsk[] words) => new COgheBonusRound(true, words);
 
         private static readonly COgheBonusRound[][] Chapters =
         {
-            // 1 (Home has just opened): one word each
+            // 1 (Home has just opened): one word each (Mrk 17/10/2026: chapter 1 stays this easy)
             new[] { One(Cuddle()), One(Play()), One(Food()) },
             // 2: two things at once, in any order; then the drum, played together (Mrk 17/10/2026: the last question is a
             // game with a new toy, which the player keeps)
             new[] { Both(Cuddle(), Food()), Both(Play(), Cuddle()), COgheBonusRound.Game(COgheToys.Drum) },
-            // 3: in COghe's order
-            new[] { InOrder(Food(), Cuddle()), InOrder(Cuddle(), Play(), Food()), InOrder(Play(), Food(), Cuddle()) },
+            // 3: in COghe's order (the drum is a word now)
+            new[] { InOrder(Food(), Cuddle()), InOrder(Cuddle(), Drum(), Food()), InOrder(Play(), Food(), Cuddle()) },
             // 4: how many (exactly: one too many and it counts again)
-            new[] { One(Food(2)), One(Cuddle(3)), One(Food(3)) },
+            new[] { One(Food(2)), One(Drum(3)), One(Food(3)) },
             // 5: all of it
-            new[] { InOrder(Cuddle(2), Play()), InOrder(Food(), Cuddle(3)), InOrder(Food(2), Cuddle(), Play()) },
+            new[] { InOrder(Cuddle(2), Play()), InOrder(Drum(2), Food(), Cuddle()), InOrder(Food(2), Cuddle(), Play()) },
             // 6: every word counts
-            new[] { InOrder(Cuddle(2), Food(2)), InOrder(Play(), Cuddle(3), Food()), InOrder(Food(3), Play(), Cuddle(2)) },
+            new[] { InOrder(Cuddle(2), Food(2)), InOrder(Play(), Drum(3), Food()), InOrder(Food(3), Play(), Cuddle(2)) },
         };
 
         /// <summary>The questions of chapter <paramref name="chapter"/>'s bonus (1-based), or null if it has none.</summary>

@@ -49,6 +49,7 @@ namespace GravityBox.Venom
             Root = new GameObject("COghe home room").transform; Root.SetParent(parent, false); Root.localPosition = new Vector3(0, -.3f, 0);
             materials = new COgheHomeMaterials(lit, glass);
             BuildShell(wall);
+            COgheToys.GrantEarned();
             var ids = new List<string>(); foreach (var entry in COgheHomeItems.Catalog) ids.Add(entry.id); foreach (var toy in COgheToys.Catalog) ids.Add(toy.id);
             foreach (var id in ids)
             {

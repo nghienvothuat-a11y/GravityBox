@@ -266,6 +266,19 @@ Bản mẫu cho chương 2, chờ Mrk duyệt clip `OUTBOX/COGHE_HIEURA_TOYS_202
   - Cho ăn thừa: nấc cụt rồi ợ bong bóng (`Hiccup`). Vuốt thừa: cười lăn lộn (`GiggleRoll`).
   - Món đồ khác: lắc đầu như cũ (`Nope`).
   - Camera lại gần trong lúc diễn (`GagFrame`). Sai 2 lần vẫn hiện gợi ý chữ.
-- **Chưa làm:** chương 1 chuyền bóng; đồ chơi chương 3–6; trống thành từ trong câu hỏi từ chương 3; câu hỏi cho chương 7+.
-- **Kiểm tra:** `COgheToyTests`. Bản Mac: `-coghe-toy-reel <thư mục>` quay trò trống và các trò hài (PNG 30 khung/s,
-  `sounds.txt`, `marks.txt`).
+- **Chương 1 giữ như cũ** (tim → bóng → nấm). Mrk 17/10: chương 1 phải dễ.
+  - Trò chơi bóng (`Game("BALL")`) vẫn có trong code để dùng cho chương sau, chưa chương nào dùng.
+  - Trò chơi bóng: COghe nặn hình quả bóng, bóng thật lăn tới, rồi ba lượt chuyền qua lại với người chơi (chạm vào bóng để
+    chuyền lại). Cuối cùng COghe tâng bóng bằng đầu.
+- **Trống là một từ từ chương 3** (`COgheShape.Drum`: thân trống tròn và hai dùi bắt chéo, kèm tiếng trống nhỏ):
+  - chương 3: vuốt → trống → ăn;
+  - chương 4: trống đúng 3 lần;
+  - chương 5: 2 trống → ăn → vuốt;
+  - chương 6: bóng → 3 trống → ăn.
+  - Chạm trống đúng lượt thì COghe ra gõ. Gõ trống lúc không muốn thì COghe giật mình nhảy dựng, lườm trống rồi nhún vai
+    (`Startle`). Lúc nào chạm trống cũng có tiếng.
+- **Save cũ:** đã xong “Hiểu ra” chương 2 trước khi có trống thì được tặng trống (`COgheToys.GrantEarned`, lúc dựng Nhà).
+- **Chưa làm:** đồ chơi chương 3–6 (kèn, bóng bay, con quay, hộp nhạc); câu hỏi cho chương 7+.
+- **Kiểm tra:** `COgheToyTests`. Bản Mac: `-coghe-toy-reel <thư mục>` quay trò trống và các trò hài,
+  `-coghe-toy-reel2 <thư mục>` quay trống trong câu hỏi (PNG 30 khung/s, `sounds.txt`, `marks.txt`; tối đa
+  9000 khung).

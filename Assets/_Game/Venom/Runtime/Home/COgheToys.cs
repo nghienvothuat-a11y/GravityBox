@@ -35,5 +35,11 @@ namespace GravityBox.Venom
         public static bool Owns(string id) => COgheShop.Current.Owned.Contains(id);
         /// <summary>The game with it is won: it is the player's (once).</summary>
         public static void Give(string id) => COgheShop.Grant(id, "bonus_toy");
+        /// <summary>Saves that finished a chapter's "Hiểu ra" before its toy existed get the toy: later questions use it as a
+        /// word, and every player who reached them has earned it.</summary>
+        public static void GrantEarned()
+        {
+            foreach (var t in Catalog) if (!Owns(t.id) && COgheBonus.Done(t.chapter)) COgheShop.Grant(t.id, "bonus_toy_earned");
+        }
     }
 }

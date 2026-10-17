@@ -71,14 +71,16 @@ namespace GravityBox.Venom
                     case BonusPhase.Gulp: if (meal != null) look = meal.Position; return COgheMood.Focus;
                     case BonusPhase.Gag: { look = GagLook(out var mood); return mood; }
                     case BonusPhase.ToyIntro:
-                        if (toy != null && bonusTime < .85f) { look = room.BoundsOf(toy).center; return COgheMood.Focus; }
+                        if (toy != null && IsBallGame) { if (bonusTime > 1.45f && bonusTime < 2.65f) { look = ToyPoint; return COgheMood.Focus; } return COgheMood.Happy; }
+                        if (toy != null && bonusTime < .85f) { look = ToyPoint; return COgheMood.Focus; }
                         return bonusTime > 1.42f && bonusTime < 1.8f ? COgheMood.Surprised : COgheMood.Happy;   // startled by its own BOOM
-                    case BonusPhase.ToyShow: if (toy != null) look = room.BoundsOf(toy).center; return COgheMood.Focus;
+                    case BonusPhase.ToyShow: if (toy != null) look = ToyPoint; return COgheMood.Focus;
                     case BonusPhase.ToyListen:
-                        // its eyes go from the drum to the player and back, and to the drum at every strike
-                        if (toy != null && (bonusTime - toyLastHit < .5f || Mathf.Repeat(bonusTime, 2.4f) < 1.0f)) { look = room.BoundsOf(toy).center; return COgheMood.Focus; }
+                        // its eyes go from the toy to the player and back, and to the drum at every strike (the ball: on it)
+                        if (toy != null && (IsBallGame || bonusTime - toyLastHit < .5f || Mathf.Repeat(bonusTime, 2.4f) < 1.0f)) { look = ToyPoint; return COgheMood.Focus; }
                         return COgheMood.Happy;
-                    case BonusPhase.ToyGood: case BonusPhase.ToyJam: return COgheMood.Happy;
+                    case BonusPhase.ToyJam: if (toy != null && IsBallGame) { look = ToyPoint; return COgheMood.Focus; } return COgheMood.Happy;
+                    case BonusPhase.ToyGood: return COgheMood.Happy;
                 }
             }
             switch (home)

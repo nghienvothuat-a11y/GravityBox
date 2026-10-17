@@ -3,7 +3,7 @@ using UnityEngine;
 namespace GravityBox.Venom
 {
     /// <summary>What COghe does about a wrong answer in "Hiểu ra" (Mrk 17/10/2026: a comedy, not a telling-off).</summary>
-    public enum COgheGag { None, Spit, GiggleRumble, GigglePoint, Bonk, Hiccup, GiggleRoll, CoverEars, Nope }
+    public enum COgheGag { None, Spit, GiggleRumble, GigglePoint, Bonk, Hiccup, GiggleRoll, CoverEars, Nope, Startle }
 
     /// <summary>
     /// "Hiểu ra" toys and gags (Mrk 17/10/2026).
@@ -36,7 +36,15 @@ namespace GravityBox.Venom
         public COgheHomeItem ToyItem => InToyGame ? toy : null;
         /// <summary>Which beat of the game (0-based) and how many strikes it has.</summary>
         public int ToyPattern => toyPattern;
-        public int ToyBeats => toyPattern < DrumBeats.Length ? DrumBeats[toyPattern].Length : 0;
+        public int ToyBeats => IsBallGame ? BallPasses : toyPattern < DrumBeats.Length ? DrumBeats[toyPattern].Length : 0;
+        /// <summary>The dots the UI shows while it is the player's turn: strikes of this beat, or passes of the ball game.</summary>
+        public int ToyDots => ToyBeats;
+        public int ToyDotsFilled => IsBallGame ? toyPattern : toyTaps;
+        public bool ToyIsBall => InToyGame && bonusRounds[bonusRound].Toy == "BALL";
+        /// <summary>The game waits for the player: the drum's turn, or the ball resting at the player's spot.</summary>
+        public bool ToyWaitingForPlayer => ToyListening && (!IsBallGame || ballAtPlayer && ballReturnAt < 0);
+        /// <summary>How close the camera frames the game (the ball game spans the aisle).</summary>
+        public float ToyFrameSize => IsBallGame ? .36f : .28f;
         /// <summary>Strikes the player has played back so far.</summary>
         public int ToyTaps => toyTaps;
         public bool ToyListening => bonusPhase == BonusPhase.ToyListen;
@@ -50,7 +58,7 @@ namespace GravityBox.Venom
             get
             {
                 if (!InToyGame || toy == null || !toy.Root.activeInHierarchy || bonusPhase == BonusPhase.Arrive || bonusPhase == BonusPhase.Joy) return null;
-                return Vector3.Lerp(SkinCentre, room.BoundsOf(toy).center, .5f) + up * .012f;
+                return Vector3.Lerp(SkinCentre, ToyPoint, .5f) + up * .012f;
             }
         }
         /// <summary>The camera comes closer for a gag (the joke reads at a glance); for the ball's bonk it takes in the ball's way
@@ -59,18 +67,22 @@ namespace GravityBox.Venom
         {
             target = SkinCentre + up * .01f; size = .27f;
             if (bonusPhase != BonusPhase.Gag || gag == COgheGag.Nope) return false;
-            if (InToyGame && toy != null) { target = Vector3.Lerp(SkinCentre, room.BoundsOf(toy).center, .5f) + up * .012f; size = .29f; return true; }   // the drum stays in view
-            if ((gag == COgheGag.Bonk || gag == COgheGag.GigglePoint) && gagItem != null) { target = Vector3.Lerp(target, room.BoundsOf(gagItem).center, .4f); size = .34f; }   // and what it is about
+            if (InToyGame && toy != null) { target = Vector3.Lerp(SkinCentre, ToyPoint, .5f) + up * .012f; size = ToyFrameSize + .01f; return true; }   // the toy stays in view
+            if ((gag == COgheGag.Bonk || gag == COgheGag.GigglePoint || gag == COgheGag.Startle) && gagItem != null) { target = Vector3.Lerp(target, ItemPoint(gagItem), .4f); size = .34f; }   // and what it is about
             if (gag == COgheGag.Spit) { target += CameraFlat() * .04f; size = .3f; }
             return true;
         }
+        /// <summary>Where the toy of the game is now (the ball moves), and where any item is.</summary>
+        private Vector3 ToyPoint => IsBallGame ? ballAt : room.BoundsOf(toy).center;
+        private Vector3 ItemPoint(COgheHomeItem item) { var ball = item.Id == "BALL" ? item.Part("Ball") : null; return ball != null ? ball.position : room.BoundsOf(item).center; }
         private bool CurrentIsGame => bonusRounds != null && bonusRound < BonusRounds && bonusRounds[bonusRound].IsGame;
 
         // The drum game ---------------------------------------------------------------------------------------------------
         private void StartToyGame()
         {
             toy = room.Find(bonusRounds[bonusRound].Toy); toyPattern = 0; toyTaps = 0; toyConfirmAt = -1; toyLastHit = -100;
-            if (toy != null && !toy.Root.activeSelf)
+            if (IsBallGame) { StartBallGame(); skinTop = SkinTopOver(floor); }
+            else if (toy != null && !toy.Root.activeSelf)
             {   // brought out for the game: it pops up beside COghe
                 room.ShowToy(toy, true); toy.Root.transform.localScale = Vector3.zero; toyPop = 0;
             }
@@ -79,14 +91,17 @@ namespace GravityBox.Venom
             COgheAnalytics.Log("bonus_toy_start", "toy", toy != null ? toy.Id : "none");
         }
         private void StartToyShow() { bonusPhase = BonusPhase.ToyShow; bonusTime = 0; toyTaps = 0; toyConfirmAt = -1; Begin(COgheAct.Home, 1e6f); }
-        private void StartToyListen() { bonusPhase = BonusPhase.ToyListen; bonusTime = 0; toyTaps = 0; toyConfirmAt = -1; toyLastHit = -100; Begin(COgheAct.Home, 1e6f); }
+        private void StartToyListen() { bonusPhase = BonusPhase.ToyListen; bonusTime = 0; toyTaps = 0; toyConfirmAt = -1; toyLastHit = -100; ballReturnAt = -1; Begin(COgheAct.Home, 1e6f); }
 
         /// <summary>A tap on the screen during the game: the drum (generously around it) comes before COghe itself.</summary>
         public bool ToyTouch(Ray ray)
         {
             if (!InToyGame || toy == null || !toy.Root.activeInHierarchy) return false;
-            var b = room.BoundsOf(toy); b.Expand(.035f);
-            if (!b.IntersectRay(ray)) return false;
+            if (IsBallGame)
+            {   // the ball where it is now, generously
+                if (Vector3.Cross(ballAt - ray.origin, ray.direction).magnitude > BallRadius + .03f) return false;
+            }
+            else { var b = room.BoundsOf(toy); b.Expand(.035f); if (!b.IntersectRay(ray)) return false; }
             BonusHeard(COgheBonusAnswer.Item, toy.Id);
             return true;
         }
@@ -96,6 +111,7 @@ namespace GravityBox.Venom
         {
             if (toy != null && answer == COgheBonusAnswer.Item && item == toy.Id)
             {
+                if (IsBallGame) { BallTapped(); return; }
                 DrumStrike(true);
                 if (bonusPhase == BonusPhase.ToyJam) { jamBoostAt = bonusTime; return; }
                 if (bonusPhase != BonusPhase.ToyListen) return;   // while COghe plays, the drum sounds but does not count
@@ -107,6 +123,7 @@ namespace GravityBox.Venom
             }
             if (bonusPhase == BonusPhase.ToyJam) { if (answer == COgheBonusAnswer.Touch) jamBoostAt = bonusTime; return; }   // all fun now
             if (bonusPhase != BonusPhase.ToyShow && bonusPhase != BonusPhase.ToyListen && bonusPhase != BonusPhase.ToyIntro) return;
+            if (IsBallGame && (bonusPhase != BonusPhase.ToyListen || ballReturnAt >= 0)) return;   // the ball is on its way: not now
             BonusMisses++;
             StartGag(ChooseGag(answer, item, false, null));
         }
@@ -114,6 +131,7 @@ namespace GravityBox.Venom
         /// <summary>Runs the game's phases; false if the phase is not one of them.</summary>
         private bool UpdateToy(float dt)
         {
+            if (IsBallGame && bonusPhase != BonusPhase.Gag && UpdateBallGame(dt)) return true;
             switch (bonusPhase)
             {
                 case BonusPhase.ToyIntro:
@@ -159,7 +177,7 @@ namespace GravityBox.Venom
         /// <summary>The game is won: the toy is the player's, and the question is paid with COghe's joy.</summary>
         private void WinToyGame()
         {
-            if (toy != null) { COgheToys.Give(toy.Id); room.MarkSeen(toy); room.ShowToy(toy, true); ResetToy(); }
+            if (toy != null && COgheToys.Is(toy.Id)) { COgheToys.Give(toy.Id); room.MarkSeen(toy); room.ShowToy(toy, true); ResetToy(); }
             COgheAnalytics.Log("bonus_toy_won", "toy", toy != null ? toy.Id : "none");
             lastWord = default; roundDone = true;
             bonusPhase = BonusPhase.Joy; bonusTime = 0; Begin(COgheAct.Home, JoyLength);
@@ -170,8 +188,8 @@ namespace GravityBox.Venom
         private void EndToyGame()
         {
             if (gagBall != null) { game.HomeFeedBalls?.Consume(gagBall); gagBall = null; }
-            if (gag == COgheGag.Bonk) ResetBall();
-            if (toy != null && room != null) { ResetToy(); room.ShowToy(toy, false); }
+            if (gag == COgheGag.Bonk || IsBallGame) ResetBall();
+            if (toy != null && room != null && COgheToys.Is(toy.Id)) { ResetToy(); room.ShowToy(toy, false); }
             toy = null; toyPop = -1; gag = COgheGag.None;
         }
 
@@ -187,8 +205,9 @@ namespace GravityBox.Venom
             var drum = room.Find(COgheToys.Drum);
             if (drum == null || !drum.Root.activeSelf) return;
             var head = drum.Part("Head");
-            float impact = Mathf.Exp(-(game.Matter.SimulationTime - drumHitAt) * 20);
-            if (head != null) { head.localPosition = new Vector3(0, DrumHeadY - .035f * impact, 0); head.localScale = new Vector3(1 + .06f * impact, 1, 1 + .06f * impact); }
+            float since = game.Matter.SimulationTime - drumHitAt, impact = since >= 0 ? Mathf.Exp(-since * 20) : 0;   // the clock restarts with each visit
+            // a shallow dip (the skin is .03 W thick: deeper and the dark inside of the shell would show)
+            if (head != null) { head.localPosition = new Vector3(0, DrumHeadY - .012f * impact, 0); head.localScale = new Vector3(1 + .05f * impact, 1, 1 + .05f * impact); }
             if (toyPop >= 0 && toy != null)
             {
                 toyPop += dt; float k = Mathf.Clamp01(toyPop / .6f), pop = 1 + Mathf.Sin(k * Mathf.PI) * .25f * (1 - k);
@@ -340,6 +359,7 @@ namespace GravityBox.Venom
                 if (expected.HasValue && expected.Value.Answer == COgheBonusAnswer.Item) { gagItem = room.Find(expected.Value.Item); if (gagItem != null) return COgheGag.GigglePoint; }
                 return COgheGag.GiggleRoll;
             }
+            if (item == COgheToys.Drum && room.Find(COgheToys.Drum) != null) { gagItem = room.Find(COgheToys.Drum); return COgheGag.Startle; }
             if (item == "BALL" && room.Find("BALL") != null) { gagItem = room.Find("BALL"); return COgheGag.Bonk; }
             return COgheGag.Nope;
         }
@@ -355,6 +375,7 @@ namespace GravityBox.Venom
                 case COgheGag.Hiccup: return 2.5f;
                 case COgheGag.GiggleRoll: return 2.2f;
                 case COgheGag.CoverEars: return 2.3f;
+                case COgheGag.Startle: return 2.1f;
                 default: return .9f;
             }
         }
@@ -378,7 +399,8 @@ namespace GravityBox.Venom
             if (gagBall != null) { game.HomeFeedBalls?.Consume(gagBall); gagBall = null; }
             if (gag == COgheGag.Bonk) ResetBall();
             gag = COgheGag.None; EndAct();
-            if (CurrentIsGame) StartToyShow(); else Ask();
+            if (CurrentIsGame && IsBallGame && ballAtPlayer) StartToyListen();   // the ball still waits at the player's spot
+            else if (CurrentIsGame) StartToyShow(); else Ask();
         }
         private void ResetBall()
         {
@@ -399,7 +421,10 @@ namespace GravityBox.Venom
                 case COgheGag.GiggleRumble: mood = t < 1.0f ? COgheMood.Happy : COgheMood.Sad; return null;
                 case COgheGag.GigglePoint:
                     mood = t < .9f ? COgheMood.Happy : COgheMood.Focus;
-                    return t >= .9f && gagItem != null ? room.BoundsOf(gagItem).center : (Vector3?)null;
+                    return t >= .9f && gagItem != null ? ItemPoint(gagItem) : (Vector3?)null;
+                case COgheGag.Startle:
+                    mood = t < .65f ? COgheMood.Surprised : t < 1.45f ? COgheMood.Sulky : COgheMood.Normal;
+                    return t >= .65f && t < 1.45f && gagItem != null ? room.BoundsOf(gagItem).center : (Vector3?)null;
                 case COgheGag.Bonk:
                     if (t < .62f) { mood = COgheMood.Focus; var ball = gagItem?.Part("Ball"); return ball != null ? ball.position : (Vector3?)null; }
                     mood = t < 1.9f ? COgheMood.Surprised : COgheMood.Happy;
@@ -471,7 +496,7 @@ namespace GravityBox.Venom
                 {
                     // ticklish! it giggles… then turns to what it wants and points at it, bouncing: "that one!"
                     float g = Giggle(0, .95f), point = Smooth01(.95f, 1.25f, t) * (1 - Smooth01(2.0f, 2.3f, t));
-                    Vector3 at = gagItem != null ? room.BoundsOf(gagItem).center : centre + toCam * .1f;
+                    Vector3 at = gagItem != null ? ItemPoint(gagItem) : centre + toCam * .1f;
                     Vector3 toward = Vector3.ProjectOnPlane(at - centre, up); toward = toward.sqrMagnitude > 1e-6f ? toward.normalized : toCam;
                     float bob = Mathf.Max(0, Mathf.Sin((t - 1.3f) * 9)) * point;
                     p.Squash = 1 + .15f * Mathf.Sin(t * 38) * g + .06f * bob;
@@ -556,10 +581,217 @@ namespace GravityBox.Venom
                     if (Crossed(1.45f, 100, t)) COgheAudio.Instance?.Play("creature_happy", .45f, 0, .1f);
                     break;
                 }
+                case COgheGag.Startle:
+                {
+                    // the drum goes BOOM when it did not ask for it: it leaps up in fright, lands flat, glares at the drum
+                    // ("hmph"), then shrugs with both tendrils up
+                    float leap = Mathf.Sin(Smooth01(0, .45f, t) * Mathf.PI), land = t > .45f ? Mathf.Exp(-(t - .45f) * 7) : 0;
+                    float glare = Smooth01(.7f, .85f, t) * (1 - Smooth01(1.35f, 1.45f, t)), shrug = Smooth01(1.45f, 1.65f, t) * (1 - Smooth01(1.85f, 2.1f, t));
+                    Vector3 toward = gagItem != null ? Vector3.ProjectOnPlane(room.BoundsOf(gagItem).center - centre, up).normalized : side;
+                    p.Centre = centre + up * (s * 1.5f * leap) - toward * (s * .3f * leap);
+                    p.Squash = 1 + .25f * leap - .35f * land + .05f * glare * Mathf.Sin(t * 30);
+                    p.Turn = Lean(toward, .1f * glare);
+                    if (shrug > .03f)
+                    {
+                        Vector3 top = centre + up * (s * .55f);
+                        p.Tendrils = 2; p.TipA = Vector3.Lerp(top, top + side * .06f + up * .025f, shrug); p.TipB = Vector3.Lerp(top, top - side * .06f + up * .025f, shrug);
+                        p.Centre += up * (s * .15f * shrug);
+                    }
+                    if (Crossed(.02f, 100, t)) COgheAudio.Instance?.Play("creature_whoosh", .4f, 0, .1f);
+                    if (Crossed(.45f, 100, t)) COgheAudio.Instance?.Play("creature_land", .45f, 0, .1f);
+                    if (Crossed(.8f, 100, t)) COgheAudio.Instance?.Play("creature_hmph", .45f, 0, .1f);
+                    if (Crossed(1.5f, 100, t)) COgheAudio.Instance?.Play("creature_hm", .4f, 0, .1f);
+                    break;
+                }
                 default:
                     NoPose(t); return;
             }
             Pose = p;
         }
+
+        // The ball game (chapter 1's last question): passed back and forth --------------------------------------------------
+        // COghe shows the ball word, the ball rolls over to it, and three times it nudges the ball down the aisle to the
+        // player's spot; a tap on the ball sends it back, and COghe traps it. Then a little header show, and the ball rolls home.
+        public const int BallPasses = 3;
+        public const float BallIntroLength = 3.2f, BallPassLength = 1.6f, BallReturnLength = .9f, BallJamLength = 4.6f;
+        private bool ballAtPlayer; private float ballReturnAt = -1; private Vector3 ballAt, ballFrom;
+        private bool IsBallGame => toy != null && toy.Id == "BALL";
+        private float BallRadius => .45f * COgheHomeItems.W;
+        private Vector3 BallOnFloor(Vector3 p) => p - up * Vector3.Dot(p - floor, up) + up * BallRadius;
+        private Vector3 BallRest => toy.World(new Vector3(0, .45f, 0));
+        /// <summary>Where the player sends it back from: down the aisle toward the camera, clear of the dumbbell.</summary>
+        private Vector3 BallPlayerSpot => BallOnFloor(room.Root.TransformPoint(new Vector3(-.17f, 0, -.3f)));
+        /// <summary>Where COghe traps it: right in front of it, on the player's side.</summary>
+        private Vector3 BallCatchSpot
+        {
+            get { Vector3 d = Vector3.ProjectOnPlane(BallPlayerSpot - centre, up); d = d.sqrMagnitude > 1e-6f ? d.normalized : CameraFlat(); return BallOnFloor(centre + d * .12f); }
+        }
+        private Transform BallPart => toy != null ? toy.Part("Ball") : null;
+        /// <summary>Moves the ball; on the floor it rolls without slipping, in the air it spins.</summary>
+        private void PlaceBall(Vector3 at, bool rolling)
+        {
+            var ball = BallPart; if (ball == null) return;
+            Vector3 flat = Vector3.ProjectOnPlane(at - ballPrevious, up);
+            if (rolling && flat.sqrMagnitude > 1e-10f) ballSpin = Quaternion.AngleAxis(flat.magnitude / BallRadius * Mathf.Rad2Deg, Vector3.Cross(up, flat).normalized) * ballSpin;
+            else if (!rolling) ballSpin = Quaternion.AngleAxis(lastDt * 560, Vector3.Cross(up, CameraFlat())) * ballSpin;
+            ballPrevious = at; ballAt = at;
+            ball.position = at; ball.rotation = ballSpin;
+        }
+        private void StartBallGame()
+        {
+            var ball = BallPart; ballAt = ballPrevious = ballFrom = ball != null ? ball.position : BallRest; ballSpin = ball != null ? ball.rotation : Quaternion.identity;
+            ballAtPlayer = false; ballReturnAt = -1;
+        }
+        private void BallTapped()
+        {
+            if (bonusPhase == BonusPhase.ToyJam) { jamBoostAt = bonusTime; return; }
+            if (bonusPhase != BonusPhase.ToyListen || !ballAtPlayer || ballReturnAt >= 0) return;
+            ballReturnAt = bonusTime; toyTaps = 1; ballFrom = ballAt;
+            COgheAudio.Instance?.Play("creature_pop", .45f, 0, .05f);
+            COgheAnalytics.Log("bonus_toy_tap", "pass", toyPattern + 1);
+        }
+        /// <summary>The ball game's phases (the drum's are in UpdateToy).</summary>
+        private bool UpdateBallGame(float dt)
+        {
+            switch (bonusPhase)
+            {
+                case BonusPhase.ToyIntro:
+                    Time += dt; BallIntroPose(bonusTime);
+                    if (bonusTime >= BallIntroLength) StartToyShow();
+                    return true;
+                case BonusPhase.ToyShow:
+                    Time += dt; BallPassPose(bonusTime);
+                    if (bonusTime >= BallPassLength) { ballAtPlayer = true; ballReturnAt = -1; StartToyListen(); }
+                    return true;
+                case BonusPhase.ToyListen:
+                    Time += dt; BallListenPose(bonusTime);
+                    if (ballReturnAt >= 0 && bonusTime >= ballReturnAt + BallReturnLength)
+                    {   // trapped: a hop and a thumbs-up, and the next pass
+                        ballAtPlayer = false; ballReturnAt = -1;
+                        COgheAnalytics.Log("bonus_toy_beat", "pass", toyPattern + 1);
+                        bonusPhase = BonusPhase.ToyGood; bonusTime = 0; Begin(COgheAct.Home, ToyGoodLength);
+                        COgheAudio.Instance?.Play("creature_hi", .45f, 0, .1f);
+                    }
+                    return true;
+                case BonusPhase.ToyGood:
+                    Time += dt; HopPose(bonusTime); PlaceBall(BallCatchSpot, true);
+                    if (bonusTime < ToyGoodLength) return true;
+                    toyPattern++;
+                    if (toyPattern < BallPasses) StartToyShow();
+                    else { bonusPhase = BonusPhase.ToyJam; bonusTime = 0; jamBoostAt = -100; ballFrom = ballAt; Begin(COgheAct.Home, 1e6f); COgheAudio.Instance?.Play("creature_happy", .5f, 0, .1f); }
+                    return true;
+                case BonusPhase.ToyJam:
+                    Time += dt; BallJamPose(bonusTime);
+                    if (bonusTime >= BallJamLength) { PlaceBall(BallRest, true); ResetBall(); WinToyGame(); }
+                    return true;
+            }
+            return false;
+        }
+
+        private void BallIntroPose(float t)
+        {
+            // first the word: it makes the bouncing ball shape; then the real ball rolls round to it, and it hops for joy
+            const float s = .036f;
+            var p = StillPose();
+            float form = Smooth01(0, .3f, t) * (1 - Smooth01(1.2f, 1.45f, t));
+            if (form > 0)
+            {
+                float u = Mathf.Repeat(t / .7f, 1), height = 4 * u * (1 - u), land = Mathf.Exp(-Mathf.Min(u, 1 - u) * 18);
+                p.Morph = form; p.Shape = COgheShape.Ball;
+                p.Centre = centre + up * (s * 2.2f * height * form);
+                p.Squash = (1 + .14f * Mathf.Abs(1 - 2 * u) * (1 - land) - .3f * land) * form + (1 - form);
+                if (Crossed(.7f, .7f, t) && t < 1.3f) COgheAudio.Instance?.Play("creature_land", .2f, 0, .1f);
+            }
+            // round COghe's side (not through it) to the spot in front of it
+            float k = Smooth01(1.5f, 2.6f, t);
+            Vector3 side = BallOnFloor(centre + Vector3.Cross(up, CameraFlat()) * .13f + (BallRest - centre) * .25f);
+            Vector3 a = Vector3.Lerp(ballFrom, side, k), b = Vector3.Lerp(side, BallCatchSpot, k);
+            if (t >= 1.5f) PlaceBall(BallOnFloor(Vector3.Lerp(a, b, k)), true);
+            float hop = Mathf.Sin(Smooth01(2.65f, 3.1f, t) * Mathf.PI);
+            p.Centre += up * (s * .9f * hop); p.Squash *= 1 + .1f * hop;
+            if (Crossed(1.5f, 100, t)) COgheAudio.Instance?.Play("creature_curious_1", .4f, 0, .1f);
+            if (Crossed(2.65f, 100, t)) COgheAudio.Instance?.Play("creature_happy", .45f, 0, .1f);
+            Pose = p;
+        }
+
+        private void BallPassPose(float t)
+        {
+            // a wind-up, a nudge (the third time a header in an arc), and the ball rolls down to the player's spot
+            const float s = .036f;
+            var p = StillPose(); Vector3 to = BallPlayerSpot, from = BallCatchSpot;
+            Vector3 dir = Vector3.ProjectOnPlane(to - from, up).normalized;
+            float wind = Smooth01(0, .3f, t) * (1 - Smooth01(.3f, .42f, t)), push = Mathf.Sin(Smooth01(.32f, .6f, t) * Mathf.PI);
+            p.Centre = centre - dir * (s * .25f * wind) + dir * (s * .35f * push);
+            p.Squash = 1 - .15f * wind + .08f * push;
+            p.Turn = Lean(dir, .1f * push - .06f * wind);
+            float k = Mathf.Clamp01((t - .45f) / .95f), ease = 1 - (1 - k) * (1 - k);
+            if (toyPattern == 2)
+            {   // a header: up and over in an arc, one bounce
+                Vector3 at = Vector3.Lerp(from, to, ease) + up * (Mathf.Sin(Mathf.Clamp01(k / .75f) * Mathf.PI) * .07f + (k > .75f ? Mathf.Sin((k - .75f) / .25f * Mathf.PI) * .012f : 0));
+                p.Centre += up * (s * .5f * push);
+                PlaceBall(t < .45f ? from : at, t < .45f || k >= .75f);
+            }
+            else
+            {
+                float bounce = toyPattern == 1 ? Mathf.Abs(Mathf.Sin(k * Mathf.PI * 3)) * .02f * (1 - k) : 0;   // the second pass hops along
+                PlaceBall(t < .45f ? from : Vector3.Lerp(from, to, ease) + up * bounce, t < .45f || bounce < .002f);
+            }
+            if (Crossed(.45f, 100, t)) COgheAudio.Instance?.Play("creature_pop", .4f, 0, .1f);
+            if (Crossed(1.4f, 100, t)) COgheAudio.Instance?.Play("creature_land", .25f, 0, .1f);
+            Pose = p;
+        }
+
+        private void BallListenPose(float t)
+        {
+            // "your turn!": it bounces on the spot, eager; when the ball comes back it crouches and traps it
+            const float s = .036f;
+            var p = StillPose();
+            if (ballReturnAt < 0)
+            {
+                float eager = Mathf.Abs(Mathf.Sin(t * 5)) * (Mathf.Repeat(t, 3f) < 1.2f ? 1 : .3f);
+                p.Centre = centre + up * (s * .25f * eager); p.Squash = 1 + .05f * Mathf.Sin(t * 10);
+                PlaceBall(BallPlayerSpot + up * (.004f * Mathf.Abs(Mathf.Sin(t * 3))), false);
+                if (Crossed(4.5f, 4.5f, t)) COgheAudio.Instance?.Play("creature_curious_2", .3f, 0, .2f);
+            }
+            else
+            {
+                float k = Mathf.Clamp01((t - ballReturnAt) / BallReturnLength), ease = 1 - (1 - k) * (1 - k);
+                PlaceBall(Vector3.Lerp(ballFrom, BallCatchSpot, ease), true);
+                float trap = Mathf.Sin(Smooth01(.7f, 1f, k) * Mathf.PI);
+                p.Squash = 1 - .2f * trap; p.Centre = centre - up * (s * .1f * trap);
+                if (Crossed(ballReturnAt + BallReturnLength * .85f, 100, t)) COgheAudio.Instance?.Play("creature_grab", .4f, 0, .05f);
+            }
+            Pose = p;
+        }
+
+        private void BallJamPose(float t)
+        {
+            // the show: it flicks the ball up and heads it again and again (higher for every tap of the player), then pops it
+            // back to its spot
+            const float s = .036f;
+            var p = StillPose(); float top = skinTop * .96f;
+            Vector3 head = centre + up * top, rest = BallRest;
+            const float period = .55f; float end = BallJamLength - .8f;
+            if (t < .35f) { PlaceBall(Vector3.Lerp(ballFrom, head, Smooth01(0, .35f, t)) + up * (Mathf.Sin(t / .35f * Mathf.PI) * .03f), false); p.Squash = 1 - .15f * Smooth01(0, .3f, t); }
+            else if (t < end)
+            {
+                float local = Mathf.Repeat(t - .35f, period), u = local / period;
+                float boost = jamBoostAt >= 0 && t >= jamBoostAt ? Mathf.Exp(-(t - jamBoostAt) * 2.5f) : 0;
+                PlaceBall(head + up * (4 * (.05f + .04f * boost) * u * (1 - u)), false);
+                float hit = Mathf.Exp(-local * 14);
+                p.Centre = centre - up * (s * .25f * hit) + up * (s * .5f * boost * Mathf.Sin(u * Mathf.PI)); p.Squash = 1 - .2f * hit;
+                p.Turn = Quaternion.AngleAxis(Mathf.Sin(t * 9) * 6, CameraFlat());
+                if (Crossed(.35f, period, t)) COgheAudio.Instance?.Play("creature_pop", .35f, 0, .05f);
+            }
+            else
+            {
+                float u = Mathf.Clamp01((t - end) / .7f);
+                PlaceBall(Vector3.Lerp(head, rest, u) + up * (Mathf.Sin(u * Mathf.PI) * .08f), u >= 1);
+                float hop = Mathf.Sin(Smooth01(end + .3f, end + .75f, t) * Mathf.PI); p.Centre = centre + up * (s * .8f * hop);
+                if (Crossed(end, 100, t)) COgheAudio.Instance?.Play("creature_whoosh", .35f, 0, .1f);
+            }
+            Pose = p;
+        }
+
     }
 }

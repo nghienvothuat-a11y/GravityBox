@@ -138,12 +138,13 @@ namespace GravityBox.Venom
             if (p != null && p.InToyGame && !bonusThanksShown)
             {
                 // the game with the toy: what to do now, in a few words; while it is the player's turn, one dot per strike
-                line = p.ToyListening ? "Your turn: play it back!" : p.ToyJamming ? "Play along with COghe!" : "Listen to COghe's drum…";
-                if (bonusShownMisses >= 2 && p.ToyListening) line = "Tap the drum " + p.ToyBeats + " times, like COghe.";
+                if (p.ToyIsBall) line = p.ToyListening ? "Your turn: pass the ball back!" : p.ToyJamming ? "Cheer COghe on!" : "Play ball with COghe!";
+                else line = p.ToyListening ? "Your turn: play it back!" : p.ToyJamming ? "Play along with COghe!" : "Listen to COghe's drum…";
+                if (bonusShownMisses >= 2 && p.ToyListening) line = p.ToyIsBall ? "Tap the ball to pass it back." : "Tap the drum " + p.ToyBeats + " times, like COghe.";
                 if (p.ToyListening)
-                    for (int i = 0, n = p.ToyBeats; i < n; i++)
+                    for (int i = 0, n = p.ToyDots; i < n; i++)
                     {
-                        var dot = art.Box(pageRoot, "Beat " + (i + 1), new Rect(width * .5f - n * 15 + i * 30 + 5, 168, 20, 20), i < p.ToyTaps ? new Color(.74f, .47f, .44f) : new Color(.9f, .9f, .87f));
+                        var dot = art.Box(pageRoot, "Beat " + (i + 1), new Rect(width * .5f - n * 15 + i * 30 + 5, 168, 20, 20), i < p.ToyDotsFilled ? new Color(.74f, .47f, .44f) : new Color(.9f, .9f, .87f));
                         dot.pixelsPerUnitMultiplier = 4;
                     }
             }
@@ -159,7 +160,8 @@ namespace GravityBox.Venom
         {
             string times = word.Count > 1 ? " " + word.Count + " times, then wait" : "";
             return word.Answer == COgheBonusAnswer.Touch ? "It wants a cuddle: tap COghe" + times + "." :
-                   word.Answer == COgheBonusAnswer.Feed ? "It is hungry: tap Feed" + times + "." : "It wants to play: tap the ball.";
+                   word.Answer == COgheBonusAnswer.Feed ? "It is hungry: tap Feed" + times + "." :
+                   word.Item == COgheToys.Drum ? "It wants music: tap the drum" + times + "." : "It wants to play: tap the ball.";
         }
 
         // Popups --------------------------------------------------------------------------------------------------------------

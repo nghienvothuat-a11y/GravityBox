@@ -29,11 +29,12 @@ namespace GravityBox.Tests
    {
     var rounds=COgheBonus.Rounds(chapter);Assert.IsNotNull(rounds,"Chapter "+chapter);Assert.AreEqual(3,rounds.Length);
     // a game round's toy is given by the game itself (COgheToys), never bought
-    foreach(var round in rounds)if(round.IsGame)Assert.IsTrue(COgheToys.Is(round.Toy));else Assert.IsNotEmpty(round.Words);
+    foreach(var round in rounds)if(round.IsGame)Assert.IsTrue(round.Toy=="BALL"||COgheToys.Is(round.Toy),round.Toy);else Assert.IsNotEmpty(round.Words);
     foreach(var round in rounds)foreach(var word in round.Words)
     {
      Assert.That(word.Count,Is.InRange(1,3),"A number COghe can show on its tendrils");
-     if(word.Answer==COgheBonusAnswer.Item)Assert.AreEqual("BALL",word.Item,"Only the gift ball: no bonus depends on what was bought");
+     // the gift ball, or a toy an earlier chapter's game gave every player: no bonus depends on what was bought
+     if(word.Answer==COgheBonusAnswer.Item)Assert.IsTrue(word.Item=="BALL"||COgheToys.Is(word.Item)&&System.Array.Find(COgheToys.Catalog,t=>t.id==word.Item).chapter<chapter,word.Item);
     }
    }
    Assert.IsNull(COgheBonus.Rounds(7));

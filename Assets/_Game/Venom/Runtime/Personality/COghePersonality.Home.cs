@@ -69,6 +69,7 @@ namespace GravityBox.Venom
             reveals.Clear(); revealClock = -.6f; revealVisit = false; revealPending = true;
             for (int i = 0; i < touches.Length; i++) touches[i] = -100;
             warmth = 0; lastTouch = -100; userPlay = affectionHearts = false; greetPending = true; greetStep = 0;
+            drumHitAt = -100;
         }
         internal void LeaveHome() { bonusPhase = BonusPhase.None; bonusRounds = null; toy = null; gagBall = null; gag = COgheGag.None; toyPop = -1; room = null; home = HomeState.Rest; playing = target = null; eating = false; meal = null; EndAct(); }
 

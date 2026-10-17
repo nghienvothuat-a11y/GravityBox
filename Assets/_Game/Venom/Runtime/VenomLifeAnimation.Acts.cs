@@ -265,6 +265,18 @@ namespace GravityBox.Venom
                         Src(Mathf.Cos(a) * .47f, 1.35f, Mathf.Sin(a) * .47f, 1f);
                     }
                     break;
+                case COgheShape.Drum:
+                    // the drum (a "Hiểu ra" word once the player has it): a squat round shell with a flat skin, and two sticks
+                    // crossed over it
+                    for (int i = 0; i < 8; i++)
+                    {
+                        float a = i * Mathf.PI * 2 / 8;
+                        Src(Mathf.Cos(a) * .8f, .5f, Mathf.Sin(a) * .8f, .6f); Src(Mathf.Cos(a) * .8f, 1.12f, Mathf.Sin(a) * .8f, .6f);
+                    }
+                    Src(0, .8f, 0, 1.05f); Src(0, 1.25f, 0, .95f);
+                    Straight(new Vector3(-1.0f, 2.3f, .12f), new Vector3(.2f, 1.5f, .1f), .15f, .11f);
+                    Straight(new Vector3(1.0f, 2.3f, .12f), new Vector3(-.2f, 1.5f, .1f), .15f, .11f);
+                    break;
                 case COgheShape.One:
                 case COgheShape.Two:
                 case COgheShape.Three:
