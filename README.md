@@ -1,5 +1,7 @@
 # COghe — Day Lab Puzzle Prototype
 
+**Ability cards, 17/10/2026:** ba thẻ xếp ngang, cùng kích thước, không chọn sẵn; Playful / Speedy / Clever, trong đó Clever là giáo sư COghe theo yêu cầu. Giữ nguyên cơ chế và dữ liệu đã lưu. [Thiết kế](Docs/COGHE_ABILITY_CARDS.md) · [Ảnh UI trong game](Docs/Verification/COgheAbilityCards/review.html).
+
 **Camera Boss, 16/10/2026:** bỏ đoạn camera bay/quay và zoom khi vào Boss; giữ cảnh báo ngắn ở góc chơi bình thường. [Kiểm chứng 6 Boss và luồng 65 màn](Docs/Verification/COgheBossEntry/README.md).
 
 **Màn 6 — lỗ dưới khối đỏ, sửa lại 15/10/2026:** bỏ toàn bộ công tắc, nút, nắp và cửa; dời khối đỏ để lộ lỗ trên sàn rồi cho COghe thoát xuống. Giữ ID K01 và tiến độ cũ. [Thiết kế](Docs/LevelDesign/COghe/CrateReveal6/README.md) · [Kiểm chứng](Docs/Verification/COgheCrateReveal6/README.md).

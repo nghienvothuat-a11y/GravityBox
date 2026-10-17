@@ -36,19 +36,64 @@ Emotion animations (list in the design reply to Mrk, 16/10).
     not refuse.
   - Re-record after changing a level's devices or solution.
 
-## UI
+## UI — child-friendly redesign, 17/10/2026
 
-- **Home:** "Ability" (Lucide wallet-cards) replaces "Play". Play only cuddled COghe, which a tap on COghe does.
-- **`AbilityStats` popup:** three rows with icon, name, a 10-segment bar, "Lv n/10" and a short line with no numbers.
-  "Choose your card" appears when a card waits.
-- **`AbilityPick` popup:** opens from `FinishBonus` when a card waits.
-  - Three cards: art, name, "Lv n → n+1", 10 pips, and what grows.
-  - Tap a card, then "Choose X". The confirmation shows the chosen card, COghe's shape reaction and, for the first
-    Intelligence level, the 5-second tip. Continue then goes on to the next level, as after a bonus.
-- **Art:**
-  - Icons Smile, Zap, Brain and Cards in the four free cells of `Resources/COgheUI/Icons.png`.
-  - Card art in `Resources/COgheUI/Abilities/` (renders of the in-game COghe).
-- **Review reel:** `COgheAbilityReel` (development builds), run with `-coghe-ability-reel <dir>`.
+Audience requested by Mrk: ages 4–15. Illustrations carry the primary meaning;
+short English labels remain for readers. The intended age range is a design goal,
+not a claim of tested comprehension by children.
+
+| Display name | Saved ability (unchanged) | Illustration | Main benefit |
+| --- | --- | --- | --- |
+| Playful | Emotion | Happy liquid COghe, coral hearts | Learn new tricks |
+| Speedy | Agility | Low crawling silhouette, amber motion streaks | Move faster |
+| Clever | Intelligence | Professor COghe with round glasses, teal academic cap and book (Mrk's follow-up) | Remember more |
+
+- Mrk's layout revision: three equally sized cards share **one horizontal row**,
+  with an 8-logical-pixel gap and 286-logical-pixel height. All three stay visible
+  together on phones and tablets; no scrolling or preselected/featured choice.
+  Entire card is tappable, including the picture and copy.
+- Previewing a card never consumes it. Selection uses a stable outline **and a
+  check**, then a large explicit “Choose [name]” button. The hit target does not
+  jump on selection. All cards receive equal visual emphasis.
+- Each card keeps the short benefit and next level. Its supporting explanation
+  appears in a shared full-width area below the row when selected, so narrow
+  cards do not need tiny copy. The 10-segment progress bars remain in Home's
+  vertical powers summary, which is not a choice screen.
+- MAX shows “All learned!” and cannot be selected. Other cards remain usable.
+- First Clever confirmation explains both rules: wait 5 seconds to approach the
+  next device, then **the player taps to use it**. It does not promise auto-solving.
+- Keep ivory surfaces, blue-grey readable text, soft coral/amber/teal illustration
+  wells, familiar shared icons and large confirmation/continue controls.
+- Artwork is transparent pre-rendered UI, capped at 512 px on import, bilinear,
+  alpha-aware, no mipmaps/CPU readback. Sprites are cached. No new live 3D renders,
+  lights, shaders, per-frame animations, physics or ability balance changes.
+- The professor outfit is **card art only**, not a change to the gameplay model or
+  the user's wardrobe. Existing saves and internal enum names remain compatible.
+- Source assets: `Assets/_Game/Venom/Resources/COgheUI/Abilities/`.
+- [Art prompts](ArtDirection/COghe/AbilityCards/2026-10-17/prompts.json),
+  [professor revision](ArtDirection/COghe/AbilityCards/2026-10-17/professor-prompt.txt).
+  Made with built-in image_gen; images are in the repo, no generator needed to build.
+- [Native UI review](Verification/COgheAbilityCards/review.html).
+  Reproduce with a Mac test build and `-coghe-card-review <output-directory>`.
+  The opt-in fixture uses in-memory progress and writes no player save.
+- Existing development reel `-coghe-ability-reel <dir>` retains stable control
+  identifiers even though visible names have changed.
+
+## Verification — 17/10/2026 redesign
+
+- **5/5 targeted PlayMode tests passed**, including real pointer selection,
+  changing the preview without spending, one confirmed reward, MAX exclusion,
+  Home's pending-card flow, and layout on 640×1136, 720×1280, 1080×2340 and
+  1536×2048 viewports. Labels are measured against their boxes and artwork;
+  equal card dimensions, one horizontal row, no preselection, unchanged hit areas
+  after selection, no overlap and no off-screen controls are checked.
+- Spatial macOS build succeeded. The native screenshot fixture covers the picker,
+  each selection, first Clever confirmation, progress summary and MAX state.
+- All changes are UI/assets/docs; scene files, definitions, physics and saved
+  ability values were not changed. No new full campaign solve or phone benchmark
+  is claimed for this presentation change.
+- Next validation is observation with actual children in the intended age range:
+  can they identify what each picture offers and change/confirm their choice?
 
 ## Verification (16/10/2026)
 

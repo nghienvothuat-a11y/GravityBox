@@ -547,11 +547,11 @@ namespace GravityBox.Venom
             art.Label(b.transform, "Label", name, new Rect(0, 0, r.width, r.height), 15, on ? COgheUIArt.Paper : COgheUIArt.Ink).font = art.BoldFont;
         }
         /// <summary>A button with its icon and words centred together (art.Button lays them out for wide buttons only).</summary>
-        private Button LabelButton(Transform parent, string name, Rect r, COgheIcon icon, string label, System.Action click, bool primary = false)
+        private Button LabelButton(Transform parent, string name, Rect r, COgheIcon icon, string label, System.Action click, bool primary = false, int fontSize = 14)
         {
             var b = art.Button(parent, name, r, icon, click, null, primary);
             var glyph = (RectTransform)b.transform.Find(icon.ToString());
-            var text = art.Label(b.transform, "Label", label, new Rect(0, 0, r.width, r.height), 14, primary ? COgheUIArt.Paper : COgheUIArt.Ink, TextAnchor.MiddleLeft);
+            var text = art.Label(b.transform, "Label", label, new Rect(0, 0, r.width, r.height), fontSize, primary ? COgheUIArt.Paper : COgheUIArt.Ink, TextAnchor.MiddleLeft);
             text.font = art.BoldFont;
             float wide = Mathf.Min(text.preferredWidth, r.width - 44), x = (r.width - 22 - 6 - wide) * .5f;
             glyph.anchoredPosition = new Vector2(x, -(r.height - 22) * .5f); glyph.sizeDelta = new Vector2(22, 22);

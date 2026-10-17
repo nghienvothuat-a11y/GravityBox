@@ -88,6 +88,22 @@ and [native Unity verification](../../Verification/COgheProductUI/README.md).
 - Full furniture shopping is a later Home feature; current Home retains Feed and
   Play. It must not show a working purchase flow without the corresponding system.
 
+### Ability cards — 17/10/2026
+
+For the requested 4–15 audience, show all three illustrated choices in **one
+horizontal row**, as revised by Mrk on 17/10. Give them identical dimensions,
+spacing and emphasis, with no preselected or featured card. Show extra explanation
+below the row after a tap; never enlarge or move a selected card.
+Friendly English display names: Playful, Speedy, Clever; saved
+Emotion/Agility/Intelligence IDs and mechanics stay intact. Main meaning comes
+from COghe's pose/props, reinforced by a distinct symbol and brief benefit.
+Selection has a check and outline, never colour alone. No scary monster portrait
+on the Emotion card. Mrk explicitly requested **professor COghe** for Clever:
+round glasses, an academic cap and book, still a soft cute liquid creature.
+This outfit is illustration only. Keep calm ivory panels and pastel coral,
+amber and teal wells; no rarity frames, flashing urgency or stats-heavy copy.
+See [ability presentation contract](../../COGHE_ABILITY_CARDS.md).
+
 ### Reward polish and first-ink guidance — 15/10/2026
 
 Reuse the existing amber, outlined arrow and target ring for the ink lesson:
