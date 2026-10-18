@@ -132,7 +132,7 @@ namespace GravityBox.Venom
                 art.Box(pageRoot, "Round " + (i + 1), new Rect(x, 86, 18, 18), done ? COgheUIArt.Teal : now ? COgheUIArt.Mint : new Color(.9f, .9f, .87f)).pixelsPerUnitMultiplier = 5;
             }
             DropsCounter(pageRoot, new Rect(width - 124, 88, 100, 40));   // the rewards fly in here
-            string line = bonusThanksShown || p == null || p.BonusFinished ? "" : BonusPrompts[Mathf.Clamp(bonusChapter - 1, 0, BonusPrompts.Length - 1)];
+            string line = bonusThanksShown || p == null || p.BonusFinished ? "" : bonusChapter <= BonusPrompts.Length ? BonusPrompts[Mathf.Max(0, bonusChapter - 1)] : "Watch COghe's whole sentence.";
             var ask = p?.BonusAsk;
             if (ask.HasValue && bonusShownMisses >= 2 && !bonusThanksShown) line = BonusHint(ask.Value);
             if (p != null && p.InToyGame && !bonusThanksShown)
@@ -170,7 +170,11 @@ namespace GravityBox.Venom
             string times = word.Count > 1 ? " " + word.Count + " times, then wait" : "";
             return word.Answer == COgheBonusAnswer.Touch ? "It wants a cuddle: tap COghe" + times + "." :
                    word.Answer == COgheBonusAnswer.Feed ? "It is hungry: tap Feed" + times + "." :
-                   word.Item == COgheToys.Drum ? "It wants music: tap the drum" + times + "." : "It wants to play: tap the ball.";
+                   word.Item == COgheToys.Drum ? "It wants music: tap the drum" + times + "." :
+                   word.Item == COgheToys.Horn ? "It wants a tune: tap the horn" + times + "." :
+                   word.Item == COgheToys.Balloon ? "It wants to fly: tap the balloons" + times + "." :
+                   word.Item == COgheToys.Top ? "It wants to spin: tap the top" + times + "." :
+                   word.Item == COgheToys.MusicBox ? "It wants a song: tap the music box" + times + "." : "It wants to play: tap the ball" + times + ".";
         }
 
         // Popups --------------------------------------------------------------------------------------------------------------

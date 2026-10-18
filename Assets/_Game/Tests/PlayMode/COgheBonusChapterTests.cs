@@ -37,7 +37,7 @@ namespace GravityBox.Tests
      if(word.Answer==COgheBonusAnswer.Item)Assert.IsTrue(word.Item=="BALL"||COgheToys.Is(word.Item)&&System.Array.Find(COgheToys.Catalog,t=>t.id==word.Item).chapter<chapter,word.Item);
     }
    }
-   Assert.IsNull(COgheBonus.Rounds(7));
+   Assert.IsNull(COgheBonus.Rounds(COgheBonus.MaxChapters+1));
   }
 
   [UnityTest] public IEnumerator BonusTwoThingsAreTakenInAnyOrder()

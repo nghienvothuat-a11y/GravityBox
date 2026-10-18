@@ -18,7 +18,20 @@ namespace GravityBox.Venom
         private readonly List<int> hornPlayed = new List<int>(4);
         private int hornKeyDown = -1, hornTapKey = -1; private float hornKeyAt = -100;
         private bool IsHornGame => toy != null && toy.Id == COgheToys.Horn;
-        private int[] HornTune => HornTunes[Mathf.Clamp(toyPattern, 0, HornTunes.Length - 1)];
+        private int[] HornTune => HornTuneFor(toyLevel, Mathf.Clamp(toyPattern, 0, HornTunes.Length - 1));
+        private static readonly Dictionary<int, int[]> hornTunesLater = new Dictionary<int, int[]>();
+        /// <summary>Tune <paramref name="k"/> at a level: the approved three at level 0; later one note longer per level (up to
+        /// 5), made the same way every time, never one button three times running.</summary>
+        private static int[] HornTuneFor(int level, int k)
+        {
+            if (level <= 0) return HornTunes[k];
+            int key = level * 10 + k;
+            if (hornTunesLater.TryGetValue(key, out var tune)) return tune;
+            var rnd = new System.Random(level * 101 + k * 7 + 3); int n = Mathf.Min(5, HornTunes[k].Length + level);
+            tune = new int[n];
+            for (int i = 0; i < n; i++) { int b; do b = rnd.Next(3); while (i >= 2 && b == tune[i - 1] && b == tune[i - 2]); tune[i] = b; }
+            return hornTunesLater[key] = tune;
+        }
 
         private static Transform HornKey(COgheHomeItem horn, int i) => horn.Part("Key" + i);
         /// <summary>The button nearest a tap that landed on the horn: its whole area is shared out among the three.</summary>

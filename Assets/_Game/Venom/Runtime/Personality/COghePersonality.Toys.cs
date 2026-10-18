@@ -21,6 +21,19 @@ namespace GravityBox.Venom
     {
         // the beats of the drum game (seconds from the first strike): two, three, then four ("ta ta, ta ta")
         private static readonly float[][] DrumBeats = { new[] { 0f, .5f }, new[] { 0f, .42f, .84f }, new[] { 0f, .36f, .96f, 1.32f } };
+        /// <summary>How hard the game being played is (<see cref="COgheBonusRound.Level"/>): 0 in chapters 2–6.</summary>
+        private int toyLevel;
+        /// <summary>The drum's beat <paramref name="k"/> (seconds from the first strike): the approved three at level 0; later one
+        /// strike more per level (up to 6), in pairs with a short rest between.</summary>
+        private float[] DrumPattern(int k)
+        {
+            k = Mathf.Clamp(k, 0, DrumBeats.Length - 1);
+            if (toyLevel <= 0) return DrumBeats[k];
+            int n = Mathf.Min(6, DrumBeats[k].Length + toyLevel);
+            var times = new float[n]; float at = 0;
+            for (int i = 0; i < n; i++) { times[i] = at; at += i % 2 == 0 ? .34f : .56f; }
+            return times;
+        }
         public const float ToyIntroLength = 2.3f, ToyGoodLength = .8f, JamLength = 5.4f, JamBeat = .5f, ToyConfirm = .7f, ToyReplayAfter = 7f;
         private const float ShowLead = .35f, DrumHeadY = .45f;
         private COgheHomeItem toy; private int toyPattern, toyTaps; private float toyLastHit = -100, toyConfirmAt = -1, jamBoostAt = -100, drumHitAt = -100, toyPop = -1;
@@ -37,8 +50,8 @@ namespace GravityBox.Venom
         /// <summary>Which beat of the game (0-based) and how many strikes it has.</summary>
         public int ToyPattern => toyPattern;
         public int ToyBeats => IsBallGame ? BallPasses : IsHornGame ? HornTune.Length : IsBalloonGame ? BalloonNeeds
-            : IsTopGame ? TopRescues : IsBoxGame ? BoxTurns
-            : toyPattern < DrumBeats.Length ? DrumBeats[toyPattern].Length : 0;
+            : IsTopGame ? TopRescuesNow : IsBoxGame ? BoxTurns
+            : toyPattern < DrumBeats.Length ? DrumPattern(toyPattern).Length : 0;
         /// <summary>The toy of the game being played (its id), or null.</summary>
         public string ToyId => InToyGame ? bonusRounds[bonusRound].Toy : null;
         /// <summary>The horn's tune to play back (tests), and where to tap the toy now.</summary>
@@ -89,7 +102,7 @@ namespace GravityBox.Venom
         // The drum game ---------------------------------------------------------------------------------------------------
         private void StartToyGame()
         {
-            toy = room.Find(bonusRounds[bonusRound].Toy); toyPattern = 0; toyTaps = 0; toyConfirmAt = -1; toyLastHit = -100;
+            toy = room.Find(bonusRounds[bonusRound].Toy); toyLevel = bonusRounds[bonusRound].Level; toyPattern = 0; toyTaps = 0; toyConfirmAt = -1; toyLastHit = -100;
             if (IsBallGame) { StartBallGame(); skinTop = SkinTopOver(floor); }
             else if (toy != null && !toy.Root.activeSelf)
             {   // brought out for the game: it pops up beside COghe
@@ -176,7 +189,7 @@ namespace GravityBox.Venom
                     return true;
                 case BonusPhase.ToyShow:
                 {
-                    Time += dt; var beats = DrumBeats[toyPattern];
+                    Time += dt; var beats = DrumPattern(toyPattern);
                     ToyShowPose(bonusTime, beats);
                     if (bonusTime >= ShowLead + beats[beats.Length - 1] + .6f) StartToyListen();
                     return true;
@@ -227,6 +240,19 @@ namespace GravityBox.Venom
             if (gag == COgheGag.Bonk || IsBallGame) ResetBall();
             if (toy != null && room != null && COgheToys.Is(toy.Id)) { ResetToy(); room.ShowToy(toy, false); }
             toy = null; toyPop = -1; gag = COgheGag.None;
+        }
+
+        /// <summary>A toy tapped during a sentence (an answer or not): it answers with its own sound and a little move.</summary>
+        private void ToyPoke(string id)
+        {
+            switch (id)
+            {
+                case COgheToys.Drum: DrumStrike(true); break;
+                case COgheToys.Horn: HornKeyPress(rnd.Next(3), true); break;
+                case COgheToys.Balloon: COgheAudio.Instance?.Play("balloon_puff", .5f, 0, .05f); break;
+                case COgheToys.Top: topSpeed = Mathf.Max(topSpeed, 700); COgheAudio.Instance?.Play("top_whirr", .45f, 0, .1f); break;
+                case COgheToys.MusicBox: boxCrankTarget += 45; boxDancer += 45; COgheAudio.Instance?.Play("mbox_" + rnd.Next(8), .5f, 0, .05f); break;
+            }
         }
 
         private void DrumStrike(bool player)
@@ -402,7 +428,7 @@ namespace GravityBox.Venom
                 if (expected.HasValue && expected.Value.Answer == COgheBonusAnswer.Item) { gagItem = room.Find(expected.Value.Item); if (gagItem != null) return COgheGag.GigglePoint; }
                 return COgheGag.GiggleRoll;
             }
-            if (item == COgheToys.Drum && room.Find(COgheToys.Drum) != null) { gagItem = room.Find(COgheToys.Drum); return COgheGag.Startle; }
+            if (COgheToys.Is(item) && room.Find(item) != null) { gagItem = room.Find(item); return COgheGag.Startle; }   // a toy out of turn
             if (item == "BALL" && room.Find("BALL") != null) { gagItem = room.Find("BALL"); return COgheGag.Bonk; }
             return COgheGag.Nope;
         }

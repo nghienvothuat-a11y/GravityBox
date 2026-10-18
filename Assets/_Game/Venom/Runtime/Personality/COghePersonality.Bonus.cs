@@ -117,7 +117,7 @@ namespace GravityBox.Venom
             var words = bonusRounds != null && bonusRound < BonusRounds ? bonusRounds[bonusRound].Words : null;
             if (words == null) return;
             if (CurrentIsGame) { ToyHeard(answer, item); return; }
-            if (answer == COgheBonusAnswer.Item && item == COgheToys.Drum) DrumStrike(true);   // the drum always sounds when tapped
+            if (answer == COgheBonusAnswer.Item && COgheToys.Is(item)) ToyPoke(item);   // a toy always answers a tap
             string said = answer == COgheBonusAnswer.Item ? item : answer.ToString();
             // a number being counted: more of the same (one too many once it is reached), or something else breaks it off
             if (activeWord >= 0 && (bonusPhase == BonusPhase.Ask || bonusPhase == BonusPhase.Count || bonusPhase == BonusPhase.Gulp || bonusPhase == BonusPhase.Confirm))
@@ -336,7 +336,25 @@ namespace GravityBox.Venom
                 }
             }
             p.Morph = form; p.Shape = shape; shownShape = shape; shownMorph = form;
-            if (shape == COgheShape.Drum)
+            if (shape == COgheShape.Balloon)
+            {
+                // the balloon word floats up and down on its string
+                p.Centre = centre + up * (s * .5f * (.5f + .5f * Mathf.Sin(local * 2.2f)) * form);
+                p.Turn = Quaternion.AngleAxis(6 * Mathf.Sin(local * 1.6f), CameraFlat());
+            }
+            else if (shape == COgheShape.Top)
+            {
+                // the top word spins on its tip, a soft whirr when it starts
+                p.Turn = Quaternion.AngleAxis(300 * local * form, up);
+                if (form > .6f && Crossed(.3f, 2.5f, local)) COgheAudio.Instance?.Play("top_whirr", .18f, 0, .5f);
+            }
+            else if (shape == COgheShape.Horn || shape == COgheShape.MusicBox)
+            {
+                // the horn and the music box words: held up, swaying, with a soft note now and then
+                p.Turn = Quaternion.AngleAxis(5 * Mathf.Sin(t * 1.9f) * form, CameraFlat());
+                if (form > .6f && Crossed(.3f, .9f, local)) COgheAudio.Instance?.Play(shape == COgheShape.Horn ? "horn_" + (Mathf.FloorToInt(local / .9f) % 3) : "mbox_" + (Mathf.FloorToInt(local / .9f) % 4 * 2 % 8), .2f, 0, .2f);
+            }
+            else if (shape == COgheShape.Drum)
             {
                 // the drum word: it bobs as if struck, two beats a second, a soft drum sound with each while it is held up
                 float beat = Mathf.Repeat(local, .5f), hit = Mathf.Exp(-beat * 12) * form;

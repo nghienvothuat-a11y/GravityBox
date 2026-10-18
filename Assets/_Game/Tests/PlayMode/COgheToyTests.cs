@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using GravityBox.Venom;
 using NUnit.Framework;
 using UnityEngine;
@@ -248,6 +249,68 @@ namespace GravityBox.Tests
     yield return BonusUntil(()=>p.ToyJamming,8,"The box plays on; they dance");
     yield return BonusUntil(()=>p.BonusThanking||p.BonusFinished,15,"Won");
     Assert.IsTrue(COgheToys.Owns(COgheToys.MusicBox),"The box is the player's");Assert.AreEqual(1,p.BonusMisses);
+   }
+   finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;COgheShop.ResetForTests();}
+  }
+
+  // From chapter 7 (Mrk 18/10/2026, up to 300 levels): made from the chapter number, from what every player has; the toy
+  // games in turn, harder every five chapters.
+  [Test] public void ChaptersFromSevenAreMadeFromWhatEveryPlayerHas()
+  {
+   for(int c=7;c<=COgheBonus.MaxChapters;c++)
+   {
+    var r=COgheBonus.Rounds(c);Assert.IsNotNull(r,"Chapter "+c);Assert.AreEqual(3,r.Length);
+    Assert.AreEqual(3,r[0].Words.Length);Assert.AreEqual(4,r[1].Words.Length);
+    for(int q=0;q<2;q++)
+    {
+     Assert.IsTrue(r[q].Ordered);var seen=new HashSet<string>();int numbers=0;
+     foreach(var w in r[q].Words)
+     {
+      Assert.That(w.Count,Is.InRange(1,3),"A number COghe can show");if(w.Count>1)numbers++;
+      string id=w.Answer==COgheBonusAnswer.Item?w.Item:w.Answer.ToString();Assert.IsTrue(seen.Add(id),"Each word once in a sentence");
+      if(w.Answer==COgheBonusAnswer.Item)Assert.IsTrue(w.Item=="BALL"||COgheToys.Is(w.Item),"Only the gift ball and the toys");
+     }
+     Assert.AreEqual(q==1&&c>=10?2:1,numbers);
+    }
+    Assert.IsTrue(r[2].IsGame);Assert.AreEqual(COgheBonus.GameCycle[(c-7)%5],r[2].Toy);Assert.AreEqual(1+(c-7)/5,r[2].Level);
+    Assert.AreSame(r,COgheBonus.Rounds(c),"The same questions every time");
+   }
+   Assert.IsNull(COgheBonus.Rounds(COgheBonus.MaxChapters+1));
+  }
+
+  // A toy is a word too (from chapter 7, the drum from 3): in its turn COghe goes and plays it; out of turn, a fright.
+  [UnityTest] public IEnumerator ANewToyWordSendsCOgheToPlayIt()
+  {
+   try
+   {
+    yield return HomeWithoutTheDrum();foreach(var t in COgheToys.Catalog)COgheToys.Give(t.id);game.HomeRoom.Refresh();
+    var p=game.Personality;var room=game.HomeRoom;var horn=room.Find(COgheToys.Horn);
+    p.BeginBonus(new[]{new COgheBonusRound(true,COgheBonus.ToyWord(COgheToys.Horn))});
+    yield return BonusUntil(()=>p.BonusAsking,10,"It asks");
+    Assert.AreEqual(COgheShape.Horn,p.BonusAsk.Value.Shape);
+    p.PlayWith(room.Find(COgheToys.Top));Assert.AreEqual(COgheGag.Startle,p.Gag,"Another toy: a fright");
+    yield return BonusUntil(()=>p.BonusAsking,6,"It asks again");
+    p.PlayWith(horn);
+    yield return BonusUntil(()=>p.Playing==horn,10,"The horn: COghe goes and plays it");
+    yield return BonusUntil(()=>p.BonusThanking||p.BonusFinished,20,"Understood");
+   }
+   finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;COgheShop.ResetForTests();}
+  }
+
+  // Later chapters play the toy games harder: a longer beat, a longer tune, more rescues of the top.
+  [UnityTest] public IEnumerator LaterToyGamesAreHarder()
+  {
+   try
+   {
+    yield return HomeWithoutTheDrum();var p=game.Personality;
+    p.BeginBonus(new[]{COgheBonusRound.Game(COgheToys.Drum,1)});
+    yield return BonusUntil(()=>p.ToyWaitingForPlayer,15,"The drum, level 1");Assert.AreEqual(3,p.ToyBeats,"One strike more");
+    p.EndBonus();
+    p.BeginBonus(new[]{COgheBonusRound.Game(COgheToys.Horn,2)});
+    yield return BonusUntil(()=>p.ToyWaitingForPlayer,15,"The horn, level 2");Assert.AreEqual(4,p.ToyBeats,"Two notes more");
+    p.EndBonus();
+    p.BeginBonus(new[]{COgheBonusRound.Game(COgheToys.Top,1)});
+    yield return BonusUntil(()=>p.ToyWaitingForPlayer,15,"The top, level 1");Assert.AreEqual(COghePersonality.TopRescues+1,p.ToyBeats,"One rescue more");
    }
    finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;COgheShop.ResetForTests();}
   }

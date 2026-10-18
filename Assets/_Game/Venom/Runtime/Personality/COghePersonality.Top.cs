@@ -14,6 +14,9 @@ namespace GravityBox.Venom
     {
         public const int TopRescues = 3;
         public const float TopIntroLength = 2.4f, TopSteady = 1.4f, TopWobbleTime = 4.2f, TopSpinUp = .7f;
+        /// <summary>Later chapters: one rescue more per level (up to 5) and a quicker wobble (not under 2.8 s).</summary>
+        private int TopRescuesNow => TopRescues + Mathf.Min(Mathf.Max(0, toyLevel), 2);
+        private float TopWobbleNow => Mathf.Max(2.8f, TopWobbleTime - .4f * Mathf.Max(0, toyLevel));
         // the top's state, set by COghe's poses and drawn every Home frame (StepTop)
         private float topAngle, topSpeed, topWobble, topFallen, topPrecess, topRescuedAt = -1;
         private bool topNeedsPull;   // after a fall: stand it up and pull it again before it spins
@@ -25,6 +28,8 @@ namespace GravityBox.Venom
             var top = room.Find(COgheToys.Top);
             if (top == null || !top.Root.activeSelf) return;
             var spin = top.Part("Spin"); if (spin == null) return;
+            // not in its game or its play at Home (a word's tap gave it a whizz): it winds down
+            if (!(InToyGame && IsTopGame) && (playing == null || playing.Id != COgheToys.Top)) topSpeed = Mathf.MoveTowards(topSpeed, 0, dt * 300);
             topAngle = Mathf.Repeat(topAngle + topSpeed * dt, 360);
             topPrecess = Mathf.Repeat(topPrecess + (120 + 300 * topWobble) * dt, 360);
             Vector3 axis = Quaternion.AngleAxis(topPrecess, Vector3.up) * Vector3.right;
@@ -66,7 +71,7 @@ namespace GravityBox.Venom
                     Time += dt;
                     if (topRescuedAt < 0)
                     {   // it slows and wobbles more and more; fully over, it falls
-                        topWobble = Mathf.Clamp01((bonusTime - .3f) / TopWobbleTime); topSpeed = Mathf.Lerp(900, 300, topWobble);
+                        topWobble = Mathf.Clamp01((bonusTime - .3f) / TopWobbleNow); topSpeed = Mathf.Lerp(900, 300, topWobble);
                         TopWatchPose(bonusTime);
                         if (topWobble >= 1) { BonusMisses++; StartGag(COgheGag.TopFall); }
                     }
@@ -79,7 +84,7 @@ namespace GravityBox.Venom
                         {
                             COgheAnalytics.Log("bonus_toy_beat", "rescue", toyPattern + 1); topRescuedAt = -1;
                             toyPattern++;
-                            if (toyPattern < TopRescues) StartToyShow();
+                            if (toyPattern < TopRescuesNow) StartToyShow();
                             else { bonusPhase = BonusPhase.ToyJam; bonusTime = 0; jamBoostAt = -100; Begin(COgheAct.Home, 1e6f); COgheAudio.Instance?.Play("creature_happy", .5f, 0, .1f); }
                         }
                     }

@@ -16,7 +16,7 @@ namespace GravityBox.Venom
         public const float BalloonIntroLength = 2.0f, BalloonShowLength = 1.6f, BalloonTieLength = 1.3f;
         private int balloonPuffs; private float balloonPuffAt = -100, balloonSize = .3f;
         private bool IsBalloonGame => toy != null && toy.Id == COgheToys.Balloon;
-        private int BalloonNeeds => BalloonPuffs[Mathf.Clamp(toyPattern, 0, BalloonPuffs.Length - 1)];
+        private int BalloonNeeds => toyLevel > 0 ? 3 : BalloonPuffs[Mathf.Clamp(toyPattern, 0, BalloonPuffs.Length - 1)];   // later: three each
         private static Transform BalloonPart(COgheHomeItem bunch, int i) => bunch.Part("Balloon" + i);
         private static Transform StringPart(COgheHomeItem bunch, int i) => bunch.Part("String" + i);
         /// <summary>Where COghe holds a balloon to blow it up: in front of its mouth, toward the player.</summary>

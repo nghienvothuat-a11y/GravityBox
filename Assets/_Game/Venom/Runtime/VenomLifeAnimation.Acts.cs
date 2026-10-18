@@ -277,6 +277,35 @@ namespace GravityBox.Venom
                     Straight(new Vector3(-1.0f, 2.3f, .12f), new Vector3(.2f, 1.5f, .1f), .15f, .11f);
                     Straight(new Vector3(1.0f, 2.3f, .12f), new Vector3(-.2f, 1.5f, .1f), .15f, .11f);
                     break;
+                case COgheShape.Horn:
+                    // the horn (a word from chapter 7): a stem up to a tube with a mouthpiece, three button knobs on top and a
+                    // wide bell
+                    Puddle(.45f, .25f, 4, .62f); Src(0, .55f, 0, .55f); Src(0, .85f, 0, .5f);
+                    Straight(new Vector3(-1.15f, 1.15f, 0), new Vector3(.5f, 1.15f, 0), .22f, .22f);
+                    Src(.75f, 1.15f, 0, .55f);
+                    for (int i = 0; i < 6; i++) { float a = i * Mathf.PI * 2 / 6; Src(.95f, 1.15f + Mathf.Cos(a) * .45f, Mathf.Sin(a) * .45f, .38f); }
+                    for (int k = 0; k < 3; k++) Straight(new Vector3(-.55f + k * .32f, 1.3f, 0), new Vector3(-.55f + k * .32f, 1.65f, 0), .12f, .13f);
+                    break;
+                case COgheShape.Balloon:
+                    // a balloon on a string: a big round head, a knot, a wavy string down to the floor
+                    Puddle(.35f, .2f, 4, .5f);
+                    Src(0, 1.8f, 0, 1.1f, 1.3f); Src(0, 2.15f, 0, .8f); Src(0, 1.45f, 0, .8f); Src(0, 1.1f, 0, .3f);
+                    LimbQ(new Vector3(0, 1.05f, 0), new Vector3(.25f, .8f, 0), new Vector3(-.2f, .5f, 0), new Vector3(.1f, .22f, 0), .07f, .06f);
+                    break;
+                case COgheShape.Top:
+                    // a spinning top: a cone on its tip, a wide waist, a handle on top
+                    Src(0, .3f, 0, .3f); Src(0, .7f, 0, .65f); Src(0, 1.1f, 0, .95f);
+                    for (int i = 0; i < 6; i++) { float a = i * Mathf.PI * 2 / 6; Src(Mathf.Cos(a) * .7f, 1.15f, Mathf.Sin(a) * .7f, .5f); }
+                    Src(0, 1.45f, 0, .7f);
+                    Straight(new Vector3(0, 1.55f, 0), new Vector3(0, 2.25f, 0), .15f, .13f);
+                    break;
+                case COgheShape.MusicBox:
+                    // a music box: a box with a lid line and a crank on its side
+                    for (int x = -1; x <= 1; x++) for (int y = 0; y < 2; y++) for (int z = -1; z <= 1; z += 2) Src(x * .55f, .55f + y * .55f, z * .32f, .52f);
+                    Straight(new Vector3(-.85f, 1.42f, 0), new Vector3(.85f, 1.42f, 0), .14f, .14f);   // the lid's edge
+                    Straight(new Vector3(.85f, .9f, 0), new Vector3(1.3f, .9f, 0), .1f, .1f); Straight(new Vector3(1.3f, .9f, 0), new Vector3(1.3f, 1.35f, 0), .1f, .1f);
+                    Src(1.3f, 1.45f, 0, .22f);
+                    break;
                 case COgheShape.One:
                 case COgheShape.Two:
                 case COgheShape.Three:

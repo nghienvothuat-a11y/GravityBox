@@ -34,7 +34,7 @@ namespace GravityBox.Venom
         public static int Pending()
         {
             if (AllFull) return 0;
-            for (int chapter = 1; COgheBonus.Rounds(chapter) != null; chapter++)
+            for (int chapter = 1; chapter <= COgheBonus.MaxChapters && COgheBonus.Rounds(chapter) != null; chapter++)
                 if (COgheBonus.Done(chapter) && !Picked(chapter)) return chapter;
             return 0;
         }

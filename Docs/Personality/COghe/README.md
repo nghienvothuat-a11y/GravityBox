@@ -306,7 +306,23 @@ Bản mẫu cho chương 2, chờ Mrk duyệt clip `OUTBOX/COGHE_HIEURA_TOYS_202
   - Ba bài xong thì hộp tự chơi tiếp, hai bên cùng nhảy, rồi nắp đóng lại. Chỉ chạm sai chỗ mới có trò hài. Ở Nhà, chạm hộp
     thì COghe mở hộp, quay nhạc và nhảy.
 - Âm thanh: `top_whirr`, `top_clack`, `mbox_0..7` (chuông hộp nhạc, thang ngũ cung).
-- **Chưa làm:** câu hỏi cho chương 7+ (khi có thêm màn).
+- **Chương 7 trở đi** (đợt 4, 18/10, cho tới 300 màn): `COgheBonus.Rounds` tự sinh câu hỏi từ số chương, tối đa
+  `MaxChapters` = 60. Lần nào vào cũng ra đúng câu đó, nên bỏ ngang rồi vào lại vẫn khớp, và Boss nào cũng có Hiểu ra kèm
+  thẻ Ability.
+  - Câu 1: 3 từ theo thứ tự, có số lượng (2 hoặc 3) ở 1 từ.
+  - Câu 2: 4 từ, số lượng ở 1 từ; từ chương 10 thì 2 từ.
+  - Trong một câu không từ nào lặp lại.
+  - Từ lấy trong vốn mọi người chơi đều có: vuốt, cho ăn, bóng, trống, và 4 từ mới là kèn, bóng bay, con quay, hộp nhạc
+    (`COgheShape.Horn/Balloon/Top/MusicBox`).
+  - Từ đồ chơi: chạm đúng lượt thì COghe ra chơi món đó. Chạm sai lượt thì COghe giật mình (`Startle`), món đó vẫn kêu tiếng
+    của nó.
+  - Câu cuối: lần lượt 5 trò (trống, kèn, bóng bay, con quay, hộp nhạc), cứ 5 chương thì khó thêm một bậc
+    (`COgheBonusRound.Level`):
+    - trống: mỗi nhịp thêm một tiếng, tối đa 6;
+    - kèn: mỗi giai điệu thêm một nốt, tối đa 5;
+    - bóng bay: 3 lần thổi mỗi quả;
+    - con quay: lắc nhanh hơn (tối thiểu 2,8 s) và phải cứu thêm, tối đa 5 lần.
+  - Chương 1–6 giữ nguyên.
 - **Kiểm tra:** `COgheToyTests`. Bản Mac: `-coghe-toy-reel <thư mục>` quay trò trống và các trò hài,
-  `-coghe-toy-reel2 <thư mục>` quay trống trong câu hỏi, `-coghe-toy-reel3 <thư mục>` quay kèn và bóng bay, `-coghe-toy-reel4 <thư mục>` quay con quay và hộp nhạc (PNG 30 khung/s, `sounds.txt`, `marks.txt`; tối đa
+  `-coghe-toy-reel2 <thư mục>` quay trống trong câu hỏi, `-coghe-toy-reel3 <thư mục>` quay kèn và bóng bay, `-coghe-toy-reel4 <thư mục>` quay con quay và hộp nhạc, `-coghe-chapter7-reel <thư mục>` chơi hết chương 7 (PNG 30 khung/s, `sounds.txt`, `marks.txt`; tối đa
   9000 khung).
