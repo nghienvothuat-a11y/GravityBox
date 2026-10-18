@@ -49,6 +49,8 @@ namespace GravityBox.Tests
   [UnityTest] public IEnumerator SpatialPlusG7Solve(){yield return SolvePlus("G7");}
   [UnityTest] public IEnumerator SpatialPlusG8Solve(){yield return SolvePlus("G8");}
   [UnityTest] public IEnumerator SpatialPlusG9Solve(){yield return SolvePlus("G9");}
+  [UnityTest] public IEnumerator SpatialPlusG10Solve(){yield return SolvePlus("G10");}
+  [UnityTest] public IEnumerator SpatialPlusG11Solve(){yield return SolvePlus("G11");}
   [UnityTest] public IEnumerator SpatialPlusG2Solve(){yield return SolvePlus("G2");}
   [UnityTest] public IEnumerator SpatialPlusG3Solve(){yield return SolvePlus("G3");}
   [UnityTest] public IEnumerator SpatialPlusG4Solve(){yield return SolvePlus("G4");}

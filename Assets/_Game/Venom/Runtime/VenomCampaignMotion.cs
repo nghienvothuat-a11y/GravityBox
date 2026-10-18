@@ -18,6 +18,8 @@ namespace GravityBox.Venom
         private readonly VenomCampaign game;
         private readonly List<Vector3> nodes=new List<Vector3>();
         private readonly List<VenomSurfacePatch> nodeSurfaces=new List<VenomSurfacePatch>();
+        // How high a node stands above the foot of its surface, for a near-vertical surface (0 for a floor or top).
+        private readonly List<float> nodeRise=new List<float>();
         private readonly List<List<int>> links=new List<List<int>>();
         private readonly List<List<int>> linkStorage=new List<List<int>>();
         private readonly List<Vector3> worldNodes=new List<Vector3>();
@@ -243,12 +245,15 @@ namespace GravityBox.Venom
             COgheMobileMetrics.Begin(2);GraphBuildCount++;
             Physics.SyncTransforms();
             navigation.Capture(game);
-            nodes.Clear();worldNodes.Clear();nodeSurfaces.Clear();links.Clear();cells.Clear();int cellCount=0;
+            nodes.Clear();worldNodes.Clear();nodeSurfaces.Clear();nodeRise.Clear();links.Clear();cells.Clear();int cellCount=0;
             Matrix4x4 toRoot=game.Root.worldToLocalMatrix;
             foreach(var s in game.Surfaces)
             {
                 if(!s.isActiveAndEnabled||s.IsCurved)continue;
                 Matrix4x4 toWorld=s.transform.localToWorldMatrix;
+                bool wall=Mathf.Abs(Vector3.Dot(s.Normal,game.Root.up))<.5f;float foot=float.PositiveInfinity;
+                if(wall)foreach(var corner in new[]{new Vector3(-1,-1),new Vector3(1,-1),new Vector3(1,1),new Vector3(-1,1)})
+                    foot=Mathf.Min(foot,Vector3.Dot(toWorld.MultiplyPoint3x4(new Vector3(corner.x*s.Size.x*.5f,corner.y*s.Size.y*.5f,0)),game.Root.up));
                 int nx=Mathf.Max(1,Mathf.CeilToInt(s.Size.x/.065f)),ny=Mathf.Max(1,Mathf.CeilToInt(s.Size.y/.065f));
                 for(int x=0;x<=nx;x++)for(int y=0;y<=ny;y++)
                 {
@@ -257,7 +262,7 @@ namespace GravityBox.Venom
                     Vector3 world=toWorld.MultiplyPoint3x4(p);
                     if(!s.Contains(p)||navigation.Occupied(world))continue;
                     int index=nodes.Count;Vector3 local=toRoot.MultiplyPoint3x4(world);
-                    nodes.Add(local);worldNodes.Add(world);nodeSurfaces.Add(s);
+                    nodes.Add(local);worldNodes.Add(world);nodeSurfaces.Add(s);nodeRise.Add(wall?Vector3.Dot(world,game.Root.up)-foot:0);
                     if(linkStorage.Count<=index)linkStorage.Add(new List<int>(8));
                     var connections=linkStorage[index];connections.Clear();links.Add(connections);
                     Vector3Int cell=Cell(local);
@@ -338,6 +343,11 @@ namespace GravityBox.Venom
                 foreach(int next in links[current])
                 {
                     if(done[next])continue;
+                    // On glass roads (NoSlickClimb) a slick wall more than a small step above its foot is entered only going
+                    // down (a slide): a far tap once planned a short slick climb (it slipped back) over the long road that was
+                    // the way (19/10/2026). Other levels keep the slick climb a far tap may try, which the Origin lessons teach.
+                    if(nodeSurfaces[next].NoSlickClimb&&nodeRise[next]>.06f&&!nodeSurfaces[next].Grip(worldNodes[next])&&
+                       Vector3.Dot(worldNodes[next]-worldNodes[current],game.Root.up)>-.005f)continue;
                     float tractionCost=grippyGoal&&!nodeSurfaces[next].Grip(worldNodes[next])?20f:1f;
                     float d=costs[current]+Vector3.Distance(nodes[current],nodes[next])*tractionCost;
                     if(d<costs[next]){costs[next]=d;parents[next]=current;Queue(next);}

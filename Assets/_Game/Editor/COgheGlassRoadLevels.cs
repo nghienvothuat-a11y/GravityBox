@@ -25,6 +25,7 @@ namespace GravityBox.Editor
   {
    for(int pane=1;pane<=4;pane++)
    {
+    Pane(c,pane).NoSlickClimb=true;   // fences are walls: route planning never tries to climb them
     float uMax=pane<=2?.40f:.30f;
     var slick=new List<Rect>{Rect.MinMaxRect(-uMax,-.30f,uMax,-.30f+RoadFence)};
     var bare=roads.Where(r=>r.pane==pane).Select(r=>Rect.MinMaxRect(r.u0,r.v0,r.u1,r.v1)).ToList();
@@ -76,6 +77,8 @@ namespace GravityBox.Editor
    var task=rail.gameObject.AddComponent<COgheTapRail>();task.Rail=rail;task.Handle=prop.ManipulationGrip;task.WorkingSurface=Pane(c,pane);task.TouchControlBody=true;
    task.Label=key;task.PickHandleOnly=true;task.TrackStandPoint=true;task.StandOffset=new Vector3(0,-.068f,0);
    task.TouchSize=side?new Vector3(.07f,.08f,.10f):new Vector3(.10f,.08f,.07f);
+   // slick all round: worked from the road beneath, never climbed (on top, COghe would reach the bare roof)
+   foreach(var face in rail.GetComponentsInChildren<VenomSurfacePatch>(true)){face.Slippery=true;face.NoSlickClimb=true;}
    TapLabel(rail.transform,key,new Vector3(0,.038f,side?0:-.030f));
    foreach(float end in new[]{0f,travel})
     MechanismVisual(c.Root,key+" visible socket",at+axis*end+Vector3.down*.011f,side?new Vector3(.065f,.005f,.081f):new Vector3(.081f,.005f,.065f),metal);
@@ -166,6 +169,46 @@ namespace GravityBox.Editor
    ExitShutter(c,cHandle.Rail,"C exit shutter",Vector3.down,.12f);
    PlusStep(1,new Vector3(-.10f,-.30f,.06f));PlusStep(2,new Vector3(.12f,-.30f,-.12f));PlusStep(3,new Vector3(.28f,-.30f,.12f));
    PlusStep(4,new Vector3(.34f,-.12f,.25f));PlusStep(5,new Vector3(.40f,-.05f,.04f));PlusStep(6,c.Exit);
+  }
+
+  // G10 · Thang máy giữa hai đường (planned for 40; Mrk 19/10/2026: replace a repeated level): a low road and a high road on
+  // different walls. Up the low road on the left glass to B, which hangs there and unlocks the lift in the back-right corner;
+  // down again, ride the lift up: its deck stops at the foot of the high road, which runs along the back and right glass to
+  // the exit. The high road is 14 cm above the lowered deck: out of reach until the lift rises.
+  static void PlusG10(ExpansionContext c)
+  {
+   c.Exit=new Vector3(.40f,-.07f,-.12f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.10f,-.25f,-.15f);NextShell(c,.10f,false);
+   // roads end 12 cm under the roof, so their fences reach it: from B's carriage nothing bare is in reach
+   GlassRoads(c,(3,-.22f,-.10f,-.30f,-.02f),(3,-.22f,.20f,-.12f,-.02f),   // the low road: up the left glass, then along it
+    (2,.115f,.40f,-.12f,-.02f),(4,-.20f,.30f,-.12f,-.02f));              // the high road: from the raised deck, back then right glass
+   var b=GlassHandle(c,"B",new Vector3(-.368f,-.007f,.12f),Vector3.forward,3);
+   ChapterLift(c,new Vector3(.25f,-.282f,.15f),.18f,b.Rail,"L");
+   PlusStep(1,new Vector3(-.40f,-.08f,-.16f));PlusStep(2,new Vector3(-.40f,-.03f,.12f));PlusStep(3,new Vector3(.25f,-.26f,.15f));PlusStep(4,c.Exit);
+  }
+
+  // G11 · Nửa giữ, nửa qua (planned for 52, the chapter of half and quarter bodies): the gate across the back road stands open
+  // while pad P on the floor carries at least half a body (a quarter is too light), or for good once C is pulled. The exit, on
+  // the left wall, needs the whole body. Split at Q: one half holds P; the other climbs the front and right roads onto the right
+  // shelf, crosses the back road to the left shelf and pulls C on the left glass (the gate stays open, the exit opens); the first
+  // half follows; the halves merge on the left shelf and leave. Level 69 then takes the latch away (a relay of holders).
+  static void PlusG11(ExpansionContext c)
+  {
+   c.Exit=new Vector3(-.40f,-.07f,-.21f);c.Outward=Vector3.left;c.Spawn=new Vector3(-.12f,-.25f,-.235f);NextShell(c,.10f,false);var floor=c.Surfaces[0];
+   GlassRoads(c,(1,.18f,.30f,-.30f,-.02f),(1,.18f,.40f,-.12f,-.02f),   // the front: up, right to the corner
+    (4,-.30f,.02f,-.12f,-.02f),                                          // the right: to the right shelf
+    (2,-.40f,.40f,-.12f,-.02f),                                          // the back: corner to corner, a gate halfway
+    (3,-.27f,.30f,-.12f,-.02f));                                         // the left: the left shelf, C and the exit
+   NextQuantum(c,new Vector3(-.12f,-.30f,-.12f));
+   // half a body (a quarter is .024); wide, as a half stops where the route ends, not on the pad's centre (10 cm left it 4 cm off, under .030)
+   var p=ExpansionPad(c,"P",new Vector3(-.28f,-.298f,.09f),.030f,.14f);
+   ChapterLedge(c,"Right shelf",new Vector3(.29f,-.13f,.16f),new Vector3(.22f,.02f,.28f));
+   ChapterLedge(c,"Left shelf",new Vector3(-.26f,-.13f,.20f),new Vector3(.28f,.02f,.20f));   // from just past the gate
+   var gate=PlusGate(c,"Back road gate",new Vector3(-.03f,-.07f,.294f),Vector3.down,.12f,new Vector3(.16f,.14f,.008f));
+   var cHandle=GlassHandle(c,"C",new Vector3(-.368f,-.007f,.04f),Vector3.back,3);cHandle.OneWay=true;
+   var hold=PlusLatch(c,"P holds the back road gate; C keeps it open",new[]{p},gate,true,false);hold.Rails=new[]{cHandle.Rail};
+   ExitShutter(c,cHandle.Rail,"C exit shutter",Vector3.down,.12f);
+   PlusStep(1,new Vector3(-.12f,-.30f,-.12f));PlusStep(2,new Vector3(-.28f,-.30f,.09f));PlusStep(3,new Vector3(.29f,-.12f,.16f));
+   PlusStep(4,new Vector3(-.40f,-.05f,.04f));PlusStep(5,c.Exit);
   }
  }
 }

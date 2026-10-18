@@ -14,7 +14,7 @@ namespace GravityBox.Tests
  // tape's own hold is checked from the floor by GlassCrawlTapeHolds.
  public sealed partial class COgheSpatialCampaignTests
  {
-  private IEnumerator GlassCrawlNoShortcut(string key)
+  private IEnumerator GlassCrawlNoShortcut(string key,params string[] open)
   {
    yield return LoadPlus(key);yield return Wait(.5f);
    Directory.CreateDirectory("Artifacts/GlassCrawl");string log=$"Artifacts/GlassCrawl/shortcut-{key}.txt";File.WriteAllText(log,"");
@@ -38,7 +38,8 @@ namespace GravityBox.Tests
    yield return Tap(game.Owner.Outlet.position);
    for(int i=0;i<15/Dt&&!game.Owner.Completed;i++){Tick();if(i%60==0)yield return null;}
    Assert.IsFalse(game.Owner.Completed,$"{key}: the exit let COghe out without the mechanisms");
-   foreach(var rail in game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())Assert.AreEqual(0,rail.CompletedJourneys,$"{key}: no tap may work a device here ({rail.Label})");
+   // a device the level leaves open from the start (G10's B, on the first road) may be worked; it opens no way to the exit
+   foreach(var rail in game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())if(System.Array.IndexOf(open,rail.Label)<0)Assert.AreEqual(0,rail.CompletedJourneys,$"{key}: no tap may work a device here ({rail.Label})");
    File.AppendAllText(log,$"highest body centre {top:F3}\n");
   }
   // From the floor, the tape alone keeps COghe off the glass: a tap high on taped glass leaves it below the tape's top.
@@ -109,6 +110,10 @@ namespace GravityBox.Tests
   [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG9NoShortcut(){yield return GlassCrawlNoShortcut("G9");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG9SolveAtFrameRate(){yield return GlassCrawlSolveAtFrameRate("G9");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG9SolveAt30Fps(){yield return GlassCrawlSolveAtFrameRate("G9",30);}
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG10NoShortcut(){yield return GlassCrawlNoShortcut("G10","B");}
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG10SolveAtFrameRate(){yield return GlassCrawlSolveAtFrameRate("G10");}
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG11NoShortcut(){yield return GlassCrawlNoShortcut("G11");}
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG11SolveAtFrameRate(){yield return GlassCrawlSolveAtFrameRate("G11");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG2NoShortcut(){yield return GlassCrawlNoShortcut("G2");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG3NoShortcut(){yield return GlassCrawlNoShortcut("G3");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG4NoShortcut(){yield return GlassCrawlNoShortcut("G4");}

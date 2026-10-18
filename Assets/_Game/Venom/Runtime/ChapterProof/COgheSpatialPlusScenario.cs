@@ -36,7 +36,7 @@ namespace GravityBox.Venom.ChapterProof
     case "N31":yield return N31();break;case "N33":yield return N33();break;case "N35":yield return N35();break;case "N32":yield return N32();break;case "N40":yield return N40();break;case "N34":yield return N34();break;case "N44":yield return N44();break;case "N45":yield return N45();break;
     case "N41":yield return N41();break;case "N42":yield return N42();break;case "N47":yield return N47();break;case "N49":yield return N49();break;case "N50":yield return N50();break;case "N48":yield return N48();break;case "N46":yield return N46();break;case "N43":yield return N43();break;
     case "G1":yield return G1();break;case "G2":yield return G2();break;case "G3":yield return G3();break;case "G4":yield return G4();break;
-    case "G5":yield return G5();break;case "G6":yield return G6();break;case "G7":yield return G7();break;case "G8":yield return G8();break;case "G9":yield return G9();break;
+    case "G5":yield return G5();break;case "G6":yield return G6();break;case "G7":yield return G7();break;case "G8":yield return G8();break;case "G9":yield return G9();break;case "G10":yield return G10();break;case "G11":yield return G11();break;
     default:throw new NotImplementedException("Spatial Plus route "+COgheSpatialNextScenario.ContentKey(game));
    }
    yield return s.Exit();
@@ -136,6 +136,31 @@ namespace GravityBox.Venom.ChapterProof
    game.SelectFragment(holder);yield return Pull("C","C, hung on the right glass, opens the exit");
    yield return s.Walk(holder,W(.22f,-.108f,.13f),"Back to the right shelf");
    yield return s.Merge(W(.27f,-.12f,.17f));
+  }
+  IEnumerator G10()
+  {
+   var lift=Find<COghePassengerLift>();
+   // B is tapped through the glass (a tap on the near wall itself passes through to the floor): COghe goes up the low road
+   yield return Pull("B","Up the low road to B, hung on the left glass: it unlocks the lift");
+   yield return s.Go(W(.0f,-.30f,.0f),"Down the low road to the floor");
+   yield return tap(lift.Panel.position);yield return until(45,()=>lift.Trips==1&&lift.Rail.AtEnd,"Board the lift and ride up to the high road");
+   yield return s.Go(W(.40f,-.07f,.04f),"Along the high road: the back glass, the corner, the right glass");
+  }
+  IEnumerator G11()
+  {
+   var q=Find<COgheQuantumSplitter>();var gate=s.Slider("Back road gate");
+   yield return s.Split(q,Selected);int holder=q.LastLeft,runner=q.LastRight;
+   yield return s.Walk(holder,W(-.28f,-.298f,.09f),"One half stands on P: half a body opens the gate");
+   yield return until(15,()=>gate.AtEnd,"P holds the back road gate open");
+   yield return s.Walk(runner,W(.24f,-.30f,-.24f),"The other half goes to the front road's foot");
+   yield return s.Walk(runner,W(.30f,-.12f,.12f),"Up the front road, round the corner, along the right road onto the right shelf");
+   yield return s.Walk(runner,W(-.22f,-.108f,.14f),"Across the back road onto the left shelf");
+   game.SelectFragment(runner);yield return Pull("C","C, hung on the left glass, keeps the gate open and opens the exit");
+   yield return s.Walk(runner,W(-.22f,-.108f,.14f),"Back onto the left shelf");
+   yield return s.Walk(holder,W(.24f,-.30f,-.24f),"The first half leaves P (C holds the gate) for the front road's foot");
+   yield return s.Walk(holder,W(.30f,-.12f,.12f),"Up onto the right shelf");
+   yield return s.Walk(holder,W(-.30f,-.108f,.24f),"Across the back road onto the left shelf");
+   yield return s.Merge(W(-.26f,-.12f,.19f));
   }
   IEnumerator E01()
   {

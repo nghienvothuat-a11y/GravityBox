@@ -330,7 +330,7 @@ namespace GravityBox.Tests
         [UnityTest] public IEnumerator AllFiftyScenesExposeProductControlsInsideTheSafeArea()
         {
             string[] scenes=ui.Catalog.Levels[0].SceneSequence;
-            Assert.AreEqual(69,scenes.Length);   // 50 + the crate levels (Mrk, 06/10/2026) + the glass-crawl levels G1–G5 (12/10/2026) + glass roads G6–G9 (18/10/2026)
+            Assert.AreEqual(71,scenes.Length);   // 50 + the crate levels (Mrk, 06/10/2026) + the glass-crawl levels G1–G5 (12/10/2026) + glass roads G6–G9 (18/10/2026)
             for(int i=0;i<scenes.Length;i++)
             {
                 yield return SceneManager.LoadSceneAsync(scenes[i]);yield return null;

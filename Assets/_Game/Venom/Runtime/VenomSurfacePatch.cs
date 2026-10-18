@@ -19,6 +19,8 @@ namespace GravityBox.Venom
         public Rect SlipRegion;
         [Tooltip("More slick rectangles on this face (patch-local x/y), e.g. the slick tape on glass COghe may climb.")]
         public Rect[] SlipRegions;
+        [Tooltip("Route planning never climbs this face's slick parts (glass roads 66+, whose slick fences are walls). Elsewhere a far tap may plan a slick climb that visibly fails, as the Origin lessons teach.")]
+        public bool NoSlickClimb;
         public Collider Shape;
         public float SphereRadius;
         public COgheCurvedSurface Curved;

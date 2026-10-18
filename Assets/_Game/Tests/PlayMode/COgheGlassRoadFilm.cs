@@ -16,7 +16,7 @@ namespace GravityBox.Tests
   [UnityTest,Explicit,Timeout(3600000)] public IEnumerator GlassRoadFilm()
   {
    string root=Environment.GetEnvironmentVariable("GLASSROAD_FILM")??"Artifacts/GlassRoadFilm";
-   foreach(var key in (Environment.GetEnvironmentVariable("GLASSROAD_KEYS")??"G6,G7,G8,G9").Split(','))
+   foreach(var key in (Environment.GetEnvironmentVariable("GLASSROAD_KEYS")??"G6,G7,G8,G9,G10,G11").Split(','))
    {
     yield return LoadPlus(key);yield return Wait(.5f);
     string dir=$"{root}/{key}";Directory.CreateDirectory(dir);int frame=0;var marks=new System.Text.StringBuilder();string last="";
