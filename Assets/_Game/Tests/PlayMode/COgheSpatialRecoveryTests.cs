@@ -32,7 +32,7 @@ namespace GravityBox.Tests
    {
     yield return Load(n);yield return Wait(5);Assert.IsFalse(game.Owner.Completed);Assert.IsFalse(game.Owner.Lost);
     // Spatial 11–30, Spatial Plus, the crate levels and the glass-crawl levels continue the pilot sequence (one catalog of 65); V2/Origin stay separate.
-    Assert.AreEqual(68,game.PlayableLevelCount);Assert.AreEqual("coghe.spatial.pilot",game.Definition.ProgressKey);
+    Assert.AreEqual(69,game.PlayableLevelCount);Assert.AreEqual("coghe.spatial.pilot",game.Definition.ProgressKey);
     Assert.IsTrue(game.Definition.ViewOnly);Assert.IsFalse(game.Definition.CanRotate);
     foreach(var r in game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())Assert.Less(r.Position,.009f,"No spontaneous motion: "+r.name);
     if(n==10){Assert.IsTrue(game.Definition.Boss);Assert.IsEmpty(game.Definition.Lesson);}

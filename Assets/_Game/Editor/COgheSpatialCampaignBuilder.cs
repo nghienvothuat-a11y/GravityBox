@@ -36,8 +36,8 @@ namespace GravityBox.Editor
    "K05","N42","K06","N26","N31","N33","K07","26","N35","N43","N40",
    // Chapter 6: rotate a loaded carrier, then motor load and linked engines.
    "N46","N45","N49","N32","K08","N34","K09","29","K10","N19","N50",
-   // Prototypes 66–68 (Mrk 18/10/2026): glass roads over four walls, easy, medium, hard.
-   "G6","G7","G8"};
+   // Prototypes 66–69 (Mrk 18/10/2026): glass roads over four walls, easy, medium, hard, very hard.
+   "G6","G7","G8","G9"};
   public static string SpatialContentPath(string key)=>char.IsDigit(key[0])?$"{SpatialFolder}/COgheSpatial{key}.unity":$"{SpatialFolder}/COgheSpatialPlus{key}.unity";
   public static string SpatialContentPath(int n)=>SpatialContentPath(n.ToString("00"));
   public static int SpatialPosition(string key){int i=Array.IndexOf(SpatialOrder,key);if(i<0)throw new ArgumentException("Not in the Spatial order: "+key);return i+1;}

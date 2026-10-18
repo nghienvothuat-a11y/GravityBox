@@ -136,5 +136,36 @@ namespace GravityBox.Editor
    ExitShutter(c,cHandle.Rail,"C exit shutter",Vector3.down,.12f);   // down, under the road: back or forward it would cover the road
    PlusStep(1,new Vector3(.10f,-.30f,.0f));PlusStep(2,new Vector3(-.30f,-.10f,.15f));PlusStep(3,new Vector3(.40f,-.05f,.12f));PlusStep(4,c.Exit);
   }
+
+  // G9 · Hai nửa, bốn vách (69, very hard; Mrk 18/10/2026: "cực khó, các cơ quan kết hợp"): the roads of G8, with a gate across
+  // the back road that only stands open while a pad is weighed: P1 on the floor or P2 on the right shelf. The exit is on the
+  // right wall and needs the whole body, so COghe splits at Q: one half holds P1 while the other climbs the front and left
+  // roads and crosses the back glass to P2; P2 takes over, and the first half climbs and crosses too, pulls C (hung on the
+  // right glass, it opens the exit) and comes back; the halves merge on the right shelf and leave. A alone opens the way up
+  // the front glass; the front road runs right to a dead end. (P1 is off the climbers' way: halves that pass close merge.)
+  static void PlusG9(ExpansionContext c)
+  {
+   // the exit ~19 cm past C's stand: opened, its pull must not take the half that worked C before the halves merge
+   c.Exit=new Vector3(.40f,-.07f,-.21f);c.Outward=Vector3.right;c.Spawn=new Vector3(.12f,-.25f,-.235f);NextShell(c,.10f,false);var floor=c.Surfaces[0];
+   GlassRoads(c,(1,-.30f,-.18f,-.30f,-.02f),(1,-.40f,.22f,-.12f,-.02f),   // the front: up, left to the corner (right: a dead end)
+    (3,-.30f,.02f,-.12f,-.02f),                                          // the left: from the front corner to the left shelf
+    (2,-.40f,.40f,-.12f,-.02f),                                          // the back: corner to corner, a gate halfway
+    (4,-.27f,.30f,-.12f,-.02f));                                         // the right: the right shelf, C and the exit
+   NextQuantum(c,new Vector3(.12f,-.30f,-.12f));                       // its back is closed: start in front of it
+   var front=PlusGate(c,"Front road cover",new Vector3(-.24f,-.21f,-.294f),Vector3.right,.16f,new Vector3(.14f,.18f,.008f));
+   var a=ViewTask(c,"A",new Vector3(-.10f,-.277f,.06f),Vector3.right,.08f,floor);a.OneWay=true;
+   ViewLink(c,a.Rail,front,false,null);
+   // both shelves meet the back glass and run along it (the way onto the back road is over a shelf)
+   var left=ChapterLedge(c,"Left shelf",new Vector3(-.29f,-.13f,.16f),new Vector3(.22f,.02f,.28f));
+   var right=ChapterLedge(c,"Right shelf",new Vector3(.26f,-.13f,.20f),new Vector3(.28f,.02f,.20f));   // from just past the gate
+   var p1=ExpansionPad(c,"P1",new Vector3(.28f,-.298f,.12f),.009f,.09f);   // on the floor, clear of Q's trays and the roads
+   var p2=ExpansionPad(c,"P2",new Vector3(.34f,-.108f,.25f),.009f,.09f);   // the right shelf's back corner: the other half arrives clear of it
+   var gate=PlusGate(c,"Back road gate",new Vector3(.03f,-.07f,.294f),Vector3.down,.12f,new Vector3(.16f,.14f,.008f));
+   PlusLatch(c,"P1 or P2 holds the back road gate",new[]{p1,p2},gate,true,false);
+   var cHandle=GlassHandle(c,"C",new Vector3(.368f,-.007f,.04f),Vector3.back,4);cHandle.OneWay=true;   // just before the right shelf
+   ExitShutter(c,cHandle.Rail,"C exit shutter",Vector3.down,.12f);
+   PlusStep(1,new Vector3(-.10f,-.30f,.06f));PlusStep(2,new Vector3(.12f,-.30f,-.12f));PlusStep(3,new Vector3(.28f,-.30f,.12f));
+   PlusStep(4,new Vector3(.34f,-.12f,.25f));PlusStep(5,new Vector3(.40f,-.05f,.04f));PlusStep(6,c.Exit);
+  }
  }
 }

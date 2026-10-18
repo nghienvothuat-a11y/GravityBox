@@ -36,7 +36,7 @@ namespace GravityBox.Venom.ChapterProof
     case "N31":yield return N31();break;case "N33":yield return N33();break;case "N35":yield return N35();break;case "N32":yield return N32();break;case "N40":yield return N40();break;case "N34":yield return N34();break;case "N44":yield return N44();break;case "N45":yield return N45();break;
     case "N41":yield return N41();break;case "N42":yield return N42();break;case "N47":yield return N47();break;case "N49":yield return N49();break;case "N50":yield return N50();break;case "N48":yield return N48();break;case "N46":yield return N46();break;case "N43":yield return N43();break;
     case "G1":yield return G1();break;case "G2":yield return G2();break;case "G3":yield return G3();break;case "G4":yield return G4();break;
-    case "G5":yield return G5();break;case "G6":yield return G6();break;case "G7":yield return G7();break;case "G8":yield return G8();break;
+    case "G5":yield return G5();break;case "G6":yield return G6();break;case "G7":yield return G7();break;case "G8":yield return G8();break;case "G9":yield return G9();break;
     default:throw new NotImplementedException("Spatial Plus route "+COgheSpatialNextScenario.ContentKey(game));
    }
    yield return s.Exit();
@@ -118,6 +118,24 @@ namespace GravityBox.Venom.ChapterProof
    yield return Pull("B","B lowers the cover across the back road");
    yield return s.Go(W(.10f,-.04f,.30f),"Off the shelf onto the back road and along it");
    yield return Pull("C","C, hung on the right glass, opens the exit");
+  }
+  IEnumerator G9()
+  {
+   var q=Find<COgheQuantumSplitter>();var gate=s.Slider("Back road gate");
+   yield return Pull("A","A slides the cover off the front road's foot");
+   yield return s.Split(q,Selected);int holder=q.LastLeft,runner=q.LastRight;
+   yield return s.Walk(holder,W(.28f,-.298f,.12f),"The first half stands on P1 on the floor");
+   yield return until(15,()=>gate.AtEnd,"P1 holds the back road gate open");
+   // as a player taps the way, step by step: a far tap lets the route finder try the short climb up slick glass
+   yield return s.Walk(runner,W(-.24f,-.30f,-.24f),"The second half goes to the front road's foot");
+   yield return s.Walk(runner,W(-.30f,-.12f,.20f),"Up the front road, round the corner, along the left road onto the left shelf");
+   yield return s.Walk(runner,W(.34f,-.108f,.25f),"Across the back road (P1 holds the gate) onto P2");
+   yield return s.Walk(holder,W(-.24f,-.30f,-.24f),"P2 holds the gate: the first half leaves P1 for the front road's foot");
+   yield return s.Walk(holder,W(-.30f,-.12f,.20f),"Up onto the left shelf");
+   yield return s.Walk(holder,W(.22f,-.108f,.13f),"Across the back road onto the right shelf, clear of P2");
+   game.SelectFragment(holder);yield return Pull("C","C, hung on the right glass, opens the exit");
+   yield return s.Walk(holder,W(.22f,-.108f,.13f),"Back to the right shelf");
+   yield return s.Merge(W(.27f,-.12f,.17f));
   }
   IEnumerator E01()
   {

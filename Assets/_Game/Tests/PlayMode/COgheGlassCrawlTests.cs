@@ -106,6 +106,9 @@ namespace GravityBox.Tests
   [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG6SolveAtFrameRate(){yield return GlassCrawlSolveAtFrameRate("G6");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG7SolveAtFrameRate(){yield return GlassCrawlSolveAtFrameRate("G7");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG8SolveAtFrameRate(){yield return GlassCrawlSolveAtFrameRate("G8");}
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG9NoShortcut(){yield return GlassCrawlNoShortcut("G9");}
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG9SolveAtFrameRate(){yield return GlassCrawlSolveAtFrameRate("G9");}
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG9SolveAt30Fps(){yield return GlassCrawlSolveAtFrameRate("G9",30);}
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG2NoShortcut(){yield return GlassCrawlNoShortcut("G2");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG3NoShortcut(){yield return GlassCrawlNoShortcut("G3");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG4NoShortcut(){yield return GlassCrawlNoShortcut("G4");}
