@@ -115,3 +115,33 @@ của COghe: đứng ở mép một bệ, thân vẫn bám được kính trần
   `SpatialPlusE10Wander` và `SpatialPlusE10Solve` đạt.
 - Scene đã lưu cập nhật bằng `MigrateSavedScenes -coghe-glass-levels 10` và `E10`.
 - Các màn khác vẫn dùng dải 9 cm; wander của chúng đạt, nhưng wander không dò hết mọi đường tắt.
+
+## Rà dải phủ 65 màn và sửa 6 màn, 18/10/2026
+
+Mrk: "rà soát lại một lượt 65 màn", rồi "sửa những màn này đi". Bài rà là các test Explicit trong
+`COgheGlassStripeAuditTests`, chỉ đo, không đổi màn:
+
+- `GlassStripeReachAudit`: đặt COghe ở hai đầu và giữa mỗi mép bệ sát kính, kể cả nóc thùng/khay/sàn di động lúc đầu màn.
+  Ra lệnh leo lên kính trần ngay trên hoặc cạnh dải. Tính "lên kính" khi treo trên kính trần bằng ít nhất 3 hạt, không đứng
+  trên gì. Sau đó thử tới các bệ cao hơn, tới lỗ thoát, và quay về.
+- `GlassStripeShortcutCheck` / `Detail`: làm lại mỗi chỗ leo được từ đầu màn thật (đi tới, leo, chạm lỗ thoát).
+- `GlassStripeShortcutWins`: thắng thật hay không theo `Owner.Completed` (có thể quay phim, `AUDIT_FILM`).
+- `GlassExitTapSweep`: đặt COghe lên mọi chỗ và mọi mặt bệ, chạm lỗ thoát, chờ 40 giây.
+
+Kết quả trước khi sửa: 40/59 màn (7–65) có chỗ COghe lên được kính. 6 màn thắng được mà không giải đố, 7 đường:
+9 (từ sàn thang máy), 34/N23 (từ sàn; từ bậc thang đầu), 36/21 và 37/N25 (từ bậc cứu hộ), 43/20 (từ góc sàn), 62/29 (từ bậc
+thang đầu). Nguyên nhân: sàn di động không có dải riêng; hạt bám kính trần ngay ngoài đầu dải của một bậc hay khối thấp (3 mm–3 cm);
+mặt bên ngà của bờ đầu chạm kính (dải vách chỉ ±4,5 cm); khối C nghiêng cách kính 8 cm; khe kính trần 3,7 cm giữa hai dải.
+
+Sửa trong `COgheGlassRuleAuthoring`, chỉ cho các màn đó (màn khác giữ dải đã duyệt):
+- `09`: `LiftCoatings` như Boss 10 (phủ dọc đường thang chạy).
+- `WideEnds` = N23, 21, N25, 20, 29:
+  - dải trên bệ và dải ở chỗ vách chạm kính dài thêm 9 cm mỗi bên;
+  - mặt bệ cách kính tới 10 cm cũng được phủ, tính từ điểm cao nhất của mặt (khối nghiêng);
+  - khe kính trần hẹp hơn 10 cm giữa hai dải được phủ (`CloseGaps`). Vòng quanh lỗ thoát vẫn để trần.
+- Scene cập nhật bằng `MigrateSavedScenes -coghe-glass-levels 09,N23,21,N25,20,29`. Chạy lại bằng code cũ trước khi đổi thì
+  `SlipRegions` y hệt, chỉ mesh băng dán được dựng lại.
+
+Sau khi sửa: 7 đường cũ không thắng, không hạt nào bám kính trần. Quét chạm lỗ thoát chỉ thắng khi COghe đã ở khu lỗ thoát
+(tháp/bệ thoát, khay đáp cạnh lỗ), tức bước cuối đúng thiết kế. Solve, wander và climb-back của 6 màn đạt. Test toàn bộ 890/0.
+Clip trước/sau: `OUTBOX/COGHE_GLASS_STRIPE_2026_10_18/COGHE_GLASS_FIX_BEFORE_AFTER.mp4` (máy của Claude).

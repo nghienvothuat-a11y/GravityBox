@@ -120,7 +120,7 @@ namespace GravityBox.Tests
             string tsv = Environment.GetEnvironmentVariable("AUDIT_TSV") ?? "Artifacts/GlassAudit/audit-07-65.tsv";
             var rows = File.ReadAllLines(tsv).Skip(1).Select(l => l.Split('\t')).Where(c => c.Length > 7 && c[7] == "ON-GLASS")
                 .GroupBy(c => c[0] + "|" + c[2] + "|" + c[3] + "|" + c[6]).Select(g => g.First()).ToList();
-            string report = "Artifacts/GlassAudit/shortcuts.tsv";
+            string report = Environment.GetEnvironmentVariable("AUDIT_SHORTCUTS") ?? "Artifacts/GlassAudit/shortcuts.tsv";
             File.WriteAllText(report, "order\tscene\tsupport\tmoving\ttarget\tspot\twalk\tonGlass\tcompleted\texitMin\timage\n");
             yield return Load(1); var scenes = (string[])game.Definition.SceneSequence.Clone();
             foreach (var group in rows.GroupBy(c => int.Parse(c[0])).OrderBy(g => g.Key))
@@ -157,10 +157,10 @@ namespace GravityBox.Tests
         // (then a tap on the exit from there), and whether COghe can get back down (a body that cannot is trapped).
         [UnityTest, Explicit, Timeout(7200000)] public IEnumerator GlassStripeShortcutDetail()
         {
-            var audit = File.ReadAllLines("Artifacts/GlassAudit/audit-07-65.tsv").Skip(1).Select(l => l.Split('\t')).Where(c => c.Length > 11 && c[7] == "ON-GLASS").ToList();
+            var audit = File.ReadAllLines(Environment.GetEnvironmentVariable("AUDIT_TSV") ?? "Artifacts/GlassAudit/audit-07-65.tsv").Skip(1).Select(l => l.Split('\t')).Where(c => c.Length > 11 && c[7] == "ON-GLASS").ToList();
             var leads = audit.Where(c => c[11] != "(as above)" && c[11] != "-").GroupBy(c => c[0] + "|" + c[2] + "|" + c[3]).ToDictionary(g => g.Key, g => g.First()[11]);
-            var rows = File.ReadAllLines("Artifacts/GlassAudit/shortcuts.tsv").Skip(1).Select(l => l.Split('\t')).Where(c => c.Length > 7 && c[6] == "yes" && c[7] == "True").ToList();
-            string report = "Artifacts/GlassAudit/detail.tsv";
+            var rows = File.ReadAllLines(Environment.GetEnvironmentVariable("AUDIT_SHORTCUTS") ?? "Artifacts/GlassAudit/shortcuts.tsv").Skip(1).Select(l => l.Split('\t')).Where(c => c.Length > 7 && c[6] == "yes" && c[7] == "True").ToList();
+            string report = Environment.GetEnvironmentVariable("AUDIT_DETAIL") ?? "Artifacts/GlassAudit/detail.tsv";
             File.WriteAllText(report, "order\tscene\tsupport\tkind\troute\ttops\texit\tback\timages\n");
             yield return Load(1); var scenes = (string[])game.Definition.SceneSequence.Clone();
             foreach (var group in rows.GroupBy(c => int.Parse(c[0])).OrderBy(g => g.Key))
@@ -226,13 +226,13 @@ namespace GravityBox.Tests
         {
             var cases = (Environment.GetEnvironmentVariable("AUDIT_CASES") ?? "").Split(';').Where(c => c.Length > 0).Select(c => c.Split('|')).ToList();
             string film = Environment.GetEnvironmentVariable("AUDIT_FILM");
-            var shortcuts = File.ReadAllLines("Artifacts/GlassAudit/shortcuts.tsv").Skip(1).Select(l => l.Split('\t')).ToList();
-            string report = "Artifacts/GlassAudit/wins.tsv";
+            var shortcuts = File.ReadAllLines(Environment.GetEnvironmentVariable("AUDIT_SHORTCUTS") ?? "Artifacts/GlassAudit/shortcuts.tsv").Skip(1).Select(l => l.Split('\t')).ToList();
+            string report = Environment.GetEnvironmentVariable("AUDIT_WINS") ?? "Artifacts/GlassAudit/wins.tsv";
             if (!File.Exists(report)) File.WriteAllText(report, "order\tscene\tsupport\tkind\ttop\tfirstEscape\tescaped\tcompleted\tlost\tfailure\n");
             yield return Load(1); var scenes = (string[])game.Definition.SceneSequence.Clone();
             foreach (var c in cases)
             {
-                int order = int.Parse(c[0]); yield return LoadScene(scenes[order - 1]); var probes = StripeProbes();
+                int order = int.Parse(c[0]); yield return LoadScene(scenes[order - 1]); var probes = StripeProbes(false);
                 var row = shortcuts.First(r => r[0] == c[0] && r[2] == c[1] && r[4] == c[2]); var want = ParseVector(row[5]);
                 var probe = probes.First(p => p.support.name == c[1] && p.kind == c[2] && Vector3.Distance(RootLocal(p.spot), want) < .002f);
                 string dir = film != null ? $"{film}/{order:00}-{c[1].Replace(' ', '_')}" : null; int frame = 0;
@@ -250,7 +250,22 @@ namespace GravityBox.Tests
                 var marks = new System.Text.StringBuilder(); marks.AppendLine($"{frame} start");
                 game.Motion.Move(anchor, probe.spot); yield return Go(30f, () => Vector3.Distance(game.Motion.Centre(anchor), probe.spot) < .05f);
                 marks.AppendLine($"{frame} climb");
-                game.Motion.Move(anchor, probe.target); yield return Go(10f, () => Vector3.Distance(game.Motion.Centre(anchor), probe.target) < .045f);
+                game.Motion.Move(anchor, probe.target);
+                string firstGrip = "-";
+                yield return Go(10f, () =>
+                {
+                    if (firstGrip == "-")
+                        for (int i = 0; i < 32; i++)
+                            if (game.Motion.HasGrip(i) && game.Motion.Support(i, out var s, out var at, out _) && s.GetComponent<VenomSurfacePatch>() is var pane && pane != null && pane.ExteriorGlass && pane.Grip(at))
+                            {
+                                var l = pane.transform.InverseTransformPoint(at);
+                                var near = (pane.SlipRegions ?? Array.Empty<Rect>()).Where(r => Mathf.Abs(r.center.x - l.x) < r.width * .5f + .12f && Mathf.Abs(r.center.y - l.y) < r.height * .5f + .12f).Select(r => $"[{r.xMin:F3},{r.yMin:F3}..{r.xMax:F3},{r.yMax:F3}]");
+                                firstGrip = $"{pane.name} local=({l.x:F3},{l.y:F3}) root={RootLocal(at):F3} stripes={string.Join(" ", near)} body={RootLocal(game.Motion.Centre(anchor)):F3}";
+                                break;
+                            }
+                    return Vector3.Distance(game.Motion.Centre(anchor), probe.target) < .045f;
+                });
+                marks.AppendLine($"{frame} grip {firstGrip}");
                 if (c[3].Length > 0)
                 {
                     var top = game.Surfaces.Where(p => p != null && p.isActiveAndEnabled && p.name == c[3] && Vector3.Dot(p.Normal, game.Root.up) > .9f).OrderByDescending(p => p.transform.position.y).First();
@@ -259,16 +274,30 @@ namespace GravityBox.Tests
                 }
                 marks.AppendLine($"{frame} exit");
                 yield return Tap(game.Owner.Outlet.position);
-                float first = -1; float t0 = game.Matter.SimulationTime;
+                float first = -1; float t0 = game.Matter.SimulationTime; string exitGrip = "-";
                 yield return Go(60f, () =>
                 {
                     if (first < 0 && game.Matter.EscapedCount > 0) first = game.Matter.SimulationTime - t0;
+                    if (exitGrip == "-") exitGrip = FirstBareGrip(anchor);
                     return game.Owner.Completed || game.Owner.Lost;
                 });
+                marks.AppendLine($"{frame} exitgrip {exitGrip}");
                 yield return Go(2f, null); marks.AppendLine($"{frame} end");
                 if (dir != null) File.WriteAllText($"{dir}/marks.txt", marks.ToString());
                 File.AppendAllText(report, $"{order}\t{scenes[order - 1]}\t{c[1]}\t{c[2]}\t{c[3]}\t{first:F1}\t{game.Matter.EscapedCount}\t{game.Owner.Completed}\t{game.Owner.Lost}\t{game.Failure}\n");
             }
+        }
+        // The first node holding bare glass, where it is and which stripes are near (to place a fix).
+        private string FirstBareGrip(int anchor)
+        {
+            for (int i = 0; i < 32; i++)
+                if (game.Motion.HasGrip(i) && game.Motion.Support(i, out var s, out var at, out _) && s.GetComponent<VenomSurfacePatch>() is var pane && pane != null && pane.ExteriorGlass && pane.Grip(at))
+                {
+                    var l = pane.transform.InverseTransformPoint(at);
+                    var near = (pane.SlipRegions ?? Array.Empty<Rect>()).Where(r => Mathf.Abs(r.center.x - l.x) < r.width * .5f + .12f && Mathf.Abs(r.center.y - l.y) < r.height * .5f + .12f).Select(r => $"[{r.xMin:F3},{r.yMin:F3}..{r.xMax:F3},{r.yMax:F3}]");
+                    return $"{pane.name} local=({l.x:F3},{l.y:F3}) root={RootLocal(at):F3} stripes={string.Join(" ", near)} body={RootLocal(game.Motion.Centre(anchor)):F3}";
+                }
+            return "-";
         }
         private void FilmFrame(string path)
         {
@@ -276,6 +305,40 @@ namespace GravityBox.Tests
             var texture = new Texture2D(720, 1280, TextureFormat.RGB24, false);
             try { camera.targetTexture = target; camera.Render(); RenderTexture.active = target; texture.ReadPixels(new Rect(0, 0, 720, 1280), 0, 0); texture.Apply(); File.WriteAllBytes(path, texture.EncodeToJPG(88)); }
             finally { camera.targetTexture = null; RenderTexture.active = previous; RenderTexture.ReleaseTemporary(target); UnityEngine.Object.DestroyImmediate(texture); }
+        }
+
+
+        // Exit-tap sweep: COghe dropped on every spot by the glass and on every top of a level, the exit tapped from there; the
+        // route finder then tries every way, glass included. A win from a spot is reported (the spot may still need checking
+        // for being reachable in play). AUDIT_LEVELS: display numbers separated by ','.
+        [UnityTest, Explicit, Timeout(7200000)] public IEnumerator GlassExitTapSweep()
+        {
+            var levels = (Environment.GetEnvironmentVariable("AUDIT_LEVELS") ?? "").Split(',').Where(t => t.Length > 0).Select(int.Parse).ToList();
+            string report = Environment.GetEnvironmentVariable("AUDIT_SWEEP") ?? "Artifacts/GlassAudit/exit-sweep.tsv";
+            File.WriteAllText(report, "order\tscene\tfrom\tspot\twon\tfirstGlass\n");
+            yield return Load(1); var scenes = (string[])game.Definition.SceneSequence.Clone();
+            foreach (int order in levels)
+            {
+                yield return LoadScene(scenes[order - 1]);
+                var starts = new List<(string name, Vector3 spot)> { ("spawn", Vector3.zero) };
+                foreach (var probe in StripeProbes(false)) if (!starts.Any(s => s.name == probe.support.name && Vector3.Distance(s.spot, probe.spot) < .02f)) starts.Add((probe.support.name, probe.spot));
+                foreach (var top in game.Surfaces.Where(p => p != null && p.isActiveAndEnabled && !p.ExteriorGlass && !p.IsCurved && Vector3.Dot(p.Normal, game.Root.up) > .9f && Mathf.Min(p.Size.x, p.Size.y) >= .06f))
+                    starts.Add((top.name + " (top)", top.transform.position + top.Normal * .042f));
+                int won = 0;
+                foreach (var (name, spot) in starts)
+                {
+                    game.ResetLevel(); yield return null;
+                    if (name != "spawn") Place(spot);
+                    yield return Run(1f, null, null);
+                    if (name != "spawn" && Vector3.Distance(game.Motion.Centre(0), spot) > .06f) { File.AppendAllText(report, $"{order}\t{scenes[order - 1]}\t{name}\t{RootLocal(spot):F3}\tcannot-stand\t-\n"); continue; }
+                    int anchor = game.Motion.Selected; string glass = "-";
+                    yield return Tap(game.Owner.Outlet.position);
+                    yield return Run(40f, () => game.Owner.Completed || game.Owner.Lost, () => { if (glass == "-") glass = FirstBareGrip(anchor); });
+                    bool win = game.Owner.Completed; if (win) won++;
+                    File.AppendAllText(report, $"{order}\t{scenes[order - 1]}\t{name}\t{RootLocal(spot):F3}\t{(win ? "WON" : "no")}\t{glass}\n");
+                }
+                Debug.Log($"GLASS EXIT SWEEP {order}: {starts.Count} starts, {won} won");
+            }
         }
 
         private static Vector3 ParseVector(string s)
@@ -290,7 +353,7 @@ namespace GravityBox.Tests
 
         // Where COghe stands against a side pane: each up-facing support (fixed or moving) with an edge within 4 cm of the
         // glass, at both ends and the middle of that edge; targets are the bare glass just above the stripe and beside it.
-        private List<StripeProbe> StripeProbes()
+        private List<StripeProbe> StripeProbes(bool bareOnly = true)
         {
             var list = new List<StripeProbe>(); const float body = .037f, band = .09f;
             var up = game.Root.up;
@@ -313,7 +376,7 @@ namespace GravityBox.Tests
                             {
                                 if (Mathf.Abs(tx) > pane.Size.x * .5f - .02f || Mathf.Abs(ty) > pane.Size.y * .5f - .02f) return;
                                 Vector3 onGlass = pane.transform.TransformPoint(new Vector3(tx, ty, 0));
-                                if (!pane.Grip(onGlass) || pane.Hole && Vector2.Distance(new Vector2(tx, ty), pane.HoleCentre) < pane.HoleRadius + .03f) return;
+                                if (bareOnly && !pane.Grip(onGlass) || pane.Hole && Vector2.Distance(new Vector2(tx, ty), pane.HoleCentre) < pane.HoleRadius + .03f) return;
                                 Vector3 target = onGlass + pane.Normal * .022f;
                                 if (Physics.OverlapSphere(target, .012f, ~0, QueryTriggerInteraction.Ignore).Any(c => !c.TryGetComponent<VenomContact>(out _))) return;   // inside a block
                                 list.Add(new StripeProbe { support = support, pane = pane, spot = spot, target = target, kind = kind });
