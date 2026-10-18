@@ -135,6 +135,11 @@ Mrk hỏi "Nếu COghe có mắt để diễn tả cảm xúc thì có được 
 
 ## Màn thưởng "Hiểu ra" (07/10, Mrk)
 
+> **Bản 07/10, đã được thay một phần.** Hiện nay “Hiểu ra” là bắt buộc, không có Skip, đến sau Boss 10/21/32/43/54/65
+> (Override 14/10). Từ chương 2, câu cuối là trò chơi với đồ chơi riêng; đáp sai thì COghe làm trò hài (Override 17/10).
+> Chương 7 trở đi câu hỏi tự sinh. Đồ chơi đã thắng nằm trong menu Items. Xem hai mục Override ở cuối tài liệu. Các chi
+> tiết dưới đây còn đúng cho chương 1 và cho cách hỏi, đếm và thưởng.
+
 Mrk: sau mỗi chương có một màn thưởng "Hiểu ra" bỏ qua được; làm xong được thưởng lớn, COghe diễn cảnh thân thiện có tim
 bay để người chơi thấy có thành quả khi hiểu COghe. Chỉ nói bằng hình nặn (hình nào phức tạp thì bỏ), không sổ tay, bỏ
 mọi thứ ảnh hưởng tới giải đố, tăng hoạt cảnh tình cảm. Clip: `Artifacts/Clips/bonus1.mp4` (bản Mac, có tiếng).
@@ -246,7 +251,7 @@ vẫn sau Boss 10. [Biên bản](../../Verification/COgheChapterProgression/READ
 ### Override 17/10/2026 — Đồ chơi và trò hài trong “Hiểu COghe” (Mrk)
 
 Mrk chốt: dòng đồ chơi riêng có animation riêng; đáp sai thì COghe làm trò hài; câu cuối mỗi chương là chơi cùng COghe.
-Bản mẫu cho chương 2, chờ Mrk duyệt clip `OUTBOX/COGHE_HIEURA_TOYS_2026_10_17` (máy của Claude).
+Mrk duyệt từng đợt qua clip; clip ở `OUTBOX/COGHE_HIEURA_TOYS_2026_10_17` (máy của Claude).
 
 - **Đồ chơi (`COgheToys`):** không bán, không nằm trong 14 món nội thất, không mở theo màn. Thắng trò chơi trong
   “Hiểu ra” thì đồ chơi thành của người chơi (`COgheShop.Grant`, nguồn `bonus_toy`), ở lại trong Nhà. Chạm vào nó ở Nhà
@@ -323,6 +328,11 @@ Bản mẫu cho chương 2, chờ Mrk duyệt clip `OUTBOX/COGHE_HIEURA_TOYS_202
     - bóng bay: 3 lần thổi mỗi quả;
     - con quay: lắc nhanh hơn (tối thiểu 2,8 s) và phải cứu thêm, tối đa 5 lần.
   - Chương 1–6 giữ nguyên.
-- **Kiểm tra:** `COgheToyTests`. Bản Mac: `-coghe-toy-reel <thư mục>` quay trò trống và các trò hài,
-  `-coghe-toy-reel2 <thư mục>` quay trống trong câu hỏi, `-coghe-toy-reel3 <thư mục>` quay kèn và bóng bay, `-coghe-toy-reel4 <thư mục>` quay con quay và hộp nhạc, `-coghe-chapter7-reel <thư mục>` chơi hết chương 7 (PNG 30 khung/s, `sounds.txt`, `marks.txt`; tối đa
+- **Bộ sưu tập đồ chơi** (đợt cuối, 18/10): menu Items ở Nhà có phần “Toys n/5” trên cùng, nội thất ở dưới.
+  - Đồ đã có: hình món đồ, tên, “Play”. Chạm vào thì menu đóng và COghe ra chơi ngay, không chào trước
+    (`PlayWith` bỏ lời chào đang chờ).
+  - Đồ chưa có: hình mờ, dấu “?”, tên “???”, dòng “Chapter N”. Chạm vào thì báo chương nào tặng, menu vẫn mở.
+  - Hình món đồ: `Resources/COgheHome/Icons/TOY_*.png`, chụp từ mô hình bằng test `RenderToyIcons` (Explicit).
+- **Kiểm tra:** `COgheToyTests`, `COgheProductUITests.ToysAreACollectionWithEmptySlots`, `ChapterTwoIsUnderstoodEndToEnd` (chơi trọn chương 2 qua màn hình thật: câu hỏi, trò trống, thưởng, thẻ Ability, đồ chơi trong bộ sưu tập). Explicit `EveryChapterIsUnderstoodEndToEnd`: chương 1–6 như vậy, chương 7–9 câu tự sinh. Bản Mac: `-coghe-toy-reel <thư mục>` quay trò trống và các trò hài,
+  `-coghe-toy-reel2 <thư mục>` quay trống trong câu hỏi, `-coghe-toy-reel3 <thư mục>` quay kèn và bóng bay, `-coghe-toy-reel4 <thư mục>` quay con quay và hộp nhạc, `-coghe-chapter7-reel <thư mục>` chơi hết chương 7, `-coghe-collection-reel <thư mục>` mở bộ sưu tập rồi chơi kèn (PNG 30 khung/s, `sounds.txt`, `marks.txt`; tối đa
   9000 khung).

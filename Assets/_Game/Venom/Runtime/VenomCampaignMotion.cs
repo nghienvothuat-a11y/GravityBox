@@ -58,8 +58,8 @@ namespace GravityBox.Venom
         public int Selected;
         private int nextCommandId;
         public int RouteCount=>nodes.Count;
-        public VenomCampaignMotion(VenomCampaign owner){game=owner;}
-        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);System.Array.Clear(gripStrain,0,32);System.Array.Clear(detachedUntil,0,32);System.Array.Clear(detachedSurfaces,0,32);System.Array.Clear(ringCatches,0,32);Selected=0;nextCommandId=0;BuildGraph(true);}
+        public VenomCampaignMotion(VenomCampaign owner){game=owner;System.Array.Fill(stallSince,-1f);}
+        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);System.Array.Clear(gripStrain,0,32);System.Array.Clear(detachedUntil,0,32);System.Array.Clear(detachedSurfaces,0,32);System.Array.Clear(ringCatches,0,32);System.Array.Fill(stallSince,-1f);Selected=0;nextCommandId=0;BuildGraph(true);}
         public Vector3 Centre(int anchor)
         {
             Vector3 c=Vector3.zero;int count=0;int group=game.Matter.Groups[anchor];
@@ -135,6 +135,77 @@ namespace GravityBox.Venom
         {
             var patch=support[particle];collider=patch!=null?patch.Shape:null;point=contact[particle];normal=patch!=null?patch.NormalAt(point):Vector3.up;
             return patch!=null && !game.Matter.Escaped[particle];
+        }
+        // A hard landing can push a node through one thin face of a hollow block. Trapped inside, it tethers the
+        // whole body: COghe has a route but cannot move (level 51 / Spatial 26, a fall off the rope, 18/10/2026).
+        // Once a body with a plain walking order has stayed within 3 cm for a second, a node enclosed behind a block face
+        // is put back in front of it. Through the face: the body's centre is in front of it, the node's centre lies
+        // over the face and behind its plane (in contact a node's centre stays in front; half-way through, the thin
+        // face holds it and it jitters), and a ray from the node to the face meets that face first (skin curled under
+        // a shelf meets the shelf's underside; skin hanging over an edge is not over the face).
+        // A node can also snag on the lip of an opening (the stored tray's slot in 51's middle platform): held far from
+        // the still body, it shakes the whole second. That node is put back inside the body.
+        private readonly float[] stallSince=new float[32],stallSeen=new float[32],shake=new float[32];private readonly int[] shakeTicks=new int[32];
+        private readonly Vector3[] stallAt=new Vector3[32];
+        private readonly RaycastHit[] tunnelHits=new RaycastHit[16];private readonly Collider[] tunnelRoom=new Collider[16];
+        public int FreedNodes {get;private set;}
+        private void FreeTunnelledNodes(int anchor,Vector3 centre)
+        {
+            float now=game.Matter.SimulationTime;int group=game.Matter.Groups[anchor];
+            bool fresh=stallSince[anchor]<0||now-stallSeen[anchor]>.05f||Vector3.Distance(centre,stallAt[anchor])>.03f;   // a strained body bobs 1–2 cm in place
+            stallSeen[anchor]=now;
+            if(fresh){stallAt[anchor]=centre;stallSince[anchor]=now;ClearShake(anchor,group);return;}
+            shakeTicks[anchor]++;for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group)shake[i]+=game.Matter.Bodies[i].linearVelocity.magnitude;
+            if(now-stallSince[anchor]<1)return;
+            stallSince[anchor]=now;float r=game.Matter.Profile.ParticleRadius;
+            var span=new Bounds(centre,Vector3.zero);
+            for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group&&!game.Matter.Escaped[i])span.Encapsulate(game.Matter.Bodies[i].position);
+            span.Expand(4*r);
+            bool backfaces=Physics.queriesHitBackfaces;Physics.queriesHitBackfaces=true;
+            try
+            {
+                foreach(var patch in game.Surfaces)
+                {
+                    if(patch==null||!patch.isActiveAndEnabled||patch.ExteriorGlass||patch.Hole||patch.IsCurved||patch.Shape==null||!patch.Shape.bounds.Intersects(span))continue;
+                    if(patch.transform.InverseTransformPoint(centre).z<=0)continue;
+                    for(int i=0;i<32;i++)
+                    {
+                        if(game.Matter.Groups[i]!=group||game.Matter.Escaped[i])continue;
+                        var body=game.Matter.Bodies[i];Vector3 p=patch.transform.InverseTransformPoint(body.position);
+                        if(p.z>=-.002f||Mathf.Abs(p.x)>patch.Size.x*.5f-r||Mathf.Abs(p.y)>patch.Size.y*.5f-r)continue;
+                        if(FirstSolid(body.position,patch.Normal,.002f-p.z)!=patch.Shape)continue;
+                        Vector3 free=patch.transform.TransformPoint(new Vector3(p.x,p.y,r*1.2f));
+                        if(!Room(free,r*.9f,group))continue;
+                        body.position=free;body.linearVelocity=Vector3.zero;support[i]=null;FreedNodes++;
+                    }
+                }
+            }
+            finally{Physics.queriesHitBackfaces=backfaces;}
+            for(int i=0;i<32;i++)
+            {
+                if(game.Matter.Groups[i]!=group||game.Matter.Escaped[i])continue;
+                var body=game.Matter.Bodies[i];
+                if(shake[i]/Mathf.Max(1,shakeTicks[anchor])<.5f||Vector3.Distance(body.position,centre)<.045f)continue;
+                Vector3 spot=Room(centre,r*.9f,group)?centre:centre+Vector3.up*(2*r);
+                if(!Room(spot,r*.9f,group))continue;
+                body.position=spot;body.linearVelocity=Vector3.zero;support[i]=null;FreedNodes++;
+            }
+            ClearShake(anchor,group);
+        }
+        private void ClearShake(int anchor,int group){shakeTicks[anchor]=0;for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group)shake[i]=0;}
+        private static bool IsMatter(Collider c)=>c.TryGetComponent<VenomContact>(out _);
+        private Collider FirstSolid(Vector3 from,Vector3 direction,float length)
+        {
+            int n=Physics.RaycastNonAlloc(from,direction,tunnelHits,length,~0,QueryTriggerInteraction.Ignore);Collider first=null;float best=float.PositiveInfinity;
+            for(int k=0;k<n;k++)if(!IsMatter(tunnelHits[k].collider)&&tunnelHits[k].distance<best){best=tunnelHits[k].distance;first=tunnelHits[k].collider;}
+            return first;
+        }
+        // Free space for a freed node: no geometry and no node of another part (that would fuse them).
+        private bool Room(Vector3 point,float radius,int group)
+        {
+            int n=Physics.OverlapSphereNonAlloc(point,radius,tunnelRoom,~0,QueryTriggerInteraction.Ignore);
+            for(int k=0;k<n;k++){var rb=tunnelRoom[k].attachedRigidbody;int node=rb!=null?System.Array.IndexOf(game.Matter.Bodies,rb):-1;if(node<0||game.Matter.Groups[node]!=group)return false;}
+            return true;
         }
         public bool HasGrip(int particle)=>support[particle]!=null&&support[particle].Grip(contact[particle])&&
             (game.Matter.SimulationTime>=detachedUntil[particle]||detachedSurfaces[particle]==null||!detachedSurfaces[particle].Contains(support[particle]));
@@ -449,6 +520,7 @@ namespace GravityBox.Venom
                 float weight=mass*9.81f;
                 strain=grips>=2&&capacity<weight?strain+dt*8*(weight-capacity)/weight:Mathf.Max(0,strain-dt*.25f);
                 bool suppressed=game.MechanismSuppressesMotion(a)||game.IsFlowing(a);
+                if(o!=null&&!o.Holding&&!o.Exit&&caught==null&&!suppressed&&!game.Attached&&!game.InTube)FreeTunnelledNodes(a,centre);else stallSince[a]=-1;
                 bool peeled=strain>.14f&&!suppressed;
                 HashSet<VenomSurfacePatch> released=null;
                 if(peeled)

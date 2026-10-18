@@ -10,13 +10,15 @@ namespace GravityBox.Tests
  // rope levels grip and swing again. Reported for 18/19 on 29/09/2026: the old ramps stalled at the bank's lip.
  public sealed partial class COgheSpatialCampaignTests
  {
-  // Grip, launch toward the far bank and let go over the gap onto the rescue floor.
-  IEnumerator FallFromRope(COgheSpatialNextScenario s,COgheSwingTransfer swing,Vector3 floorPoint,int dock)
+  // Grip, launch toward the far bank and let go over the gap onto the rescue floor (`late` ticks after the rope
+  // passes the vertical: a later letting-go lands elsewhere).
+  IEnumerator FallFromRope(COgheSpatialNextScenario s,COgheSwingTransfer swing,Vector3 floorPoint,int dock,int late=0)
   {
    int anchor=game.Motion.Selected;
    yield return s.Grip(swing);
    yield return Tap(swing.Docks[dock].Closest(swing.DockTargets[dock].position));
    yield return Until(3,()=>swing.Phase==COgheSwingTransfer.SwingPhase.Swinging&&Vector3.ProjectOnPlane(swing.Ring.position-swing.Pivot.position,Vector3.up).magnitude<.05f,"Over the gap");
+   for(int k=0;k<late;k++)Tick();
    yield return Tap(game.Root.TransformPoint(floorPoint));
    yield return Until(20,()=>swing.Actor<0&&game.Root.InverseTransformPoint(game.Motion.Centre(anchor)).y<-.25f,"Let go onto the rescue floor");
    yield return Until(15,()=>swing.Phase==COgheSwingTransfer.SwingPhase.Idle,"Winch parks the ring again");
@@ -63,7 +65,18 @@ namespace GravityBox.Tests
    Assert.AreEqual(COgheSwingTransfer.SwingPhase.Ready,swing.Phase,"Regrip after the climb");
   }
   [UnityTest] public IEnumerator Spatial26FallRecovery(){yield return FallClimbRegrip(26,new Vector3(.12f,-.30f,-.15f),new Vector3(-.28f,-.16f,.14f),2);}
-  [UnityTest] public IEnumerator Spatial30FallRecovery(){yield return FallClimbRegrip(30,new Vector3(.30f,-.30f,-.05f),new Vector3(.28f,-.20f,-.24f),0);}
+  // Level 51: let go 18 ticks late and the landing pushes three nodes through the slick side of the middle platform.
+  // Trapped inside the hollow block they held COghe on the floor for good; a stalled body now frees them (18/10/2026).
+  [UnityTest] public IEnumerator Spatial26LateFallRecovery()
+  {
+   yield return Load(26);var s=new COgheSpatialNextScenario(game,Tap,Until);var swing=s.Find<COgheSwingTransfer>();
+   yield return FallFromRope(s,swing,new Vector3(.12f,-.30f,-.15f),2,18);
+   yield return s.Walk(game.Motion.Selected,game.Root.TransformPoint(new Vector3(-.28f,-.16f,.14f)),"Climb back onto the start bank");
+   Assert.Greater(game.Motion.FreedNodes,0,"This landing traps nodes in the platform; the climb proves they were freed");
+  }
+  // Scene 30 left the campaign with the 65-level order (12/10/2026). Its climb back goes up the 10 cm bank face and
+  // about one landing in four slips at the lip three taps running (probe 18/10/2026), so it runs only on request.
+  [UnityTest,Explicit] public IEnumerator Spatial30FallRecovery(){yield return FallClimbRegrip(30,new Vector3(.30f,-.30f,-.05f),new Vector3(.28f,-.20f,-.24f),0);}
   // A one-way latch stays at its end: in 26, once B has slid the landing tray out, tapping B's handle again neither
   // pulls it back nor starts an approach (the tap falls through to the platform behind it).
   [UnityTest] public IEnumerator Spatial26LatchIsOneWay()
