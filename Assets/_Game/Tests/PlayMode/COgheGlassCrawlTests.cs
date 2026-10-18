@@ -99,6 +99,13 @@ namespace GravityBox.Tests
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG4SolveAt30Fps(){yield return GlassCrawlSolveAtFrameRate("G4",30);}
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG5SolveAt30Fps(){yield return GlassCrawlSolveAtFrameRate("G5",30);}
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG1NoShortcut(){yield return GlassCrawlNoShortcut("G1");}
+  // Glass roads 66–68: no win without the mechanisms; the reference solution at a phone's frame rate.
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG6NoShortcut(){yield return GlassCrawlNoShortcut("G6");}
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG7NoShortcut(){yield return GlassCrawlNoShortcut("G7");}
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG8NoShortcut(){yield return GlassCrawlNoShortcut("G8");}
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG6SolveAtFrameRate(){yield return GlassCrawlSolveAtFrameRate("G6");}
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG7SolveAtFrameRate(){yield return GlassCrawlSolveAtFrameRate("G7");}
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG8SolveAtFrameRate(){yield return GlassCrawlSolveAtFrameRate("G8");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG2NoShortcut(){yield return GlassCrawlNoShortcut("G2");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG3NoShortcut(){yield return GlassCrawlNoShortcut("G3");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG4NoShortcut(){yield return GlassCrawlNoShortcut("G4");}

@@ -83,7 +83,11 @@ namespace GravityBox.Editor
    NewPlus("G2","Kệ cao","Chỗ băng trơn bao quanh thì vào từ phía trên.",PlusG2),
    NewPlus("G3","Qua trần nhà","COghe bò được trên trần.",PlusG3),
    NewPlus("G4","Ba kệ","Mỗi cơ quan mở đường cho bước sau.",PlusG4),
-   NewPlus("G5","Hai nửa trên trần","",PlusG5,true)}).ToArray();
+   NewPlus("G5","Hai nửa trên trần","",PlusG5,true),
+   // Glass roads (Mrk 18/10/2026: kính là bản đồ; prototypes 66–68, easy/medium/hard).
+   NewPlus("G6","Đường trên kính","Kính trong là đường, kính tím là tường.",PlusG6),
+   NewPlus("G7","Sau tấm chắn","Xoay camera xem phía sau: đường có thể bắt đầu ở chỗ khuất.",PlusG7),
+   NewPlus("G8","Bốn mặt kính","Đường vòng qua cả bốn mặt; có đường cụt.",PlusG8)}).ToArray();
 
   // Design notes (root-local): numbered steps, labels and routes, projected onto renders for the design plates.
   static readonly List<string> plusNotes=new List<string>();

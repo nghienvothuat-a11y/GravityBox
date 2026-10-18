@@ -36,7 +36,7 @@ namespace GravityBox.Venom.ChapterProof
     case "N31":yield return N31();break;case "N33":yield return N33();break;case "N35":yield return N35();break;case "N32":yield return N32();break;case "N40":yield return N40();break;case "N34":yield return N34();break;case "N44":yield return N44();break;case "N45":yield return N45();break;
     case "N41":yield return N41();break;case "N42":yield return N42();break;case "N47":yield return N47();break;case "N49":yield return N49();break;case "N50":yield return N50();break;case "N48":yield return N48();break;case "N46":yield return N46();break;case "N43":yield return N43();break;
     case "G1":yield return G1();break;case "G2":yield return G2();break;case "G3":yield return G3();break;case "G4":yield return G4();break;
-    case "G5":yield return G5();break;
+    case "G5":yield return G5();break;case "G6":yield return G6();break;case "G7":yield return G7();break;case "G8":yield return G8();break;
     default:throw new NotImplementedException("Spatial Plus route "+COgheSpatialNextScenario.ContentKey(game));
    }
    yield return s.Exit();
@@ -98,6 +98,26 @@ namespace GravityBox.Venom.ChapterProof
    yield return s.Walk(climber,W(.05f,-.30f,-.24f),"The far holder is now free to leave D");
    yield return s.Merge(W(.12f,-.30f,.18f));
    yield return Turn(180); // look beneath the far shelf to see the final mouth from the rear
+  }
+  // Glass roads (Mrk 18/10/2026): the walls are slick but for clear roads; the glass itself is the way.
+  IEnumerator G6()
+  {
+   yield return Pull("A","A slides the cover off the road's foot");
+   yield return s.Go(W(.40f,-.06f,.22f),"Up the back road, round the corner, along the right road to beside the exit");
+  }
+  IEnumerator G7()
+  {
+   yield return Pull("A","A slides the cover off the road behind the screen");
+   yield return s.Go(W(-.30f,-.05f,.30f),"Behind the screen, up the back road and left along it");
+   yield return Pull("B","B, hung on the left glass, opens the exit");
+  }
+  IEnumerator G8()
+  {
+   yield return Pull("A","A slides the cover off the front road's foot");
+   yield return s.Go(W(-.33f,-.08f,.15f),"Up the front road, round the front-left corner, along the left road onto the shelf");
+   yield return Pull("B","B lowers the cover across the back road");
+   yield return s.Go(W(.10f,-.04f,.30f),"Off the shelf onto the back road and along it");
+   yield return Pull("C","C, hung on the right glass, opens the exit");
   }
   IEnumerator E01()
   {

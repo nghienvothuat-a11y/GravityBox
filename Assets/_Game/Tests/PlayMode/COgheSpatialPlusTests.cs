@@ -44,6 +44,10 @@ namespace GravityBox.Tests
   [UnityTest] public IEnumerator SpatialPlusN15Solve(){yield return SolvePlus("N15");}
   // The glass-crawl levels (12/10/2026).
   [UnityTest] public IEnumerator SpatialPlusG1Solve(){yield return SolvePlus("G1");}
+  // Glass roads, prototypes 66–68 (Mrk 18/10/2026).
+  [UnityTest] public IEnumerator SpatialPlusG6Solve(){yield return SolvePlus("G6");}
+  [UnityTest] public IEnumerator SpatialPlusG7Solve(){yield return SolvePlus("G7");}
+  [UnityTest] public IEnumerator SpatialPlusG8Solve(){yield return SolvePlus("G8");}
   [UnityTest] public IEnumerator SpatialPlusG2Solve(){yield return SolvePlus("G2");}
   [UnityTest] public IEnumerator SpatialPlusG3Solve(){yield return SolvePlus("G3");}
   [UnityTest] public IEnumerator SpatialPlusG4Solve(){yield return SolvePlus("G4");}
