@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using GravityBox.Venom;
 using NUnit.Framework;
 using UnityEngine;
@@ -311,6 +312,50 @@ namespace GravityBox.Tests
     p.EndBonus();
     p.BeginBonus(new[]{COgheBonusRound.Game(COgheToys.Top,1)});
     yield return BonusUntil(()=>p.ToyWaitingForPlayer,15,"The top, level 1");Assert.AreEqual(COghePersonality.TopRescues+1,p.ToyBeats,"One rescue more");
+   }
+   finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;COgheShop.ResetForTests();}
+  }
+
+  // The toys' icons for the Items menu (Explicit): each toy rendered from its own model, in the furniture icons' three-quarter
+  // view, 256 px on a clear background (rendered on black and on white: the difference is the alpha). Written to
+  // Resources/COgheHome/Icons/<id>.png.
+  [UnityTest,Explicit] public IEnumerator RenderToyIcons()
+  {
+   try
+   {
+    yield return HomeWithoutTheDrum();foreach(var t in COgheToys.Catalog)COgheToys.Give(t.id);game.HomeRoom.Refresh();yield return Frames(40);
+    var room=game.HomeRoom;const int layer=30,size=512,half=256;
+    var cam=new GameObject("Icon camera").AddComponent<Camera>();cam.orthographic=true;cam.clearFlags=CameraClearFlags.SolidColor;cam.cullingMask=1<<layer;cam.enabled=false;
+    var rt=new RenderTexture(size,size,24,RenderTextureFormat.ARGB32){antiAliasing=4};cam.targetTexture=rt;
+    Texture2D Shot(Color background){cam.backgroundColor=background;cam.Render();RenderTexture.active=rt;var tex=new Texture2D(size,size,TextureFormat.RGBA32,false);tex.ReadPixels(new Rect(0,0,size,size),0,0);tex.Apply();RenderTexture.active=null;return tex;}
+    foreach(var t in COgheToys.Catalog)
+    {
+     var item=room.Find(t.id);
+     var box=item.Part("Lid");if(box!=null){box.localRotation=Quaternion.Euler(55,0,0);var dancer=item.Part("Dancer");dancer.localScale=Vector3.one;}   // the music box open, its dancer up
+     var renderers=item.Root.GetComponentsInChildren<Renderer>();var old=new int[renderers.Length];
+     for(int i=0;i<renderers.Length;i++){old[i]=renderers[i].gameObject.layer;renderers[i].gameObject.layer=layer;}
+     var b=new Bounds(renderers[0].bounds.center,Vector3.zero);foreach(var r in renderers)b.Encapsulate(r.bounds);
+     cam.transform.rotation=item.Root.transform.rotation*Quaternion.Euler(28,-24,0);
+     cam.transform.position=b.center-cam.transform.forward*1f;cam.nearClipPlane=.01f;cam.farClipPlane=3;
+     cam.orthographicSize=Mathf.Max(b.extents.x,b.extents.y,b.extents.z)*1.12f;
+     var black=Shot(Color.black);var white=Shot(Color.white);
+     var pb=black.GetPixels();var pw=white.GetPixels();var full=new Color[pb.Length];
+     for(int i=0;i<pb.Length;i++)
+     {   // premultiplied on black, alpha from the black/white difference
+      float a=Mathf.Clamp01(1-((pw[i].r-pb[i].r)+(pw[i].g-pb[i].g)+(pw[i].b-pb[i].b))/3f);
+      full[i]=new Color(pb[i].r,pb[i].g,pb[i].b,a);
+     }
+     var po=new Color[half*half];
+     for(int y=0;y<half;y++)for(int x=0;x<half;x++)
+     {   // 2×2 down to 256 px, then un-premultiply
+      Color c=(full[2*y*size+2*x]+full[2*y*size+2*x+1]+full[(2*y+1)*size+2*x]+full[(2*y+1)*size+2*x+1])/4f;
+      po[y*half+x]=c.a>.003f?new Color(c.r/c.a,c.g/c.a,c.b/c.a,c.a):new Color(0,0,0,0);
+     }
+     var icon=new Texture2D(half,half,TextureFormat.RGBA32,false);icon.SetPixels(po);icon.Apply();
+     File.WriteAllBytes("Assets/_Game/Venom/Resources/COgheHome/Icons/"+t.id+".png",icon.EncodeToPNG());
+     for(int i=0;i<renderers.Length;i++)renderers[i].gameObject.layer=old[i];
+    }
+    Object.Destroy(cam.gameObject);rt.Release();
    }
    finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;COgheShop.ResetForTests();}
   }

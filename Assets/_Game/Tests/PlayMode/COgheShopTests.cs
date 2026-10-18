@@ -30,6 +30,15 @@ namespace GravityBox.Tests
             COgheShop.ResetForTests(new COgheShop.State { Migrated = true }); COgheShop.TestsOwnUnlocked = testsOwnUnlocked;
             COgheAds.ResetForTests(); COgheEntitlements.ResetForTests(); COgheEconomy.ResetForTests();
         }
+        /// <summary>Scrolls the list a card is in so the card is at the top of its view.</summary>
+        private void ScrollIntoView(string name)
+        {
+            Canvas.ForceUpdateCanvases(); var card = ui.GetComponentsInChildren<Button>().Single(b => b.name == name);
+            var scroll = card.GetComponentInParent<ScrollRect>(); if (scroll == null) return;
+            float y = -((RectTransform)card.transform).anchoredPosition.y;
+            scroll.content.anchoredPosition = new Vector2(scroll.content.anchoredPosition.x, Mathf.Max(0, y - 8));
+            Canvas.ForceUpdateCanvases();
+        }
         private void EndShop()
         {
             COgheShop.ResetForTests(); COgheAds.ResetForTests(); COgheEntitlements.ResetForTests(); COgheEconomy.ResetForTests();
@@ -49,6 +58,7 @@ namespace GravityBox.Tests
                 COgheShop.Earn(null, 200, "test"); int price = COgheEconomy.Price("SWING");
                 yield return Click("Items"); Assert.AreEqual(COgheProductPopup.Collection, ui.Popup);
                 Assert.IsTrue(ui.GetComponentsInChildren<Text>().Any(t => t.name == "State" && t.text == price.ToString()), "Its price on the card");
+                ScrollIntoView("Item SWING");   // under the toys: scroll down to it, as a player would
                 yield return Click("Item SWING"); Assert.AreEqual(COgheProductPopup.Buy, ui.Popup);
                 yield return Click("Buy item"); Assert.AreEqual(COgheProductPopup.None, ui.Popup);
                 Assert.IsTrue(COgheShop.Owns("SWING")); Assert.AreEqual(200 - price, COgheShop.Drops);

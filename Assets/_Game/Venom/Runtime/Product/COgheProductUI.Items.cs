@@ -6,8 +6,9 @@ namespace GravityBox.Venom
 {
     /// <summary>
     /// Home: the item menu (every piece of furniture, earned or "Level N" with a lock; choosing a locked one shows its
-    /// ghost in its place, choosing an earned one sends COghe to play with it) and the room camera, which frames the whole
-    /// room and leans in on whatever COghe is playing with or the item being previewed.
+    /// ghost in its place, choosing an earned one sends COghe to play with it; above them the toys, a collection with empty
+    /// slots for the ones not won yet) and the room camera, which frames the whole room and leans in on whatever COghe is playing
+    /// with or the item being previewed.
     /// </summary>
     public sealed partial class COgheProductUI
     {
@@ -28,9 +29,12 @@ namespace GravityBox.Venom
             var room = Game.HomeRoom;
             const int columns = 3;
             float cell = (w - 28) / columns, cellHeight = cell + 30;
-            int rows = (COgheHomeItems.Catalog.Length + columns - 1) / columns;
+            int rows = (COgheHomeItems.Catalog.Length + columns - 1) / columns, toyRows = (COgheToys.Catalog.Length + columns - 1) / columns;
+            const float toysHeader = 36;
             var viewport = art.Rect(panel, "Viewport", new Rect(14, 74, w - 28, h - 88)); viewport.gameObject.AddComponent<RectMask2D>();
-            var content = art.Rect(viewport, "Content", new Rect(0, 0, w - 28, rows * cellHeight + 8));
+            // the toys first (few, and the ones a child looks for), then the furniture under its own title
+            float furnitureTop = toysHeader + toyRows * cellHeight + toysHeader;
+            var content = art.Rect(viewport, "Content", new Rect(0, 0, w - 28, furnitureTop + rows * cellHeight + 8));
             var scroll = panel.gameObject.AddComponent<ScrollRect>(); scroll.viewport = viewport; scroll.content = content;
             scroll.horizontal = false; scroll.vertical = true; scroll.movementType = ScrollRect.MovementType.Clamped;
             for (int i = 0; i < COgheHomeItems.Catalog.Length; i++)
@@ -38,7 +42,7 @@ namespace GravityBox.Venom
                 var entry = COgheHomeItems.Catalog[i];
                 var item = room?.Find(entry.id);
                 bool open = room != null && item != null && room.Present(item), sale = room != null && item != null && room.ForSale(item);
-                float x = (i % columns) * cell, y = (i / columns) * cellHeight;
+                float x = (i % columns) * cell, y = furnitureTop + (i / columns) * cellHeight;
                 var box = art.Box(content, "Item " + entry.id, new Rect(x + 4, y + 4, cell - 8, cellHeight - 8), open || sale ? new Color(.995f, .995f, .972f) : new Color(.93f, .94f, .91f), true);
                 box.pixelsPerUnitMultiplier = 2f;
                 var button = box.gameObject.AddComponent<Button>(); button.targetGraphic = box;
@@ -61,6 +65,40 @@ namespace GravityBox.Venom
                     art.Icon(box.transform, COgheIcon.Lock, new Rect(cell - 34, 8, 18, 18), COgheUIArt.Muted);
                     art.Label(box.transform, "State", "Level " + entry.level, new Rect(2, size + 13, cell - 12, 16), 10, COgheUIArt.Muted);
                 }
+            }
+            ToyCollection(content, 0, columns, cell, cellHeight, toysHeader);
+            art.Label(content, "Furniture title", "Furniture", new Rect(4, furnitureTop - toysHeader + 8, cell * columns - 8, 24), 15, COgheUIArt.Ink, TextAnchor.MiddleLeft).font = art.BoldFont;
+        }
+
+        /// <summary>The toys (Mrk 17/10/2026), each won in a chapter's "Hiểu ra": a collection with empty slots. A toy won shows
+        /// its picture and "Play"; one still to come is a dark shape with "?" and the chapter that gives it.</summary>
+        private void ToyCollection(RectTransform content, float top, int columns, float cell, float cellHeight, float header)
+        {
+            int have = 0; foreach (var t in COgheToys.Catalog) if (COgheToys.Owns(t.id)) have++;
+            art.Label(content, "Toys title", "Toys " + have + "/" + COgheToys.Catalog.Length, new Rect(4, top + 8, cell * columns - 8, 24), 15, COgheUIArt.Ink, TextAnchor.MiddleLeft).font = art.BoldFont;
+            for (int i = 0; i < COgheToys.Catalog.Length; i++)
+            {
+                var toy = COgheToys.Catalog[i]; bool owned = COgheToys.Owns(toy.id);
+                float x = (i % columns) * cell, y = top + header + (i / columns) * cellHeight;
+                var box = art.Box(content, "Toy " + toy.id, new Rect(x + 4, y + 4, cell - 8, cellHeight - 8), owned ? new Color(.995f, .995f, .972f) : new Color(.93f, .94f, .91f), true);
+                box.pixelsPerUnitMultiplier = 2f;
+                var button = box.gameObject.AddComponent<Button>(); button.targetGraphic = box;
+                string id = toy.id; int chapter = toy.chapter;
+                button.onClick.AddListener(() =>
+                {
+                    COgheAudio.UiTap();
+                    var item = Game.HomeRoom?.Find(id);
+                    if (COgheToys.Owns(id) && item != null) { Resume(); Game.Personality?.PlayWith(item); }
+                    else Notify("Win it in “Understand COghe” of chapter " + chapter);
+                });
+                var icon = new GameObject("Icon", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+                var ir = icon.rectTransform; ir.SetParent(box.transform, false); ir.anchorMin = ir.anchorMax = new Vector2(0, 1); ir.pivot = new Vector2(0, 1);
+                float size = cell - 30; ir.anchoredPosition = new Vector2((cell - 8 - size) * .5f, -4); ir.sizeDelta = new Vector2(size, size);
+                icon.sprite = ItemIcon(toy.id); icon.preserveAspect = true; icon.raycastTarget = false;
+                icon.color = owned ? Color.white : new Color(.25f, .3f, .32f, .35f);   // not won yet: a dark shape
+                if (!owned) art.Label(box.transform, "Unknown", "?", new Rect(0, size * .5f - 22, cell - 8, 40), 30, COgheUIArt.Muted).font = art.BoldFont;
+                art.Label(box.transform, "Name", owned ? toy.name : "???", new Rect(2, size - 2, cell - 12, 18), 11);
+                art.Label(box.transform, "State", owned ? "Play" : "Chapter " + chapter, new Rect(2, size + 13, cell - 12, 16), 10, owned ? COgheUIArt.Teal : COgheUIArt.Muted);
             }
         }
 

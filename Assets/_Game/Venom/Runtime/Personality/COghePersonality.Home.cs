@@ -101,6 +101,7 @@ namespace GravityBox.Venom
             if (room == null || item == null) return;
             if (InBonus) { if (item.Root.activeInHierarchy) BonusHeard(COgheBonusAnswer.Item, item.Id); return; }   // a toy out for its game counts too
             if (!room.Present(item)) return;
+            greetPending = false; revealVisit = false;      // the player's choice comes before its hello and its visit to what is new
             StopPlaying(); GoTo(item); userPlay = true;   // chosen by the player: it thanks them after
         }
 
