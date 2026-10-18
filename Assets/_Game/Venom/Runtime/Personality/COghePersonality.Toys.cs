@@ -3,7 +3,7 @@ using UnityEngine;
 namespace GravityBox.Venom
 {
     /// <summary>What COghe does about a wrong answer in "Hiểu ra" (Mrk 17/10/2026: a comedy, not a telling-off).</summary>
-    public enum COgheGag { None, Spit, GiggleRumble, GigglePoint, Bonk, Hiccup, GiggleRoll, CoverEars, Nope, Startle, Blooper, Pop }
+    public enum COgheGag { None, Spit, GiggleRumble, GigglePoint, Bonk, Hiccup, GiggleRoll, CoverEars, Nope, Startle, Blooper, Pop, TopFall }
 
     /// <summary>
     /// "Hiểu ra" toys and gags (Mrk 17/10/2026).
@@ -37,6 +37,7 @@ namespace GravityBox.Venom
         /// <summary>Which beat of the game (0-based) and how many strikes it has.</summary>
         public int ToyPattern => toyPattern;
         public int ToyBeats => IsBallGame ? BallPasses : IsHornGame ? HornTune.Length : IsBalloonGame ? BalloonNeeds
+            : IsTopGame ? TopRescues : IsBoxGame ? BoxTurns
             : toyPattern < DrumBeats.Length ? DrumBeats[toyPattern].Length : 0;
         /// <summary>The toy of the game being played (its id), or null.</summary>
         public string ToyId => InToyGame ? bonusRounds[bonusRound].Toy : null;
@@ -45,12 +46,14 @@ namespace GravityBox.Venom
         public Vector3 ToyTapPoint => toy != null ? ToyPoint : centre;
         /// <summary>The dots the UI shows while it is the player's turn: strikes of this beat, or passes of the ball game.</summary>
         public int ToyDots => ToyBeats;
-        public int ToyDotsFilled => IsBallGame ? toyPattern : toyTaps;
+        public int ToyDotsFilled => IsBallGame || IsTopGame ? toyPattern : toyTaps;
+        /// <summary>The spinning top leans enough to need a tap (tests, the review reel).</summary>
+        public bool ToyWobbling => IsTopGame && topWobble > .2f;
         public bool ToyIsBall => InToyGame && bonusRounds[bonusRound].Toy == "BALL";
         /// <summary>The game waits for the player: the drum's turn, or the ball resting at the player's spot.</summary>
         public bool ToyWaitingForPlayer => ToyListening && (!IsBallGame || ballAtPlayer && ballReturnAt < 0);
         /// <summary>How close the camera frames the game (the ball game spans the aisle).</summary>
-        public float ToyFrameSize => IsBallGame ? .36f : IsBalloonGame ? .34f : IsHornGame ? .34f : .28f;   // the horn is long
+        public float ToyFrameSize => IsBallGame ? .36f : IsBalloonGame ? .34f : IsHornGame ? .34f : IsTopGame || IsBoxGame ? .3f : .28f;   // the horn is long
         /// <summary>Strikes the player has played back so far.</summary>
         public int ToyTaps => toyTaps;
         public bool ToyListening => bonusPhase == BonusPhase.ToyListen;
@@ -93,6 +96,8 @@ namespace GravityBox.Venom
                 room.ShowToy(toy, true); toy.Root.transform.localScale = Vector3.zero; toyPop = 0;
             }
             if (IsBalloonGame) StartBalloonGame();
+            if (IsTopGame) { topSpeed = topWobble = topFallen = 0; topNeedsPull = false; topRescuedAt = -1; }
+            if (IsBoxGame) { boxLid = boxCrank = boxCrankTarget = boxDancer = 0; boxStep = 0; pendingNote = -1; }
             bonusPhase = BonusPhase.ToyIntro; bonusTime = 0; Begin(COgheAct.Home, 1e6f);
             COgheAudio.Instance?.Play("creature_curious_1", .4f, 0, .15f);
             COgheAnalytics.Log("bonus_toy_start", "toy", toy != null ? toy.Id : "none");
@@ -134,6 +139,8 @@ namespace GravityBox.Venom
                 if (IsBallGame) { BallTapped(); return; }
                 if (IsHornGame) { HornTapped(Mathf.Max(0, hornTapKey)); return; }
                 if (IsBalloonGame) { BalloonTapped(); return; }
+                if (IsTopGame) { TopTapped(); return; }
+                if (IsBoxGame) { BoxTapped(); return; }
                 DrumStrike(true);
                 if (bonusPhase == BonusPhase.ToyJam) { jamBoostAt = bonusTime; return; }
                 if (bonusPhase != BonusPhase.ToyListen) return;   // while COghe plays, the drum sounds but does not count
@@ -158,6 +165,8 @@ namespace GravityBox.Venom
                 if (IsBallGame && UpdateBallGame(dt)) return true;
                 if (IsHornGame && UpdateHornGame(dt)) return true;
                 if (IsBalloonGame && UpdateBalloonGame(dt)) return true;
+                if (IsTopGame && UpdateTopGame(dt)) return true;
+                if (IsBoxGame && UpdateBoxGame(dt)) return true;
             }
             switch (bonusPhase)
             {
@@ -237,7 +246,7 @@ namespace GravityBox.Venom
                 // a shallow dip (the skin is .03 W thick: deeper and the dark inside of the shell would show)
                 if (head != null) { head.localPosition = new Vector3(0, DrumHeadY - .012f * impact, 0); head.localScale = new Vector3(1 + .05f * impact, 1, 1 + .05f * impact); }
             }
-            StepHorn();
+            StepHorn(); StepTop(dt); StepMusicBox(dt);
             if (toyPop >= 0 && toy != null)
             {
                 toyPop += dt; float k = Mathf.Clamp01(toyPop / .6f), pop = 1 + Mathf.Sin(k * Mathf.PI) * .25f * (1 - k);
@@ -253,6 +262,8 @@ namespace GravityBox.Venom
             if (toy.Id == COgheToys.Drum) { var head = toy.Part("Head"); if (head != null) { head.localPosition = new Vector3(0, DrumHeadY, 0); head.localScale = Vector3.one; } }
             if (toy.Id == COgheToys.Horn) ResetHorn(toy);
             if (toy.Id == COgheToys.Balloon) ResetBalloons(toy);
+            if (toy.Id == COgheToys.Top) ResetTop(toy);
+            if (toy.Id == COgheToys.MusicBox) ResetMusicBox(toy);
         }
 
         // where a strike lands: the drum's skin, a little toward COghe; and where the tendril waits above it
@@ -410,6 +421,7 @@ namespace GravityBox.Venom
                 case COgheGag.Startle: return 2.1f;
                 case COgheGag.Blooper: return 1.9f;
                 case COgheGag.Pop: return 2.0f;
+                case COgheGag.TopFall: return 2.4f;
                 default: return .9f;
             }
         }
@@ -427,6 +439,7 @@ namespace GravityBox.Venom
             if (g == COgheGag.Bonk) { var ball = gagItem?.Part("Ball"); gagFrom = ball != null ? ball.position : centre; skinTop = SkinTopOver(OnFloor(centre)); }
             if (g == COgheGag.Nope) COgheAudio.Instance?.Play("creature_hm", .45f, 0, .15f);
             if (g == COgheGag.Blooper) COgheAudio.Instance?.Play("horn_honk", .7f, 0, .05f);
+            if (g == COgheGag.TopFall) { topNeedsPull = true; topRescuedAt = -1; COgheAudio.Instance?.Play("top_clack", .6f, 0, .05f); }
             if (g == COgheGag.Pop)
             {   // the balloon bursts in its face
                 var b = toy != null ? BalloonPart(toy, Mathf.Min(toyPattern, 2)) : null; if (b != null) b.localScale = Vector3.zero;
@@ -464,6 +477,9 @@ namespace GravityBox.Venom
                     return t >= .9f && gagItem != null ? ItemPoint(gagItem) : (Vector3?)null;
                 case COgheGag.Blooper: mood = t < .9f ? COgheMood.Surprised : COgheMood.Happy; return null;
                 case COgheGag.Pop: mood = t < 1.0f ? COgheMood.Surprised : COgheMood.Happy; return null;
+                case COgheGag.TopFall:
+                    mood = t < .8f ? COgheMood.Surprised : t < 1.8f ? COgheMood.Hidden : COgheMood.Happy;
+                    return t < .8f && toy != null ? room.BoundsOf(toy).center : (Vector3?)null;
                 case COgheGag.Startle:
                     mood = t < .65f ? COgheMood.Surprised : t < 1.45f ? COgheMood.Sulky : COgheMood.Normal;
                     return t >= .65f && t < 1.45f && gagItem != null ? room.BoundsOf(gagItem).center : (Vector3?)null;
@@ -634,6 +650,20 @@ namespace GravityBox.Venom
                     p.Squash = 1 + .2f * jolt - .3f * flat + .06f * Mathf.Sin((t - .25f) * 28) * flat + .12f * Mathf.Sin(t * 38) * giggle;
                     p.Turn = Quaternion.AngleAxis(Mathf.Sin(t * 29) * 10 * giggle, toCam);
                     if (Crossed(1.05f, 100, t)) COgheAudio.Instance?.Play("creature_happy", .45f, 0, .1f);
+                    break;
+                }
+                case COgheGag.TopFall:
+                {
+                    // the top topples with a clatter; COghe gasps, tries spinning itself like a top, and wobbles dizzily
+                    topFallen = Smooth01(0, .35f, t); topSpeed = Mathf.MoveTowards(topSpeed, 0, lastDt * 2500); topWobble = 1 - topFallen;
+                    float gasp = Mathf.Sin(Mathf.Clamp01((t - .3f) / .5f) * Mathf.PI), twirl = Smooth01(.8f, 1.8f, t);
+                    float dizzy = Smooth01(1.75f, 1.9f, t) * (1 - Smooth01(2.15f, 2.4f, t));
+                    p.Squash = 1 + .18f * gasp + .12f * Mathf.Sin(twirl * Mathf.PI);
+                    p.Turn = Quaternion.AngleAxis(720 * twirl, up) * Quaternion.AngleAxis(10 * dizzy, Quaternion.AngleAxis(t * 600, up) * side);
+                    p.Centre = centre + up * (s * .3f * gasp);
+                    if (Crossed(.35f, 100, t)) COgheAudio.Instance?.Play("creature_hm", .45f, 0, .1f);
+                    if (Crossed(.85f, 100, t)) COgheAudio.Instance?.Play("creature_whoosh", .4f, 0, .1f);
+                    if (Crossed(1.85f, 100, t)) COgheAudio.Instance?.Play("creature_hm", .35f, 0, .1f);
                     break;
                 }
                 case COgheGag.Pop:

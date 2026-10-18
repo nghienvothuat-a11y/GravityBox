@@ -31,6 +31,7 @@ namespace GravityBox.Venom
             // toys (COgheToys): beside the spot where COghe stands for "Hiểu ra" (the drum on its right, the horn on its left
             // with the mouthpiece toward it), the balloons' bunch behind the drum
             { COgheToys.Drum, (.11f, -.02f, 0) }, { COgheToys.Horn, (-.15f, -.08f, 180) }, { COgheToys.Balloon, (.17f, .14f, 0) },
+            { COgheToys.Top, (.1f, -.17f, 0) }, { COgheToys.MusicBox, (-.12f, -.2f, 0) },
         };
 
         public readonly Transform Root;

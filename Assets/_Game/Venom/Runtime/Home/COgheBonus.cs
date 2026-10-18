@@ -39,8 +39,8 @@ namespace GravityBox.Venom
     /// chapters grow by putting words together: one word, two in any order, an order, a number, all of them, and (the sixth
     /// chapter, Mrk 12/10/2026) a number on most words.
     /// A wrong answer is a little comedy of what COghe got instead (it spits the food out, giggles at a touch, the ball bonks
-    /// it), then it asks again (Mrk 17/10/2026). Chapters 2, 3 and 4 end with a game on a new toy (the drum,
-    /// the horn, the balloons); the drum
+    /// it), then it asks again (Mrk 17/10/2026). Chapters 2 to 6 end with a game on a new toy (the drum, the horn,
+    /// the balloons, the spinning top, the music box); the drum
     /// (<see cref="COgheToys"/>) is a word from chapter 3 on. A ball game (<c>Game("BALL")</c>) exists for later
     /// chapters; chapter 1 stays as it was (Mrk 17/10/2026).
     /// </summary>
@@ -67,9 +67,9 @@ namespace GravityBox.Venom
             // 4: how many (exactly: one too many and it counts again); then the balloons: just as many puffs
             new[] { One(Food(2)), One(Drum(3)), COgheBonusRound.Game(COgheToys.Balloon) },
             // 5: all of it
-            new[] { InOrder(Cuddle(2), Play()), InOrder(Drum(2), Food(), Cuddle()), InOrder(Food(2), Cuddle(), Play()) },
+            new[] { InOrder(Cuddle(2), Play()), InOrder(Drum(2), Food(), Cuddle()), COgheBonusRound.Game(COgheToys.Top) },
             // 6: every word counts
-            new[] { InOrder(Cuddle(2), Food(2)), InOrder(Play(), Drum(3), Food()), InOrder(Food(3), Play(), Cuddle(2)) },
+            new[] { InOrder(Cuddle(2), Food(2)), InOrder(Play(), Drum(3), Food()), COgheBonusRound.Game(COgheToys.MusicBox) },
         };
 
         /// <summary>The questions of chapter <paramref name="chapter"/>'s bonus (1-based), or null if it has none.</summary>

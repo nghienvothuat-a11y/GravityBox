@@ -203,6 +203,44 @@ namespace GravityBox.Venom
                     item.Approach = new Vector3(-.9f, 0, -.6f);
                     break;
                 }
+                case COgheToys.Top:
+                {
+                    // a spinning top in coral, amber and teal bands with ivory dots (so its spin shows) on a slate handle; "Spin"
+                    // turns and leans about its tip
+                    var spin = Group("Spin", Vector3.zero);
+                    k.Paint(Coral).Lathe(new[] { new Vector2(0, 0), new Vector2(.06f, .04f), new Vector2(.22f, .16f) }, 14);
+                    k.Paint(Amber).Lathe(new[] { new Vector2(.22f, .16f), new Vector2(.32f, .26f), new Vector2(.33f, .3f) }, 14);
+                    k.Paint(Teal).Lathe(new[] { new Vector2(.33f, .3f), new Vector2(.28f, .36f), new Vector2(.12f, .42f), new Vector2(0, .44f) }, 14);
+                    k.Paint(Slate).Cylinder(.05f, .05f, .42f, .62f, 8);
+                    k.Paint(Ivory).Ico(new Vector3(0, .64f, 0), Vector3.one * .07f, 0);
+                    for (int i = 0; i < 3; i++) { float dot = i * Mathf.PI * 2 / 3; k.Ico(new Vector3(Mathf.Cos(dot) * .31f, .25f, Mathf.Sin(dot) * .31f), Vector3.one * .05f, 0); }
+                    Bake("Spinning top", spin);
+                    item.Approach = new Vector3(-1.0f, 0, 1.1f);   // beside it, where COghe stands for "Hiểu ra"
+                    break;
+                }
+                case COgheToys.MusicBox:
+                {
+                    // a little music box: a coral case with an ivory trim, a hinged amber lid ("Lid", at the back edge), a crank on
+                    // the right ("Crank", turning about x) and a tiny teal dancer inside that rises as the lid opens ("Dancer")
+                    k.Paint(Coral).Box(new Vector3(0, .18f, 0), new Vector3(.7f, .36f, .5f), .03f);
+                    k.Paint(Ivory).Box(new Vector3(0, .33f, 0), new Vector3(.72f, .04f, .52f), .01f);
+                    k.Paint(Slate).Box(new Vector3(0, .355f, 0), new Vector3(.6f, .02f, .4f));   // the inside, seen when it opens
+                    Bake("Music box case");
+                    var lid = Group("Lid", new Vector3(0, .36f, .25f));
+                    k.Paint(Amber).Box(new Vector3(0, .03f, -.25f), new Vector3(.72f, .06f, .52f), .02f);
+                    Bake("Music box lid", lid);
+                    var crank = Group("Crank", new Vector3(.36f, .2f, 0));
+                    k.Paint(Slate).Rod(Vector3.zero, new Vector3(.08f, 0, 0), .025f, 6); k.Rod(new Vector3(.08f, 0, 0), new Vector3(.08f, .14f, 0), .02f, 6);
+                    k.Paint(Teal).Ico(new Vector3(.08f, .16f, 0), Vector3.one * .04f, 0);
+                    Bake("Music box crank", crank);
+                    var dancer = Group("Dancer", new Vector3(0, .36f, 0));
+                    k.Paint(Teal).Cylinder(.07f, .07f, 0, .12f, 10, .3f); k.Paint(Ivory).Ico(new Vector3(0, .17f, 0), Vector3.one * .05f, 0);
+                    k.Paint(Teal).Rod(new Vector3(-.09f, .1f, 0), new Vector3(.09f, .1f, 0), .012f, 5);   // its arms
+                    Bake("Music box dancer", dancer);
+                    dancer.localScale = Vector3.zero;   // inside, until the lid opens
+                    item.Approach = new Vector3(1.2f, 0, 1.4f);
+                    break;
+                }
                 case "XYLOPHONE":
                 {
                     k.Paint(Ivory).Box(new Vector3(0, .12f, -.3f), new Vector3(2.2f, .12f, .1f)); k.Box(new Vector3(0, .12f, .3f), new Vector3(2.2f, .12f, .1f));

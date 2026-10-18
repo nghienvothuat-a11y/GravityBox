@@ -142,10 +142,14 @@ namespace GravityBox.Venom
                 if (toyId == "BALL") line = p.ToyListening ? "Your turn: pass the ball back!" : p.ToyJamming ? "Cheer COghe on!" : "Play ball with COghe!";
                 else if (toyId == COgheToys.Horn) line = p.ToyListening ? "Your turn: same buttons, same order!" : p.ToyJamming ? "Play along with COghe!" : "Listen to COghe's tune…";
                 else if (toyId == COgheToys.Balloon) line = p.ToyListening ? "Tap the balloon to blow it up!" : p.ToyJamming ? "Fly with COghe!" : "How many puffs?";
+                else if (toyId == COgheToys.Top) line = p.ToyListening ? "Tap the top when it wobbles!" : p.ToyJamming ? "Spin with COghe!" : "COghe spins the top…";
+                else if (toyId == COgheToys.MusicBox) line = p.ToyListening ? "Your turn: tap the music box!" : p.ToyJamming ? "Dance with COghe!" : "COghe winds the music box…";
                 else line = p.ToyListening ? "Your turn: play it back!" : p.ToyJamming ? "Play along with COghe!" : "Listen to COghe's drum…";
                 if (bonusShownMisses >= 2 && p.ToyListening)
                     line = toyId == "BALL" ? "Tap the ball to pass it back." : toyId == COgheToys.Horn ? "Tap the buttons in COghe's order." :
-                           toyId == COgheToys.Balloon ? "Tap the balloon " + p.ToyBeats + " times, then wait." : "Tap the drum " + p.ToyBeats + " times, like COghe.";
+                           toyId == COgheToys.Balloon ? "Tap the balloon " + p.ToyBeats + " times, then wait." :
+                           toyId == COgheToys.Top ? "Tap the top before it falls." : toyId == COgheToys.MusicBox ? "Tap the music box to turn its crank." :
+                           "Tap the drum " + p.ToyBeats + " times, like COghe.";
                 if (p.ToyListening)
                     for (int i = 0, n = p.ToyDots; i < n; i++)
                     {

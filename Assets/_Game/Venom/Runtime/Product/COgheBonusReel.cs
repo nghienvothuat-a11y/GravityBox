@@ -18,7 +18,7 @@ namespace GravityBox.Venom
         private static void Boot()
         {
             var args = Environment.GetCommandLineArgs();
-            if (Array.IndexOf(args, "-coghe-bonus-reel") < 0 && Array.IndexOf(args, "-coghe-bonus-reel2") < 0 && Array.IndexOf(args, "-coghe-trailer-reel") < 0 && Array.IndexOf(args, "-coghe-toy-reel") < 0 && Array.IndexOf(args, "-coghe-toy-reel2") < 0 && Array.IndexOf(args, "-coghe-toy-reel3") < 0) return;
+            if (Array.IndexOf(args, "-coghe-bonus-reel") < 0 && Array.IndexOf(args, "-coghe-bonus-reel2") < 0 && Array.IndexOf(args, "-coghe-trailer-reel") < 0 && Array.IndexOf(args, "-coghe-toy-reel") < 0 && Array.IndexOf(args, "-coghe-toy-reel2") < 0 && Array.IndexOf(args, "-coghe-toy-reel3") < 0 && Array.IndexOf(args, "-coghe-toy-reel4") < 0) return;
             VenomCampaignSave.PersistenceEnabled = false; COgheProductMode.OverrideForTests = true;
             var go = new GameObject("Bonus reel"); DontDestroyOnLoad(go); go.AddComponent<COgheBonusReel>();
         }
@@ -29,8 +29,8 @@ namespace GravityBox.Venom
 
         private IEnumerator Start()
         {
-            var args = Environment.GetCommandLineArgs(); bool second = Array.IndexOf(args, "-coghe-bonus-reel2") >= 0, trailer = Array.IndexOf(args, "-coghe-trailer-reel") >= 0, toys = Array.IndexOf(args, "-coghe-toy-reel") >= 0, toys2 = Array.IndexOf(args, "-coghe-toy-reel2") >= 0, toys3 = Array.IndexOf(args, "-coghe-toy-reel3") >= 0;
-            int at = Array.IndexOf(args, toys3 ? "-coghe-toy-reel3" : toys2 ? "-coghe-toy-reel2" : toys ? "-coghe-toy-reel" : trailer ? "-coghe-trailer-reel" : second ? "-coghe-bonus-reel2" : "-coghe-bonus-reel");
+            var args = Environment.GetCommandLineArgs(); bool second = Array.IndexOf(args, "-coghe-bonus-reel2") >= 0, trailer = Array.IndexOf(args, "-coghe-trailer-reel") >= 0, toys = Array.IndexOf(args, "-coghe-toy-reel") >= 0, toys2 = Array.IndexOf(args, "-coghe-toy-reel2") >= 0, toys3 = Array.IndexOf(args, "-coghe-toy-reel3") >= 0, toys4 = Array.IndexOf(args, "-coghe-toy-reel4") >= 0;
+            int at = Array.IndexOf(args, toys4 ? "-coghe-toy-reel4" : toys3 ? "-coghe-toy-reel3" : toys2 ? "-coghe-toy-reel2" : toys ? "-coghe-toy-reel" : trailer ? "-coghe-trailer-reel" : second ? "-coghe-bonus-reel2" : "-coghe-bonus-reel");
             output = at + 1 < args.Length && !args[at + 1].StartsWith("-") ? Path.GetFullPath(args[at + 1]) : Path.Combine(Application.persistentDataPath, "BonusReel");
             Directory.CreateDirectory(output);
             // the trailer wants 1080×1920: a 540×960 window (it fits any screen) captured at twice its size
@@ -47,6 +47,7 @@ namespace GravityBox.Venom
             if (toys) { yield return Toys(game, heard, sounds); yield break; }
             if (toys2) { yield return Toys2(game, heard, sounds); yield break; }
             if (toys3) { yield return Toys3(game, heard, sounds); yield break; }
+            if (toys4) { yield return Toys4(game, heard, sounds); yield break; }
             // the first boss (its warning plays first, unrecorded)
             int boss = FirstBoss(game.ProductUI);
             game.ProductUI.LoadForTest(boss);
@@ -350,6 +351,69 @@ namespace GravityBox.Venom
             Mark("home-horn"); yield return Touch(game, game.HomeRoom.BoundsOf(game.HomeRoom.Find(COgheToys.Horn)).center);
             yield return Until(() => p.Playing != null, 400); yield return Until(() => p.Playing == null, 600); yield return Frames(20);
             Mark("home-balloon"); yield return Touch(game, game.HomeRoom.Find(COgheToys.Balloon).Part("Balloon1").position);
+            yield return Until(() => p.Playing != null, 400); yield return Until(() => p.Playing == null, 600); yield return Frames(30);
+            Mark("end");
+            capturing = false; Time.captureFramerate = 0; COgheAudio.Heard -= heard;
+            File.WriteAllText(Path.Combine(output, "sounds.txt"), sounds.ToString());
+            File.WriteAllText(Path.Combine(output, "marks.txt"), marks.ToString());
+            File.WriteAllText(Path.Combine(output, "frames.txt"), frame.ToString());
+            Debug.Log("COGHE BONUS REEL DONE " + frame);
+            Application.Quit(0);
+        }
+
+        /// <summary>The fourth toy reel (-coghe-toy-reel4): chapter 5's spinning top (left to fall once first), chapter 6's
+        /// music box (a touch on COghe first), then both played at Home. Marks in marks.txt.</summary>
+        private IEnumerator Toys4(VenomCampaign game, Action<string, float> heard, System.Text.StringBuilder sounds)
+        {
+            var ui = game.ProductUI; var marks = new System.Text.StringBuilder();
+            void Mark(string what) => marks.AppendLine($"{frame} {what}");
+            // a player who has beaten the sixth boss and won the earlier toys: the furniture bought, no card waiting
+            COgheShop.ResetForTests(new COgheShop.State { Migrated = true }); COgheShop.TestsOwnUnlocked = false;
+            game.Progress.HomeUnlocked = true; game.Progress.Completed.Clear();
+            int bosses = 0, reached = 0;
+            for (int i = 0; i < ui.Catalog.Levels.Length; i++) { game.Progress.Completed.Add(ui.Catalog.Levels[i].Id); if (ui.Catalog.Levels[i].Boss && ++bosses == 6) { reached = i + 1; break; } }
+            foreach (var e in COgheHomeItems.Catalog) if (e.level <= reached) COgheShop.Grant(e.id, "reel");
+            foreach (var t in new[] { COgheToys.Drum, COgheToys.Horn, COgheToys.Balloon }) COgheShop.Grant(t, "reel");
+            for (int c = 1; c <= 6; c++) COgheShop.Current.CardsPicked.Add(c);
+            for (int r = 1; r <= 2; r++) { COgheShop.Understand(COgheBonus.RoundKey(5, r)); COgheShop.Understand(COgheBonus.RoundKey(6, r)); }   // straight to the games
+            BuildRing(); ui.ShowMenu(); yield return new WaitForSecondsRealtime(.8f);
+            ui.OpenHome(); var p = game.Personality;
+            yield return Until(() => p.Act == COgheAct.Wave, 3000);   // many new things pop in first, and it visits the newest yield return new WaitForSecondsRealtime(.5f);
+            COgheAudio.Heard += heard; Time.captureFramerate = 30; capturing = true;
+            StartCoroutine(CaptureFrames());
+            // chapter 5: the spinning top
+            Mark("top"); ui.StartBonus(5, false);
+            yield return Until(() => p.ToyShowing, 300); Mark("top-intro");
+            yield return Until(() => p.ToyWaitingForPlayer, 600); Mark("top-wobble");
+            yield return Until(() => p.Gag == COgheGag.TopFall, 600); Mark("top-fall");
+            for (int r = 0; r < COghePersonality.TopRescues; r++)
+            {
+                yield return Until(() => p.ToyWaitingForPlayer && p.ToyWobbling && p.Gag == COgheGag.None, 900); yield return Frames(10 + 8 * r);
+                Mark("top-save" + r); yield return Touch(game, p.ToyTapPoint);
+                yield return Until(() => !p.ToyListening, 300);
+            }
+            yield return Until(() => p.ToyJamming, 300); Mark("top-jam");
+            for (int i = 0; i < 4; i++) { yield return Frames(20); yield return Touch(game, p.ToyTapPoint); }
+            yield return Until(() => p.BonusThanking, 600); Mark("top-done"); yield return Frames(30);
+            // chapter 6: the music box
+            p.EndBonus(); Mark("box"); ui.StartBonus(6, false);
+            yield return Until(() => p.ToyShowing, 300); Mark("box-intro");
+            yield return Until(() => p.ToyWaitingForPlayer, 600); Mark("box-turn"); yield return Frames(15);
+            Mark("box-wrong"); yield return Touch(game, p.SkinCentre + Vector3.up * .01f);
+            for (int tune = 0; tune < 3; tune++)
+            {
+                yield return Until(() => p.ToyWaitingForPlayer && p.Gag == COgheGag.None, 600); yield return Frames(10);
+                Mark("box-tune" + tune); for (int i = 0; i < 3; i++) { yield return Touch(game, p.ToyTapPoint); yield return Frames(8); }
+                yield return Until(() => !p.ToyListening, 300);
+            }
+            yield return Until(() => p.ToyJamming, 300); Mark("box-dance");
+            for (int i = 0; i < 4; i++) { yield return Frames(22); yield return Touch(game, p.ToyTapPoint); }
+            yield return Until(() => p.BonusThanking, 600); Mark("box-done"); yield return Frames(30);
+            // at Home: a tap on each
+            p.EndBonus(); yield return Frames(30);
+            Mark("home-top"); yield return Touch(game, game.HomeRoom.BoundsOf(game.HomeRoom.Find(COgheToys.Top)).center);
+            yield return Until(() => p.Playing != null, 400); yield return Until(() => p.Playing == null, 600); yield return Frames(20);
+            Mark("home-box"); yield return Touch(game, game.HomeRoom.BoundsOf(game.HomeRoom.Find(COgheToys.MusicBox)).center);
             yield return Until(() => p.Playing != null, 400); yield return Until(() => p.Playing == null, 600); yield return Frames(30);
             Mark("end");
             capturing = false; Time.captureFramerate = 0; COgheAudio.Heard -= heard;

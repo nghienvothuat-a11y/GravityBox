@@ -202,6 +202,56 @@ namespace GravityBox.Tests
    finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;COgheShop.ResetForTests();}
   }
 
+  // Chapter 5's last question: the spinning top, kept spinning with a tap whenever it wobbles (Mrk 17/10/2026).
+  [UnityTest] public IEnumerator TopGameKeepsTheTopSpinning()
+  {
+   try
+   {
+    yield return HomeWithoutTheDrum();
+    var p=game.Personality;var top=game.HomeRoom.Find(COgheToys.Top);
+    p.BeginBonus(COgheBonus.Rounds(5),2);
+    yield return BonusUntil(()=>p.ToyWaitingForPlayer,15,"COghe pulls the top into a spin");
+    Assert.IsTrue(top.Root.activeSelf);
+    // left alone it wobbles and falls: a gag, then COghe stands it up and spins it again
+    yield return BonusUntil(()=>p.Gag==COgheGag.TopFall,8,"Left alone, it falls");
+    for(int r=0;r<COghePersonality.TopRescues;r++)
+    {
+     yield return BonusUntil(()=>p.ToyWaitingForPlayer&&p.ToyWobbling&&p.Gag==COgheGag.None,12,"It wobbles ("+(r+1)+")");
+     yield return TapToy(p.ToyTapPoint);
+     yield return BonusUntil(()=>!p.ToyListening,4,"A tap: it spins up straight again");
+    }
+    yield return BonusUntil(()=>p.ToyJamming,8,"COghe twirls beside it");
+    yield return BonusUntil(()=>p.BonusThanking||p.BonusFinished,15,"Won");
+    Assert.IsTrue(COgheToys.Owns(COgheToys.Top),"The top is the player's");Assert.AreEqual(1,p.BonusMisses);
+   }
+   finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;COgheShop.ResetForTests();}
+  }
+
+  // Chapter 6's last question: the music box, three tunes wound by the player (Mrk 17/10/2026).
+  [UnityTest] public IEnumerator MusicBoxGamePlaysThreeTunes()
+  {
+   try
+   {
+    yield return HomeWithoutTheDrum();
+    var p=game.Personality;
+    p.BeginBonus(COgheBonus.Rounds(6),2);
+    yield return BonusUntil(()=>p.ToyWaitingForPlayer,15,"COghe opens the box and turns the crank once");
+    Assert.AreEqual(3,p.ToyBeats);
+    // a touch on COghe instead: it giggles and points at the box, then the tune starts again
+    p.TouchedInHome(p.SkinCentre);Assert.AreEqual(COgheGag.GigglePoint,p.Gag);
+    for(int tune=0;tune<3;tune++)
+    {
+     yield return BonusUntil(()=>p.ToyWaitingForPlayer&&p.Gag==COgheGag.None,12,"Tune "+(tune+1));
+     for(int i=0;i<3;i++){yield return TapToy(p.ToyTapPoint);yield return Frames(10);}
+     yield return BonusUntil(()=>!p.ToyListening,4,"The tune complete: a flourish");
+    }
+    yield return BonusUntil(()=>p.ToyJamming,8,"The box plays on; they dance");
+    yield return BonusUntil(()=>p.BonusThanking||p.BonusFinished,15,"Won");
+    Assert.IsTrue(COgheToys.Owns(COgheToys.MusicBox),"The box is the player's");Assert.AreEqual(1,p.BonusMisses);
+   }
+   finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;COgheShop.ResetForTests();}
+  }
+
   [Test] public void OldSavesThatFinishedChapterTwoGetTheDrum()
   {
    try

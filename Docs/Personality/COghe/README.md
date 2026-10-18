@@ -292,7 +292,21 @@ Bản mẫu cho chương 2, chờ Mrk duyệt clip `OUTBOX/COGHE_HIEURA_TOYS_202
   - Thổi thừa: bóng nổ "bụp" vào mặt COghe, COghe bị thổi bẹp rồi cười (`Pop`), rồi lấy quả mới, vẫn đếm số cũ.
   - Đủ ba quả: COghe cầm dây cả chùm bay lên; mỗi lần người chơi chạm thì bay cao hơn. Ở Nhà, chạm chùm bóng thì COghe bay
     lên cùng bóng.
-- **Chưa làm:** đồ chơi chương 5–6 (con quay, hộp nhạc); câu hỏi cho chương 7+.
+- **Câu cuối chương 5 = con quay** (đợt 3, `TOY_TOP`, phía trước bên phải chỗ COghe đứng):
+  - COghe quấn xúc tu vào cán rồi giật, con quay quay tít. Một lúc sau nó chậm dần và lắc lư mỗi lúc một mạnh (khoảng
+    4 giây), người chơi chạm vào nó để nó quay thẳng lại. Không bấm giờ gắt.
+  - Lắc lư mà chưa đổ thì chạm lúc nào cũng được. Chạm khi nó còn quay đều thì chỉ quay nhanh thêm, không bị phạt.
+  - Để nó đổ: tiếng lạch cạch, COghe hốt hoảng, tự xoay như con quay rồi chóng mặt (`TopFall`). Sau đó COghe dựng con
+    quay lên và giật lại.
+  - Cứu ba lần thì COghe xoay tít bên con quay. Ở Nhà, chạm con quay thì COghe giật cho nó quay rồi xoay theo.
+- **Câu cuối chương 6 = hộp nhạc** (đợt 3, `TOY_MUSICBOX`, phía trước bên trái):
+  - COghe mở nắp, búp bê nhỏ trồi lên. COghe quay tay quay một nấc (2 nốt).
+  - Đến lượt người chơi: mỗi lần chạm hộp là quay một nấc, ra 2 nốt; búp bê xoay, COghe nhảy một bước. Ba lần chạm là
+    hết bài, ba bài.
+  - Ba bài xong thì hộp tự chơi tiếp, hai bên cùng nhảy, rồi nắp đóng lại. Chỉ chạm sai chỗ mới có trò hài. Ở Nhà, chạm hộp
+    thì COghe mở hộp, quay nhạc và nhảy.
+- Âm thanh: `top_whirr`, `top_clack`, `mbox_0..7` (chuông hộp nhạc, thang ngũ cung).
+- **Chưa làm:** câu hỏi cho chương 7+ (khi có thêm màn).
 - **Kiểm tra:** `COgheToyTests`. Bản Mac: `-coghe-toy-reel <thư mục>` quay trò trống và các trò hài,
-  `-coghe-toy-reel2 <thư mục>` quay trống trong câu hỏi, `-coghe-toy-reel3 <thư mục>` quay kèn và bóng bay (PNG 30 khung/s, `sounds.txt`, `marks.txt`; tối đa
+  `-coghe-toy-reel2 <thư mục>` quay trống trong câu hỏi, `-coghe-toy-reel3 <thư mục>` quay kèn và bóng bay, `-coghe-toy-reel4 <thư mục>` quay con quay và hộp nhạc (PNG 30 khung/s, `sounds.txt`, `marks.txt`; tối đa
   9000 khung).
