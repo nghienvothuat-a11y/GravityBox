@@ -38,7 +38,7 @@ namespace GravityBox.Tests
    yield return Tap(game.Owner.Outlet.position);
    for(int i=0;i<15/Dt&&!game.Owner.Completed;i++){Tick();if(i%60==0)yield return null;}
    Assert.IsFalse(game.Owner.Completed,$"{key}: the exit let COghe out without the mechanisms");
-   // a device the level leaves open from the start (G10's B, on the first road) may be worked; it opens no way to the exit
+   // a device the level leaves open from the start (on the first road: G10's B, G11's A) may be worked; it opens no way to the exit
    foreach(var rail in game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>())if(System.Array.IndexOf(open,rail.Label)<0)Assert.AreEqual(0,rail.CompletedJourneys,$"{key}: no tap may work a device here ({rail.Label})");
    File.AppendAllText(log,$"highest body centre {top:F3}\n");
   }
@@ -112,8 +112,29 @@ namespace GravityBox.Tests
   [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG9SolveAt30Fps(){yield return GlassCrawlSolveAtFrameRate("G9",30);}
   [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG10NoShortcut(){yield return GlassCrawlNoShortcut("G10","B");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG10SolveAtFrameRate(){yield return GlassCrawlSolveAtFrameRate("G10");}
-  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG11NoShortcut(){yield return GlassCrawlNoShortcut("G11");}
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG11NoShortcut(){yield return GlassCrawlNoShortcut("G11","A");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG11SolveAtFrameRate(){yield return GlassCrawlSolveAtFrameRate("G11");}
+  // 71 (Mrk 19/10/2026: gears and a rope swing): on P with G's gap open only the motor gear turns and the landing stays put;
+  // a swing for the landing before it slides in misses, and the winch brings COghe back to the hook.
+  [UnityTest,Timeout(900000)] public IEnumerator GlassRoadG11SwingMissesBeforeTheGears()
+  {
+   yield return LoadPlus("G11");yield return Wait(.5f);
+   var deck=Array.Find(game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>(),r=>r.name=="B landing deck");
+   var rope=game.Owner.Apparatus.GetComponentInChildren<COgheSwingTransfer>();
+   yield return Tap(game.Root.TransformPoint(new Vector3(.02f,-.30f,-.04f)));
+   for(int i=0;i<12/Dt;i++){Tick();if(i%60==0)yield return null;}
+   Assert.Less(deck.Position,.005f,"without G the landing must not move");
+   yield return Tap(rope.Ring.position);
+   for(int i=0;i<40/Dt&&rope.Phase!=COgheSwingTransfer.SwingPhase.Ready;i++){Tick();if(i%60==0)yield return null;}
+   Assert.AreEqual(COgheSwingTransfer.SwingPhase.Ready,rope.Phase,"grip ring B");
+   var top=Array.Find(deck.GetComponentsInChildren<VenomSurfacePatch>(),f=>f.Normal.y>.9f);
+   yield return Tap(top.transform.position);
+   for(int i=0;i<25/Dt&&!(rope.Misses>0&&rope.Phase==COgheSwingTransfer.SwingPhase.Ready);i++){Tick();if(i%60==0)yield return null;}
+   Assert.AreEqual(0,rope.Landings,"no landing before the gears push the deck in");
+   Assert.Greater(rope.Misses,0,"the swing must miss the landing that has not slid in");
+   Assert.AreEqual(COgheSwingTransfer.SwingPhase.Ready,rope.Phase,"the winch brings COghe back to the hook");
+   Assert.IsFalse(game.Owner.Completed);
+  }
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG2NoShortcut(){yield return GlassCrawlNoShortcut("G2");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG3NoShortcut(){yield return GlassCrawlNoShortcut("G3");}
   [UnityTest,Timeout(900000)] public IEnumerator GlassCrawlG4NoShortcut(){yield return GlassCrawlNoShortcut("G4");}

@@ -19,7 +19,7 @@ thứ tự thay thế chờ Mrk chốt, hiện cả sáu màn vẫn nằm sau 65
   - tay nắm treo trên kính (`GlassHandle`): COghe đứng trên đường ngay dưới để kéo. Thân tay nắm nằm dọc theo kính, cách
     kính 5 mm, trơn mọi mặt: không trèo lên được (70: đứng trên thân B thì với tới kính trần phía trên hàng rào);
   - thang máy chở COghe từ đường thấp lên đường cao (70);
-  - nút cần nửa thân giữ cửa, tay nắm chốt cửa mở hẳn (71).
+  - bánh răng dựng trên kính, tay nắm treo trên kính đẩy bánh thiếu vào dàn; bến đáp do bánh răng đẩy; dây đu (71).
 - **Lỗ thoát:** nằm trên vách, trong một đường, khoá bằng cửa trượt của cơ quan cuối. Riêng màn 66, lỗ thoát mở sẵn.
 
 ## Các màn
@@ -31,7 +31,7 @@ thứ tự thay thế chờ Mrk chốt, hiện cả sáu màn vẫn nằm sau 65
 | 68 | G8 | Bốn mặt kính (khó) | A mở chân đường vách trước → leo, qua góc sang vách trái, lên kệ → B hạ tấm chắn ngang đường vách sau → theo vách sau sang vách phải → kéo C treo trên kính → lỗ thoát. Đường vách trước chạy về phía lỗ thoát nhưng cụt. |
 | 69 | G9 | Hai nửa, bốn vách (cực khó) | Đường như 68. Cửa chắn giữa đường vách sau chỉ mở khi P1 (sàn) hoặc P2 (kệ phải) bị đè. Lỗ thoát cần cả thân. A mở chân đường vách trước → tách ở Q → nửa 1 đứng P1 → nửa 2 leo vách trước, vách trái, qua cửa, đứng P2 → nửa 1 rời P1, leo cùng đường, qua cửa → kéo C treo trên kính (cách lỗ thoát ~19 cm để lỗ không hút nửa thân trước khi nhập) → nhập trên kệ phải → ra. |
 | 70 | G10 | Thang máy giữa hai đường (vừa–khó, cho vị trí 40) | Đường thấp lên vách trái; đường cao từ góc sau-phải chạy qua vách sau, vách phải tới lỗ thoát, cao hơn sàn thang máy 14 cm. Leo đường thấp, kéo B treo trên kính: mở khoá thang máy → xuống sàn → lên thang máy, thang đưa lên chân đường cao → theo vách sau, qua góc sang vách phải → lỗ thoát. |
-| 71 | G11 | Nửa giữ, nửa qua (khó, cho vị trí 52) | Cửa chắn giữa đường vách sau chỉ mở khi nút P (dưới sàn, trước kệ trái, rộng 14 cm) có ít nhất nửa thân đè (một phần tư không đủ), hoặc mở hẳn khi kéo C. Lỗ thoát ở vách trái, cần cả thân. Tách ở Q → nửa 1 đứng P → nửa 2 leo vách trước, vách phải lên kệ phải, qua cửa sang kệ trái → kéo C treo trên kính: cửa chốt mở, lỗ thoát mở → nửa 1 rời P, đi cùng đường → nhập trên kệ trái → ra. 69 sau đó bỏ chốt: phải đổi người giữ cửa. |
+| 71 | G11 | Bánh răng và dây đu (khó, cho vị trí 52) | Mrk 19/10: bản đầu "Nửa giữ, nửa qua" giống 69 quá → làm lại với bánh răng và đu dây, bỏ tách đôi. Hộp cao hơn (trần 0,30) để có chỗ đu. Ba bánh răng dựng trên kính vách sau, bánh giữa G thiếu. Leo đường vách sau tới A treo trên kính → kéo A, G trượt vào dàn → xuống đứng nút P dưới sàn: bánh răng quay, bến đáp B trượt dọc vách phải vào dưới dây (chưa có G thì chỉ bánh đầu quay) → leo đường vách trái lên kệ trái → bám vòng B, chạm bến: đu sang (bến chưa vào thì đu hụt, tời kéo về) → từ bến leo đường vách phải lên lỗ thoát. Đường vách trước vòng sang vách phải là đường cụt dưới tầm lỗ thoát. |
 
 ## Kiểm tra
 
@@ -56,6 +56,10 @@ kệ đỡ bên dưới (màn 68 và 69: kệ chạy dọc theo vách sau).
   để COghe leo kính trơn rồi tuột cho người chơi tự học (áp luật cho mọi màn làm hỏng 10 test, gồm 14, 28, 30 và N29).
 - Thân tay nắm và các khối khác đặt sát kính là bậc đứng: nếu trần, COghe đứng lên đó và với qua hàng rào (70, thân B).
   Đường phải chạy tới sát trần (hàng rào chạm trần) và thân tay nắm phải trơn.
-- Nút cần đúng nửa thân phải rộng: nửa thân dừng ở điểm cuối đường đi, có thể lệch tâm nút vài cm. Nút 10 cm ở 71 bị lệch 4 cm,
-  chỉ đo được 0,024–0,027 (cần 0,030). Nút 14 cm đủ chỗ, một phần tư thân (0,024) vẫn không mở được.
+- Nút cần đúng nửa thân phải rộng: nửa thân dừng ở điểm cuối đường đi, có thể lệch tâm nút vài cm. Ở bản đầu của 71, nút 10 cm
+  bị lệch 4 cm, chỉ đo được 0,024–0,027 (cần 0,030); nút 14 cm thì đủ.
+- Kệ và bến đặt sát vách có đường thì phần kính quanh nó phải là đường hoặc hàng rào. Kệ, bến đứng cách kính trần ít nhất 12 cm
+  (71: kệ trái và bến đáp dừng trước kính vách sau 12 cm, nên từ đường vách sau không với tới).
+- Biển số màn ở góc trên-trái kính trước. Camera nhìn chéo qua biển xuống phía sau-trái; ở 71 (hộp cao) đường nhìn rơi đúng chỗ
+  COghe bám dây, nên biển được lật sang góc trên-phải (`plusPlaqueRight`).
 - Lỗ thoát mở ra hút phần ở gần, nên tay nắm cuối phải cách lỗ thoát đủ xa khi còn tách đôi.

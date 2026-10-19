@@ -21,7 +21,8 @@ namespace GravityBox.Editor
   /// <summary>Bare roads, given as in <see cref="Tape"/>: (pane, u0, u1, v0, v1) in root coordinates (u along the pane: x on
   /// front and back, z on left and right; v up the pane). Slick: a band along the foot of every wall (but where a road starts
   /// on the floor) and a fence round every road, carried round the corner onto the next wall; never over a road.</summary>
-  static void GlassRoads(ExpansionContext c,params (int pane,float u0,float u1,float v0,float v1)[] roads)
+  static void GlassRoads(ExpansionContext c,params (int pane,float u0,float u1,float v0,float v1)[] roads)=>GlassRoads(c,.10f,roads);
+  static void GlassRoads(ExpansionContext c,float roof,params (int pane,float u0,float u1,float v0,float v1)[] roads)
   {
    for(int pane=1;pane<=4;pane++)
    {
@@ -36,8 +37,8 @@ namespace GravityBox.Editor
       if(Corner(r.pane,edge,out int next,out float at)&&next==pane)
        slick.Add(Rect.MinMaxRect(at<0?at:at-RoadFence,r.v0-RoadFence,at<0?at+RoadFence:at,r.v1+RoadFence));
     // a grid of every edge: a cell is slick when a slick rect covers it and no road does
-    var us=new SortedSet<float>{-uMax,uMax};var vs=new SortedSet<float>{-.30f,.10f};
-    foreach(var r in slick.Concat(bare)){us.Add(Mathf.Clamp(r.xMin,-uMax,uMax));us.Add(Mathf.Clamp(r.xMax,-uMax,uMax));vs.Add(Mathf.Clamp(r.yMin,-.30f,.10f));vs.Add(Mathf.Clamp(r.yMax,-.30f,.10f));}
+    var us=new SortedSet<float>{-uMax,uMax};var vs=new SortedSet<float>{-.30f,roof};
+    foreach(var r in slick.Concat(bare)){us.Add(Mathf.Clamp(r.xMin,-uMax,uMax));us.Add(Mathf.Clamp(r.xMax,-uMax,uMax));vs.Add(Mathf.Clamp(r.yMin,-.30f,roof));vs.Add(Mathf.Clamp(r.yMax,-.30f,roof));}
     var ul=us.ToList();var vl=vs.ToList();
     for(int i=0;i+1<ul.Count;i++)
     {
@@ -49,7 +50,7 @@ namespace GravityBox.Editor
       if(coat&&from==null)from=va;
       if(!coat&&from!=null){Tape(c,pane,ua,ub,from.Value,va);from=null;}
      }
-     if(from!=null)Tape(c,pane,ua,ub,from.Value,.10f);
+     if(from!=null)Tape(c,pane,ua,ub,from.Value,roof);
     }
    }
   }
@@ -186,29 +187,44 @@ namespace GravityBox.Editor
    PlusStep(1,new Vector3(-.40f,-.08f,-.16f));PlusStep(2,new Vector3(-.40f,-.03f,.12f));PlusStep(3,new Vector3(.25f,-.26f,.15f));PlusStep(4,c.Exit);
   }
 
-  // G11 · Nửa giữ, nửa qua (planned for 52, the chapter of half and quarter bodies): the gate across the back road stands open
-  // while pad P on the floor carries at least half a body (a quarter is too light), or for good once C is pulled. The exit, on
-  // the left wall, needs the whole body. Split at Q: one half holds P; the other climbs the front and right roads onto the right
-  // shelf, crosses the back road to the left shelf and pulls C on the left glass (the gate stays open, the exit opens); the first
-  // half follows; the halves merge on the left shelf and leave. Level 69 then takes the latch away (a relay of holders).
+  // G11 · Bánh răng và dây đu (planned for 52; Mrk 19/10/2026: "giống 69 quá, bố trí lại đường đi, thêm bánh răng, đu dây").
+  // A taller box (roof .30) for a rope swing. Three gears stand on the back glass with the middle one missing: A, hung on the
+  // glass above the back road, slides gear G into the gap. On pad P the train turns and pushes the landing deck along the right
+  // glass under the rope (without G only the motor gear turns). Up the left road onto the left shelf, grip ring B, tap the
+  // deck: COghe swings across (a miss swings back to the hook). From the deck the right road climbs to the exit. A road up the
+  // front glass and round onto the right glass is a dead end below the exit's height.
   static void PlusG11(ExpansionContext c)
   {
-   c.Exit=new Vector3(-.40f,-.07f,-.21f);c.Outward=Vector3.left;c.Spawn=new Vector3(-.12f,-.25f,-.235f);NextShell(c,.10f,false);var floor=c.Surfaces[0];
-   GlassRoads(c,(1,.18f,.30f,-.30f,-.02f),(1,.18f,.40f,-.12f,-.02f),   // the front: up, right to the corner
-    (4,-.30f,.02f,-.12f,-.02f),                                          // the right: to the right shelf
-    (2,-.40f,.40f,-.12f,-.02f),                                          // the back: corner to corner, a gate halfway
-    (3,-.27f,.30f,-.12f,-.02f));                                         // the left: the left shelf, C and the exit
-   NextQuantum(c,new Vector3(-.12f,-.30f,-.12f));
-   // half a body (a quarter is .024); wide, as a half stops where the route ends, not on the pad's centre (10 cm left it 4 cm off, under .030)
-   var p=ExpansionPad(c,"P",new Vector3(-.28f,-.298f,.09f),.030f,.14f);
-   ChapterLedge(c,"Right shelf",new Vector3(.29f,-.13f,.16f),new Vector3(.22f,.02f,.28f));
-   ChapterLedge(c,"Left shelf",new Vector3(-.26f,-.13f,.20f),new Vector3(.28f,.02f,.20f));   // from just past the gate
-   var gate=PlusGate(c,"Back road gate",new Vector3(-.03f,-.07f,.294f),Vector3.down,.12f,new Vector3(.16f,.14f,.008f));
-   var cHandle=GlassHandle(c,"C",new Vector3(-.368f,-.007f,.04f),Vector3.back,3);cHandle.OneWay=true;
-   var hold=PlusLatch(c,"P holds the back road gate; C keeps it open",new[]{p},gate,true,false);hold.Rails=new[]{cHandle.Rail};
-   ExitShutter(c,cHandle.Rail,"C exit shutter",Vector3.down,.12f);
-   PlusStep(1,new Vector3(-.12f,-.30f,-.12f));PlusStep(2,new Vector3(-.28f,-.30f,.09f));PlusStep(3,new Vector3(.29f,-.12f,.16f));
-   PlusStep(4,new Vector3(-.40f,-.05f,.04f));PlusStep(5,c.Exit);
+   c.Exit=new Vector3(.40f,.08f,.13f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.10f,-.25f,-.20f);NextShell(c,.30f,false);var floor=c.Surfaces[0];
+   plusPlaqueRight=true;   // top-left, the camera's line through the plaque lands on the shelf where COghe grips the ring
+   // the left: up from the floor beside the shelf, then along the glass at the shelf's height (as 69: a climb that ended
+   // at the shelf's corner made COghe step off the glass over the air there, and fall)
+   GlassRoads(c,.30f,(3,-.16f,-.04f,-.30f,-.04f),(3,-.04f,.18f,-.12f,-.04f),
+    (2,.00f,.12f,-.30f,-.13f),                                              // the back: up to A
+    (4,.08f,.18f,-.14f,.14f),                                               // the right: from the landing up to the exit
+    (1,.26f,.40f,-.30f,.02f),(4,-.30f,-.22f,-.06f,.10f));                   // the front and round the corner: a dead end
+   // the landing starts 8 cm short of the right road and 6 cm behind the front glass, 8 cm below the dead end: out of reach
+   // the shelf and the landing end 12 cm before the back glass: from the back road they are out of reach
+   var shelf=ChapterLedge(c,"Left shelf",new Vector3(-.28f,-.11f,.07f),new Vector3(.24f,.02f,.22f));
+   var deck=ExpansionRail(c,"B landing deck",new Vector3(.255f,-.15f,-.08f),Vector3.forward,.18f,0,new Vector3(.28f,.02f,.16f),.05f,.01f,false,false);
+   deck.GetComponent<VenomMovableProp>().Manipulable=false;deck.LatchAtEnd=true;TrimSideSlabs(deck);
+   foreach(var f in deck.GetComponentsInChildren<VenomSurfacePatch>()){f.MotionFrame=deck.Body;if(f.Normal.y<.9f)f.Slippery=true;}
+   var landing=deck.GetComponentsInChildren<VenomSurfacePatch>().First(f=>f.Normal.y>.9f);
+   NextSwing(c,"B",new Vector3(0,.20f,.10f),.28f,40f,new Vector3(-.23f,-.08f,.10f),shelf,new[]{landing},new[]{new Vector3(.25f,-.12f,.10f)},floor);
+   // the gears on the back glass (axles through the glass); G rides A's carriage into the gap between them
+   var motor=MeshingStationWheel(c.Root,"P motor gear",new Vector3(.24f,-.22f,.29f),.04f,18,0);
+   var output=MeshingStationWheel(c.Root,"Landing gear",new Vector3(.24f,-.06f,.29f),.04f,18,0);
+   var a=GlassHandle(c,"A",new Vector3(.04f,-.12f,.268f),Vector3.right,2);a.OneWay=true;
+   var gear=MeshingStationWheel(a.Rail.transform,"A carried gear G",new Vector3(.14f,-.02f,.022f),.04f,18,0);
+   MechanismVisual(a.Rail.transform,"A gear arm",new Vector3(.07f,-.02f,.022f),new Vector3(.14f,.008f,.004f),metal);
+   foreach(var w in new[]{motor,output})MechanismVisual(c.Root,w.name+" axle",w.localPosition+Vector3.back*.002f,new Vector3(.014f,.004f,.014f),metal,PrimitiveType.Cylinder).localRotation=Quaternion.Euler(90,0,0);
+   MechanismVisual(c.Root,"Landing drive shaft",new Vector3(.32f,-.06f,.292f),new Vector3(.16f,.006f,.006f),metal);
+   var p=ExpansionPad(c,"P",new Vector3(.02f,-.298f,-.04f),.009f,.10f);
+   PlusTrain(c,"G completes the train",p,deck,false,null,motor,gear,output);
+   NextTrace("P",new Vector3(.02f,-.2992f,.01f),new Vector3(.02f,-.2992f,.24f),new Vector3(.24f,-.2992f,.24f),new Vector3(.24f,-.2992f,.295f));
+   PlusStep(1,new Vector3(.07f,-.19f,.29f));PlusStep(2,new Vector3(.02f,-.30f,-.04f));PlusStep(3,new Vector3(-.23f,-.10f,.10f));
+   PlusStep(4,new Vector3(.25f,-.14f,.10f));PlusStep(5,c.Exit);   // the right road: z .08–.18 on the landing
+   PlusGhost("G",new Vector3(.24f,-.14f,.29f));
   }
  }
 }

@@ -90,11 +90,14 @@ namespace GravityBox.Editor
    NewPlus("G8","Bốn mặt kính","Đường vòng qua cả bốn mặt; có đường cụt.",PlusG8),
    NewPlus("G9","Hai nửa, bốn vách","Một nửa giữ cửa, nửa kia qua; rồi đổi nhau.",PlusG9),
    NewPlus("G10","Thang máy giữa hai đường","Thang máy chở COghe từ đường thấp lên đường cao.",PlusG10),
-   NewPlus("G11","Nửa giữ, nửa qua","Nút cần nửa thân: một nửa giữ cửa, nửa kia qua chốt lại.",PlusG11)}).ToArray();
+   NewPlus("G11","Bánh răng và dây đu","Lắp bánh răng, chạy máy đẩy bến đáp vào, rồi đu dây sang.",PlusG11)}).ToArray();
 
   // Design notes (root-local): numbered steps, labels and routes, projected onto renders for the design plates.
   static readonly List<string> plusNotes=new List<string>();
   static int plusPath;
+  // Set by a level whose top-left plaque would hide its play (71: the camera's line through it lands on the rope's grip
+  // stance): the plaque is mirrored to the top-right of the front glass.
+  static bool plusPlaqueRight;
   static void PlusNote(string kind,string text,Vector3 p)=>plusNotes.Add(string.Join("|",kind,text,p.x.ToString("F4",CultureInfo.InvariantCulture),p.y.ToString("F4",CultureInfo.InvariantCulture),p.z.ToString("F4",CultureInfo.InvariantCulture)));
   static void PlusStep(int n,Vector3 p)=>PlusNote("step",n.ToString(CultureInfo.InvariantCulture),p);
   static void PlusLabel(string text,Vector3 p)=>PlusNote("label",text,p);
@@ -146,7 +149,7 @@ namespace GravityBox.Editor
 
   static void BuildSpatialPlus(PlusLevel d,int index)
   {
-   plusNotes.Clear();plusPath=0;int position=SpatialPosition(d.Key);
+   plusNotes.Clear();plusPath=0;plusPlaqueRight=false;int position=SpatialPosition(d.Key);
    meshSerial=(40+index)*1000;var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
    var owner=new GameObject("COghe Spatial · "+d.Title).AddComponent<VenomLevelController>();
    owner.MatterProfile=AssetDatabase.LoadAssetAtPath<VenomProfile>(Folder+"/Matter.asset");owner.ControlMode=VenomControlMode.TouchSurface;
@@ -168,6 +171,7 @@ namespace GravityBox.Editor
    game.Surfaces=c.Surfaces.ToArray();game.Props=c.Props.ToArray();owner.CrawlFaces=Enumerable.Repeat(floor.Shape,6).ToArray();foreach(var prop in c.Props)prop.transform.SetParent(owner.Apparatus,true);
    var camera=new GameObject("Camera",typeof(Camera),typeof(AudioListener)).GetComponent<Camera>();camera.transform.SetParent(owner.transform,false);camera.tag="MainCamera";camera.orthographic=true;camera.nearClipPlane=.005f;camera.farClipPlane=15;camera.clearFlags=CameraClearFlags.SolidColor;camera.transform.rotation=Quaternion.Euler(def.CameraEuler);camera.transform.position=-camera.transform.forward*3;owner.View=camera;
    Lighting();COgheDayLabBuilder.ApplyExpansionLevel(game,$"Meshes/Spatial/Plus{d.Key}");COgheDayLabBuilder.ApplyGlassPreview(game,true);
+   if(plusPlaqueRight){var plate=game.GetComponent<VenomLevelController>().Rotation.transform.Find("COghe specimen number");var at=plate.localPosition;plate.localPosition=new Vector3(-at.x,at.y,at.z);}
    var shellSatin=AssetDatabase.LoadAssetAtPath<Material>("Assets/_Game/Venom/Art/DayLab/Expansion satin shell.mat");
    foreach(var p in c.Surfaces)if(p.ExteriorGlass&&p.Slippery)p.GetComponent<Renderer>().sharedMaterial=shellSatin;
    var ivory=SpatialMaterial("Ivory bodies",new Color(.88f,.87f,.76f));var blue=SpatialMaterial("Circuit A blue",new Color(.224f,.498f,.678f));var coral=SpatialMaterial("Circuit B coral",new Color(.784f,.424f,.345f));var slipMat=SpatialMaterial("Lavender slippery",new Color(.53f,.48f,.72f));

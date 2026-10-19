@@ -148,19 +148,13 @@ namespace GravityBox.Venom.ChapterProof
   }
   IEnumerator G11()
   {
-   var q=Find<COgheQuantumSplitter>();var gate=s.Slider("Back road gate");
-   yield return s.Split(q,Selected);int holder=q.LastLeft,runner=q.LastRight;
-   yield return s.Walk(holder,W(-.28f,-.298f,.09f),"One half stands on P: half a body opens the gate");
-   yield return until(15,()=>gate.AtEnd,"P holds the back road gate open");
-   yield return s.Walk(runner,W(.24f,-.30f,-.24f),"The other half goes to the front road's foot");
-   yield return s.Walk(runner,W(.30f,-.12f,.12f),"Up the front road, round the corner, along the right road onto the right shelf");
-   yield return s.Walk(runner,W(-.22f,-.108f,.14f),"Across the back road onto the left shelf");
-   game.SelectFragment(runner);yield return Pull("C","C, hung on the left glass, keeps the gate open and opens the exit");
-   yield return s.Walk(runner,W(-.22f,-.108f,.14f),"Back onto the left shelf");
-   yield return s.Walk(holder,W(.24f,-.30f,-.24f),"The first half leaves P (C holds the gate) for the front road's foot");
-   yield return s.Walk(holder,W(.30f,-.12f,.12f),"Up onto the right shelf");
-   yield return s.Walk(holder,W(-.30f,-.108f,.24f),"Across the back road onto the left shelf");
-   yield return s.Merge(W(-.26f,-.12f,.19f));
+   var deck=s.Slider("B landing deck");var rope=Rope("B");
+   yield return Pull("A","Up the back road to A, hung on the glass: its gear G fills the gap in the train");
+   yield return s.Go(W(.02f,-.30f,-.04f),"Down onto pad P: the gears turn and push the landing under the rope");
+   yield return until(20,()=>deck.AtEnd,"The landing slides in under the rope");
+   yield return s.Go(W(-.28f,-.10f,.10f),"Up the left road onto the left shelf");
+   yield return s.Grip(rope);yield return s.Swing(rope,0);
+   yield return s.Go(W(.40f,.04f,.13f),"Up the right road to the exit");
   }
   IEnumerator E01()
   {
