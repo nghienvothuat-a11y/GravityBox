@@ -7,7 +7,8 @@ from pathlib import Path
 root = Path(__file__).resolve().parents[1]
 data = json.loads((root / "Docs/LevelDesign/COghe/Difficulty65/curriculum.json").read_text())
 source = (root / "Assets/_Game/Editor/COgheSpatialCampaignBuilder.cs").read_text()
-order = re.findall(r'"([A-Z0-9]+)"', source.split("SpatialOrder={", 1)[1].split("};", 1)[0])
+# Prototype levels appended after the 65 (a "// Prototypes" comment) are not in the curriculum until placed.
+order = re.findall(r'"([A-Z0-9]+)"', source.split("SpatialOrder={", 1)[1].split("};", 1)[0].split("// Prototypes", 1)[0])
 assert len(order) == len(set(order)) == 65
 assert order == [row["key"] for row in data["levels"]], "Dossier and builder disagree"
 assert [row["position"] for row in data["levels"]] == list(range(1, 66))

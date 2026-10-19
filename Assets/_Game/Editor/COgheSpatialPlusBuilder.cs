@@ -90,7 +90,10 @@ namespace GravityBox.Editor
    NewPlus("G8","Bốn mặt kính","Đường vòng qua cả bốn mặt; có đường cụt.",PlusG8),
    NewPlus("G9","Hai nửa, bốn vách","Một nửa giữ cửa, nửa kia qua; rồi đổi nhau.",PlusG9),
    NewPlus("G10","Thang máy giữa hai đường","Thang máy chở COghe từ đường thấp lên đường cao.",PlusG10),
-   NewPlus("G11","Bánh răng và dây đu","Lắp bánh răng, chạy máy đẩy bến đáp vào, rồi đu dây sang.",PlusG11)}).ToArray();
+   NewPlus("G11","Bánh răng và dây đu","Lắp bánh răng, chạy máy đẩy bến đáp vào, rồi đu dây sang.",PlusG11),
+   NewPlus("F1","Bi giữ cửa","Thả viên bi xuống nút để nó giữ cửa thay mình.",PlusF1),
+   NewPlus("F2","Bánh răng thả bi","Lắp bánh răng cho máy thả bi, bi lăn đổ cột thành bậc.",PlusF2),
+   NewPlus("F3","Kính vỡ, đối trọng","Bi và COghe cùng đứng mới đủ nặng làm vỡ kính.",PlusF3)}).ToArray();
 
   // Design notes (root-local): numbered steps, labels and routes, projected onto renders for the design plates.
   static readonly List<string> plusNotes=new List<string>();

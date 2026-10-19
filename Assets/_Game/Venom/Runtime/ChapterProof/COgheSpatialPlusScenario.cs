@@ -36,7 +36,7 @@ namespace GravityBox.Venom.ChapterProof
     case "N31":yield return N31();break;case "N33":yield return N33();break;case "N35":yield return N35();break;case "N32":yield return N32();break;case "N40":yield return N40();break;case "N34":yield return N34();break;case "N44":yield return N44();break;case "N45":yield return N45();break;
     case "N41":yield return N41();break;case "N42":yield return N42();break;case "N47":yield return N47();break;case "N49":yield return N49();break;case "N50":yield return N50();break;case "N48":yield return N48();break;case "N46":yield return N46();break;case "N43":yield return N43();break;
     case "G1":yield return G1();break;case "G2":yield return G2();break;case "G3":yield return G3();break;case "G4":yield return G4();break;
-    case "G5":yield return G5();break;case "G6":yield return G6();break;case "G7":yield return G7();break;case "G8":yield return G8();break;case "G9":yield return G9();break;case "G10":yield return G10();break;case "G11":yield return G11();break;
+    case "G5":yield return G5();break;case "G6":yield return G6();break;case "G7":yield return G7();break;case "G8":yield return G8();break;case "G9":yield return G9();break;case "G10":yield return G10();break;case "G11":yield return G11();break;case "F1":yield return F1();break;case "F2":yield return F2();break;case "F3":yield return F3();break;
     default:throw new NotImplementedException("Spatial Plus route "+COgheSpatialNextScenario.ContentKey(game));
    }
    yield return s.Exit();
@@ -155,6 +155,41 @@ namespace GravityBox.Venom.ChapterProof
    yield return s.Go(W(-.28f,-.10f,.10f),"Up the left road onto the left shelf");
    yield return s.Grip(rope);yield return s.Swing(rope,0);
    yield return s.Go(W(.40f,.04f,.13f),"Up the right road to the exit");
+  }
+  // Physics props 66–68 (Mrk 19/10/2026).
+  IEnumerator F1()
+  {
+   var door=s.Slider("A door");
+   yield return Pull("D","D lifts the stop: the steel ball rolls down the chute onto pad A");
+   yield return until(10,()=>door.AtEnd,"The ball on A holds the door up");
+   yield return s.Go(W(.16f,-.30f,-.20f),"The whole body goes through the door");
+   yield return Pull("C","The whole body pushes the 100% crate against the shelf");
+   yield return s.Go(W(.31f,-.24f,.03f),"Climb the crate");
+   yield return s.Go(W(.31f,-.21f,.20f),"Onto the shelf");
+  }
+  IEnumerator F2()
+  {
+   var stop=s.Slider("Ball chute stop");var pillar=Find<COgheTopplePillar>();var train=Find<COgheGearTrain>();
+   yield return Pull("A","Gear G into the gap");
+   yield return until(5,()=>train.Meshed,"Every gear meshes");
+   yield return s.Go(W(-.32f,-.298f,-.16f),"Onto P: the gears lift the ball stop");
+   yield return until(20,()=>stop.AtEnd,"The stop is up");
+   yield return until(10,()=>pillar.Down,"The ball rolls down and knocks the pillar flat");
+   yield return s.Go(W(.20f,-.27f,.0f),"Onto the fallen pillar");
+   yield return s.Go(W(.20f,-.24f,.20f),"Up onto the platform");
+  }
+  IEnumerator F3()
+  {
+   var glass=Find<COgheBreakableGlass>();var seesaw=Find<COgheSeesawBridge>();var ball=Prop("Steel ball");
+   yield return Pull("D","D lifts the stop: the steel ball rolls onto the thin glass");
+   yield return until(10,()=>glass.Sensor.Load>=.04f&&ball.Body.linearVelocity.magnitude<.01f,"The ball rests on the glass");
+   if(glass.Broken)throw new InvalidOperationException("The ball alone broke the glass");
+   yield return s.Go(W(-.25f,-.19f,.10f),"COghe climbs onto the glass beside the ball");
+   yield return until(15,()=>glass.Broken,"The ball and COghe together break the glass");
+   yield return until(20,()=>seesaw.Caught,"They drop onto the tray: the plank comes level and the pawl catches");
+   yield return s.Go(W(-.19f,-.20f,.10f),"Out of the pit");
+   yield return s.Go(W(0,-.20f,.10f),"Onto the level plank");
+   yield return s.Go(W(.25f,-.20f,.12f),"Across to the exit platform");
   }
   IEnumerator E01()
   {

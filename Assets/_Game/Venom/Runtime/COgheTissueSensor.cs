@@ -25,6 +25,9 @@ namespace GravityBox.Venom
         /// <summary>The scale's beam: counterweight end down while light, pan end down while too heavy, level when right.</summary>
         public Transform Beam;
         public float BeamTilt = 14f;
+        /// <summary>Loose props weighed with the tissue (19/10/2026: a steel ball holds a pad as a part of COghe would). A prop
+        /// counts while the lowest point of its collider rests in the contact layer over the pad.</summary>
+        public Rigidbody[] Weights = System.Array.Empty<Rigidbody>();
         public float Load { get; private set; }
         public bool TooHeavy => MaxLoad > 0 && Load > MaxLoad;
         public bool Active => Load >= Threshold && !TooHeavy;
@@ -55,7 +58,7 @@ namespace GravityBox.Venom
                     if (game.Matter.Escaped[i]) continue;
                     for (int k = 0; k < parts; k++) if (weighed[k] == game.Matter.Groups[i]) { Load += game.Matter.Profile.ParticleMass; break; }
                 }
-                Show(); return;
+                WeighProps(); Show(); return;
             }
             if (game != null && game.Matter != null)
                 for (int i = 0; i < CohesiveOrganism.ParticleCount; i++)
@@ -67,7 +70,19 @@ namespace GravityBox.Venom
                     if (Mathf.Abs(p.x) < Size.x * .5f && Mathf.Abs(p.z) < Size.y * .5f && p.y >= -.003f && p.y <= top)
                         Load += game.Matter.Profile.ParticleMass * Mathf.Clamp01(Vector3.Dot(transform.up, Vector3.up));
                 }
-            Show();
+            WeighProps(); Show();
+        }
+        private void WeighProps()
+        {
+            if (Weights == null) return;
+            foreach (var body in Weights)
+            {
+                if (body == null) continue;
+                Vector3 p = transform.InverseTransformPoint(body.worldCenterOfMass);
+                var shape = body.GetComponent<Collider>();
+                float bottom = shape != null ? transform.InverseTransformPoint(shape.bounds.center - Vector3.up * shape.bounds.extents.y).y : p.y;
+                if (Mathf.Abs(p.x) < Size.x * .5f && Mathf.Abs(p.z) < Size.y * .5f && bottom >= -.006f && bottom <= .012f) Load += body.mass;
+            }
         }
         private void Show()
         {

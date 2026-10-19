@@ -159,6 +159,9 @@ namespace GravityBox.Tests
   [UnityTest] public IEnumerator SpatialPlusG9Wander(){yield return WanderPlus("G9");}
   [UnityTest] public IEnumerator SpatialPlusG10Wander(){yield return WanderPlus("G10");}
   [UnityTest] public IEnumerator SpatialPlusG11Wander(){yield return WanderPlus("G11");}
+  [UnityTest] public IEnumerator SpatialPlusF1Wander(){yield return WanderPlus("F1");}
+  [UnityTest] public IEnumerator SpatialPlusF2Wander(){yield return WanderPlus("F2");}
+  [UnityTest] public IEnumerator SpatialPlusF3Wander(){yield return WanderPlus("F3");}
   [UnityTest] public IEnumerator SpatialPlusG2Wander(){yield return WanderPlus("G2");}
   [UnityTest] public IEnumerator SpatialPlusG3Wander(){yield return WanderPlus("G3");}
   [UnityTest] public IEnumerator SpatialPlusG4Wander(){yield return WanderPlus("G4");}

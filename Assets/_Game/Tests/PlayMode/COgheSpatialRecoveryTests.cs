@@ -35,7 +35,7 @@ namespace GravityBox.Tests
     // Spatial 11–30, Spatial Plus, the crate levels, the glass-crawl and glass-road levels continue the pilot sequence (one
     // catalog of 65); V2/Origin stay separate. 07 and 08 left the order on 19/10 (glass roads): still idle-safe, out of the catalog.
     bool listed=Array.Exists(catalog.Levels,l=>l!=null&&l.Id==game.Definition.Id);Assert.AreEqual(n!=7&&n!=8,listed,$"pilot {n:00} in the catalog");
-    if(listed)Assert.AreEqual(65,game.PlayableLevelCount);Assert.AreEqual("coghe.spatial.pilot",game.Definition.ProgressKey);
+    if(listed)Assert.AreEqual(68,game.PlayableLevelCount);Assert.AreEqual("coghe.spatial.pilot",game.Definition.ProgressKey);
     Assert.IsTrue(game.Definition.ViewOnly);Assert.IsFalse(game.Definition.CanRotate);
     foreach(var r in game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>())Assert.Less(r.Position,.009f,"No spontaneous motion: "+r.name);
     if(n==10){Assert.IsTrue(game.Definition.Boss);Assert.IsEmpty(game.Definition.Lesson);}
