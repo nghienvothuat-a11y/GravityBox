@@ -18,7 +18,7 @@ namespace GravityBox.Venom
             VenomCampaignSave.PersistenceEnabled = false;
             COgheProductMode.OverrideForTests = true;
             COgheIntro.SeenOverrideForTests = true;
-            COgheShop.ResetForTests(new COgheShop.State { Migrated = true, PacingRevision = 1 });
+            COgheShop.ResetForTests(new COgheShop.State { Migrated = true, PacingRevision = COgheProgressionMilestones.LatestRevision });
             var go = new GameObject("Ability card review"); DontDestroyOnLoad(go); go.AddComponent<COgheAbilityCardReview>();
         }
         IEnumerator Start()

@@ -28,7 +28,7 @@ namespace GravityBox.Venom
             // 0/1: choose a free ink; 2: hold on the body; 3: inspect the saved result; 4: finished.
             public int InkGuideStep;
             public List<string> Retried = new List<string>();
-            // Preserve unlock milestones from the pre-15/10 order; completed puzzles still use stable IDs.
+            // Preserve unlock milestones from the orders before 15/10 and 19/10; completed puzzles still use stable IDs.
             public int PacingRevision;
             public List<int> ReachedBeforePacing = new List<int>();
             // Ability cards (Mrk 16/10/2026): one card per "Hiểu ra", each stat 0–10; the chapters whose card is taken.
@@ -196,10 +196,11 @@ namespace GravityBox.Venom
         public static void Migrate(VenomCampaign game)
         {
             if (game == null || game.Progress == null) return;
-            if (Current.PacingRevision < 1)
+            if (Current.PacingRevision < COgheProgressionMilestones.LatestRevision)
             {
-                COgheProgressionMilestones.Capture(game, Current.ReachedBeforePacing);
-                Current.PacingRevision = 1; Save();
+                for (int revision = Current.PacingRevision + 1; revision <= COgheProgressionMilestones.LatestRevision; revision++)
+                    COgheProgressionMilestones.Capture(game, Current.ReachedBeforePacing, revision);
+                Current.PacingRevision = COgheProgressionMilestones.LatestRevision; Save();
             }
             if (Current.Migrated) return;
             Current.Migrated = true;

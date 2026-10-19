@@ -1,5 +1,5 @@
 {
-  "revision": "2026-10-15",
+  "revision": "2026-10-19",
   "difficultyStatus": "Author estimates and curriculum, not novice playtest results",
   "bossPositions": [
     10,
@@ -12,16 +12,17 @@
   "chains": [
     {
       "skill": "lift",
-      "intro": "08",
+      "intro": "09",
       "practice": [
-        "09"
+        "10"
       ],
       "combine": [
-        "10",
         "13",
         "G3",
-        "E11"
-      ]
+        "E11",
+        "G10"
+      ],
+      "note": "Mrk 19/10/2026 kept his list: 08 (the lift lesson) left the order. 09 now meets the lift together with the bridge and Boss 10 is its second lift; accepted by Mrk (event 542d70ab)."
     },
     {
       "skill": "cargo_order",
@@ -46,7 +47,8 @@
         "B1",
         "17",
         "G5",
-        "20"
+        "20",
+        "G9"
       ]
     },
     {
@@ -74,9 +76,8 @@
     },
     {
       "skill": "gears",
-      "intro": "N41",
+      "intro": "N44",
       "practice": [
-        "N44",
         "N48"
       ],
       "combine": [
@@ -84,8 +85,10 @@
         "N42",
         "N43",
         "N49",
-        "N50"
-      ]
+        "N50",
+        "G11"
+      ],
+      "note": "Mrk 19/10/2026: N41 (the gear lesson) left the order; N44 introduces gears together with the idler."
     },
     {
       "skill": "swing",
@@ -95,7 +98,8 @@
       ],
       "combine": [
         "E10",
-        "26"
+        "26",
+        "G11"
       ]
     },
     {
@@ -130,6 +134,20 @@
       "combine": [
         "N50"
       ]
+    },
+    {
+      "skill": "glass_roads",
+      "intro": "G6",
+      "practice": [
+        "G7",
+        "G8"
+      ],
+      "combine": [
+        "G9",
+        "G10",
+        "G11"
+      ],
+      "note": "Glass roads (Mrk 18–19/10/2026), Docs/LevelDesign/COghe/GlassRoads."
     }
   ],
   "levels": [
@@ -177,9 +195,9 @@
     },
     {
       "position": 8,
-      "key": "08",
-      "previousPosition": 9,
-      "intent": "Bài thang riêng: lên, kéo, xuống."
+      "key": "G6",
+      "previousPosition": 66,
+      "intent": "Đường trên kính (dễ): một đường kính, A mở chân đường. Thay 08 (bài thang riêng) theo Mrk 19/10."
     },
     {
       "position": 9,
@@ -195,9 +213,9 @@
     },
     {
       "position": 11,
-      "key": "G1",
-      "previousPosition": 12,
-      "intent": "Bài nghỉ sau Boss: leo kính lấy tay nắm."
+      "key": "G7",
+      "previousPosition": 67,
+      "intent": "Sau tấm chắn (vừa): đường khuất sau tấm chắn, B treo trên kính. Thay G1 theo Mrk 19/10."
     },
     {
       "position": 12,
@@ -279,9 +297,9 @@
     },
     {
       "position": 25,
-      "key": "07",
-      "previousPosition": 8,
-      "intent": "Vận dụng cầu/chốt ở hố, leo ra được nếu rơi."
+      "key": "G8",
+      "previousPosition": 68,
+      "intent": "Bốn mặt kính (khó): đường qua bốn vách, có đường cụt. Thay 07 theo Mrk 19/10."
     },
     {
       "position": 26,
@@ -291,9 +309,9 @@
     },
     {
       "position": 27,
-      "key": "N41",
-      "previousPosition": 22,
-      "intent": "Học ghép bánh răng liên tục để truyền lực."
+      "key": "G9",
+      "previousPosition": 69,
+      "intent": "Hai nửa, bốn vách (cực khó): tách đôi, đổi người giữ cửa. Thay N41 (học bánh răng) theo Mrk 19/10."
     },
     {
       "position": 28,
@@ -483,9 +501,9 @@
     },
     {
       "position": 59,
-      "key": "K08",
-      "previousPosition": 59,
-      "intent": "Luyện đưa khối đi rồi trả lại."
+      "key": "G10",
+      "previousPosition": 70,
+      "intent": "Thang máy giữa hai đường (vừa–khó). Thay K08 theo Mrk 19/10."
     },
     {
       "position": 60,
@@ -507,9 +525,9 @@
     },
     {
       "position": 63,
-      "key": "K10",
-      "previousPosition": 63,
-      "intent": "Mê cung thùng, bài lập kế hoạch dài."
+      "key": "G11",
+      "previousPosition": 71,
+      "intent": "Bánh răng và dây đu (khó): bánh răng trên kính, đu dây. Thay K10 theo Mrk 19/10."
     },
     {
       "position": 64,

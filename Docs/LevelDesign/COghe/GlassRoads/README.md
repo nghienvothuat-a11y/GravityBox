@@ -3,8 +3,8 @@
 Mrk 18/10/2026: kính trơn là vật cản; bố trí đường đi và cơ quan trên các mặt kính để người chơi xoay camera tìm đường.
 Chỉ xoay camera, hộp đứng yên. Trần không bấm được nên không có cơ quan, không có lỗ thoát trên trần.
 Màn thử: 66 dễ, 67 vừa, 68 khó; 69 cực khó (Mrk: "68 chưa khó lắm, làm 69 cực khó với các cơ quan kết hợp").
-70 và 71 (Mrk 19/10/2026: thêm 2 màn dạng này để thay các màn lặp thao tác, giữ tổng 65 màn) dự kiến vào vị trí 40 và 52;
-thứ tự thay thế chờ Mrk chốt, hiện cả sáu màn vẫn nằm sau 65. Code: `Assets/_Game/Editor/COgheGlassRoadLevels.cs`.
+70 và 71 (Mrk 19/10/2026: thêm 2 màn dạng này để thay các màn lặp thao tác, giữ tổng 65 màn).
+**Thứ tự (Mrk chốt 19/10/2026):** G6 → màn 8, G7 → 11, G8 → 25, G9 → 27, G10 → 59, G11 → 63. Bảng dưới vẫn gọi theo số bản thử 66–71. Code: `Assets/_Game/Editor/COgheGlassRoadLevels.cs`.
 
 ## Luật chung
 

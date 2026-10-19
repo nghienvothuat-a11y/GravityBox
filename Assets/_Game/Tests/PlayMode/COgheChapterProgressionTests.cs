@@ -16,8 +16,8 @@ namespace GravityBox.Tests
             {
                 FreshShop(false);
                 foreach (var level in ui.Catalog.Levels.Take(7)) game.Progress.Completed.Add(level.Id);
-                var oldEight = ui.Catalog.Levels.Single(l => l.SceneSequence[l.Order - 1] == "COgheSpatial07");
-                game.Progress.Completed.Add(oldEight.Id);
+                // content 07 (display 8 before 15/10) left the order on 19/10: its stable ID still counts
+                game.Progress.Completed.Add("coghe.spatial.pilot.07");
                 COgheShop.Current.InkGuideStep = 2;
                 int wins = game.Progress.Completed.Count, drops = COgheShop.Drops;
                 COgheShop.Migrate(game);
@@ -29,7 +29,8 @@ namespace GravityBox.Tests
                 var saved = JsonUtility.ToJson(COgheShop.Current);
                 COgheShop.ResetForTests(JsonUtility.FromJson<COgheShop.State>(saved));
                 COgheShop.Migrate(game);
-                Assert.AreEqual(8, COgheShop.Current.ReachedBeforePacing.Count, "Migration is idempotent");
+                // 1–8 from before 15/10, and 25, where 07 stood before 19/10 (the old catalog already counted it reached)
+                Assert.AreEqual(9, COgheShop.Current.ReachedBeforePacing.Count, "Migration is idempotent");
                 Assert.IsFalse(COgheHomeRoom.Reached(game, 10), "No future unlocks are granted");
             }
             finally { if (ui != null) ui.ShowMenu(); EndShop(); }

@@ -25,19 +25,19 @@ namespace GravityBox.Editor
    // 15/10 pacing pass: introduce, practise, then combine. Stable IDs and boss positions stay fixed.
    // The complete rationale and per-level curriculum live in Docs/LevelDesign/COghe/Difficulty65.
    // Chapter 1: lift lesson, bridge/lift rehearsal, then the familiar-machine boss.
-   "01","02","03","04","05","K01","06","08","09","10",
+   // 19/10 (Mrk): the six glass-road levels replace 8, 11, 25, 27, 59 and 63 (08, G1, 07, N41, K08, K10 leave the order;
+   // their scenes, IDs and saves stay). Docs/LevelDesign/COghe/GlassRoads.
+   "01","02","03","04","05","K01","06","G6","09","10",
    // Chapter 2: climbing, cargo, splitting, held controls and full-body force before stacked cooperation.
-   "G1","K02","G2","N22","N29","16","N13","N18","13","12","B1",
+   "G7","K02","G2","N22","N29","16","N13","N18","13","12","B1",
    // Chapter 3: tube lesson/practice, then ceiling routes and gears before the two-role relay boss.
-   "14","N15","K03","07","G3","N41","N44","17","G4","22","G5",
+   "14","N15","K03","G8","G3","G9","N44","17","G4","22","G5",
    // Chapter 4: rehearse swing landing before combining it with a pipe.
    "18","N23","E10","21","N25","N48","N47","K04","15","E11","20",
    // Chapter 5: half/quarter mass lessons stay together before three-quarter combinations.
    "K05","N42","K06","N26","N31","N33","K07","26","N35","N43","N40",
    // Chapter 6: rotate a loaded carrier, then motor load and linked engines.
-   "N46","N45","N49","N32","K08","N34","K09","29","K10","N19","N50",
-   // Prototypes 66–69 (Mrk 18/10/2026): glass roads over four walls, easy, medium, hard, very hard.
-   "G6","G7","G8","G9","G10","G11"};
+   "N46","N45","N49","N32","G10","N34","K09","29","G11","N19","N50"};
   public static string SpatialContentPath(string key)=>char.IsDigit(key[0])?$"{SpatialFolder}/COgheSpatial{key}.unity":$"{SpatialFolder}/COgheSpatialPlus{key}.unity";
   public static string SpatialContentPath(int n)=>SpatialContentPath(n.ToString("00"));
   public static int SpatialPosition(string key){int i=Array.IndexOf(SpatialOrder,key);if(i<0)throw new ArgumentException("Not in the Spatial order: "+key);return i+1;}

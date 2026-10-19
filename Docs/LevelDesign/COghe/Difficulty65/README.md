@@ -1,9 +1,18 @@
-# Nhịp độ 65 màn — 15/10/2026
+# Nhịp độ 65 màn — 15/10/2026, thay 6 màn 19/10/2026
 
 Theo yêu cầu tăng mượt độ khó, giảm bước nhảy 9 → 10 và tăng Boss 32 so với Boss 21.
 Giữ đủ 65 content ID, luật kính, sáu Boss ở 10/21/32/43/54/65 và save đã chơi.
 Không reset tiến độ; đổi thứ tự catalog, SceneSequence và số plaque đồng bộ.
 Màn đã giải vẫn được nhận dạng bằng ID cũ, không nhận lại thưởng lần đầu.
+
+## Thay 6 màn bằng màn đường kính (19/10/2026)
+
+Mrk chọn: 66 → 8, 67 → 11, 68 → 25, 69 → 27, 70 → 59, 71 → 63 (08, G1, 07, N41, K08, K10 rút khỏi thứ tự; scene, ID và save giữ nguyên).
+Cột "Vị trí cũ" của sáu màn này là số thứ tự bản thử 66–71. Hai bài học không còn màn giới thiệu riêng:
+thang máy (08 ở 8; 9 và Boss 10 dùng thang) và ghép bánh răng (N41 ở 27; 28 là bài luyện có bánh đệm).
+Mrk được báo và giữ danh sách (19/10, "giữ nguyên danh sách của tao"): thang gặp lần đầu ở 9 cùng cầu, bánh răng ở 28 cùng bánh đệm.
+`curriculum.json` (revision 2026-10-19) ghi hai chuỗi này kèm ghi chú; `Tools/check-coghe-curriculum.py` qua.
+Mốc mở khoá theo thứ tự trước 19/10 được giữ bằng `COgheProgressionMilestones` (revision 2).
 
 ## Nhịp học và khó
 
@@ -13,7 +22,7 @@ Sau Boss có bài nhẹ hơn để nghỉ và học tiếp. Không ép điểm k
 độ dài phụ thuộc, vai trò đồng thời, quan sát và chi phí sửa sai được xét riêng.
 Không tăng yêu cầu căn chạm/căn thời điểm, không thay lực hay tốc độ dùng chung.
 
-- **8–10:** bài thang ở 8, cầu + thang ở 9. Boss 10 giữ nguyên thiết kế và cơ chế đã chốt theo yêu cầu mới nhất; không sửa layout hoặc chuỗi giải.
+- **8–10:** 8 là màn đường kính G6 (từ 19/10); thang gặp lần đầu ở 9 cùng cầu. Boss 10 giữ nguyên thiết kế và cơ chế đã chốt theo yêu cầu mới nhất; không sửa layout hoặc chuỗi giải.
 - **Trước 21:** luyện xếp hàng/khối ở 14–15, tách/giữ ở 16–17, nhập để kéo nặng
   ở 18; chở hàng ở 19, thứ tự khối ở 20. Boss không là lần đầu thấy lực cả thân.
 - **22–32:** ống riêng → luyện ống → giữ/chui ống; đường trần → chuỗi kệ/trần.
@@ -40,10 +49,10 @@ và tỉ lệ bỏ cuộc tại 8–10 / 18–21 / 29–32. Replay tự động 
 | 5 | 05 | 5 | Luyện kéo; học mở nắp trước khi kéo. |
 | 6 | K01 | 6 | Dời thùng cản → kéo khối đỏ để lộ lỗ dưới sàn → thoát xuống. Không công tắc/nút. [Revision 15/10](../CrateReveal6/README.md). |
 | 7 | 06 | 7 | Luyện nắp và leo; giới thiệu cầu ròng rọc. |
-| 8 | 08 | 9 | Bài thang riêng: lên, kéo, xuống. |
+| 8 | G6 | 66 | Đường trên kính (dễ): một đường kính, A mở chân đường. Thay 08 (bài thang riêng) theo Mrk 19/10. |
 | 9 | 09 | 17 | Luyện thang với cầu/chốt đã học; không thêm kỹ năng. |
 | 10 | 10 | 10 | Boss 10 giữ nguyên thiết kế đã chốt; màn 8–9 chuẩn bị thang và cầu. |
-| 11 | G1 | 12 | Bài nghỉ sau Boss: leo kính lấy tay nắm. |
+| 11 | G7 | 67 | Sau tấm chắn (vừa): đường khuất sau tấm chắn, B treo trên kính. Thay G1 theo Mrk 19/10. |
 | 12 | K02 | 13 | Luyện ba khối trượt trên sàn. |
 | 13 | G2 | 14 | Luyện đường leo khi có lớp phủ trơn. |
 | 14 | N22 | 11 | Học chuẩn bị hàng trước khi xe cập bến. |
@@ -57,9 +66,9 @@ và tỉ lệ bỏ cuộc tại 8–10 / 18–21 / 29–32. Replay tự động 
 | 22 | 14 | 15 | Học một đường ống và nắp, không phân tách. |
 | 23 | N15 | 19 | Luyện ống: chuẩn bị bậc trước khi sang phòng. |
 | 24 | K03 | 23 | Bài khối dài, luyện không gian sàn. |
-| 25 | 07 | 8 | Vận dụng cầu/chốt ở hố, leo ra được nếu rơi. |
+| 25 | G8 | 68 | Bốn mặt kính (khó): đường qua bốn vách, có đường cụt. Thay 07 theo Mrk 19/10. |
 | 26 | G3 | 25 | Học đường qua trần bằng tấm cầu trần. |
-| 27 | N41 | 22 | Học ghép bánh răng liên tục để truyền lực. |
+| 27 | G9 | 69 | Hai nửa, bốn vách (cực khó): tách đôi, đổi người giữ cửa. Thay N41 (học bánh răng) theo Mrk 19/10. |
 | 28 | N44 | 28 | Luyện bánh răng, khám phá bánh đệm đổi chiều. |
 | 29 | 17 | 29 | Kết hợp giữ nút và chui ống sau hai bài luyện ống. |
 | 30 | G4 | 30 | Luyện chuỗi kệ/trần và nút chốt trước Boss. |
@@ -91,11 +100,11 @@ và tỉ lệ bỏ cuộc tại 8–10 / 18–21 / 29–32. Replay tự động 
 | 56 | N45 | 55 | Học tải của người chạy máy ảnh hưởng lực. |
 | 57 | N49 | 56 | Luyện hai động cơ cộng lực. |
 | 58 | N32 | 58 | Vận dụng khối nặng trước, tách sau. |
-| 59 | K08 | 59 | Luyện đưa khối đi rồi trả lại. |
+| 59 | G10 | 70 | Thang máy giữa hai đường (vừa–khó). Thay K08 theo Mrk 19/10. |
 | 60 | N34 | 60 | Kết hợp khối lượng với bập bênh chở bạn. |
 | 61 | K09 | 61 | Kho chật, thử sai có thể đảo chiều. |
 | 62 | 29 | 62 | Ráp nhiều phần vào khung trước khi nâng. |
-| 63 | K10 | 63 | Mê cung thùng, bài lập kế hoạch dài. |
+| 63 | G11 | 71 | Bánh răng và dây đu (khó): bánh răng trên kính, đu dây. Thay K10 theo Mrk 19/10. |
 | 64 | N19 | 64 | Luyện đổi vai người giữ, chuẩn bị Boss cuối. |
 | 65 | N50 | 65 | Boss hộp số, phối hợp các hệ đã luyện. |
 

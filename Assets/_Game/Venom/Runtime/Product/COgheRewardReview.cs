@@ -33,7 +33,7 @@ namespace GravityBox.Venom
             } while ((game == null || game.Definition.Order != 8 || game.ProductUI == null) && Time.realtimeSinceStartup < deadline);
             if (game == null || game.Definition.Order != 8) { Application.Quit(1); yield break; }
             ui = game.ProductUI; yield return null; ui.ShowMenu();
-            COgheShop.ResetForTests(new COgheShop.State { Migrated = true, PacingRevision = 1 }); COgheStyle.ResetForTests(new COgheStyle());
+            COgheShop.ResetForTests(new COgheShop.State { Migrated = true, PacingRevision = COgheProgressionMilestones.LatestRevision }); COgheStyle.ResetForTests(new COgheStyle());
             COgheShop.TestsOwnUnlocked = false;
             game.Progress.Completed.Clear(); game.Progress.HomeUnlocked = false;
             for (int i=0; i<8; i++) game.Progress.Completed.Add(ui.Catalog.Levels[i].Id);
