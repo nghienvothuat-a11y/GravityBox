@@ -16,7 +16,9 @@ namespace GravityBox.Venom
         public const float TopIntroLength = 2.4f, TopSteady = 1.4f, TopWobbleTime = 4.2f, TopSpinUp = .7f;
         /// <summary>Later chapters: one rescue more per level (up to 5) and a quicker wobble (not under 2.8 s).</summary>
         private int TopRescuesNow => TopRescues + Mathf.Min(Mathf.Max(0, toyLevel), 2);
-        private float TopWobbleNow => Mathf.Max(2.8f, TopWobbleTime - .4f * Mathf.Max(0, toyLevel));
+        // The first top is forgiving: 5.5 seconds, growing to 8 after misses. Successful rescues are never reset.
+        private float TopWobbleNow => toyLevel == 0 ? 5.5f + 1.25f * Mathf.Min(BonusMisses, 2)
+            : Mathf.Max(2.8f, TopWobbleTime - .4f * Mathf.Max(0, toyLevel));
         // the top's state, set by COghe's poses and drawn every Home frame (StepTop)
         private float topAngle, topSpeed, topWobble, topFallen, topPrecess, topRescuedAt = -1;
         private bool topNeedsPull;   // after a fall: stand it up and pull it again before it spins

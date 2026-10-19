@@ -59,6 +59,16 @@ namespace GravityBox.Venom
             COgheAnalytics.Log("ability_offer", "chapter", chapter);
             ShowPopup(COgheProductPopup.AbilityPick);
         }
+        // An app closed during the choice resumes the earned card before loading the next puzzle, even before Home unlocks.
+        private bool ResumeAbilityPick()
+        {
+            int pending = COgheAbilities.Pending();
+            if (pending == 0) return false;
+            bonusNext = ResumeLevel;
+            if (Page != COgheProductPage.Home) EnterHome(true);
+            OpenAbilityPick(pending, true);
+            return true;
+        }
         private void SelectAbility(int index)
         {
             if (abilityChosen || index < 0 || index > 2 || COgheAbilities.Full(AbilityOrder[index])) return;

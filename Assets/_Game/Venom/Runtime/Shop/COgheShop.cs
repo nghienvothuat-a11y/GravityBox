@@ -34,6 +34,8 @@ namespace GravityBox.Venom
             // Ability cards (Mrk 16/10/2026): one card per "Hiểu ra", each stat 0–10; the chapters whose card is taken.
             public int Emotion, Agility, Intelligence;
             public List<int> CardsPicked = new List<int>();
+            public int UnderstandPacingRevision;
+            public List<int> SkippedPractices = new List<int>();
         }
 
         private const string Key = "coghe.shop.v1";
@@ -62,6 +64,7 @@ namespace GravityBox.Venom
                 state.Retried ??= new List<string>(); state.Understood ??= new List<string>();
                 state.ReachedBeforePacing ??= new List<int>();
                 state.CardsPicked ??= new List<int>();
+                state.SkippedPractices ??= new List<int>();
                 return state;
             }
         }
@@ -96,6 +99,17 @@ namespace GravityBox.Venom
         public static bool Understood(string key) => Paid(key) || Current.Understood.Contains(key);
         public static void Understand(string key)
         { if (!Current.Understood.Contains(key)) { Current.Understood.Add(key); Save(); } }
+        /// <summary>Introducing the six mid-chapter practices never forces a backlog on an existing player.
+        /// Skipped is separate from understood: no retroactive cards, toys or Drops. Boss checkpoints are untouched.</summary>
+        public static void MigrateUnderstand(COgheProductCatalog catalog, VenomCampaignSave progress)
+        {
+            if (catalog == null || progress == null || Current.UnderstandPacingRevision >= 1) return;
+            foreach (var m in COgheBonus.Milestones(catalog))
+                if (COgheBonus.IsPractice(m.id) && progress.Completed.Contains(catalog.Levels[m.order - 1].Id)
+                    && !COgheBonus.Done(m.id) && COgheBonus.CompletedRounds(m.id) == 0 && !Current.SkippedPractices.Contains(m.id))
+                    Current.SkippedPractices.Add(m.id);
+            Current.UnderstandPacingRevision = 1; Save();
+        }
         /// <summary>Takes chapter <paramref name="chapter"/>'s ability card: +1 to <paramref name="ability"/> (to
         /// <see cref="COgheAbilities.Max"/>), once per chapter. False if that card was taken or the ability is full.</summary>
         public static bool PickAbility(int chapter, COgheAbility ability)

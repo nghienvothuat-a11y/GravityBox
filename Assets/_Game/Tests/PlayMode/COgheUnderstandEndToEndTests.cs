@@ -30,6 +30,7 @@ namespace GravityBox.Tests
                 for (int i = 0, bosses = 0; i < ui.Catalog.Levels.Length && bosses < c; i++)
                 { game.Progress.Completed.Add(ui.Catalog.Levels[i].Id); if (ui.Catalog.Levels[i].Boss) bosses++; }
                 for (int k = 1; k < c; k++) { COgheShop.Understand(COgheBonus.Key(k)); COgheShop.Current.CardsPicked.Add(k); if (COgheToys.OfChapter(k) != null) COgheToys.Give(COgheToys.OfChapter(k)); }
+                for (int k = 1; k <= c; k++) { int practice = COgheBonus.PracticeId(k); COgheShop.Understand(COgheBonus.Key(practice)); COgheShop.Current.CardsPicked.Add(practice); }
                 Assert.AreEqual(c, COgheBonus.Waiting(ui.Catalog, game.Progress), "Chapter " + c + " waits");
                 yield return Click("Home"); yield return new WaitForSecondsRealtime(.6f);
                 yield return Click("Bonus");

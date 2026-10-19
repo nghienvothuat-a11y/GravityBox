@@ -114,6 +114,13 @@ namespace GravityBox.Venom
         private void HomeView()
         {
             if(bonusChapter>0){BonusHomeView();return;}
+            if(!Game.Progress.HomeUnlocked)
+            {
+                // The level-6 interlude borrows the room, not its shop, wardrobe or Collection unlock.
+                art.Button(pageRoot,"Back",new Rect(24,25,52,52),COgheIcon.Back,ShowMenu);
+                MenuEntry(width*.5f-28,height-152,"Play",COgheIcon.Play,Play);
+                return;
+            }
             Top(true);float x=width*.5f-148,y=height-152;
             MenuEntry(x,y,"Feed",COgheIcon.Food,()=>{Game.FeedHome();COgheAudio.Happy();});
             // Ability (the ability cards, Mrk 16/10/2026) where Play was: Play only cuddled COghe, as a tap on COghe does

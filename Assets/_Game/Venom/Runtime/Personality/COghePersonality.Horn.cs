@@ -6,13 +6,13 @@ namespace GravityBox.Venom
     /// <summary>
     /// The horn game, chapter 3's last question ("Hiểu ra" toys, Mrk 17/10/2026; chapter 3 teaches order). COghe plays a
     /// little tune on the toy horn's three coloured buttons and the player plays the same buttons back in the same order: two
-    /// notes, then three, then three in a new order. A wrong button blows a comic honk (COghe jumps back, wide-eyed), and
+    /// notes, then two in another order, then three. A wrong button blows a comic honk (COghe jumps back, wide-eyed), and
     /// COghe plays the tune again. All three played back: a fanfare together, each tap a note and a bounce; the horn is the
     /// player's. At Home a tap on the horn sends COghe to play its fanfare.
     /// </summary>
     public sealed partial class COghePersonality
     {
-        private static readonly int[][] HornTunes = { new[] { 0, 2 }, new[] { 2, 0, 1 }, new[] { 1, 2, 0 } };
+        private static readonly int[][] HornTunes = { new[] { 0, 2 }, new[] { 2, 0 }, new[] { 1, 2, 0 } };
         private static readonly int[] HornFanfare = { 0, 1, 2, 2, 1, 2 };
         public const float HornIntroLength = 2.6f, HornNote = .55f;
         private readonly List<int> hornPlayed = new List<int>(4);

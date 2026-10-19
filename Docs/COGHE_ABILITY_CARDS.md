@@ -1,7 +1,9 @@
 # COghe ability cards (Mrk, 16/10/2026)
 
-After each "Understand COghe" (the bonus that follows each Boss) the player takes **exactly one** of three cards: Emotion,
+After each "Understand COghe" the player takes **exactly one** of three cards: Emotion,
 Agility or Intelligence. Each pick adds one level to that ability, up to 10.
+
+19/10/2026: [12-interlude curriculum](LevelDesign/COghe/Understand12/README.md) adds a short practice after 6/16/27/38/49/60, alongside the existing Boss interludes at 10/21/32/43/54/65. A new player earns 12 cards across 65 levels. Boss IDs stay 1–6; practices use 1001–1006 in `CardsPicked`. Effects and maximums below are unchanged. Legacy players skip new practices at milestones already beaten without retroactive card grants; an earned but unpicked card resumes from Play.
 
 Mrk approved "clear direction, hidden details":
 - cards say what grows, not by how much;

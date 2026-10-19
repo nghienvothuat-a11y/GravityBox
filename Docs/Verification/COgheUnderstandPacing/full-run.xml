@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="40" result="Failed(Child)" total="40" passed="39" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-19 08:53:47Z" end-time="2026-10-19 09:03:50Z" duration="602.7496814">
+  <test-suite type="TestSuite" id="2027" name="Gravity Box" fullname="Gravity Box" runstate="Runnable" testcasecount="967" result="Failed" site="Child" start-time="2026-10-19 08:53:47Z" end-time="2026-10-19 09:03:50Z" duration="602.749681" total="40" passed="39" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="2021" name="GravityBox.Tests.PlayMode.dll" fullname="/Users/mrk/GravityBox/Library/ScriptAssemblies/GravityBox.Tests.PlayMode.dll" runstate="Runnable" testcasecount="967" result="Failed" site="Child" start-time="2026-10-19 08:53:47Z" end-time="2026-10-19 09:03:50Z" duration="602.739374" total="40" passed="39" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="56781" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="2022" name="GravityBox" fullname="GravityBox" runstate="Runnable" testcasecount="967" result="Failed" site="Child" start-time="2026-10-19 08:53:47Z" end-time="2026-10-19 09:03:50Z" duration="602.734474" total="40" passed="39" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="2023" name="Tests" fullname="GravityBox.Tests" runstate="Runnable" testcasecount="967" result="Failed" site="Child" start-time="2026-10-19 08:53:47Z" end-time="2026-10-19 09:03:50Z" duration="602.729771" total="40" passed="39" failed="1" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestFixture" id="1460" name="COgheProductUITests" fullname="GravityBox.Tests.COgheProductUITests" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" testcasecount="60" result="Passed" start-time="2026-10-19 08:53:47Z" end-time="2026-10-19 09:00:55Z" duration="428.220614" total="14" passed="14" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1463" name="AbilityCardsCanBeChangedBeforeConfirmAndMaxCannotBePicked" fullname="GravityBox.Tests.COgheProductUITests.AbilityCardsCanBeChangedBeforeConfirmAndMaxCannotBePicked" methodname="AbilityCardsCanBeChangedBeforeConfirmAndMaxCannotBePicked" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" seed="1192117433" result="Passed" start-time="2026-10-19 08:53:47Z" end-time="2026-10-19 08:53:49Z" duration="2.209069" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1464" name="AbilityCardsFitPhonesAndTabletsWithoutOverlaps" fullname="GravityBox.Tests.COgheProductUITests.AbilityCardsFitPhonesAndTabletsWithoutOverlaps" methodname="AbilityCardsFitPhonesAndTabletsWithoutOverlaps" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" seed="1961585408" result="Passed" start-time="2026-10-19 08:53:49Z" end-time="2026-10-19 08:53:51Z" duration="1.585111" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1520" name="AllTwelveUnderstandLessonsPlayThroughWithTheirCards" fullname="GravityBox.Tests.COgheProductUITests.AllTwelveUnderstandLessonsPlayThroughWithTheirCards" methodname="AllTwelveUnderstandLessonsPlayThroughWithTheirCards" classname="GravityBox.Tests.COgheProductUITests" runstate="Explicit" seed="1312760334" result="Passed" start-time="2026-10-19 08:53:51Z" end-time="2026-10-19 08:59:45Z" duration="353.516237" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="Timeout" value="3600000" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[UNDERSTAND practice 1 after 6: 8.2s
+UNDERSTAND practice 2 after 16: 10.7s
+UNDERSTAND practice 3 after 27: 11.9s
+UNDERSTAND practice 4 after 38: 14.3s
+UNDERSTAND practice 5 after 49: 15.2s
+UNDERSTAND practice 6 after 60: 26.2s
+]]></output>
+            </test-case>
+            <test-case id="1468" name="BonusResumesCompletedQuestionsEvenWithZeroDropRewards" fullname="GravityBox.Tests.COgheProductUITests.BonusResumesCompletedQuestionsEvenWithZeroDropRewards" methodname="BonusResumesCompletedQuestionsEvenWithZeroDropRewards" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" seed="298445485" result="Passed" start-time="2026-10-19 08:59:45Z" end-time="2026-10-19 08:59:53Z" duration="8.261370" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1466" name="BossInterludeIsRequiredAndMenuCannotSkipIt" fullname="GravityBox.Tests.COgheProductUITests.BossInterludeIsRequiredAndMenuCannotSkipIt" methodname="BossInterludeIsRequiredAndMenuCannotSkipIt" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" seed="903544954" result="Passed" start-time="2026-10-19 08:59:53Z" end-time="2026-10-19 08:59:54Z" duration="0.989783" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1519" name="FirstPracticeBeforeHomeUnlockRecoversFromMissesAndResumesItsCard" fullname="GravityBox.Tests.COgheProductUITests.FirstPracticeBeforeHomeUnlockRecoversFromMissesAndResumesItsCard" methodname="FirstPracticeBeforeHomeUnlockRecoversFromMissesAndResumesItsCard" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" seed="1591272704" result="Passed" start-time="2026-10-19 08:59:54Z" end-time="2026-10-19 09:00:09Z" duration="15.430784" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="Timeout" value="180000" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1462" name="HomeAbilityShowsBarsAndAWaitingCard" fullname="GravityBox.Tests.COgheProductUITests.HomeAbilityShowsBarsAndAWaitingCard" methodname="HomeAbilityShowsBarsAndAWaitingCard" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" seed="334308022" result="Passed" start-time="2026-10-19 09:00:09Z" end-time="2026-10-19 09:00:11Z" duration="1.769606" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1470" name="InkGuideFitsPhoneAndTabletWithoutOverlappingControls" fullname="GravityBox.Tests.COgheProductUITests.InkGuideFitsPhoneAndTabletWithoutOverlappingControls" methodname="InkGuideFitsPhoneAndTabletWithoutOverlappingControls" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" seed="1335585366" result="Passed" start-time="2026-10-19 09:00:11Z" end-time="2026-10-19 09:00:12Z" duration="1.318279" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1471" name="LevelEightOpensFreeInkLessonWithoutOpeningHome" fullname="GravityBox.Tests.COgheProductUITests.LevelEightOpensFreeInkLessonWithoutOpeningHome" methodname="LevelEightOpensFreeInkLessonWithoutOpeningHome" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" seed="558315288" result="Passed" start-time="2026-10-19 09:00:12Z" end-time="2026-10-19 09:00:19Z" duration="6.734866" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1473" name="OldRewardsRemainCompletedAndLaterBossesAlsoRequireUnderstanding" fullname="GravityBox.Tests.COgheProductUITests.OldRewardsRemainCompletedAndLaterBossesAlsoRequireUnderstanding" methodname="OldRewardsRemainCompletedAndLaterBossesAlsoRequireUnderstanding" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" seed="17019812" result="Passed" start-time="2026-10-19 09:00:19Z" end-time="2026-10-19 09:00:20Z" duration="0.876976" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1469" name="ReorderedCatalogKeepsOldInkUnlockAndDoesNotGrantPuzzleWins" fullname="GravityBox.Tests.COgheProductUITests.ReorderedCatalogKeepsOldInkUnlockAndDoesNotGrantPuzzleWins" methodname="ReorderedCatalogKeepsOldInkUnlockAndDoesNotGrantPuzzleWins" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" seed="1975438843" result="Passed" start-time="2026-10-19 09:00:20Z" end-time="2026-10-19 09:00:21Z" duration="0.791336" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1472" name="RewardFxRemainDecorativeExpireWhilePausedAndDoNotReplayOnRelayout" fullname="GravityBox.Tests.COgheProductUITests.RewardFxRemainDecorativeExpireWhilePausedAndDoNotReplayOnRelayout" methodname="RewardFxRemainDecorativeExpireWhilePausedAndDoNotReplayOnRelayout" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" seed="1527188947" result="Passed" start-time="2026-10-19 09:00:21Z" end-time="2026-10-19 09:00:24Z" duration="3.570816" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1467" name="TheBonusIsUnderstoodInHomeAndPaysOnce" fullname="GravityBox.Tests.COgheProductUITests.TheBonusIsUnderstoodInHomeAndPaysOnce" methodname="TheBonusIsUnderstoodInHomeAndPaysOnce" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" seed="1414188188" result="Passed" start-time="2026-10-19 09:00:24Z" end-time="2026-10-19 09:00:54Z" duration="29.352179" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1461" name="UnderstandingCOgheEndsWithOneAbilityCard" fullname="GravityBox.Tests.COgheProductUITests.UnderstandingCOgheEndsWithOneAbilityCard" methodname="UnderstandingCOgheEndsWithOneAbilityCard" classname="GravityBox.Tests.COgheProductUITests" runstate="Runnable" seed="1568872451" result="Passed" start-time="2026-10-19 09:00:54Z" end-time="2026-10-19 09:00:55Z" duration="1.701491" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1098" name="COgheSpatialCampaignTests" fullname="GravityBox.Tests.COgheSpatialCampaignTests" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" testcasecount="361" result="Failed" site="Child" start-time="2026-10-19 09:00:55Z" end-time="2026-10-19 09:03:50Z" duration="174.223192" total="22" passed="21" failed="1" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-case id="1444" name="ANewToyWordSendsCOgheToPlayIt" fullname="GravityBox.Tests.COgheSpatialCampaignTests.ANewToyWordSendsCOgheToPlayIt" methodname="ANewToyWordSendsCOgheToPlayIt" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1536480511" result="Passed" start-time="2026-10-19 09:00:56Z" end-time="2026-10-19 09:01:02Z" duration="5.515156" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1437" name="BallGameIsPassedBackThreeTimes" fullname="GravityBox.Tests.COgheSpatialCampaignTests.BallGameIsPassedBackThreeTimes" methodname="BallGameIsPassedBackThreeTimes" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1452990004" result="Passed" start-time="2026-10-19 09:01:02Z" end-time="2026-10-19 09:01:14Z" duration="12.165961" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1440" name="BalloonGameCountsThePuffs" fullname="GravityBox.Tests.COgheSpatialCampaignTests.BalloonGameCountsThePuffs" methodname="BalloonGameCountsThePuffs" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1191141089" result="Passed" start-time="2026-10-19 09:01:14Z" end-time="2026-10-19 09:01:27Z" duration="13.484832" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1120" name="BonusCountsExactly" fullname="GravityBox.Tests.COgheSpatialCampaignTests.BonusCountsExactly" methodname="BonusCountsExactly" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="2026423445" result="Passed" start-time="2026-10-19 09:01:27Z" end-time="2026-10-19 09:01:34Z" duration="7.101156" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1122" name="BonusCountsOneWordThenUsesAFamiliarAction" fullname="GravityBox.Tests.COgheSpatialCampaignTests.BonusCountsOneWordThenUsesAFamiliarAction" methodname="BonusCountsOneWordThenUsesAFamiliarAction" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1382653103" result="Passed" start-time="2026-10-19 09:01:34Z" end-time="2026-10-19 09:01:39Z" duration="4.249901" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1119" name="BonusOrderMatters" fullname="GravityBox.Tests.COgheSpatialCampaignTests.BonusOrderMatters" methodname="BonusOrderMatters" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="677780543" result="Passed" start-time="2026-10-19 09:01:39Z" end-time="2026-10-19 09:01:43Z" duration="4.436197" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1121" name="BonusSentenceOfANumberAndAThing" fullname="GravityBox.Tests.COgheSpatialCampaignTests.BonusSentenceOfANumberAndAThing" methodname="BonusSentenceOfANumberAndAThing" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="46457668" result="Passed" start-time="2026-10-19 09:01:43Z" end-time="2026-10-19 09:01:51Z" duration="7.535278" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1118" name="BonusTwoThingsAreTakenInAnyOrder" fullname="GravityBox.Tests.COgheSpatialCampaignTests.BonusTwoThingsAreTakenInAnyOrder" methodname="BonusTwoThingsAreTakenInAnyOrder" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="198779507" result="Passed" start-time="2026-10-19 09:01:51Z" end-time="2026-10-19 09:01:54Z" duration="3.161258" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1443" name="ChaptersFromSevenAreMadeFromWhatEveryPlayerHas" fullname="GravityBox.Tests.COgheSpatialCampaignTests.ChaptersFromSevenAreMadeFromWhatEveryPlayerHas" methodname="ChaptersFromSevenAreMadeFromWhatEveryPlayerHas" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="756902611" result="Passed" start-time="2026-10-19 09:01:54Z" end-time="2026-10-19 09:01:54Z" duration="0.028581" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1434" name="ChapterTwoEndsWithTheDrumGame" fullname="GravityBox.Tests.COgheSpatialCampaignTests.ChapterTwoEndsWithTheDrumGame" methodname="ChapterTwoEndsWithTheDrumGame" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="913522031" result="Passed" start-time="2026-10-19 09:01:54Z" end-time="2026-10-19 09:01:54Z" duration="0.037203" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1435" name="DrumGameIsPlayedBackAndTheDrumIsKept" fullname="GravityBox.Tests.COgheSpatialCampaignTests.DrumGameIsPlayedBackAndTheDrumIsKept" methodname="DrumGameIsPlayedBackAndTheDrumIsKept" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="49992793" result="Passed" start-time="2026-10-19 09:01:54Z" end-time="2026-10-19 09:02:13Z" duration="18.854959" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1117" name="EveryChapterHasABonusMadeOfWhatEveryPlayerHas" fullname="GravityBox.Tests.COgheSpatialCampaignTests.EveryChapterHasABonusMadeOfWhatEveryPlayerHas" methodname="EveryChapterHasABonusMadeOfWhatEveryPlayerHas" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1342143409" result="Passed" start-time="2026-10-19 09:02:13Z" end-time="2026-10-19 09:02:13Z" duration="0.032604" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1439" name="HornGameIsPlayedBackInOrder" fullname="GravityBox.Tests.COgheSpatialCampaignTests.HornGameIsPlayedBackInOrder" methodname="HornGameIsPlayedBackInOrder" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1038086581" result="Passed" start-time="2026-10-19 09:02:13Z" end-time="2026-10-19 09:02:26Z" duration="13.433484" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1445" name="LaterToyGamesAreHarder" fullname="GravityBox.Tests.COgheSpatialCampaignTests.LaterToyGamesAreHarder" methodname="LaterToyGamesAreHarder" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="349879109" result="Passed" start-time="2026-10-19 09:02:26Z" end-time="2026-10-19 09:02:34Z" duration="7.751145" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1436" name="LeavingTheDrumGamePutsTheDrumAway" fullname="GravityBox.Tests.COgheSpatialCampaignTests.LeavingTheDrumGamePutsTheDrumAway" methodname="LeavingTheDrumGamePutsTheDrumAway" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="642344949" result="Passed" start-time="2026-10-19 09:02:34Z" end-time="2026-10-19 09:02:38Z" duration="4.475307" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1442" name="MusicBoxGamePlaysThreeTunes" fullname="GravityBox.Tests.COgheSpatialCampaignTests.MusicBoxGamePlaysThreeTunes" methodname="MusicBoxGamePlaysThreeTunes" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="58297789" result="Passed" start-time="2026-10-19 09:02:38Z" end-time="2026-10-19 09:02:53Z" duration="14.366583" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1447" name="OldSavesThatFinishedChapterTwoGetTheDrum" fullname="GravityBox.Tests.COgheSpatialCampaignTests.OldSavesThatFinishedChapterTwoGetTheDrum" methodname="OldSavesThatFinishedChapterTwoGetTheDrum" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1970746184" result="Passed" start-time="2026-10-19 09:02:53Z" end-time="2026-10-19 09:02:53Z" duration="0.032653" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1099" name="OneAbilityCardPerUnderstoodChapterUpToTen" fullname="GravityBox.Tests.COgheSpatialCampaignTests.OneAbilityCardPerUnderstoodChapterUpToTen" methodname="OneAbilityCardPerUnderstoodChapterUpToTen" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1704499444" result="Passed" start-time="2026-10-19 09:02:53Z" end-time="2026-10-19 09:02:53Z" duration="0.033006" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1459" name="PracticeKeepsCorrectWordsWhenACountOrLaterAnswerIsWrong" fullname="GravityBox.Tests.COgheSpatialCampaignTests.PracticeKeepsCorrectWordsWhenACountOrLaterAnswerIsWrong" methodname="PracticeKeepsCorrectWordsWhenACountOrLaterAnswerIsWrong" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="403144215" result="Passed" start-time="2026-10-19 09:02:53Z" end-time="2026-10-19 09:03:15Z" duration="22.119092" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1438" name="TheDrumIsAWordFromChapterThree" fullname="GravityBox.Tests.COgheSpatialCampaignTests.TheDrumIsAWordFromChapterThree" methodname="TheDrumIsAWordFromChapterThree" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1869308520" result="Passed" start-time="2026-10-19 09:03:15Z" end-time="2026-10-19 09:03:23Z" duration="7.984861" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1441" name="TopGameKeepsTheTopSpinning" fullname="GravityBox.Tests.COgheSpatialCampaignTests.TopGameKeepsTheTopSpinning" methodname="TopGameKeepsTheTopSpinning" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="1892465775" result="Failed" start-time="2026-10-19 09:03:23Z" end-time="2026-10-19 09:03:44Z" duration="20.985186" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[  After two misses, a slow seven-second response is still accepted
+  Expected: True
+  But was:  False
+]]></message>
+                <stack-trace><![CDATA[at GravityBox.Tests.COgheSpatialCampaignTests+<TopGameKeepsTheTopSpinning>d__462.MoveNext () [0x002f1] in /Users/mrk/GravityBox/Assets/_Game/Tests/PlayMode/COgheToyTests.cs:226
+at UnityEngine.TestTools.TestEnumerator+<Execute>d__7.MoveNext () [0x0003a] in ./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEngine.TestRunner/NUnitExtensions/Attributes/TestEnumerator.cs:44
+]]></stack-trace>
+              </failure>
+            </test-case>
+            <test-case id="1448" name="WrongAnswersAreGagsAboutWhatCOgheGot" fullname="GravityBox.Tests.COgheSpatialCampaignTests.WrongAnswersAreGagsAboutWhatCOgheGot" methodname="WrongAnswersAreGagsAboutWhatCOgheGot" classname="GravityBox.Tests.COgheSpatialCampaignTests" runstate="Runnable" seed="874169702" result="Passed" start-time="2026-10-19 09:03:44Z" end-time="2026-10-19 09:03:50Z" duration="5.724005" asserts="0">
+              <properties>
+                <property name="_JOINTYPE" value="UnityCombinatorial" />
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1822" name="COgheUnderstandPacingTests" fullname="GravityBox.Tests.COgheUnderstandPacingTests" classname="GravityBox.Tests.COgheUnderstandPacingTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-10-19 09:03:50Z" end-time="2026-10-19 09:03:50Z" duration="0.024292" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1826" name="FreshSaveGetsLevelSixAndEarnedCardSurvivesReloadWithoutRepeatingLesson" fullname="GravityBox.Tests.COgheUnderstandPacingTests.FreshSaveGetsLevelSixAndEarnedCardSurvivesReloadWithoutRepeatingLesson" methodname="FreshSaveGetsLevelSixAndEarnedCardSurvivesReloadWithoutRepeatingLesson" classname="GravityBox.Tests.COgheUnderstandPacingTests" runstate="Runnable" seed="1608641972" result="Passed" start-time="2026-10-19 09:03:50Z" end-time="2026-10-19 09:03:50Z" duration="0.001967" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1824" name="LessonsUseOwnedWordsAndIntroduceOneSentenceRuleAtATime" fullname="GravityBox.Tests.COgheUnderstandPacingTests.LessonsUseOwnedWordsAndIntroduceOneSentenceRuleAtATime" methodname="LessonsUseOwnedWordsAndIntroduceOneSentenceRuleAtATime" classname="GravityBox.Tests.COgheUnderstandPacingTests" runstate="Runnable" seed="1607037930" result="Passed" start-time="2026-10-19 09:03:50Z" end-time="2026-10-19 09:03:50Z" duration="0.001921" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1825" name="MigrationSkipsPastNewLessonsButPreservesBossProgressCardsAndToys" fullname="GravityBox.Tests.COgheUnderstandPacingTests.MigrationSkipsPastNewLessonsButPreservesBossProgressCardsAndToys" methodname="MigrationSkipsPastNewLessonsButPreservesBossProgressCardsAndToys" classname="GravityBox.Tests.COgheUnderstandPacingTests" runstate="Runnable" seed="767152471" result="Passed" start-time="2026-10-19 09:03:50Z" end-time="2026-10-19 09:03:50Z" duration="0.000805" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1823" name="TwelveMilestonesGiveTwelveDistinctCardsAndNeverPayAgain" fullname="GravityBox.Tests.COgheUnderstandPacingTests.TwelveMilestonesGiveTwelveDistinctCardsAndNeverPayAgain" methodname="TwelveMilestonesGiveTwelveDistinctCardsAndNeverPayAgain" classname="GravityBox.Tests.COgheUnderstandPacingTests" runstate="Runnable" seed="714260741" result="Passed" start-time="2026-10-19 09:03:50Z" end-time="2026-10-19 09:03:50Z" duration="0.002857" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: /Users/mrk/Library/Application Support/Gravity Box Lab/Gravity Box/TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

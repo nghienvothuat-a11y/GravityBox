@@ -12,7 +12,7 @@ namespace GravityBox.Venom
     /// </summary>
     public sealed partial class COghePersonality
     {
-        private static readonly int[] BalloonPuffs = { 2, 3, 3 };
+        private static readonly int[] BalloonPuffs = { 1, 2, 2 };
         public const float BalloonIntroLength = 2.0f, BalloonShowLength = 1.6f, BalloonTieLength = 1.3f;
         private int balloonPuffs; private float balloonPuffAt = -100, balloonSize = .3f;
         private bool IsBalloonGame => toy != null && toy.Id == COgheToys.Balloon;

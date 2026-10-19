@@ -34,14 +34,14 @@ namespace GravityBox.Venom
     }
 
     /// <summary>
-    /// The bonus "Hiểu ra" (Mrk 07/10/2026): after each chapter's boss, a required chapter interlude in Home where COghe "speaks" only in
+    /// The bonus "Hiểu ra": a short practice midway through a chapter, then a longer interlude after its boss. COghe "speaks" only in
     /// simple body shapes and the player answers by doing what it asks. Each right answer pays at once, with COghe's joy, and
     /// more each question; understanding the whole bonus pays the most, after COghe's thank-you. A wrong answer only gets a
     /// gentle shake. The interlude lives in Home. Its answers are required before the next chapter; leaving returns to the menu
     /// and completed questions resume without paying twice. Existing completed chapters and purchases are preserved.
     /// The answers only use what every player has (a touch, Feed, the gift ball), so no bonus depends on what was bought; the
-    /// chapters grow by putting words together: one word, two in any order, an order, a number, all of them, and (the sixth
-    /// chapter, Mrk 12/10/2026) a number on most words.
+    /// chapters grow by putting words together: one word, two in any order, an order, a number, then short combinations.
+    /// The 19/10/2026 curriculum practises each new sentence rule before combining it. Boss IDs and rewards remain stable.
     /// A wrong answer is a little comedy of what COghe got instead (it spits the food out, giggles at a touch, the ball bonks
     /// it), then it asks again (Mrk 17/10/2026). Chapters 2 to 6 end with a game on a new toy (the drum, the horn,
     /// the balloons, the spinning top, the music box); the drum
@@ -73,20 +73,36 @@ namespace GravityBox.Venom
             // game with a new toy, which the player keeps)
             new[] { Both(Cuddle(), Food()), Both(Play(), Cuddle()), COgheBonusRound.Game(COgheToys.Drum) },
             // 3: in COghe's order (the drum is a word now); then the horn: COghe's tune played back in order
-            new[] { InOrder(Food(), Cuddle()), InOrder(Cuddle(), Drum(), Food()), COgheBonusRound.Game(COgheToys.Horn) },
+            new[] { InOrder(Food(), Cuddle()), InOrder(Cuddle(), Drum()), COgheBonusRound.Game(COgheToys.Horn) },
             // 4: how many (exactly: one too many and it counts again); then the balloons: just as many puffs
-            new[] { One(Food(2)), One(Drum(3)), COgheBonusRound.Game(COgheToys.Balloon) },
+            new[] { One(Food(2)), One(Drum(2)), COgheBonusRound.Game(COgheToys.Balloon) },
             // 5: all of it
-            new[] { InOrder(Cuddle(2), Play()), InOrder(Drum(2), Food(), Cuddle()), COgheBonusRound.Game(COgheToys.Top) },
-            // 6: every word counts
-            new[] { InOrder(Cuddle(2), Food(2)), InOrder(Play(), Drum(3), Food()), COgheBonusRound.Game(COgheToys.MusicBox) },
+            new[] { InOrder(Cuddle(2), Play()), InOrder(Drum(2), Food()), COgheBonusRound.Game(COgheToys.Top) },
+            // 6: three familiar words, only one counted word (never two new demands at once)
+            new[] { InOrder(Cuddle(2), Food()), InOrder(Play(), Drum(2), Food()), COgheBonusRound.Game(COgheToys.MusicBox) },
         };
+
+        private static readonly COgheBonusRound[][] Practices =
+        {
+            new[] { One(Cuddle()) },
+            new[] { Both(Cuddle(), Food()) },
+            new[] { InOrder(Food(), Cuddle()) },
+            new[] { One(Food(2)) },
+            new[] { InOrder(Food(2), Cuddle()) },
+            new[] { InOrder(Play(), Food(2), Cuddle()) },
+        };
+        // A separate namespace: never renumber old boss IDs, Paid/Understood keys or CardsPicked entries.
+        private const int PracticeOffset = 1000;
+        public static int PracticeId(int chapter) => chapter >= 1 && chapter <= Practices.Length ? PracticeOffset + chapter : 0;
+        public static bool IsPractice(int id) => id > PracticeOffset && id <= PracticeOffset + Practices.Length;
+        public static int Chapter(int id) => IsPractice(id) ? id - PracticeOffset : id;
 
         /// <summary>Chapters with a "Hiểu ra" at most (300 levels at 11 a chapter is 28; room to grow).</summary>
         public const int MaxChapters = 60;
         /// <summary>The questions of chapter <paramref name="chapter"/>'s bonus (1-based), or null if it has none.</summary>
         public static COgheBonusRound[] Rounds(int chapter)
         {
+            if (IsPractice(chapter)) return Practices[Chapter(chapter) - 1];
             if (chapter >= 1 && chapter <= Chapters.Length) return Chapters[chapter - 1];
             if (chapter < 1 || chapter > MaxChapters) return null;
             if (!generated.TryGetValue(chapter, out var rounds)) generated[chapter] = rounds = Generate(chapter);
@@ -125,7 +141,7 @@ namespace GravityBox.Venom
             int level = 1 + (chapter - 7) / 5;
             return new[] { Sentence(3, 1), Sentence(4, chapter >= 10 ? 2 : 1), COgheBonusRound.Game(GameCycle[(chapter - 7) % GameCycle.Length], level) };
         }
-        public static string Key(int chapter) => "bonus:" + chapter;
+        public static string Key(int chapter) => IsPractice(chapter) ? "bonus:practice:" + Chapter(chapter) : "bonus:" + chapter;
         /// <summary>Completion checkpoint; legacy paid rewards also count as completed.</summary>
         public static bool Done(int chapter) => COgheShop.Understood(Key(chapter));
         public static int CompletedRounds(int chapter)
@@ -136,6 +152,8 @@ namespace GravityBox.Venom
         }
         /// <summary>The prize for understanding every question: the largest.</summary>
         public static int Reward => COgheEconomy.BonusDrops * COgheEntitlements.DropsMultiplier;
+        /// <summary>A short practice gives one round plus a smaller thank-you; the ability card still grants +1.</summary>
+        public static int CompletionReward(int id) => IsPractice(id) ? RoundReward(2) : Reward;
         /// <summary>Paid the moment question <paramref name="round"/> (1-based) is understood, growing question by question (10, 20, 30).</summary>
         public static int RoundReward(int round) => COgheEconomy.BonusRoundDrops * round * COgheEntitlements.DropsMultiplier;
         public static string RoundKey(int chapter, int round) => Key(chapter) + ":" + round;
@@ -149,24 +167,45 @@ namespace GravityBox.Venom
             return chapter;
         }
 
-        /// <summary>A bonus to offer after beating catalog level <paramref name="order"/>: its chapter, or 0.</summary>
+        /// <summary>Stable interlude IDs in playing order. Practice follows the sixth level since the previous boss;
+        /// only authored practice chapters are included, and a short chapter cannot place it on/after its boss.</summary>
+        public static IEnumerable<(int order, int id)> Milestones(COgheProductCatalog catalog)
+        {
+            if (catalog == null) yield break;
+            int chapter = 0, previousBoss = 0;
+            for (int i = 0; i < catalog.Levels.Length; i++)
+            {
+                if (catalog.Levels[i] == null || !catalog.Levels[i].Boss) continue;
+                chapter++;
+                int practice = PracticeId(chapter), order = previousBoss + 6;
+                if (practice != 0 && order < i + 1 && catalog.Levels[order - 1] != null) yield return (order, practice);
+                if (Rounds(chapter) != null) yield return (i + 1, chapter);
+                previousBoss = i + 1;
+            }
+        }
+        public static bool Skipped(int id) => IsPractice(id) && COgheShop.Current.SkippedPractices.Contains(id);
+        private static bool Pending(int id) => !Done(id) && !Skipped(id);
+        public static bool Earned(COgheProductCatalog catalog, VenomCampaignSave save, int id)
+        {
+            if (save == null) return false;
+            foreach (var m in Milestones(catalog))
+                if (m.id == id) return save.Completed.Contains(catalog.Levels[m.order - 1].Id);
+            return false;
+        }
+
+        /// <summary>A bonus to offer after beating catalog level <paramref name="order"/>, or 0.</summary>
         public static int After(COgheProductCatalog catalog, int order)
         {
-            int chapter = ChapterOfBoss(catalog, order);
-            return chapter > 0 && Rounds(chapter) != null && !Done(chapter) ? chapter : 0;
+            foreach (var m in Milestones(catalog)) if (m.order == order && Pending(m.id)) return m.id;
+            return 0;
         }
 
         /// <summary>The earliest bonus whose boss is beaten but which is not done (including unfinished interludes from older saves), or 0.</summary>
         public static int Waiting(COgheProductCatalog catalog, VenomCampaignSave save)
         {
             if (catalog == null || save == null) return 0;
-            int chapter = 0;
-            for (int i = 0; i < catalog.Levels.Length; i++)
-            {
-                var level = catalog.Levels[i]; if (level == null || !level.Boss) continue;
-                chapter++;
-                if (save.Completed.Contains(level.Id) && Rounds(chapter) != null && !Done(chapter)) return chapter;
-            }
+            foreach (var m in Milestones(catalog))
+                if (save.Completed.Contains(catalog.Levels[m.order - 1].Id) && Pending(m.id)) return m.id;
             return 0;
         }
     }

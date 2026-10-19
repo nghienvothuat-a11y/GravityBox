@@ -109,17 +109,17 @@ namespace GravityBox.Tests
    finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;}
   }
 
-  [UnityTest] public IEnumerator BonusEveryWordCounts()
+  [UnityTest] public IEnumerator BonusCountsOneWordThenUsesAFamiliarAction()
   {
    try
    {
     yield return StartBonusInHome(6);var p=game.Personality;
-    // two cuddles, then exactly two mushrooms
+    // two cuddles, then one mushroom: only one counted word per sentence
     Assert.AreEqual(COgheBonusAnswer.Touch,p.BonusAsk.Value.Answer);Assert.AreEqual(2,p.BonusAsk.Value.Count);
     p.TouchedInHome(p.SkinCentre);yield return Frames(5);p.TouchedInHome(p.SkinCentre);
     yield return BonusUntil(()=>p.BonusAsking&&p.BonusWordsDone==1,6,"Two cuddles, checked: on to the food");
-    Assert.AreEqual(COgheBonusAnswer.Feed,p.BonusAsk.Value.Answer);Assert.AreEqual(2,p.BonusAsk.Value.Count);
-    p.BonusFeed();p.BonusFeed();
+    Assert.AreEqual(COgheBonusAnswer.Feed,p.BonusAsk.Value.Answer);Assert.AreEqual(1,p.BonusAsk.Value.Count);
+    p.BonusFeed();
     yield return BonusUntil(()=>p.BonusRound==1,15,"The whole sentence: the next question");
     Assert.AreEqual(0,p.BonusMisses);
    }

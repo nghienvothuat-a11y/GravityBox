@@ -78,6 +78,7 @@ namespace GravityBox.Venom
             EnsureInput();started=true;Layout();Guide=COgheGuide.Create(this,Game,safe,art);
             COgheStyle.Current.ApplyTo(Game);   // COghe's own look, everywhere it appears
             COgheShop.Migrate(Game);            // a player from before the shop keeps every item already earned
+            COgheShop.MigrateUnderstand(Catalog,Game.Progress);
             COgheAds.BannerChanged += OnBannerChanged;
             COgheAds.AvailabilityChanged += OnBannerChanged;
             if(COgheProductMode.ReplayIntroOnLoad){COgheProductMode.ReplayIntroOnLoad=false;PlayIntro(true);}
@@ -173,6 +174,7 @@ namespace GravityBox.Venom
         }
         public void Play()
         {
+            if(ResumeAbilityPick())return;
             int waiting=COgheBonus.Waiting(Catalog,Game.Progress);
             if(waiting>0){StartBonus(waiting,true);return;}
             if(NeedsInkGuide){OpenStyleFromMenu();return;}
@@ -196,6 +198,7 @@ namespace GravityBox.Venom
         {
             if(!testJump && n==ResumeLevel)
             {
+                if(ResumeAbilityPick())return;
                 int waiting=COgheBonus.Waiting(Catalog,Game.Progress);
                 if(waiting>0){StartBonus(waiting,true);return;}
                 if(NeedsInkGuide){OpenStyleFromMenu();return;}
@@ -229,7 +232,14 @@ namespace GravityBox.Venom
             if(Page==COgheProductPage.Game&&!Game.Owner.Completed){ShowPopup(COgheProductPopup.LeaveHome);return;}
             EnterHome();
         }
-        private void EnterHome(){COgheShop.VisitCommerce();attempt.Abandon("home");MenuShadows(false);Game.EnterHome();Game.SetHabitatPresentation(false);Page=COgheProductPage.Home;Popup=COgheProductPopup.None;homeSize=-1;homeYaw=0;homeZoom=false;Rebuild();}
+        private void EnterHome(bool interlude=false)
+        {
+            if(!Game.Progress.HomeUnlocked&&!interlude)return;
+            if(Game.Progress.HomeUnlocked)COgheShop.VisitCommerce();
+            attempt.Abandon("home");MenuShadows(false);
+            if(Game.Progress.HomeUnlocked)Game.EnterHome();else Game.EnterShowcase();
+            Game.SetHabitatPresentation(false);Page=COgheProductPage.Home;Popup=COgheProductPopup.None;homeSize=-1;homeYaw=0;homeZoom=false;Rebuild();
+        }
         public void Confirm()
         {
             var action=Popup;Popup=COgheProductPopup.None;

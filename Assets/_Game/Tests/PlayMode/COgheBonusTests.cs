@@ -28,6 +28,8 @@ namespace GravityBox.Tests
             {
                 FreshShop(false); game.Progress.HomeUnlocked = true;
                 for(int i=0;i<10;i++)game.Progress.Completed.Add(ui.Catalog.Levels[i].Id);
+                COgheShop.Understand(COgheBonus.Key(COgheBonus.PracticeId(1)));
+                COgheShop.Current.CardsPicked.Add(COgheBonus.PracticeId(1));
                 var boss = ui.Catalog.Levels[9];
                 Assert.AreEqual(0, COgheBonus.After(ui.Catalog, 9));
                 ui.ShowVictoryForTests(boss.Id, 10); yield return null;

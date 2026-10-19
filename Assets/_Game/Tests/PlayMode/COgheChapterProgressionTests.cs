@@ -61,6 +61,7 @@ namespace GravityBox.Tests
             try
             {
                 FreshShop(false); COgheStyle.ResetForTests(new COgheStyle());
+                COgheShop.Understand(COgheBonus.Key(1001)); COgheShop.PickAbility(1001,COgheAbility.Emotion); // prior mandatory practice
                 for(int i=0;i<7;i++)game.Progress.Completed.Add(ui.Catalog.Levels[i].Id);
                 Assert.IsFalse(ui.StyleUnlocked);
                 game.Progress.Completed.Add(ui.Catalog.Levels[7].Id);
@@ -147,6 +148,8 @@ namespace GravityBox.Tests
             FreshShop(false); game.Progress.HomeUnlocked=true;
             COgheShop.Earn(COgheBonus.Key(1),100,"existing_save");
             foreach(var level in ui.Catalog.Levels.Take(21))game.Progress.Completed.Add(level.Id);
+            COgheShop.MigrateUnderstand(ui.Catalog,game.Progress); // pre-curriculum save: do not force past practices
+            COgheShop.PickAbility(1,COgheAbility.Emotion); // its earlier earned card has been claimed
             Assert.IsTrue(COgheBonus.Done(1));Assert.AreEqual(2,COgheBonus.Waiting(ui.Catalog,game.Progress));
             int count=game.Progress.Completed.Count;
             yield return Click("Play");Assert.AreEqual(2,ui.BonusChapter);

@@ -27,10 +27,13 @@ namespace GravityBox.Venom
         /// <summary>Starts chapter <paramref name="chapter"/>'s bonus in Home (from the victory offer, or Home's button).</summary>
         public void StartBonus(int chapter, bool fromVictory)
         {
-            var rounds = COgheBonus.Rounds(chapter); if (rounds == null || !Game.Progress.HomeUnlocked) return;
+            var rounds = COgheBonus.Rounds(chapter);
+            bool practice = COgheBonus.IsPractice(chapter);
+            if (rounds == null || (!Game.Progress.HomeUnlocked && !practice)
+                || practice && (!COgheBonus.Earned(Catalog, Game.Progress, chapter) || COgheBonus.Skipped(chapter))) return;
             bonusFromVictory = fromVictory; bonusNext = ResumeLevel;
             victoryBonus = 0; victoryNextRequested = false;
-            if (Page != COgheProductPage.Home) EnterHome();
+            if (Page != COgheProductPage.Home) EnterHome(true);
             Popup = COgheProductPopup.None; homeZoom = false;
             bonusChapter = chapter; bonusPaid = bonusThanksShown = bonusPopupShown = false; bonusShownRound = bonusShownMisses = -1; bonusEarned = 0;
             Game.Personality?.BeginBonus(rounds, COgheBonus.CompletedRounds(chapter));
@@ -70,7 +73,7 @@ namespace GravityBox.Venom
         private void PayBonusPrize(bool show)
         {
             bonusPaid = true;
-            bonusDrops = COgheShop.Earn(COgheBonus.Key(bonusChapter), COgheBonus.Reward, "bonus");
+            bonusDrops = COgheShop.Earn(COgheBonus.Key(bonusChapter), COgheBonus.CompletionReward(bonusChapter), "bonus");
             COgheShop.Understand(COgheBonus.Key(bonusChapter));
             bonusEarned += bonusDrops;
             COgheAnalytics.Log("bonus_complete", "chapter", bonusChapter, "drops", bonusDrops, "total", bonusEarned);
@@ -132,7 +135,8 @@ namespace GravityBox.Venom
                 art.Box(pageRoot, "Round " + (i + 1), new Rect(x, 86, 18, 18), done ? COgheUIArt.Teal : now ? COgheUIArt.Mint : new Color(.9f, .9f, .87f)).pixelsPerUnitMultiplier = 5;
             }
             DropsCounter(pageRoot, new Rect(width - 124, 88, 100, 40));   // the rewards fly in here
-            string line = bonusThanksShown || p == null || p.BonusFinished ? "" : bonusChapter <= BonusPrompts.Length ? BonusPrompts[Mathf.Max(0, bonusChapter - 1)] : "Watch COghe's whole sentence.";
+            int chapter = COgheBonus.Chapter(bonusChapter);
+            string line = bonusThanksShown || p == null || p.BonusFinished ? "" : chapter <= BonusPrompts.Length ? BonusPrompts[Mathf.Max(0, chapter - 1)] : "Watch COghe's whole sentence.";
             var ask = p?.BonusAsk;
             if (ask.HasValue && bonusShownMisses >= 2 && !bonusThanksShown) line = BonusHint(ask.Value);
             if (p != null && p.InToyGame && !bonusThanksShown)
@@ -163,7 +167,7 @@ namespace GravityBox.Venom
         }
 
         // what each chapter's questions are like (COghe itself only speaks in shapes)
-        private static readonly string[] BonusPrompts = { "What does COghe want?", "COghe wants two things.", "Do them in COghe's order.", "How many does COghe want?", "Watch the whole sentence.", "Count every word." };
+        private static readonly string[] BonusPrompts = { "What does COghe want?", "Two wishes, in any order.", "Do them in COghe's order.", "Two taps, then wait.", "Count, then do the next wish.", "One wish at a time." };
         /// <summary>After two misses: the next thing to do, said plainly.</summary>
         private static string BonusHint(COgheBonusAsk word)
         {
@@ -193,7 +197,7 @@ namespace GravityBox.Venom
                 art.Label(panel, "Message", "Understand its wishes to continue.\nCOghe speaks with body shapes.", new Rect(24, 124, w - 48, 44), 14, COgheUIArt.Muted);
                 var reward = art.Rect(panel, "Bonus reward", new Rect(w * .5f - 66, 172, 132, 30));
                 DropIcon(reward, new Rect(0, 2, 26, 26));
-                art.Label(reward, "Amount", "+" + COgheBonus.Reward + " Drops", new Rect(32, 0, 100, 30), 17, COgheUIArt.Teal, TextAnchor.MiddleLeft).font = art.BoldFont;
+                art.Label(reward, "Amount", "+" + COgheBonus.CompletionReward(chapter) + " Drops", new Rect(32, 0, 100, 30), 17, COgheUIArt.Teal, TextAnchor.MiddleLeft).font = art.BoldFont;
                 LabelButton(panel, "Play bonus", new Rect(24, h - 120, w - 48, 54), COgheIcon.Play, "Play", () => StartBonus(chapter, true), true);
                 LabelButton(panel, "Bonus menu", new Rect(24, h - 58, w - 48, 44), COgheIcon.Back, "Main menu", ShowMenu);
             }

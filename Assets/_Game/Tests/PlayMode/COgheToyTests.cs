@@ -42,24 +42,24 @@ namespace GravityBox.Tests
     Assert.IsNotNull(drum);Assert.IsFalse(drum.Root.activeSelf,"Not the player's yet: not in the room");
     p.BeginBonus(COgheBonus.Rounds(2),2);
     yield return BonusUntil(()=>p.ToyListening,15,"COghe brings the drum out and plays the first beat");
-    Assert.IsTrue(drum.Root.activeSelf,"Out for the game");Assert.AreEqual(2,p.ToyBeats);Assert.AreEqual(0,p.ToyPattern);
+    Assert.IsTrue(drum.Root.activeSelf,"Out for the game");Assert.AreEqual(1,p.ToyBeats);Assert.AreEqual(0,p.ToyPattern);
     // a touch on COghe instead: it giggles and points at the drum, then plays the beat again
     p.TouchedInHome(p.SkinCentre);Assert.AreEqual(COgheGag.GigglePoint,p.Gag);
     yield return BonusUntil(()=>p.ToyListening,10,"The beat again");
     // played back by taps on the drum on screen (only the number counts)
-    yield return TapDrum();yield return Frames(8);yield return TapDrum();
-    Assert.AreEqual(2,p.ToyTaps);
+    yield return TapDrum();
+    Assert.AreEqual(1,p.ToyTaps);
     yield return BonusUntil(()=>p.ToyListening&&p.ToyPattern==1,10,"Played back: the next beat");
-    Assert.AreEqual(3,p.ToyBeats);
+    Assert.AreEqual(2,p.ToyBeats);
     // one strike too many: it covers its ears, and plays the same beat again
-    for(int i=0;i<4;i++){yield return TapDrum();yield return Frames(4);}
+    for(int i=0;i<3;i++){yield return TapDrum();yield return Frames(4);}
     Assert.AreEqual(COgheGag.CoverEars,p.Gag);Assert.AreEqual(1,p.ToyPattern);
     yield return BonusUntil(()=>p.ToyListening,10,"The same beat again");
     Assert.AreEqual(0,p.ToyTaps);
-    for(int i=0;i<3;i++){yield return TapDrum();yield return Frames(8);}
+    for(int i=0;i<2;i++){yield return TapDrum();yield return Frames(8);}
     yield return BonusUntil(()=>p.ToyListening&&p.ToyPattern==2,10,"The last beat");
-    Assert.AreEqual(4,p.ToyBeats);
-    for(int i=0;i<4;i++){yield return TapDrum();yield return Frames(8);}
+    Assert.AreEqual(2,p.ToyBeats);
+    for(int i=0;i<2;i++){yield return TapDrum();yield return Frames(8);}
     yield return BonusUntil(()=>p.ToyJamming,10,"They jam together");
     yield return TapDrum();
     yield return BonusUntil(()=>p.BonusThanking||p.BonusFinished,15,"Won: COghe's joy, then its thank-you");
@@ -122,7 +122,7 @@ namespace GravityBox.Tests
    {
     yield return HomeWithoutTheDrum();COgheToys.Give(COgheToys.Drum);game.HomeRoom.Refresh();   // chapter 2's game won
     var p=game.Personality;var drum=game.HomeRoom.Find(COgheToys.Drum);Assert.IsTrue(drum.Root.activeSelf);
-    // chapter 3, question 2: a cuddle, the drum, food
+    // chapter 3, question 2: a cuddle, then the drum
     p.BeginBonus(COgheBonus.Rounds(3),1);
     yield return BonusUntil(()=>p.BonusAsking,10,"It asks");
     Assert.AreEqual(COgheBonusAnswer.Touch,p.BonusAsk.Value.Answer);
@@ -133,16 +133,14 @@ namespace GravityBox.Tests
     Assert.AreEqual(COgheShape.Drum,p.BonusAsk.Value.Shape);Assert.AreEqual(COgheToys.Drum,p.BonusAsk.Value.Item);
     p.PlayWith(drum);
     yield return BonusUntil(()=>p.Playing==drum,10,"It goes and plays the drum");
-    yield return BonusUntil(()=>p.BonusAsking&&p.BonusWordsDone==2,15,"then food");
-    p.BonusFeed();
-    yield return BonusUntil(()=>p.BonusRound==2,10,"The whole sentence: the next question");
+    yield return BonusUntil(()=>p.BonusRound==2,20,"The whole sentence: the next question");
     p.EndBonus();
-    // chapter 4, question 2: exactly three strikes
+    // chapter 4, question 2: exactly two strikes
     p.BeginBonus(COgheBonus.Rounds(4),1);
     yield return BonusUntil(()=>p.BonusAsking,10,"It asks");
-    Assert.AreEqual(3,p.BonusAsk.Value.Count);Assert.AreEqual(COgheToys.Drum,p.BonusAsk.Value.Item);
-    for(int i=0;i<3;i++){p.PlayWith(drum);yield return Frames(6);}
-    yield return BonusUntil(()=>p.BonusRound==2,12,"Three strikes, checked: the next question");
+    Assert.AreEqual(2,p.BonusAsk.Value.Count);Assert.AreEqual(COgheToys.Drum,p.BonusAsk.Value.Item);
+    for(int i=0;i<2;i++){p.PlayWith(drum);yield return Frames(6);}
+    yield return BonusUntil(()=>p.BonusRound==2,12,"Two strikes, checked: the next question");
     Assert.AreEqual(0,p.BonusMisses);
    }
    finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;COgheShop.ResetForTests();}
@@ -185,9 +183,9 @@ namespace GravityBox.Tests
     var p=game.Personality;var bunch=game.HomeRoom.Find(COgheToys.Balloon);
     p.BeginBonus(COgheBonus.Rounds(4),2);
     yield return BonusUntil(()=>p.ToyWaitingForPlayer,15,"A limp balloon, and the count on COghe's tendrils");
-    Assert.AreEqual(2,p.ToyBeats);
+    Assert.AreEqual(1,p.ToyBeats);
     // one puff too many: it pops in COghe's face, and a new balloon comes
-    for(int i=0;i<3;i++){yield return TapToy(p.ToyTapPoint);yield return Frames(6);}
+    for(int i=0;i<2;i++){yield return TapToy(p.ToyTapPoint);yield return Frames(6);}
     Assert.AreEqual(COgheGag.Pop,p.Gag);
     for(int b=0;b<3;b++)
     {
@@ -219,12 +217,21 @@ namespace GravityBox.Tests
     for(int r=0;r<COghePersonality.TopRescues;r++)
     {
      yield return BonusUntil(()=>p.ToyWaitingForPlayer&&p.ToyWobbling&&p.Gag==COgheGag.None,12,"It wobbles ("+(r+1)+")");
+     if(r==1)
+     {
+      yield return BonusUntil(()=>p.Gag==COgheGag.TopFall,10,"Another fall after one successful rescue");
+      Assert.AreEqual(1,p.ToyPattern,"A fall keeps the rescue already earned");
+      yield return BonusUntil(()=>p.ToyWaitingForPlayer&&p.Gag==COgheGag.None,12,"The next response window begins");
+      // Measure from the start of the response window, not from ToyWobbling (>20% of it elapsed).
+      yield return Frames(7*30);
+      Assert.IsTrue(p.ToyListening,"After two misses, a slow seven-second response is still accepted");
+     }
      yield return TapToy(p.ToyTapPoint);
      yield return BonusUntil(()=>!p.ToyListening,4,"A tap: it spins up straight again");
     }
     yield return BonusUntil(()=>p.ToyJamming,8,"COghe twirls beside it");
     yield return BonusUntil(()=>p.BonusThanking||p.BonusFinished,15,"Won");
-    Assert.IsTrue(COgheToys.Owns(COgheToys.Top),"The top is the player's");Assert.AreEqual(1,p.BonusMisses);
+    Assert.IsTrue(COgheToys.Owns(COgheToys.Top),"The top is the player's");Assert.AreEqual(2,p.BonusMisses);
    }
    finally{game.Personality?.EndBonus();COgheHomeRoom.UnlockedLevelOverride=null;COgheShop.ResetForTests();}
   }
@@ -305,7 +312,7 @@ namespace GravityBox.Tests
    {
     yield return HomeWithoutTheDrum();var p=game.Personality;
     p.BeginBonus(new[]{COgheBonusRound.Game(COgheToys.Drum,1)});
-    yield return BonusUntil(()=>p.ToyWaitingForPlayer,15,"The drum, level 1");Assert.AreEqual(3,p.ToyBeats,"One strike more");
+    yield return BonusUntil(()=>p.ToyWaitingForPlayer,15,"The drum, level 1");Assert.AreEqual(2,p.ToyBeats,"One strike more than the new introductory single tap");
     p.EndBonus();
     p.BeginBonus(new[]{COgheBonusRound.Game(COgheToys.Horn,2)});
     yield return BonusUntil(()=>p.ToyWaitingForPlayer,15,"The horn, level 2");Assert.AreEqual(4,p.ToyBeats,"Two notes more");

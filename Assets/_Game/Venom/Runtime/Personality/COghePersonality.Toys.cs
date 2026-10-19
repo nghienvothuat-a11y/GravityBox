@@ -8,7 +8,7 @@ namespace GravityBox.Venom
     /// <summary>
     /// "Hiểu ra" toys and gags (Mrk 17/10/2026).
     /// - The game with a toy (<see cref="COgheToys"/>), the last question of a chapter: COghe brings the drum out and plays a
-    ///   beat on it (2 strikes, then 3, then 4); the player plays it back by tapping the drum. Only the number of strikes
+    ///   beat on it (1 strike, then 2, then 2); the player plays it back by tapping the drum. Only the number of strikes
     ///   counts, never the timing, and nothing is timed. One strike too many and COghe covers its ears, then plays the beat
     ///   again. Three beats played back: they jam together for a few seconds (each tap of the player gets a strike and a
     ///   bounce), then COghe's joy and the reward, and the drum is the player's. At Home a tap on it sends COghe to play.
@@ -19,8 +19,9 @@ namespace GravityBox.Venom
     /// </summary>
     public sealed partial class COghePersonality
     {
-        // the beats of the drum game (seconds from the first strike): two, three, then four ("ta ta, ta ta")
-        private static readonly float[][] DrumBeats = { new[] { 0f, .5f }, new[] { 0f, .42f, .84f }, new[] { 0f, .36f, .96f, 1.32f } };
+        // The beats of the drum game (seconds from the first strike).
+        // First encounter: one tap, two taps, then practise two again. Timing is expressive, never graded.
+        private static readonly float[][] DrumBeats = { new[] { 0f }, new[] { 0f, .55f }, new[] { 0f, .75f } };
         /// <summary>How hard the game being played is (<see cref="COgheBonusRound.Level"/>): 0 in chapters 2–6.</summary>
         private int toyLevel;
         /// <summary>The drum's beat <paramref name="k"/> (seconds from the first strike): the approved three at level 0; later one
