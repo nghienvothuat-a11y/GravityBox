@@ -2,6 +2,7 @@
 
 Ngày lập: **17/09/2026**. Áp dụng cho campaign **COghe / Venom Origin 01–20 và các màn tiếp theo**.
 Lưu theo yêu cầu người dùng sau quá trình thiết kế, chơi thử và tối ưu 20 màn.
+Cập nhật **19/10/2026** theo yêu cầu người dùng: thêm mục 6, kinh nghiệm đã kiểm chứng trên 65 màn Spatial.
 
 Đây là quy chuẩn cho công việc tiếp theo, không phải chứng nhận mọi màn hiện tại đã đạt.
 Các bộ Steel Ball Lab và thí nghiệm điều khiển Journey/Venom cũ là nội dung lịch sử;
@@ -11,6 +12,7 @@ không áp các luật của chúng vào Origin hoặc thay đổi chúng ngoài
 - Ngoại hình tuân theo [Day Lab STYLE_RULES](ArtDirection/COghe/STYLE_RULES.md).
 - Xem [kiến trúc cơ quan 11–20](COGHE_EXPANSION_11_20.md),
   [camera](COGHE_CAMERA.md) và [phản hồi điều khiển](COGHE_CONTROL_FEEDBACK.md).
+- Kích thước theo thân COghe, đường tắt hay gặp, test bắt được lỗi thật và cách giữ save khi đổi thứ tự: mục 6.
 - Yêu cầu mới nhất của người dùng và thiết kế riêng đã chốt được ưu tiên. Ghi lại
   thay đổi trong hồ sơ màn; không coi đề xuất cũ là tính năng đã triển khai.
 - Phần nào đã được người dùng xác nhận thì tiếp tục thực hiện trong phạm vi đó.
@@ -269,6 +271,7 @@ phải triển khai và kiểm chứng kỹ năng trước, không giả định
 | Camera/art | Portrait 720×1280 và 720×1612 làm mốc, safe area, toàn cảnh/follow/khoang, xoay, ăn mừng |
 | Thay runtime dùng chung | Hồi quy toàn Origin hiện hành và các test mới; lỗi cũ phải được báo riêng |
 | Save/catalog | ID không đổi, tải/chọn màn, pause/retry, mở Collection hợp lệ, tiến trình được giữ |
+| Màn Spatial mới hoặc sửa bố cục | Solve, Wander, NoShortcut, giải ở 60 và 30 khung/giây, `GlassExitTapSweep` không thắng ngoài ý muốn, clip xem bằng mắt (mục 6.3) |
 
 Fixture đơn vị có thể sắp đặt trạng thái để thử một luật và phải ghi rõ. Test giải
 trọn màn không teleport, gán topology, ép cửa mở hoặc sửa thắng. Script lời giải qua
@@ -322,3 +325,93 @@ Nguồn: [OPPO và dữ liệu gốc](COGHE_MOBILE_PERFORMANCE.md),
 
 Thay đổi chỉ tài liệu như lần lập quy chuẩn này chỉ cần rà nội dung/liên kết/diff;
 không cần dựng scene, chạy lại Unity hoặc tạo APK để chứng nhận văn bản.
+
+## 6. Kinh nghiệm đã kiểm chứng trên 65 màn Spatial (19/10/2026)
+
+Rút ra khi dựng, sửa và kiểm thử 65 màn Spatial cùng người dùng (09–19/10/2026). Mỗi luật kèm trường hợp thật
+đã gặp; số đo theo baseline hiện tại (32 hạt, 120 Hz). Luật riêng của từng họ màn nằm trong hồ sơ của họ
+([GlassRoads](LevelDesign/COghe/GlassRoads/README.md), [GlassCrawl5](LevelDesign/COghe/GlassCrawl5/README.md),
+[Difficulty65](LevelDesign/COghe/Difficulty65/README.md)).
+
+### 6.1 Thiết kế màn
+
+1. **Một đường thắng, khoá bằng cơ quan.** Cơ quan cuối cùng khoá lỗ thoát; thứ tự được ép bằng khoá
+   (`RequiredRail`, cửa chốt), không bằng "khó với tới". Phép thử 09/10: cho mọi tấm kính bám được thì khoảng
+   30/60 màn bỏ qua được cơ quan.
+2. **Mọi mặt COghe chạm được là một đoạn đường.** Kệ, mép sàn thang máy, thân tay nắm, nắp, bậc cửa đều là chỗ
+   đứng mới; mỗi vật thêm vào phải kiểm lại đường tắt. Đã gặp: Boss 10 leo từ mép sàn thang lên kính trần; màn
+   đường kính 70 trèo lên thân tay nắm B rồi với kính phía trên hàng rào. Tay nắm treo trên kính, nắp, cửa, chốt:
+   trơn mọi mặt (cửa màu ngà từng thành cái thang ở E02, E03, E09).
+3. **Kích thước theo thân COghe.** Thân ~7,4 cm, bám thêm 3,4 cm, tầm với ~10 cm.
+   - Dải hay hàng rào trơn dùng để ngăn bò phải rộng ≥ 12 cm; kệ, bến muốn ngoài tầm thì cách kính trần ≥ 12 cm.
+   - Khe 1–9 cm dưới một vật là bẫy kẹt; gờ trơn cao trên 5 cm ở chỗ COghe có thể rơi xuống dưới cũng là bẫy.
+   - Lưới thùng dùng ô 14 cm (ô 12 cm làm kẹt đường rộng một ô).
+   - Nút cần đúng nửa thân rộng ~14 cm: nửa thân dừng ở cuối đường đi, có thể lệch tâm vài cm (nút 10 cm chỉ
+     đo được 0,024–0,027 trên ngưỡng 0,030).
+4. **Mỗi màn mới phải dạy hoặc đòi một ý khác.** Màn trùng ý với màn có sẵn sẽ phải làm lại (71 bản đầu trùng 69).
+   Độ lặp đo được bằng `MeasureLevelMetrics`: số chạm trên mỗi quyết định thật (N35: 44 chạm cho 7 quyết định).
+5. **Giới thiệu → luyện → kết hợp** (luật 8, mục 1) có kiểm tra tĩnh: `Tools/check-coghe-curriculum.py` đọc chuỗi
+   học trong `Difficulty65/curriculum.json`. Thay, bỏ hay đổi chỗ màn thì cập nhật chuỗi; nếu người dùng chấp nhận
+   một chỗ thiếu bài giới thiệu, ghi rõ trong `note` của chuỗi.
+6. **Biến giới hạn của sinh vật thành ngôn ngữ màn chơi.** Kính trơn từng là vật cản phải vá từng chỗ; khi đường
+   đi và cơ quan đặt ngay trên kính (màn đường kính, 18/10), nó thành đặc sản của COghe.
+7. **Camera thật quyết định cái gì nhìn thấy.** Biển số, vật trên kính trước có thể che đúng chỗ quan trọng
+   (71: biển số góc trên-trái che chỗ bám dây, phải lật sang phải). Kiểm tra bằng khung hình hoặc clip, không chỉ
+   bằng toạ độ.
+
+### 6.2 Vật lý và bộ tìm đường
+
+1. **Bộ tìm đường không phải người chơi.** Nó nối hai điểm cách ~10 cm kể cả qua khoảng không, và có thể chọn đoạn
+   ngắn qua kính trơn. Chỗ bước từ kính sang kệ phải có mặt đỡ liền; đường leo nên chạy dọc mép kệ đúng độ cao
+   kệ, không kết thúc ở góc kệ (71: leo tới góc kệ rồi bước qua khoảng không thì rơi).
+2. **Hệ quả của thân mềm phải tính khi bố trí.**
+   - Hai nửa đi sát nhau tự nhập: nút giữ phải nằm ngoài đường của nửa kia.
+   - Lỗ thoát mở hút phần ở gần: tay nắm cuối cách lỗ đủ xa khi còn tách đôi.
+   - Một hạt kẹt sau tường giữ cả thân: khi thân có lệnh mà không đi, in vị trí cả 32 hạt.
+3. **Đổi luật dùng chung theo phạm vi nhỏ nhất.** Bộ tìm đường, độ bám, coating tác động mọi màn. Luật "không leo
+   lên kính trơn" áp cho cả game làm hỏng 10 test, vì bài 4 Origin và màn 04 cố ý để COghe leo kính trơn rồi tuột
+   cho người chơi tự học; luật đó giờ chỉ bật bằng cờ `NoSlickClimb` trên màn đường kính.
+
+### 6.3 Kiểm thử bắt được lỗi thật
+
+Bổ sung cho ma trận ở mục 4; tên test trong `Assets/_Game/Tests/PlayMode`.
+
+1. **Khả giải chưa đủ.** Mỗi màn cần thêm: đi lang thang không kẹt (Wander), chạm ngẫu nhiên (`RandomTapsSweep`),
+   chạm cao trên kính, lên kệ, lỗ thoát khi chưa làm cơ quan (`GlassCrawlNoShortcut`), và đặt COghe lên mọi chỗ rồi
+   chạm lỗ thoát (`GlassExitTapSweep`).
+2. **Chạy ở nhịp khung thật và quay clip.** Test giải mẫu nhường khung mỗi 240 tick nên che lỗi theo khung; giải
+   thêm ở 60 và 30 khung/giây (`GlassCrawlSolveAtFrameRate`) và quay (`GlassRoadFilm`, `RecordReviewClips`).
+   Đã gặp: G1/G2 chỉ hỏng khi quay; nút P của 71 bản đầu chỉ đủ tải sát ngưỡng.
+3. **Chạm theo cách khác lời giải mẫu.** Người chơi chạm thẳng đích xa hoặc chạm cơ quan từ chỗ khác; viết ít nhất
+   một test chạm như vậy (71: chạm vòng dây từ sàn thì rơi ở góc kệ; lời giải mẫu lên kệ trước nên không thấy).
+4. **Lỗi chỉ hiện khi chạy cả bộ test vẫn là lỗi thật** (bẫy hố N25 phụ thuộc thứ tự test). Chạy lại riêng và dò
+   bằng chính các lần chạm cuối.
+5. **Đo số thật thay vì đoán từ hình:** tải trên nút, tâm thân, vị trí từng hạt, pha cơ quan. Log tạm phải gỡ
+   trước khi commit.
+6. **Gắn kết quả với đúng trạng thái code:** ghi commit hoặc dấu vân tay working tree của lần chạy; chạy cả bộ
+   (`Tools/run-coghe-tests.sh`) sau mọi thay đổi runtime dùng chung.
+
+### 6.4 Sản phẩm, save và dữ liệu dựng
+
+1. Save theo ID ổn định. Đổi thứ tự, thay hay bỏ màn không được làm mất đồ, mực đã mở: thêm một revision trong
+   `COgheProgressionMilestones` ghi thứ tự cũ, đối chiếu theo ID (không qua catalog).
+2. Màn bị thay giữ scene, ID, save; chỉ rút khỏi `SpatialOrder`. Test của màn rút ra vẫn tải theo scene; test duyệt
+   catalog chỉ xét màn còn trong thứ tự.
+3. Màn Spatial Plus mới luôn thêm vào **cuối** `PlusLevels`: mesh sinh ra đặt tên theo chỉ số, chèn giữa sẽ đè mesh
+   của màn khác.
+4. Sau khi đổi thứ tự: `ApplySpatialOrder`, `RenumberSpatialPlaques`, `COgheProductUIBuilder.Prepare` (catalog chỉ
+   làm mới khi build).
+5. Phần tính cách (mắt, Hiểu ra, đồ chơi, thẻ năng lực) đứng ngoài câu đố (luật 1, mục 1): không làm câu đố dễ hay
+   khó đi.
+
+### 6.5 Làm việc với người dùng
+
+1. **Thử nhỏ trước khi làm hàng loạt:** một màn thử, hình mock hoặc clip. Bakery, tháp chốt, leo thùng bị bác sau
+   khi đã dựng; màn đường kính làm 3 màn thử trước rồi mới thay 6 màn.
+2. **Gu đã chốt:** dễ thương, vui, không phản cảm (liếm kính bị bác); chuyển động mượt, không rung giật (mắt, mũ);
+   vùng trơn phải nhìn ra là trơn. Chi tiết: [STYLE_RULES](ArtDirection/COghe/STYLE_RULES.md) và
+   [tính cách COghe](Personality/COghe/README.md).
+3. **Người dùng quyết sản phẩm.** Khi một quyết định đụng luật trong tài liệu (ví dụ bỏ bài giới thiệu), nêu rủi ro
+   một lần kèm phương án cụ thể, rồi làm theo lựa chọn và ghi lại lựa chọn đó.
+4. **Báo theo bước:** clip có phụ đề tiếng Việt, nêu rõ phần đã kiểm và chưa kiểm, kèm commit; sai thì đính chính
+   ngay.
