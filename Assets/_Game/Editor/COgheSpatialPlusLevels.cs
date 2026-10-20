@@ -777,13 +777,14 @@ namespace GravityBox.Editor
    Debug.Log("N25 PIT WALLS CLIMBABLE: 4");
   }
   // Level 21's room with a long tray (24 cm pit): the crate takes its near end, COghe fits on the far end.
-  static void PlusN25Room(ExpansionContext c)
+  // stairsZ: where the gap recovery stairs leave the deck (68 moves them back so they do not wall Q in on the front floor).
+  static void PlusN25Room(ExpansionContext c,float stairsZ=-.26f)
   {
    c.Exit=new Vector3(.40f,-.132f,.12f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.30f,-.15f,-.18f);NextShell(c,.30f,true);var floor=c.Surfaces[0];
    var deck=NextDeckWithPit(c,"Load deck",new Rect(-.40f,-.30f,.25f,.60f),-.20f,N25Pit);
    PitWallsClimbable(c.Surfaces,N25Pit,AssetDatabase.LoadAssetAtPath<Material>(SpatialFolder+"/Ivory bodies.mat"));
    NextPlinth(c,"Exit platform",new Vector3(.275f,-.25f,.125f),new Vector3(.25f,.10f,.35f));
-   NextStairs(c,"Gap recovery stairs",new Vector3(-.15f,0,-.26f),Vector3.right,-.20f,.08f,2,.06f);
+   NextStairs(c,"Gap recovery stairs",new Vector3(-.15f,0,stairsZ),Vector3.right,-.20f,.08f,2,.06f);
    var tray=ExpansionRail(c,"Load tray",new Vector3(-.28f,-.215f,.14f),Vector3.down,.066f,0,new Vector3(.115f,.026f,.235f),.01f,.004f,true,false);
    tray.GetComponent<VenomMovableProp>().Manipulable=false;TrimSideSlabs(tray);foreach(var f in tray.GetComponentsInChildren<VenomSurfacePatch>())f.MotionFrame=tray.Body;
    NextLooseCrate(c,"A crate",new Vector3(-.28f,-.185f,-.10f),new Vector3(.09f,.03f,.09f),.04f,Vector3.back);

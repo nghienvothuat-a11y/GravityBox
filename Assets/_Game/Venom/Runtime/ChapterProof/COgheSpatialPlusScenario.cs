@@ -180,11 +180,16 @@ namespace GravityBox.Venom.ChapterProof
   }
   IEnumerator F3()
   {
-   var glass=Find<COgheBreakableGlass>();var seesaw=Find<COgheSeesawBridge>();var ball=Prop("Steel ball");
-   yield return Pull("D","D lifts the stop: the steel ball rolls onto the thin glass");
-   yield return until(10,()=>glass.Sensor.Load>=.04f&&ball.Body.linearVelocity.magnitude<.01f,"The ball rests on the glass");
+   var q=Find<COgheQuantumSplitter>();var glass=Find<COgheBreakableGlass>();var seesaw=Find<COgheSeesawBridge>();var ball=Prop("Steel ball");var stop=s.Slider("Ball chute stop");
+   yield return s.Split(q,Selected);int one=q.LastLeft,two=q.LastRight;
+   yield return s.Walk(two,W(.33f,-.298f,-.24f),"One half on the right pad A");
+   yield return s.Walk(one,W(-.10f,-.298f,-.25f),"The other half on the left pad A");
+   yield return until(10,()=>stop.AtEnd,"Both pads lift the stop");
+   yield return until(10,()=>glass.Sensor.Load>=.04f&&ball.Body.linearVelocity.magnitude<.01f,"The steel ball rolls onto the thin glass and rests");
    if(glass.Broken)throw new InvalidOperationException("The ball alone broke the glass");
-   yield return s.Go(W(-.25f,-.19f,.10f),"COghe climbs onto the glass beside the ball");
+   yield return s.Merge(W(-.04f,-.30f,-.24f));
+   yield return s.Go(W(-.06f,-.25f,-.02f),"The whole body up the stairs");
+   yield return s.Go(W(-.29f,-.19f,.19f),"The whole body climbs onto the glass with the ball");
    yield return until(15,()=>glass.Broken,"The ball and COghe together break the glass");
    yield return until(20,()=>seesaw.Caught,"They drop onto the tray: the plank comes level and the pawl catches");
    yield return s.Go(W(-.19f,-.20f,.10f),"Out of the pit");

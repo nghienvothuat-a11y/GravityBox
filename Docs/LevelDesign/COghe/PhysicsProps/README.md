@@ -22,14 +22,16 @@ Code: `Assets/_Game/Editor/COghePhysicsPropLevels.cs` (khoá F1–F3, nằm sau 
 | --- | --- | --- | --- | --- |
 | 66 | F1 | N18 (màn 18) | Bi giữ cửa (dễ) | Bỏ máy tách Q. Kéo D: bi lăn xuống rãnh dọc kính trái, nằm lên nút A ở góc trước. Bi giữ cửa lò xo. Cả thân đi qua, đẩy thùng 100% (cần nguyên thân) sát kệ, leo lên, ra. COghe tự đứng A thì cửa mở nhưng bước ra là cửa sập. |
 | 67 | F2 | N41 (bài bánh răng đầu tiên) | Bánh răng thả bi (vừa) | Đầu ra của dàn bánh răng là chốt giữ bi. Kéo A (bánh G vào chỗ trống), đứng P: chốt nhấc lên, bi lăn xuống đập đổ cột. Cột nằm thành bậc 3 cm trước bệ lỗ thoát cao 6 cm (gờ 3 cm leo được, 6 cm thì không). |
-| 68 | F3 | N25 (màn 37, "Chưa đủ nặng") | Kính vỡ, đối trọng (vừa–khó) | Bỏ thùng. Miệng hố có tấm kính mỏng, ngay dưới là khay đối trọng. Kéo D: bi lăn khỏi máng trên kính sau, rơi xuống tấm kính; kính chịu được (0,05 < 0,12). COghe một mình chỉ làm nứt (0,096). Bi và COghe cùng đứng thì vỡ (0,146): cả hai rơi xuống khay, đối trọng kéo cầu ván nằm ngang. Leo ra khỏi hố, qua cầu, ra. |
+| 68 | F3 | N25 (màn 37, "Chưa đủ nặng") | Kính vỡ, đối trọng (khó, bản dài 19/10) | Bỏ thùng. Miệng hố có tấm kính mỏng, ngay dưới là khay đối trọng. COghe bắt đầu dưới sàn cạnh máy Q. Chốt giữ bi do hai nút A dưới sàn, cách nhau 43 cm, hai bên Q cùng mở: tách đôi, mỗi nửa đứng một nút thì chốt nhấc, bi lăn khỏi máng trên kính sau, rơi xuống kính; kính chịu được (0,05 < 0,12). Nửa thân đứng cùng bi chỉ làm nứt (0,098). Hai nửa nhập lại dưới sàn, cả thân leo cầu thang lên bục. Cả thân và bi thì vỡ (0,146): cả hai rơi xuống khay, đối trọng kéo cầu ván nằm ngang. Leo ra khỏi hố, qua cầu, ra. |
 
 ## Kiểm tra
 
 - `SpatialPlusF1–F3Solve`, `SpatialPlusF1–F3Wander`, `PhysicsF1–F3SolveAtFrameRate` (60 khung/giây).
 - `PhysicsF1DoorNeedsTheBall`: COghe đứng A thì cửa mở, bước ra thì cửa sập trước khi qua được.
 - `PhysicsF2PillarIgnoresCOghe`: COghe đẩy cột từ hai phía, cột không đổ, không lên được bệ.
-- `PhysicsF3GlassHoldsEachAlone`: COghe một mình làm kính nứt nhưng không vỡ; Retry lắp lại kính; bi một mình không làm vỡ.
+- `PhysicsF3OnePadKeepsTheBall`: cả thân đứng từng nút A một thì chốt không nhấc; COghe một mình trên kính chỉ làm nứt; Retry lắp lại kính.
+- `PhysicsF3HalfAndBallOnlyCrack`: tách đôi, giữ hai nút, bi nằm trên kính; một nửa bước lên cạnh bi thì kính chỉ nứt, không vỡ.
+- `PhysicsF3SolveAt30Fps`: giải 68 ở 30 khung/giây.
 - Phim: Explicit `GlassRoadFilm` với `GLASSROAD_KEYS=F1,F2,F3`.
 
 ## Bài học khi dựng
@@ -41,3 +43,5 @@ Code: `Assets/_Game/Editor/COghePhysicsPropLevels.cs` (khoá F1–F3, nằm sau 
 - Tay nắm được thao tác từ chỗ đứng cách 5 cm phía trước. Đặt sát kính trước thì chỗ đứng nằm ngoài hộp.
 - Dải sàn hẹp giữa rãnh, tay nắm và mép bục dễ thành khe 1–9 cm làm kẹt COghe. Ở 68 máng bi treo trên kính sau, cao
   hơn tấm kính 11 cm.
+- 68 bản dài: máy Q rộng gần 40 cm (kể cả hai khay), không vừa trên bục 25 cm. Q đặt dưới sàn trước, cầu thang lên bục dời ra sau
+  khay trái của Q (z −0,02) để không kẹp Q vào giữa.

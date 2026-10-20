@@ -120,20 +120,27 @@ namespace GravityBox.Editor
    PlusGhost("G",new Vector3(-.14f,y,.08f));
   }
 
-  // F3 · Kính vỡ, đối trọng (68, from N25 "Chưa đủ nặng"): no crate. Thin glass covers the pit, 8 mm above the deck, with the
-  // counterweight tray just under it. Pull D: the steel ball rolls out of its trough on the back glass, drops onto the glass
-  // and rolls to the lip at its front edge; the glass holds it. (The deck strip before the pit is too narrow for a chute,
-  // a handle and COghe without 1–9 cm gaps; the trough hangs 11 cm over the glass, clear of the wedge zone.) COghe alone holds too (it cracks). The ball and COghe together break it: both drop onto the tray,
-  // the counterweight levels the plank and the pawl catches. Out of the pit, across the plank, to the exit.
+  // F3 · Kính vỡ, đối trọng (68, from N25 "Chưa đủ nặng"; Mrk 19/10/2026: "thiết kế thêm nhiều bước nữa"). No crate. Thin
+  // glass covers the pit, 8 mm above the deck, with the counterweight tray just under it. COghe starts on the floor by Q.
+  // The steel ball waits in its trough on the back glass, 11 cm over the glass; two pads A on the floor, 43 cm apart, lift
+  // its stop together, so COghe splits and a half stands on each. The ball drops onto the glass and rolls to the lip at its
+  // front edge; the glass holds it. A half with the ball only cracks it (.05 + .048 < .12): the halves merge, the whole
+  // body climbs the stairs and with the ball breaks the glass (.146). Both drop onto the tray, the counterweight levels the
+  // plank and the pawl catches. Out of the pit, across the plank, to the exit.
   static void PlusF3(ExpansionContext c)
   {
-   PlusN25Room(c);c.Spawn=new Vector3(-.30f,-.15f,-.24f);
+   // Q stands 9 cm behind the front glass, so the whole body passes in front of it; the stairs leave the deck behind Q's
+   // left tray (at the front they would wall Q in). Two slick blocks close the notch between Q's rear housing and the exit
+   // platform. Taps onto the glass aim at its back half: the ball rests at the front lip.
+   PlusN25Room(c,-.02f);c.Spawn=new Vector3(.10f,-.25f,-.25f);
+   NextQuantum(c,new Vector3(.10f,-.30f,-.16f),.025f,.13f);
+   NextPlinth(c,"Q nook filler",new Vector3(.1385f,-.25f,-.04f),new Vector3(.023f,.10f,.10f));
+   NextPlinth(c,"Q nook filler",new Vector3(.1725f,-.25f,-.07f),new Vector3(.045f,.10f,.04f));
    var crate=c.Props.Last(p=>p.name=="A crate");
    foreach(var f in crate.GetComponentsInChildren<VenomSurfacePatch>(true))c.Surfaces.Remove(f);
    c.Props.Remove(crate);Object.DestroyImmediate(crate.gameObject);
    var hinge=c.Props.Last(p=>p.name=="Seesaw plank").GetComponent<HingeJoint>();
    hinge.useSpring=true;hinge.spring=new JointSpring{spring=PlankSpring,damper=PlankSpring*.05f,targetPosition=0};
-   var deck=c.Surfaces.First(s=>s.name=="Load deck"&&s.Normal.y>.9f);   // the deck's front strip
    // the glass: its own collider and walking surface (drawn by a glass sheet; the plain face is hidden)
    var pane=Panel(c.Root,"Thin glass",new Vector3(-.28f,-.192f,.14f),Vector3.up,new Vector2(.12f,.24f),glass,false,Vector2.zero,0,c.Surfaces);
    var look=pane.GetComponent<Renderer>();if(look!=null)look.enabled=false;
@@ -157,9 +164,16 @@ namespace GravityBox.Editor
    var breaker=new GameObject("Thin glass breaks",typeof(COgheBreakableGlass)).GetComponent<COgheBreakableGlass>();breaker.transform.SetParent(c.Root,false);
    breaker.Sensor=sensor;breaker.Pane=pane.gameObject;breaker.BreakLoad=.12f;breaker.CrackLoad=.03f;breaker.Cracks=cracks.ToArray();breaker.Shards=shards.ToArray();
    c.Root.GetComponentInChildren<COgheSeesawBridge>().RequiredLoad=ball.Body;
-   var d=ViewTask(c,"D",new Vector3(-.26f,-.177f,-.12f),Vector3.right,.05f,deck);d.OneWay=true;
-   ViewLink(c,d.Rail,stop,false,null);
-   PlusStep(1,new Vector3(-.235f,-.18f,-.17f));PlusStep(2,new Vector3(-.25f,-.19f,.12f));PlusStep(3,new Vector3(-.19f,-.20f,.10f));PlusStep(4,new Vector3(.25f,-.20f,.12f));
+   // Two pads A on the floor, 43 cm apart either side of Q: one body cannot load both, so the stop needs a split. Once both
+   // have pressed it stays up.
+   var rightPad=ExpansionPad(c,"A",new Vector3(.33f,-.298f,-.24f),.009f,.10f);
+   var leftPad=ExpansionPad(c,"A",new Vector3(-.10f,-.298f,-.25f),.009f,.10f);
+   var both=new GameObject("Both A pads lift the ball stop",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();both.transform.SetParent(c.Root,false);
+   both.Inputs=new[]{rightPad,leftPad};both.Rails=new COgheRailSlider[0];both.Output=stop;both.Any=false;both.Retain=true;
+   NextTrace("A",new Vector3(.28f,-.2992f,-.285f),new Vector3(-.05f,-.2992f,-.285f));
+   NextTrace("A",new Vector3(-.185f,-.1992f,-.27f),new Vector3(-.185f,-.1992f,.28f),new Vector3(-.25f,-.1992f,.28f));
+   PlusStep(1,new Vector3(.10f,-.19f,-.16f));PlusStep(2,new Vector3(.33f,-.29f,-.24f));PlusStep(3,new Vector3(-.10f,-.29f,-.25f));PlusStep(4,new Vector3(-.06f,-.24f,-.02f));
+   PlusStep(5,new Vector3(-.29f,-.18f,.19f));PlusStep(6,new Vector3(-.19f,-.20f,.10f));PlusStep(7,new Vector3(.25f,-.20f,.12f));
   }
  }
 }
