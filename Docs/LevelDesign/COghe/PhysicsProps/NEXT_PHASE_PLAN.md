@@ -33,11 +33,11 @@ Từ 12 ý gửi Mrk 19/10/2026 (đã làm: 1 bi giữ nút, 7 cột đổ, 8 k�
 
 ## 3. Hướng triển khai (chọn khi tới giai đoạn này)
 
-- **A. Làm trọn chương 7 vật lý.** Game đếm 11 màn một chương, nên 66–68 là ba màn đầu chương 7. Làm tiếp 69–75 và Boss
-  76 bằng các ý ở mục 2, theo nhịp giới thiệu → luyện → kết hợp. Ví dụ: bi một phần tư, gàu ròng rọc, cầu treo (giới
-  thiệu rồi luyện), đường lăn trên kính, domino, dây đu đẩy cột; Boss 76 kết hợp bi, kính vỡ và cầu treo. Trước khi làm
-  Boss 76 phải kiểm phần thưởng sau Boss chương 7: Hiểu ra chương 7 (câu hỏi sinh tự động trong `COgheBonus`), thẻ năng
-  lực, đồ Home và mốc mở khoá (hiện cúp ở 65).
+- **A. Làm trọn chương 7 vật lý.** Game tính chương theo Boss (`COgheBonus.ChapterOfBoss`): 66–68 nằm sau Boss 65 nên
+  thuộc chương 7. Các chương 2–6 có 11 màn, nên làm tiếp 69–75 và Boss 76 bằng các ý ở mục 2, theo nhịp giới thiệu →
+  luyện → kết hợp. Ví dụ: bi một phần tư, gàu ròng rọc, cầu treo (giới thiệu rồi luyện), đường lăn trên kính, domino,
+  dây đu đẩy cột; Boss 76 kết hợp bi, kính vỡ và cầu treo. Trước khi làm Boss 76 phải kiểm phần thưởng sau Boss chương
+  7: Hiểu ra chương 7 (câu hỏi sinh tự động trong `COgheBonus`), thẻ năng lực, đồ Home và mốc mở khoá (hiện cúp ở 65).
 - **B. Thay màn lặp trong 65 màn.** Mrk đã hoãn ngày 20/10/2026 ("giữ nguyên level hiện tại"); chỉ làm khi Mrk hỏi lại.
   Bảng các màn lặp và cách đo: `RESEARCH/COGHE_REPEATED_PLAY_2026_10_20.md` trong workspace của agent (bản tóm tắt dưới).
   - Lặp rõ: 17 N13 với 20 "12" (cùng phòng); 40 K04 với 46 K06 (cùng luật chuỗi thùng); 13 G2 với 11 G7 (cùng 3 bước);
