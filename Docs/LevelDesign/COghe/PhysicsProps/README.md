@@ -1,8 +1,11 @@
-# Đồ vật vật lý — màn 66–68 (bản thử)
+# Đồ vật vật lý — màn 66–68
 
 Mrk 19/10/2026: thêm yếu tố vật lý vào màn chơi (bi sắt lăn giữ nút, sức nặng, rơi, vỡ, đổ), để vừa giải đố vừa nghịch và
 cản đường COghe. Yếu tố vật lý phải kết hợp được với cơ quan đã có. Lấy 3 màn có sẵn, biến đổi, làm 66, 67, 68 để chơi thử.
-Code: `Assets/_Game/Editor/COghePhysicsPropLevels.cs` (khoá F1–F3, nằm sau 65 màn, chưa vào chuỗi học).
+Code: `Assets/_Game/Editor/COghePhysicsPropLevels.cs` (khoá F1–F3, nằm sau 65 màn).
+
+Mrk 20/10/2026: giữ nguyên 65 màn, F1–F3 là ba màn mới 66, 67, 68 (không thay màn nào). Chuỗi học `physics` trong
+`Difficulty65/curriculum.json`. Kế hoạch giai đoạn sau: [NEXT_PHASE_PLAN.md](NEXT_PHASE_PLAN.md).
 
 ## Cơ quan mới
 

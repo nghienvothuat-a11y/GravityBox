@@ -38,7 +38,7 @@ namespace GravityBox.Editor
    "K05","N42","K06","N26","N31","N33","K07","26","N35","N43","N40",
    // Chapter 6: rotate a loaded carrier, then motor load and linked engines.
    "N46","N45","N49","N32","G10","N34","K09","29","G11","N19","N50",
-   // Prototypes 66–68 (Mrk 19/10/2026): physics props, three existing levels reworked. Not in the curriculum yet.
+   // 66–68 (Mrk 20/10/2026: the 65 stay as they are, these are three new levels): physics props, chain "physics".
    "F1","F2","F3"};
   public static string SpatialContentPath(string key)=>char.IsDigit(key[0])?$"{SpatialFolder}/COgheSpatial{key}.unity":$"{SpatialFolder}/COgheSpatialPlus{key}.unity";
   public static string SpatialContentPath(int n)=>SpatialContentPath(n.ToString("00"));

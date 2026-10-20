@@ -1,5 +1,5 @@
 {
-  "revision": "2026-10-19",
+  "revision": "2026-10-20",
   "difficultyStatus": "Author estimates and curriculum, not novice playtest results",
   "bossPositions": [
     10,
@@ -148,6 +148,17 @@
         "G11"
       ],
       "note": "Glass roads (Mrk 18–19/10/2026), Docs/LevelDesign/COghe/GlassRoads."
+    },
+    {
+      "skill": "physics",
+      "intro": "F1",
+      "practice": [
+        "F2"
+      ],
+      "combine": [
+        "F3"
+      ],
+      "note": "Physics props (Mrk 19–20/10/2026): the 65 stay as they are; 66–68 are three new levels after Boss 65. Docs/LevelDesign/COghe/PhysicsProps."
     }
   ],
   "levels": [
@@ -540,6 +551,24 @@
       "key": "N50",
       "previousPosition": 65,
       "intent": "Boss hộp số, phối hợp các hệ đã luyện."
+    },
+    {
+      "position": 66,
+      "key": "F1",
+      "previousPosition": 66,
+      "intent": "Bi giữ cửa (dễ): kéo D thả bi xuống nút A, bi giữ cửa thay mình; cả thân đẩy thùng 100%."
+    },
+    {
+      "position": 67,
+      "key": "F2",
+      "previousPosition": 67,
+      "intent": "Bánh răng thả bi (vừa): bánh răng nhấc chốt, bi lăn đổ cột thành bậc 3 cm lên bục lỗ thoát."
+    },
+    {
+      "position": 68,
+      "key": "F3",
+      "previousPosition": 68,
+      "intent": "Kính vỡ, đối trọng (khó): hai nửa giữ hai nút thả bi, nhập lại; cả thân cùng bi mới đủ nặng làm vỡ kính."
     }
   ]
 }

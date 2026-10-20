@@ -14,6 +14,13 @@ Mrk được báo và giữ danh sách (19/10, "giữ nguyên danh sách của t
 `curriculum.json` (revision 2026-10-19) ghi hai chuỗi này kèm ghi chú; `Tools/check-coghe-curriculum.py` qua.
 Mốc mở khoá theo thứ tự trước 19/10 được giữ bằng `COgheProgressionMilestones` (revision 2).
 
+## Ba màn vật lý 66–68 (20/10/2026)
+
+Mrk chốt (20/10, sau khi xem clip các màn lặp 17, 40): giữ nguyên 65 màn, ba màn vật lý là ba màn mới 66, 67, 68
+sau Boss 65 (F1 Bi giữ cửa, F2 Bánh răng thả bi, F3 Kính vỡ, đối trọng). Không thay màn nào, không đổi thứ tự,
+Boss và mốc mở khoá. `curriculum.json` (revision 2026-10-20) thêm chuỗi `physics` (giới thiệu F1, luyện F2, kết hợp F3).
+Kế hoạch làm tiếp các màn vật lý ở giai đoạn sau: [PhysicsProps/NEXT_PHASE_PLAN.md](../PhysicsProps/NEXT_PHASE_PLAN.md).
+
 ## Nhịp học và khó
 
 Mỗi họ cơ chế có bài giới thiệu, bài luyện trước khi kết hợp. Biến thể mới trong cùng
@@ -107,6 +114,9 @@ và tỉ lệ bỏ cuộc tại 8–10 / 18–21 / 29–32. Replay tự động 
 | 63 | G11 | 71 | Bánh răng và dây đu (khó): bánh răng trên kính, đu dây. Thay K10 theo Mrk 19/10. |
 | 64 | N19 | 64 | Luyện đổi vai người giữ, chuẩn bị Boss cuối. |
 | 65 | N50 | 65 | Boss hộp số, phối hợp các hệ đã luyện. |
+| 66 | F1 | 66 | Bi giữ cửa (dễ): kéo D thả bi xuống nút A, bi giữ cửa thay mình; cả thân đẩy thùng 100%. |
+| 67 | F2 | 67 | Bánh răng thả bi (vừa): bánh răng nhấc chốt, bi lăn đổ cột thành bậc 3 cm lên bục lỗ thoát. |
+| 68 | F3 | 68 | Kính vỡ, đối trọng (khó): hai nửa giữ hai nút thả bi, nhập lại; cả thân cùng bi mới đủ nặng làm vỡ kính. |
 
 ## Kiểm chứng
 
