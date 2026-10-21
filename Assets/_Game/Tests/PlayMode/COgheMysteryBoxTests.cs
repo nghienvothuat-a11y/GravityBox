@@ -19,6 +19,22 @@ namespace GravityBox.Tests
             CollectionAssert.AreEqual(new[] { 3, 8, 13, 18, 23, 28, 33, 38, 44, 48, 53, 58, 63 }, levels);
         }
 
+        /// <summary>A 720×1280 still with the UI, for review (Artifacts/MysteryBox).</summary>
+        private void BoxSnapshot(string name)
+        {
+            System.IO.Directory.CreateDirectory("Artifacts/MysteryBox");
+            var rt = new RenderTexture(720, 1280, 24) { antiAliasing = 4 }; var tex = new Texture2D(720, 1280, TextureFormat.RGB24, false);
+            var canvas = ui.GetComponentInChildren<Canvas>(); var camera = game.Owner.View;
+            try
+            {
+                canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera = camera; canvas.planeDistance = camera.nearClipPlane + .01f;
+                game.CameraRig.Frame(720, 1280, 1, true); camera.targetTexture = rt; camera.Render();
+                var prev = RenderTexture.active; RenderTexture.active = rt; tex.ReadPixels(new Rect(0, 0, 720, 1280), 0, 0); tex.Apply(); RenderTexture.active = prev;
+                System.IO.File.WriteAllBytes($"Artifacts/MysteryBox/{name}.jpg", tex.EncodeToJPG(90));
+            }
+            finally { camera.targetTexture = null; canvas.renderMode = RenderMode.ScreenSpaceOverlay; Object.DestroyImmediate(tex); rt.Release(); }
+        }
+
         private IEnumerator LoadDisplay(int order)
         {
             ui.LoadForTest(order);
@@ -143,6 +159,32 @@ namespace GravityBox.Tests
                 Debug.Log("MYSTERY BOX FILM frames " + frame);
             }
             finally { Time.captureFramerate = 0; Object.DestroyImmediate(tex); rt.Release(); EndShop(); }
+        }
+
+        // Levels 8 and 13: the box lands on the floor COghe crosses before the exit (routes.txt) and the offer opens there.
+        [UnityTest] public IEnumerator BoxesOnLevelsEightAndThirteenLandOnTheRouteAndOpenTheOffer()
+        {
+            var ads = new CountingAds(); COgheAds.Provider = ads; COgheStyle.ResetForTests(new COgheStyle());
+            try
+            {
+                foreach (var (order, route) in new[] { (8, new Vector3(.282f, -.281f, .259f)), (13, new Vector3(.32f, -.281f, .13f)) })
+                {
+                    yield return LoadDisplay(order);
+                    float end = Time.realtimeSinceStartup + 5;
+                    while ((ui.MysteryBox == null || !ui.MysteryBox.Landed) && Time.realtimeSinceStartup < end) yield return null;
+                    Assert.IsNotNull(ui.MysteryBox, $"Display {order}: the box drops"); Assert.IsTrue(ui.MysteryBox.Landed);
+                    Assert.Less(Mathf.Abs(game.Root.InverseTransformPoint(ui.MysteryBox.Rest).y + .30f), .005f, $"Display {order}: on the floor");
+                    game.Motion.Move(game.Motion.Selected, game.Root.TransformPoint(route));
+                    end = Time.realtimeSinceStartup + 30;
+                    while (ui.Popup != COgheProductPopup.MysteryBox && Time.realtimeSinceStartup < end) yield return null;
+                    Assert.AreEqual(COgheProductPopup.MysteryBox, ui.Popup, $"Display {order}: COghe reached the box; centre {game.Root.InverseTransformPoint(game.Motion.Centre(game.Motion.Selected)):F3}");
+                    Assert.Less(Vector3.Distance(game.Motion.Centre(game.Motion.Selected), ui.MysteryBox.Rest), .14f, $"Display {order}: by the box");
+                    yield return new WaitForSecondsRealtime(1.2f); BoxSnapshot($"L{order:00}-offer");
+                    yield return Click("Skip mystery box");
+                    Assert.AreEqual(COgheProductUI.MysteryBoxPhase.Done, ui.BoxPhase);
+                }
+            }
+            finally { EndShop(); }
         }
 
         [Test] public void LaterBoxesGiveDropsOrAnItemNotOwnedAndTheSameForALevel()

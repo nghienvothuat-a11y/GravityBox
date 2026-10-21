@@ -32,6 +32,10 @@ namespace GravityBox.Venom
         {
             // 03: behind the observation wall, beside the floor route to the back-glass exit; seen from the right (yaw -72).
             { "coghe.spatial.pilot.03", (new Vector3(.10f, -.30f, .17f), -72) },
+            // 08 (G6): on the floor before the climb up the right glass to the exit (routes.txt, 21/10/2026).
+            { "coghe.spatial.plus.g6", (new Vector3(.24f, -.29f, .20f), 0) },
+            // 13 (G2): on the floor beside the walk along x .32 to the floor exit behind shutter B.
+            { "coghe.spatial.plus.g2", (new Vector3(.26f, -.29f, .07f), 0) },
         };
 
         /// <summary>Display 3, 8, 13 …: every fifth level from 3; a boss passes its turn to the level after it.</summary>
@@ -76,9 +80,11 @@ namespace GravityBox.Venom
         private void DropMysteryBox()
         {
             var root = Game.Root; Vector3 up = root.up;
+            // Land on whatever is under the authored spot (floor, shelf, deck); no surface there, no box.
+            if (!SurfaceBelow(root.TransformPoint(BoxSpots[LevelId].spot), up, out var rest)) { BoxPhase = MysteryBoxPhase.Done; return; }
             var go = new GameObject("Mystery gift box"); go.transform.SetParent(root, true);
             mysteryBox = go.AddComponent<COgheMysteryBox>();
-            mysteryBox.Initialize(Game.Owner.MatterProfile.Skin, root.TransformPoint(BoxSpots[LevelId].spot), up);
+            mysteryBox.Initialize(Game.Owner.MatterProfile.Skin, rest, up);
             BoxPhase = MysteryBoxPhase.Waiting;
             COgheAnalytics.Log("mystery_box_drop", "level_id", LevelId);
         }
@@ -92,11 +98,28 @@ namespace GravityBox.Venom
             // 9 cm aside and 3 cm further from the camera, so the 8 cm body never covers the 4 cm box; the close-up
             // centres between them.
             Vector3 deeper = Vector3.ProjectOnPlane(Quaternion.Euler(heading) * Vector3.forward, up).normalized;
-            Vector3 stand = mysteryBox.Rest + across * .09f + deeper * .03f + up * .019f;
+            // On the box's own surface: a shelf may end before 9 cm; then the other side, then the side COghe came from.
+            Vector3 stand = mysteryBox.Rest + Vector3.ProjectOnPlane(centre - mysteryBox.Rest, up).normalized * .07f;
+            foreach (var side in new[] { across, -across })
+                if (SurfaceBelow(mysteryBox.Rest + side * .09f + deeper * .03f, up, out var hit) && Mathf.Abs(Vector3.Dot(hit - mysteryBox.Rest, up)) < .01f)
+                { stand = hit; across = side; break; }
+            stand += up * .019f;
             Game.Motion.Move(Game.Motion.Selected, stand);
             Game.CameraRig.Spotlight = mysteryBox.Rest + across * .035f + up * .03f;
             BoxPhase = MysteryBoxPhase.Walking; boxClock = 0; HideHint();
             COgheAnalytics.Log("mystery_box_reach", "level_id", LevelId);
+        }
+
+        /// <summary>The first solid (non-creature, non-trigger) surface point within 12 cm below <paramref name="point"/>.</summary>
+        private bool SurfaceBelow(Vector3 point, Vector3 up, out Vector3 hitPoint)
+        {
+            hitPoint = point; float best = float.MaxValue; bool found = false;
+            foreach (var hit in Physics.RaycastAll(point + up * .05f, -up, .17f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.rigidbody != null && System.Array.IndexOf(Game.Matter.Bodies, hit.rigidbody) >= 0) continue;
+                if (hit.distance < best) { best = hit.distance; hitPoint = hit.point; found = true; }
+            }
+            return found;
         }
 
         /// <summary>The prize, decided when the box opens (so it is never something already owned) and the same for a
