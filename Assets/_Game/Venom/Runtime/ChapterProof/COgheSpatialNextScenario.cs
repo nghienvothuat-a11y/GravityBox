@@ -52,11 +52,12 @@ namespace GravityBox.Venom.ChapterProof
     if(!t.Busy&&attempt==0){yield return tap(t.StandPoint);yield return until(20,()=>Vector3.Distance(game.Motion.Centre(Selected),t.StandPoint)<.06f,"Step beside handle "+label);}
    }
    if(!t.Busy)throw new InvalidOperationException("Handle "+label+" rejected: "+t.LastFailure);
-   // The game asks for a fresh tap when a pull loses its footing; a player taps the handle again.
+   // The game asks for a fresh tap when a pull loses its footing, or when COghe could not get to the handle (a moving deck
+   // carried it back); a player taps the handle again.
    for(int retry=0;retry<2;retry++)
    {
     yield return until(seconds,()=>t.CompletedJourneys>before||!t.Busy,"Operate "+label);
-    if(t.CompletedJourneys>before||t.LastFailure==null||!t.LastFailure.StartsWith("Mất điểm bám"))break;
+    if(t.CompletedJourneys>before||t.LastFailure==null||!t.LastFailure.StartsWith("Mất điểm bám")&&!t.LastFailure.StartsWith("Không tới được tay nắm"))break;
     yield return tap(t.HandPoint+Vector3.up*.004f);
    }
    yield return until(seconds,()=>t.CompletedJourneys>before,"Operate "+label);

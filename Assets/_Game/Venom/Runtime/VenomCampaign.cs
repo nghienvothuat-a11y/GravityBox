@@ -516,6 +516,9 @@ namespace GravityBox.Venom
             // the bore and fall forever before EvaluateExit can reject them.
             // The complete roster must still be fused when tissue crosses out.
             if(Home||!exitAvailable||Matter.Escaped[particle])return false;
+            // A part of a split body walking somewhere else is not drawn in as it passes the open exit (level 51: the half
+            // sent to merge beside the exit lost the level, 21/10/2026). Sent to the exit, or loose, it still is.
+            if(!hasExited&&Matter.TotalFragmentCount!=1&&Motion!=null){var walk=Motion.Get(particle);if(walk!=null&&!walk.Exit)return false;}
             Vector3 p=Owner.Outlet.InverseTransformPoint(Matter.Bodies[particle].position);
             Vector3 capture=Owner.Outlet.TransformPoint(Vector3.back*.022f);
             bool eligible=hasExited&&p.magnitude<.25f||

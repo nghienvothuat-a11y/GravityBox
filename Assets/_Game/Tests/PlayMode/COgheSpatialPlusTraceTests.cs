@@ -43,6 +43,11 @@ namespace GravityBox.Tests
     {
      T($"t={ticks*Dt:F1}{Parts()} act={game.Activity} fail={game.Failure}");
      string railState="";foreach(var rl in rails)railState+=$" {rl.name}={rl.Position:F4}/{rl.Travel:F3} e={rl.Effort:F2}{(rl.Locked?" L":"")}{(rl.Latched?" C":"")}";T("   rails"+railState);
+     // a tube mouth within 12 cm of the selected part: why intake does or does not start
+     foreach(var tube in game.Owner.Apparatus.GetComponentsInChildren<COgheTubeNetwork>())
+      for(int nd=0;nd<tube.Nodes.Length;nd++)
+       if(tube.Nodes[nd].Terminal==COgheTubeNetwork.TerminalKind.Entry&&Vector3.Distance(game.Root.TransformPoint(tube.Nodes[nd].LocalPosition),game.Motion.Centre(game.Motion.Selected))<.12f)
+        T("   tube "+tube.DebugEntryState(game.Motion.Selected,nd));
      // A part with a walk order that has not moved: name what is around it.
      var bodies=new System.Collections.Generic.HashSet<Rigidbody>(game.Matter.Bodies);
      for(int i=0;i<32;i++)

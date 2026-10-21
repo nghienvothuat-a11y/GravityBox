@@ -63,24 +63,31 @@ namespace GravityBox.Tests
    game.Motion.SpeedScale=1;
   }
 
-  // Every level of the catalog solved with COghe at Agility 10 (Explicit, ~25 min): COGHE_AGILITY_SCALE (default 2),
-  // COGHE_AGILITY_LEVELS (positions, default all). Report: Artifacts/Agility/solve.txt.
+  // Every level of the catalog solved with COghe at Agility 10 (Explicit, ~2.5 min a speed): COGHE_AGILITY_SCALE (default 2;
+  // a comma list runs each speed in turn), COGHE_AGILITY_LEVELS (positions, default all). Report: Artifacts/Agility/solve.txt,
+  // and solve-x<speed>.txt for each speed.
   [UnityTest,Explicit,Timeout(10800000)] public IEnumerator SolveEveryLevelAtTopAgility()
   {
-   float scale=float.TryParse(Environment.GetEnvironmentVariable("COGHE_AGILITY_SCALE"),out float s)?s:2;
+   string scales=Environment.GetEnvironmentVariable("COGHE_AGILITY_SCALE");if(string.IsNullOrEmpty(scales))scales="2";
    string only=Environment.GetEnvironmentVariable("COGHE_AGILITY_LEVELS");
-   Directory.CreateDirectory("Artifacts/Agility");string log="Artifacts/Agility/solve.txt";File.WriteAllText(log,$"speed x{scale}\n");
+   Directory.CreateDirectory("Artifacts/Agility");string log="Artifacts/Agility/solve.txt";File.WriteAllText(log,"");
    yield return Load(1);var order=game.Definition.SceneSequence;
    var levels=new List<int>();if(string.IsNullOrEmpty(only))for(int i=1;i<=order.Length;i++)levels.Add(i);else foreach(var p in only.Split(','))levels.Add(int.Parse(p));
    var failures=new List<string>();
-   foreach(int n in levels)
+   foreach(string text in scales.Split(','))
    {
-    yield return LoadScene(order[n-1]);game.Motion.SpeedScale=scale;
-    string error="";float start=game.Matter.SimulationTime;
-    yield return Flat(new COgheSpatialScenario(game,Tap,Until).Solve(),e=>error=e);
-    bool solved=game.Owner.Completed&&string.IsNullOrEmpty(error);
-    string line=$"{n:00} {Path.GetFileNameWithoutExtension(order[n-1])}: {(solved?"solved":"FAILED")} in {game.Matter.SimulationTime-start:F1}s {error}";
-    File.AppendAllText(log,line+"\n");if(!solved)failures.Add(line);
+    float scale=float.Parse(text,System.Globalization.CultureInfo.InvariantCulture);
+    string speedLog=$"Artifacts/Agility/solve-x{text.Trim()}.txt";File.WriteAllText(speedLog,$"speed x{scale}\n");
+    File.AppendAllText(log,$"speed x{scale}\n");
+    foreach(int n in levels)
+    {
+     yield return LoadScene(order[n-1]);game.Motion.SpeedScale=scale;
+     string error="";float start=game.Matter.SimulationTime;
+     yield return Flat(new COgheSpatialScenario(game,Tap,Until).Solve(),e=>error=e);
+     bool solved=game.Owner.Completed&&string.IsNullOrEmpty(error);
+     string line=$"{n:00} {Path.GetFileNameWithoutExtension(order[n-1])}: {(solved?"solved":"FAILED")} in {game.Matter.SimulationTime-start:F1}s {error}";
+     File.AppendAllText(log,line+"\n");File.AppendAllText(speedLog,line+"\n");if(!solved)failures.Add($"x{scale} "+line);
+    }
    }
    game.Motion.SpeedScale=1;
    Assert.IsEmpty(failures,string.Join("\n",failures));

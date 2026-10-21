@@ -757,7 +757,16 @@ namespace GravityBox.Venom.ChapterProof
    Debug.Log("N33 GAUGES quarter on C: "+Gauges());
    if(pin.Position>.005f)throw new InvalidOperationException("A quarter slid the door pin");
    yield return s.MergeParts(new List<int>{q1,q2},W(.32f,-.298f,.02f),2);
+   // A merged half can stop at the edge of C with too little of it on the pad (the walk counts 5 cm as there): it is sent
+   // over C again, as a player taps C again (its middle may be hidden by the half itself).
    yield return s.Walk(q1,W(.32f,-.298f,.02f),"The merged half onto C");
+   for(int k=0;k<2&&!pin.AtEnd;k++)
+   {
+    float t1=game.Matter.SimulationTime;yield return until(10,()=>pin.AtEnd||game.Matter.SimulationTime-t1>3,"Half a body on C slides the pin");
+    if(pin.AtEnd)break;
+    yield return s.CommandAny(q1,new List<Vector3>{W(.32f,-.298f,.05f),W(.32f,-.298f,.02f),W(.29f,-.298f,.03f),W(.35f,-.298f,.03f)});
+    t1=game.Matter.SimulationTime;yield return until(10,()=>pin.AtEnd||game.Motion.Get(q1)==null||game.Matter.SimulationTime-t1>6,"The merged half crosses C");
+   }
    yield return until(10,()=>pin.AtEnd,"Half a body on C slides the pin");
    Debug.Log("N33 GAUGES half on C: "+Gauges());
    yield return s.Walk(half,W(.14f,-.30f,-.20f),"The holder leaves A and follows");

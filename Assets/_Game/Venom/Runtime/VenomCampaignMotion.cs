@@ -14,6 +14,8 @@ namespace GravityBox.Venom
             public int Cursor;
             public int CommandId;
             public bool Holding, Exit, AwaitingContact, AvoidSlippery;
+            /// <summary>Back at a corner it cut and got stuck on: this waypoint is walked all the way to.</summary>
+            public bool Rounding;
         }
         private readonly VenomCampaign game;
         private readonly List<Vector3> nodes=new List<Vector3>();
@@ -61,8 +63,8 @@ namespace GravityBox.Venom
         public int Selected;
         private int nextCommandId;
         public int RouteCount=>nodes.Count;
-        public VenomCampaignMotion(VenomCampaign owner){game=owner;System.Array.Fill(stallSince,-1f);}
-        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);System.Array.Clear(gripStrain,0,32);System.Array.Clear(detachedUntil,0,32);System.Array.Clear(detachedSurfaces,0,32);System.Array.Clear(ringCatches,0,32);System.Array.Fill(stallSince,-1f);Selected=0;nextCommandId=0;BuildGraph(true);}
+        public VenomCampaignMotion(VenomCampaign owner){game=owner;System.Array.Fill(stallSince,-1f);System.Array.Fill(cornerSince,-1f);}
+        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);System.Array.Clear(gripStrain,0,32);System.Array.Clear(detachedUntil,0,32);System.Array.Clear(detachedSurfaces,0,32);System.Array.Clear(ringCatches,0,32);System.Array.Fill(stallSince,-1f);System.Array.Fill(cornerSince,-1f);Selected=0;nextCommandId=0;BuildGraph(true);}
         public Vector3 Centre(int anchor)
         {
             Vector3 c=Vector3.zero;int count=0;int group=game.Matter.Groups[anchor];
@@ -337,6 +339,7 @@ namespace GravityBox.Venom
                 done=new bool[capacity];heap=new int[capacity];heapPositions=new int[capacity];
             }
             for(int i=0;i<n;i++){costs[i]=float.PositiveInfinity;parents[i]=-1;done[i]=false;heapPositions[i]=-1;}
+            var chamber=game.Owner.Rotation.GetComponent<Rigidbody>();
             heapCount=0;costs[a]=0;Queue(a);
             while(heapCount>0)
             {
@@ -350,6 +353,13 @@ namespace GravityBox.Venom
                     if(nodeSurfaces[next].NoSlickClimb&&nodeRise[next]>.06f&&!nodeSurfaces[next].Grip(worldNodes[next])&&
                        Vector3.Dot(worldNodes[next]-worldNodes[current],game.Root.up)>-.005f)continue;
                     float tractionCost=grippyGoal&&!nodeSurfaces[next].Grip(worldNodes[next])?20f:1f;
+                    // A step up onto a carriage or a block that only lies on the way is gone round where the room allows:
+                    // climbing onto a moving part is the step a body most often fails (21/10/2026: after A, levels 41 and 53
+                    // planned over the balcony carriage, which COghe could not climb; it got past only by sliding round it at
+                    // x1). Level with the floor (a lowered bridge), sent onto it, or starting on it, the route is unchanged.
+                    var shape=nodeSurfaces[next].Shape;var frame=shape!=null?shape.attachedRigidbody:null;
+                    if(frame!=null&&frame!=chamber&&nodeSurfaces[next]!=nodeSurfaces[b]&&nodeSurfaces[next]!=nodeSurfaces[a]&&
+                       Vector3.Dot(worldNodes[next]-worldNodes[current],game.Root.up)>StepHeight)tractionCost*=MovingSurfaceCost;
                     float d=costs[current]+Vector3.Distance(nodes[current],nodes[next])*tractionCost;
                     if(d<costs[next]){costs[next]=d;parents[next]=current;Queue(next);}
                 }
@@ -424,6 +434,43 @@ namespace GravityBox.Venom
             // inside one footprint; taps clearly inside a slick area remain slick.
             float nearestDistance=Vector3.Distance(worldNodes[nearest],p);
             return grippy>=0&&Mathf.Sqrt(grippyDistance)<=nearestDistance+.025f?grippy:nearest;
+        }
+        // Hunger (COgheEnergy) and the Agility card change the pace only while COghe cruises along its route. A climb or a step
+        // within reach, and the last stretch to where it was sent (a tube mouth, a handle's stand point, the other half, a
+        // landing), are taken at the base pace, so the moments that decide a level play out as every level was solved. A
+        // 30-speed sweep (21/10/2026) showed each other pace tipping a different marginal spot: the balcony tube of 41 and 53
+        // (it slid round the carriage at x1, stuck against it at x0.98 and x1.02), merges, a landing beside the exit.
+        private const float CruiseLookahead=.08f,StepHeight=.012f,MovingSurfaceCost=4f;
+        private float PaceFor(Order o,Vector3 centre)
+        {
+            if(MoveSpeed==BaseMoveSpeed||o.Path.Count==0)return MoveSpeed;
+            Vector3 from=centre;float ahead=0;
+            for(int k=Mathf.Min(o.Cursor,o.Path.Count-1);k<o.Path.Count;k++)
+            {
+                Vector3 p=game.Root.TransformPoint(o.Path[k]);
+                if(Mathf.Abs(p.y-from.y)>StepHeight)return BaseMoveSpeed;   // a climb or a step down ahead
+                ahead+=Vector3.Distance(from,p);from=p;
+                if(ahead>CruiseLookahead)return MoveSpeed;
+            }
+            return BaseMoveSpeed;   // the last stretch
+        }
+        // Cutting a corner (the next waypoint is taken from 2.2 cm away) can press the body into what the corner went round:
+        // level 17's half stuck on Q's casing for good at x0.85, and freed itself only by chance at x1. Stalled 0.8 s on the
+        // flat with that corner's waypoint just behind, it goes back to the waypoint, all the way this time, then on; stalled
+        // again there, it tries the next one again.
+        private readonly float[] cornerSince=new float[32];private readonly Vector3[] cornerAt=new Vector3[32];
+        private void RoundStalledCorner(int a,Order o,Vector3 centre)
+        {
+            float now=game.Matter.SimulationTime;
+            if(o.Cursor>=o.Path.Count-1){cornerSince[a]=-1;return;}   // at its last waypoint: arrived, or holding there
+            if(cornerSince[a]<0||now<cornerSince[a]||Vector3.Distance(centre,cornerAt[a])>.006f){cornerSince[a]=now;cornerAt[a]=centre;return;}
+            if(now-cornerSince[a]<.8f)return;
+            cornerSince[a]=now;
+            if(o.Rounding){o.Rounding=false;if(o.Cursor<o.Path.Count-1)o.Cursor++;return;}
+            if(o.Cursor<=0)return;
+            Vector3 corner=game.Root.TransformPoint(o.Path[o.Cursor-1]);
+            if(Vector3.Distance(centre,corner)>.04f||Mathf.Abs(corner.y-centre.y)>StepHeight)return;
+            o.Cursor--;o.Rounding=true;
         }
         private Vector3 EdgeTarget(Order order,int anchor,Vector3 centre,Vector3 target)
         {
@@ -560,9 +607,10 @@ namespace GravityBox.Venom
                     if(grips<2)o.AwaitingContact=true;
                     else if(o.AwaitingContact){FindPath(centre,game.Root.TransformPoint(o.Target),o.Path,o.AvoidSlippery);o.Cursor=0;o.AwaitingContact=false;}
                 }
+                if(o!=null&&grips>=2&&caught==null&&!suppressed&&!game.InTube&&!game.Attached)RoundStalledCorner(a,o,centre);else cornerSince[a]=-1;
                 if(o!=null)
                 {
-                    while(o.Cursor<o.Path.Count-1&&Vector3.Distance(centre,game.Root.TransformPoint(o.Path[o.Cursor]))<.022f)o.Cursor++;
+                    while(o.Cursor<o.Path.Count-1&&Vector3.Distance(centre,game.Root.TransformPoint(o.Path[o.Cursor]))<(o.Rounding?.008f:.022f)){o.Cursor++;o.Rounding=false;}
                     target=game.Root.TransformPoint(o.Path[o.Cursor]);
                     if(Vector3.Distance(centre,game.Root.TransformPoint(o.Target))<.023f&&!o.Holding&&!o.Exit&&
                         BodyCanReach(a,game.Root.TransformPoint(o.Target))){Cancel(a);o=null;}
@@ -570,10 +618,10 @@ namespace GravityBox.Venom
                 bool anchored=(grips>=2||caught!=null)&&(!game.Definition.Passive||game.Home)&&!suppressed;
                 if(o!=null&&caught==null&&anchored)target=EdgeTarget(o,a,centre,target);
                 Vector3 delta=target-centre;
-                Vector3 desired=o!=null?delta.normalized*MoveSpeed:Vector3.zero;
-                // the last stretch keeps the base pace, so a faster COghe (Agility) still stops exactly where it is sent;
-                // a tired one stays at its own slower pace
-                if(o!=null&&o.Cursor==o.Path.Count-1)desired=Vector3.ClampMagnitude(delta*4,Mathf.Min(BaseMoveSpeed,MoveSpeed));
+                float pace=o!=null?PaceFor(o,centre):MoveSpeed;
+                Vector3 desired=o!=null?delta.normalized*pace:Vector3.zero;
+                // the last stretch eases in, so COghe stops exactly where it is sent
+                if(o!=null&&o.Cursor==o.Path.Count-1)desired=Vector3.ClampMagnitude(delta*4,pace);
                 if(caught!=null)desired=Vector3.ClampMagnitude((caught.Surface.transform.TransformPoint(caught.LocalTarget)-centre)*6,.35f);
                 bool railManipulation=game.TryRailManipulationIntent(a,out var handleTarget,out var handleVelocity);
                 if(railManipulation){delta=handleTarget-centre;desired=handleVelocity;}
@@ -611,10 +659,10 @@ namespace GravityBox.Venom
                     // a slower (hungry) COghe walks slower but pushes as hard when something stops it: a step, a tray lip,
                     // a block to climb (the drive was proportional to the pace, and x0.85 could not climb level 42's tray
                     // or level 58's block); at the usual pace or faster nothing changes
-                    float drive=caught!=null?35:26*Mathf.Max(1,BaseMoveSpeed/MoveSpeed);
+                    float drive=caught!=null?35:26*Mathf.Max(1,BaseMoveSpeed/pace);
                     if(!manipulating)acceleration+=Vector3.ClampMagnitude((desired-relative)*drive,caught!=null?18:5);
                     acceleration=Vector3.ClampMagnitude(acceleration,capacity/Mathf.Max(mass,.0001f));
-                    intent[i]=desired/MoveSpeed;
+                    intent[i]=desired/pace;
                     if(HasGrip(i))
                     {
                         Vector3 n=patch.Normal;
