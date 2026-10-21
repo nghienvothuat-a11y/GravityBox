@@ -3,6 +3,7 @@ from pathlib import Path
 from mathutils import Vector
 ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'ArtSource/COghe/MysteryGift'
+FBX=ROOT/'Assets/_Game/Venom/Resources/COgheMysteryGift/COghe_Gift.fbx'   # loaded at runtime by COgheMysteryBox
 bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)
 def mat(name, rgb, metallic, rough):
  m=bpy.data.materials.new(name); m.diffuse_color=(*rgb,1); m.use_nodes=True
@@ -88,7 +89,7 @@ for o in [body,lid,bow]:
 # Export only asset. FBX axis conversion supplies Unity Y-up.
 objects=[body,lid,bow]; bpy.ops.object.select_all(action='DESELECT')
 for o in objects:o.select_set(True)
-bpy.ops.export_scene.fbx(filepath=str(OUT/'COghe_Gift.fbx'),use_selection=True,object_types={'MESH'},axis_forward='-Z',axis_up='Y',apply_unit_scale=True,bake_space_transform=True,add_leaf_bones=False,use_mesh_modifiers=True)
+bpy.ops.export_scene.fbx(filepath=str(FBX),use_selection=True,object_types={'MESH'},axis_forward='-Z',axis_up='Y',apply_unit_scale=True,bake_space_transform=True,add_leaf_bones=False,use_mesh_modifiers=True)
 report={o.name:sum(len(p.vertices)-2 for p in o.data.polygons) for o in objects}
 report['total_triangles']=sum(report.values()); assert report['total_triangles']<500,report
 (OUT/'mesh_audit.json').write_text(json.dumps(report,indent=2))

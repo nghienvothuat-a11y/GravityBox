@@ -1,12 +1,15 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace GravityBox.Venom
 {
     /// <summary>
-    /// The mystery gift box seen in a level (Mrk 21/10/2026): a small bright box that drops near the exit, hops and
-    /// glints until COghe reaches it, then opens or flies away. Built from the low-poly kit like the reading book:
-    /// renderers only, no collider, rigidbody or light, so taps, paths and the puzzle never see it. Every animation runs
+    /// The mystery gift box seen in a level (Mrk 21/10/2026): Codex's gift, 468 triangles (Mrk: under 500) in a body, a
+    /// lid and a bow riding on the lid (Resources/COgheMysteryGift; source, storyboard and timings in
+    /// Tools/MysteryGift/HANDOFF.md). It drops near the exit, wiggles now and then until COghe reaches it, then opens
+    /// (the lid lifts away from COghe, the prize rises in the product UI, two small confetti bursts) or flies away.
+    /// Renderers only: no collider, rigidbody or light, so taps, paths and the puzzle never see it. Every animation runs
     /// on unscaled time because the offer popup pauses the level.
     /// </summary>
     public sealed class COgheMysteryBox : MonoBehaviour
@@ -15,57 +18,79 @@ namespace GravityBox.Venom
         public State Phase { get; private set; }
         /// <summary>Where it rests (world): the bottom centre of the box.</summary>
         public Vector3 Rest { get; private set; }
-        public const float Size = .04f;
-        const float DropHeight = .26f, FallTime = .55f;
+        /// <summary>Body width, the storyboard's W (the lid is 5.7 cm wide, the bow peaks 7 cm up).</summary>
+        public const float Size = .052f;
+        public const string Model = "COgheMysteryGift/COghe_Gift";
+        /// <summary>Seconds after Open: the prize has risen and held (the reveal popup takes over), the box is gone.</summary>
+        public const float ShowTime = 1.7f, OpenTime = 2f;
+        const float DropHeight = 3 * Size, FallTime = .48f, Wiggle = 3.2f, Settled = .38f;
+        // Codex's three materials (his linear Blender colours as sRGB) on the level's own lit material.
+        static readonly (string name, string colour, float smoothness, float metallic)[] Paints =
+        {
+            ("Gift_Coral", "#E75C73", .58f, 0), ("Gift_Peach", "#FE959D", .62f, 0), ("Gift_Champagne", "#FDCF70", .65f, .25f),
+        };
 
         COgheHomeMaterials materials; Material lit;
-        Transform pivot, body, lid, glints, halo;
-        Vector3 up = Vector3.up;
+        readonly Dictionary<string, Material> paints = new Dictionary<string, Material>();
+        Transform pivot, lid, glints;
+        readonly List<Transform> confetti = new List<Transform>();
+        Vector3 lidRest, away = Vector3.right; Quaternion lidRestRotation;
         float clock;
 
-        public void Initialize(Material source, Vector3 restWorld, Vector3 surfaceNormal)
+        /// <summary>The box mouth (world), where the prize comes out.</summary>
+        public Vector3 Mouth => Rest + transform.up * .04f;
+
+        /// <param name="toCamera">The way the close-up camera looks from (world): the bow's tails face it, three-quarter on.</param>
+        public void Initialize(Material source, Vector3 restWorld, Vector3 surfaceNormal, Vector3 toCamera)
         {
-            Rest = restWorld; up = surfaceNormal.sqrMagnitude > .5f ? surfaceNormal.normalized : Vector3.up;
+            Rest = restWorld; Vector3 up = surfaceNormal.sqrMagnitude > .5f ? surfaceNormal.normalized : Vector3.up;
+            Vector3 front = Vector3.ProjectOnPlane(toCamera, up); if (front.sqrMagnitude < 1e-6f) front = Vector3.ProjectOnPlane(Vector3.back, up);
+            transform.SetPositionAndRotation(restWorld, Quaternion.LookRotation(front.normalized, up) * Quaternion.Euler(0, 30, 0));
             lit = new Material(source); materials = new COgheHomeMaterials(lit, lit);
-            transform.SetPositionAndRotation(restWorld, Quaternion.FromToRotation(Vector3.up, up));
             pivot = new GameObject("Box pivot").transform; pivot.SetParent(transform, false);
-            float s = Size, h = s * .5f;
-            // Body: magenta with teal dots and a yellow ribbon round it.
-            var k = new COgheLowPoly();
-            k.Paint("#FF4FA3").Box(new Vector3(0, h * .9f, 0), new Vector3(s, s * .9f, s), .003f);
-            k.Paint("#FFD23F").Box(new Vector3(0, h * .9f, 0), new Vector3(s * .22f, s * .905f, s * 1.01f), 0);
-            k.Box(new Vector3(0, h * .9f, 0), new Vector3(s * 1.01f, s * .905f, s * .22f), 0);
-            k.Paint("#3FD0C9");
-            foreach (var d in new[] { new Vector2(-.28f, .3f), new Vector2(.3f, .62f), new Vector2(-.3f, .7f), new Vector2(.28f, .26f) })
-                foreach (float side in new[] { -1f, 1f })
-                {
-                    k.Ico(new Vector3(d.x * s, d.y * s, side * s * .505f), new Vector3(.0032f, .0032f, .0008f), 0);
-                    k.Ico(new Vector3(side * s * .505f, d.y * s, d.x * s), new Vector3(.0008f, .0032f, .0032f), 0);
-                }
-            body = k.Bake("Box body", pivot, materials).transform;
-            // Lid with the bow: two loops and a knot.
-            var l = new COgheLowPoly();
-            l.Paint("#FF7DBE").Box(new Vector3(0, .004f, 0), new Vector3(s * 1.1f, .008f, s * 1.1f), .002f);
-            l.Paint("#FFD23F").Box(new Vector3(0, .004f, 0), new Vector3(s * .24f, .0085f, s * 1.12f), 0);
-            l.Box(new Vector3(0, .004f, 0), new Vector3(s * 1.12f, .0085f, s * .24f), 0);
-            l.Ico(new Vector3(-.0075f, .013f, 0), new Vector3(.0085f, .0055f, .0045f), 1);
-            l.Ico(new Vector3(.0075f, .013f, 0), new Vector3(.0085f, .0055f, .0045f), 1);
-            l.Paint("#FFB000").Ico(new Vector3(0, .012f, 0), Vector3.one * .0035f, 1);
-            lid = l.Bake("Box lid", pivot, materials).transform; lid.localPosition = new Vector3(0, s * .9f, 0);
-            // Gold glints that circle the box, and a soft warm spot under it.
-            glints = new GameObject("Glints").transform; glints.SetParent(transform, false);
-            for (int i = 0; i < 6; i++)
+            var gift = Instantiate(Resources.Load<GameObject>(Model), pivot, false).transform; gift.name = "Gift";
+            lid = gift.Find("Gift_Lid"); lid.SetParent(pivot, true); lidRest = lid.localPosition; lidRestRotation = lid.localRotation;
+            foreach (var r in pivot.GetComponentsInChildren<MeshRenderer>(true))
             {
-                var g = new COgheLowPoly(); g.Paint(i % 2 == 0 ? "#FFF3A0" : "#FFFFFF").Ico(Vector3.zero, Vector3.one * .0034f, 0);
-                var glint = g.Bake("Glint " + i, glints, materials).transform;
-                float a = i * Mathf.PI * 2 / 6; glint.localPosition = new Vector3(Mathf.Cos(a) * .042f, .02f + (i % 3) * .012f, Mathf.Sin(a) * .042f);
+                var slots = r.sharedMaterials; for (int i = 0; i < slots.Length; i++) slots[i] = Paint(slots[i]); r.sharedMaterials = slots;
             }
-            var spot = new COgheLowPoly(); spot.Paint("#FFE9A8").At(new Vector3(0, .0015f, 0), Quaternion.Euler(90, 0, 0)).Ellipse(Vector3.zero, .036f, .036f, 20, true);
-            halo = spot.Bake("Warm spot", transform, materials).transform;
-            foreach (var r in GetComponentsInChildren<Renderer>()) { r.shadowCastingMode = ShadowCastingMode.Off; r.receiveShadows = false; }
+            // Two small glints at the lid seam: the wiggle and the moment before it opens.
+            glints = new GameObject("Glints").transform; glints.SetParent(pivot, false);
+            foreach (var at in new[] { new Vector3(.027f, .039f, .02f), new Vector3(-.022f, .04f, .027f) })
+            {
+                var g = new COgheLowPoly(); g.Paint("#FFF6C8").Ico(Vector3.zero, new Vector3(.0042f, .0042f, .0042f), 0);
+                g.Bake("Glint", glints, materials).transform.localPosition = at;
+            }
+            // Twelve confetti flakes in two side bursts (gold, coral, ivory), hidden until it opens.
+            var colours = new[] { "#FDCF70", "#E75C73", "#FFF4DE" };
+            for (int i = 0; i < 12; i++)
+            {
+                var k = new COgheLowPoly(); k.Paint(colours[i % 3]).Box(Vector3.zero, new Vector3(.0046f, .0006f, .0032f), 0);
+                var flake = k.Bake("Confetti " + i, transform, materials).transform; flake.gameObject.SetActive(false); confetti.Add(flake);
+            }
+            foreach (var r in GetComponentsInChildren<Renderer>(true)) { r.shadowCastingMode = ShadowCastingMode.Off; r.receiveShadows = false; }
             Phase = State.Falling; clock = 0; Pose(0);
         }
 
+        Material Paint(Material imported)
+        {
+            string name = imported != null ? imported.name : "";
+            var paint = Paints[0];
+            foreach (var p in Paints) if (name.StartsWith(p.name)) paint = p;
+            if (paints.TryGetValue(paint.name, out var m)) return m;
+            ColorUtility.TryParseHtmlString(paint.colour, out var colour);
+            m = new Material(lit) { name = paint.name };
+            m.SetColor("_BaseColor", colour); m.SetFloat("_Smoothness", paint.smoothness); m.SetFloat("_Metallic", paint.metallic);
+            m.SetColor("_EmissionColor", Color.black); m.DisableKeyword("_EMISSION");
+            return paints[paint.name] = m;
+        }
+
+        /// <summary>The lid lifts away from <paramref name="creature"/> (world), so COghe never hides the opening.</summary>
+        public void LiftAwayFrom(Vector3 creature)
+        {
+            Vector3 d = transform.InverseTransformDirection(Rest - creature); d.y = 0;
+            if (d.sqrMagnitude > 1e-8f) away = d.normalized;
+        }
         public void Open() { if (Phase == State.Opening || Phase == State.Gone) return; Phase = State.Opening; clock = 0; }
         public void FlyAway() { if (Phase == State.Leaving || Phase == State.Gone) return; Phase = State.Leaving; clock = 0; }
         public bool Landed => Phase != State.Falling;
@@ -77,58 +102,107 @@ namespace GravityBox.Venom
             if (Phase == State.Gone) Destroy(gameObject);
         }
 
+        static float Smooth(float t) { t = Mathf.Clamp01(t); return t * t * (3 - 2 * t); }
+        static float CubicOut(float t) { t = 1 - Mathf.Clamp01(t); return 1 - t * t * t; }
+        static float SoftBack(float t) { t = Mathf.Clamp01(t) - 1; return 1 + 2 * t * t * t + t * t; }   // one ~4% overshoot
+
         void Pose(float t)
         {
             if (pivot == null) return;
-            float spin = Time.unscaledTime;
-            glints.localRotation = Quaternion.Euler(0, spin * 70, 0);
-            for (int i = 0; i < glints.childCount; i++)
-                glints.GetChild(i).localScale = Vector3.one * (.6f + .5f * Mathf.Abs(Mathf.Sin(spin * 3.1f + i * 1.3f)));
-            halo.localScale = Vector3.one * (1 + .12f * Mathf.Sin(spin * 4));
+            Vector3 one = Vector3.one, squash = new Vector3(1.06f, .92f, 1.06f);
+            pivot.localPosition = Vector3.zero; pivot.localRotation = Quaternion.identity; pivot.localScale = one;
+            Vector3 lidOffset = Vector3.zero; Quaternion lidTilt = Quaternion.identity; float glint = 0;
             switch (Phase)
             {
                 case State.Falling:
                 {
                     float u = Mathf.Clamp01(t / FallTime);
-                    pivot.localPosition = Vector3.up * DropHeight * (1 - u * u);
-                    pivot.localRotation = Quaternion.Euler(0, 200 * (1 - u), 0);
-                    glints.gameObject.SetActive(u >= 1); halo.gameObject.SetActive(u >= 1);
+                    pivot.localPosition = Vector3.up * DropHeight * (1 - u * u);   // ease-in fall, base along the normal
+                    pivot.localRotation = Quaternion.Euler(0, -18 * (1 - u), 0);
                     if (u >= 1) { Phase = State.Idle; clock = 0; }
                     break;
                 }
                 case State.Idle:
                 {
-                    // A landing squash first, then every 1.6 s a little hop with a shake: "open me".
-                    float land = Mathf.Clamp01(t / .35f), squash = (1 - land) * Mathf.Sin(land * Mathf.PI * 3) * .18f;
-                    float cycle = Mathf.Repeat(t, 1.6f), hop = cycle < .45f ? Mathf.Sin(cycle / .45f * Mathf.PI) : 0;
-                    pivot.localPosition = Vector3.up * hop * .012f;
-                    pivot.localScale = new Vector3(1 + squash, 1 - squash, 1 + squash);
-                    pivot.localRotation = Quaternion.Euler(0, 0, hop * 9 * Mathf.Sin(cycle * 40));
-                    lid.localPosition = new Vector3(0, Size * .9f + hop * .004f, 0); lid.localRotation = Quaternion.identity;
+                    // Land: squash (1.10, .87) then rebound (.96, 1.07) in .12 s, settle by .38 s with the lid tilting
+                    // 4° → -2° → 0. Then every 3.2 s: 2.35 s still, a ±3° rock on the bottom edge, the lid lifts a little.
+                    if (t < .06f) pivot.localScale = Vector3.Lerp(one, new Vector3(1.10f, .87f, 1.10f), Smooth(t / .06f));
+                    else if (t < .12f) pivot.localScale = Vector3.Lerp(new Vector3(1.10f, .87f, 1.10f), new Vector3(.96f, 1.07f, .96f), Smooth((t - .06f) / .06f));
+                    else if (t < Settled) pivot.localScale = Vector3.Lerp(new Vector3(.96f, 1.07f, .96f), one, Smooth((t - .12f) / .26f));
+                    float settleTilt = t < .12f ? 4 * Smooth(t / .12f) : t < .25f ? Mathf.Lerp(4, -2, Smooth((t - .12f) / .13f)) : Mathf.Lerp(-2, 0, Smooth((t - .25f) / .13f));
+                    lidTilt = Quaternion.AngleAxis(settleTilt, Vector3.right);
+                    if (t < Settled) break;
+                    float cycle = Mathf.Repeat(t - Settled, Wiggle);
+                    if (cycle >= 2.35f && cycle < 2.65f)
+                    {
+                        float a = 3 * Mathf.Sin((cycle - 2.35f) / .30f * Mathf.PI * 2);
+                        var rock = Quaternion.AngleAxis(a, Vector3.forward);
+                        var edge = new Vector3(-Mathf.Sign(a) * Size * .5f, 0, 0);   // rocks on the edge that stays down
+                        pivot.localRotation = rock; pivot.localPosition = edge - rock * edge;
+                    }
+                    if (cycle >= 2.65f && cycle < 3f) lidOffset = Vector3.up * .018f * Size * Mathf.Sin((cycle - 2.65f) / .35f * Mathf.PI);
+                    if (cycle >= 2.35f && cycle < 3f) glint = Mathf.Sin((cycle - 2.35f) / .65f * Mathf.PI);
                     break;
                 }
                 case State.Opening:
                 {
-                    // The lid pops up and tumbles away, the box swells and vanishes into the reward.
-                    float u = Mathf.Clamp01(t / .9f);
-                    lid.localPosition = new Vector3(u * .03f, Size * .9f + Mathf.Sin(Mathf.Min(u * 1.4f, 1) * Mathf.PI * .5f) * .07f, 0);
-                    lid.localRotation = Quaternion.Euler(0, u * 300, u * 120);
-                    float swell = u < .5f ? 1 + u * .5f : Mathf.Lerp(1.25f, 0, (u - .5f) * 2);
-                    body.localScale = Vector3.one * swell; lid.localScale = Vector3.one * (u < .7f ? 1 : Mathf.Lerp(1, 0, (u - .7f) / .3f));
-                    if (u >= 1) Phase = State.Gone;
+                    // Anticipation .24 s (squash, lid shiver, seam glint), release .24–.55 (lid .85 W up and .2 W away,
+                    // up to 18° tilt, cubic out; body back to size with one soft overshoot), confetti .50–1.15, hold,
+                    // then shrink away 1.7–2.0 once the reveal popup has taken over.
+                    Vector3 lift = Vector3.up * .85f * Size + away * .20f * Size; Vector3 tiltAxis = Vector3.Cross(Vector3.up, away);
+                    if (t < .24f)
+                    {
+                        float k = Smooth(t / .24f);
+                        pivot.localScale = Vector3.Lerp(one, squash, k);
+                        lidTilt = Quaternion.AngleAxis(3 * k * Mathf.Sin(t * Mathf.PI * 2 * 9), Vector3.forward); glint = k;
+                    }
+                    else
+                    {
+                        float r = CubicOut((t - .24f) / .31f);
+                        pivot.localScale = Vector3.LerpUnclamped(squash, one, SoftBack((t - .24f) / .31f));
+                        lidOffset = lift * r + (t > .55f ? Vector3.up * .002f * Mathf.Sin((t - .55f) * 4) : Vector3.zero);
+                        lidTilt = Quaternion.AngleAxis(18 * r, tiltAxis);
+                        glint = Mathf.Clamp01(1 - (t - .24f) / .2f);
+                    }
+                    if (t > ShowTime) pivot.localScale *= 1 - Smooth((t - ShowTime) / (OpenTime - ShowTime));
+                    PoseConfetti(t - .5f);
+                    if (t >= OpenTime) Phase = State.Gone;
                     break;
                 }
                 case State.Leaving:
                 {
-                    float u = Mathf.Clamp01(t / .8f);
-                    pivot.localPosition = Vector3.up * u * u * .35f; pivot.localRotation = Quaternion.Euler(0, u * 540, 0);
-                    pivot.localScale = Vector3.one * (1 - u * .8f); halo.localScale = Vector3.one * (1 - u);
-                    if (u >= 1) Phase = State.Gone;
+                    // Skip: shrinks gently while lifting one W, no confetti and no prize.
+                    float s = Smooth(t / .45f);
+                    pivot.localPosition = Vector3.up * Size * s; pivot.localScale = one * (1 - s);
+                    if (t >= .45f) Phase = State.Gone;
                     break;
                 }
             }
+            lid.localPosition = lidRest + lidOffset; lid.localRotation = lidTilt * lidRestRotation;
+            glints.gameObject.SetActive(glint > .01f);
+            if (glint > .01f) for (int i = 0; i < glints.childCount; i++)
+                glints.GetChild(i).localScale = Vector3.one * glint * (.7f + .3f * Mathf.Sin(Time.unscaledTime * 9 + i * 2));
         }
 
-        void OnDestroy() { materials?.Dispose(); if (lit != null) Destroy(lit); }
+        /// <summary>Two bursts of six flakes from the sides of the mouth, arcing out and falling; gone by .65 s.</summary>
+        void PoseConfetti(float t)
+        {
+            for (int i = 0; i < confetti.Count; i++)
+            {
+                float age = t - (i < 6 ? 0 : .08f); var flake = confetti[i];
+                bool live = age >= 0 && age < .65f; flake.gameObject.SetActive(live); if (!live) continue;
+                float side = i < 6 ? -1 : 1, spread = (i % 6) / 5f;
+                Vector3 v = new Vector3(side * (.10f + .08f * spread), .24f + .10f * ((i * 7) % 5) / 4f, (spread - .5f) * .10f);
+                flake.localPosition = new Vector3(side * .02f, .045f, 0) + v * age + Vector3.down * .45f * age * age;
+                flake.localRotation = Quaternion.Euler(age * 720 + i * 40, age * 540 + i * 25, i * 30);
+                flake.localScale = Vector3.one * (age > .45f ? 1 - (age - .45f) / .2f : 1);
+            }
+        }
+
+        void OnDestroy()
+        {
+            materials?.Dispose(); foreach (var m in paints.Values) Destroy(m); paints.Clear();
+            if (lit != null) Destroy(lit);
+        }
     }
 }

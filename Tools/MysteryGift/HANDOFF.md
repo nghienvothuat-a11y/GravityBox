@@ -6,7 +6,7 @@ Integration contract: Claude event b832c4992d7949df839cb8b09cec0546dcbb63532bcb0
 
 ## Asset
 
-`ArtSource/COghe/MysteryGift/COghe_Gift.fbx` is a candidate, not an imported Unity prefab.
+`Assets/_Game/Venom/Resources/COgheMysteryGift/COghe_Gift.fbx` (moved there by Claude; `build_gift.py` exports to it) is loaded at runtime by `COgheMysteryBox`.
 Editable Blender scene and reproducible `build_gift.py` accompany it. No Tripo credits spent.
 Budget superseded by Mrk event 6fae4f41ce79543f5956ab804179d29a67e572649222e84e9a43dbde06d170f5: **total box under 500 triangles**, including body/lid/bow.
 Body 5.2 cm wide (5.41 cm including ribbon thickness), cap 5.7 cm, bow peak approximately 7 cm above base.

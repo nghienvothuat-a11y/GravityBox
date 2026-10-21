@@ -89,8 +89,12 @@ namespace GravityBox.Tests
                 Assert.AreEqual("HAT_BEE", ui.BoxItem, "The first box is the Bee hat");
                 Assert.IsTrue(COgheShop.Owns("HAT_BEE")); Assert.AreEqual("HAT_BEE", COgheStyle.Current.Hat, "Worn at once");
                 Assert.IsTrue(COgheShop.Paid("box:" + game.Definition.Id));
-                yield return new WaitForSecondsRealtime(1.2f);
+                yield return new WaitForSecondsRealtime(.6f);
+                Assert.IsNull(GameObject.Find("Mystery box continue"), "The prize rises out of the box before the panel");
+                Assert.IsNotNull(GameObject.Find("Box prize"), "The prize card over the box");
+                yield return new WaitForSecondsRealtime(COgheMysteryBox.OpenTime);
                 Assert.IsTrue(ui.MysteryBox == null, "The box opened and is gone");
+                Assert.IsNull(GameObject.Find("Box prize"), "The prize card flew into the panel");
                 yield return Click("Mystery box continue");
                 Assert.AreEqual(COgheProductPopup.None, ui.Popup); Assert.IsFalse(game.CameraRig.Spotlight.HasValue);
                 Assert.AreEqual(COgheProductUI.MysteryBoxPhase.Done, ui.BoxPhase);
@@ -152,7 +156,7 @@ namespace GravityBox.Tests
                 yield return Film(14, () => ui.Popup == COgheProductPopup.MysteryBox);       // COghe walks to it, camera closes in
                 yield return Film(1.6f);
                 ui.OpenMysteryBox(); yield return Film(3.2f);                                  // the lid pops: the Bee hat
-                ui.Resume(); typeof(COgheProductUI).GetMethod("EndMysteryBox", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(ui, null);
+                ui.CloseMysteryBox();
                 yield return Film(1.5f);
                 game.Motion.Move(game.Motion.Selected, game.Owner.Outlet.position - game.Owner.Outlet.forward * .024f, false, true);
                 yield return Film(12, () => game.Owner.Completed); yield return Film(2.5f);      // wearing it out of the exit
@@ -202,6 +206,34 @@ namespace GravityBox.Tests
                 }
             }
             finally { COgheShop.ResetForTests(); }
+        }
+    }
+
+    // Codex's gift (ArtSource/COghe/MysteryGift, Tools/MysteryGift/HANDOFF.md) as Unity imports it; Mrk 21/10/2026: under 500 triangles.
+    public sealed class COgheMysteryGiftModelTests
+    {
+        [Test] public void GiftModelIsUnderFiveHundredTrianglesWithTheBowOnTheLid()
+        {
+            var model = Resources.Load<GameObject>("COgheMysteryGift/COghe_Gift");
+            Assert.IsNotNull(model);
+            var log = new System.Text.StringBuilder(); int triangles = 0;
+            foreach (var t in model.GetComponentsInChildren<Transform>(true))
+            {
+                log.Append($"{t.name} parent={(t.parent ? t.parent.name : "-")} pos={t.localPosition:F4} rot={t.localEulerAngles:F1} scale={t.localScale:F3} components={string.Join(",", t.GetComponents<Component>().Select(c => c.GetType().Name))}\n");
+                if (t.TryGetComponent<MeshFilter>(out var f))
+                {
+                    var mesh = f.sharedMesh; int n = 0; for (int i = 0; i < mesh.subMeshCount; i++) n += (int)mesh.GetIndexCount(i) / 3;
+                    triangles += n;
+                    log.Append($"  mesh {mesh.name} triangles={n} submeshes={mesh.subMeshCount} bounds={mesh.bounds.center:F4}/{mesh.bounds.size:F4} materials={string.Join(",", t.GetComponent<MeshRenderer>().sharedMaterials.Select(m => m ? m.name + "(" + m.shader.name + ")" : "null"))}\n");
+                }
+            }
+            log.Append("total triangles " + triangles + "\n");
+            System.IO.Directory.CreateDirectory("Artifacts/MysteryBox"); System.IO.File.WriteAllText("Artifacts/MysteryBox/model-import.txt", log.ToString());
+            Debug.Log("GIFT MODEL\n" + log);
+            Assert.Less(triangles, 500, log.ToString());
+            var lid = model.transform.Find("Gift_Lid"); Assert.IsNotNull(lid, log.ToString());
+            Assert.IsNotNull(model.transform.Find("Gift_Body"), log.ToString());
+            Assert.IsNotNull(lid.Find("Gift_Bow"), "The bow rides on the lid");
         }
     }
 }

@@ -21,6 +21,9 @@ namespace GravityBox.Venom
         public int BoxDrops { get; private set; }
         private COgheMysteryBox mysteryBox;
         private float boxClock, boxFxAt;
+        // The prize rising out of the opened box (UI, over the level), then flying into the reveal panel.
+        private RectTransform boxPrize; private CanvasGroup boxPrizeAlpha, boxPrizeName;
+        private Vector2 boxPrizeFrom, boxPrizeTop, boxPrizeTo; private float boxPrizeEnd; private bool boxPanelShown;
         private const float BoxTriggerRadius = .14f, BoxExitRadius = .18f, BoxWalkLimit = 3.5f, BoxDropDelay = 1f;
         public const string BoxPlacement = "mystery_box";
         public const string FirstBoxItem = "HAT_BEE";
@@ -36,6 +39,19 @@ namespace GravityBox.Venom
             { "coghe.spatial.plus.g6", (new Vector3(.24f, -.29f, .20f), 0) },
             // 13 (G2): on the floor beside the walk along x .32 to the floor exit behind shutter B.
             { "coghe.spatial.plus.g2", (new Vector3(.26f, -.29f, .07f), 0) },
+            // 18–63: on a flat stretch of the recorded way out (routes.txt), before any last climb to the exit.
+            { "coghe.spatial.plus.n18", (new Vector3(.27f, -.29f, -.14f), 0) },
+            { "coghe.spatial.plus.n15", (new Vector3(.172f, -.265f, -.07f), 0) },
+            { "coghe.spatial.plus.n44", (new Vector3(.186f, -.205f, .127f), 0) },
+            { "coghe.spatial.next.18", (new Vector3(.238f, -.19f, .12f), 0) },
+            { "coghe.spatial.plus.n48", (new Vector3(.217f, -.11f, .201f), 0) },
+            { "coghe.spatial.plus.k05", (new Vector3(-.13f, -.29f, -.101f), 0) },
+            { "coghe.spatial.plus.n31", (new Vector3(.292f, -.29f, .025f), 0) },
+            { "coghe.spatial.plus.n43", (new Vector3(.184f, -.085f, .119f), 0) },
+            { "coghe.spatial.plus.n32", (new Vector3(.184f, -.20f, .166f), 0) },
+            // 63 (G11): the way out after the swing is the moving landing deck and the right glass, so the box waits on the
+            // left shelf, in its back corner, away from the swing's grip.
+            { "coghe.spatial.plus.g11", (new Vector3(-.35f, -.08f, .14f), 0) },
         };
 
         /// <summary>Display 3, 8, 13 …: every fifth level from 3; a boss passes its turn to the level after it.</summary>
@@ -54,6 +70,11 @@ namespace GravityBox.Venom
         private void TickMysteryBox()
         {
             if (Page != COgheProductPage.Game) return;
+            if (BoxPhase == MysteryBoxPhase.Reveal)
+            {
+                AnimateBoxPrize();
+                if (!boxPanelShown && Time.unscaledTime >= boxFxAt + COgheMysteryBox.ShowTime) { boxPanelShown = true; Rebuild(); }
+            }
             if (BoxPhase == MysteryBoxPhase.None)
             {
                 if (!MysteryBoxHere || Popup != COgheProductPopup.None || Time.timeSinceLevelLoad < BoxDropDelay) return;
@@ -65,6 +86,8 @@ namespace GravityBox.Venom
             if (BoxPhase == MysteryBoxPhase.Waiting)
             {
                 if (!mysteryBox.Landed || Game.Owner.Completed || Game.Owner.Lost || Game.Matter.FragmentCount != 1) return;
+                int part = Game.Motion.Selected;
+                if (Game.MechanismSuppressesMotion(part) || Game.IsFlowing(part)) return;   // never pulled out of a tube or a ride
                 Vector3 centre = Game.Motion.Centre(Game.Motion.Selected);
                 bool near = Vector3.Distance(centre, mysteryBox.Rest) < BoxTriggerRadius ||
                             Game.Owner.Outlet != null && Vector3.Distance(centre, Game.Owner.Outlet.position) < BoxExitRadius;
@@ -84,7 +107,8 @@ namespace GravityBox.Venom
             if (!SurfaceBelow(root.TransformPoint(BoxSpots[LevelId].spot), up, out var rest)) { BoxPhase = MysteryBoxPhase.Done; return; }
             var go = new GameObject("Mystery gift box"); go.transform.SetParent(root, true);
             mysteryBox = go.AddComponent<COgheMysteryBox>();
-            mysteryBox.Initialize(Game.Owner.MatterProfile.Skin, rest, up);
+            Vector3 heading = Game.Definition.CameraEuler; heading.y += BoxSpots[LevelId].yaw;   // the close-up's view
+            mysteryBox.Initialize(Game.Owner.MatterProfile.Skin, rest, up, -(Quaternion.Euler(heading) * Vector3.forward));
             BoxPhase = MysteryBoxPhase.Waiting;
             COgheAnalytics.Log("mystery_box_drop", "level_id", LevelId);
         }
@@ -103,9 +127,9 @@ namespace GravityBox.Venom
             foreach (var side in new[] { across, -across })
                 if (SurfaceBelow(mysteryBox.Rest + side * .09f + deeper * .03f, up, out var hit) && Mathf.Abs(Vector3.Dot(hit - mysteryBox.Rest, up)) < .01f)
                 { stand = hit; across = side; break; }
-            stand += up * .019f;
+            stand += up * .019f; mysteryBox.LiftAwayFrom(stand);
             Game.Motion.Move(Game.Motion.Selected, stand);
-            Game.CameraRig.Spotlight = mysteryBox.Rest + across * .035f + up * .03f;
+            Game.CameraRig.Spotlight = mysteryBox.Rest + across * .035f + up * .035f;
             BoxPhase = MysteryBoxPhase.Walking; boxClock = 0; HideHint();
             COgheAnalytics.Log("mystery_box_reach", "level_id", LevelId);
         }
@@ -148,7 +172,7 @@ namespace GravityBox.Venom
             void Reveal()
             {
                 if (this == null) return;
-                BoxItem = reward.ItemId; BoxDrops = reward.Amount; BoxPhase = MysteryBoxPhase.Reveal; boxFxAt = Time.unscaledTime;
+                BoxItem = reward.ItemId; BoxDrops = reward.Amount; BoxPhase = MysteryBoxPhase.Reveal; boxFxAt = Time.unscaledTime; boxPanelShown = false;
                 if (BoxItem != null && COgheWardrobe.Find(BoxItem) is { Inside: false })
                 { var look = COgheStyle.Current; look.Hat = BoxItem; look.Save(); look.ApplyTo(Game); }   // worn at once
                 mysteryBox?.Open(); COgheAudio.Happy();
@@ -168,10 +192,11 @@ namespace GravityBox.Venom
         {
             if (BoxPhase != MysteryBoxPhase.Offer) return;
             mysteryBox?.FlyAway(); COgheAnalytics.Log("mystery_box_skip", "level_id", LevelId);
-            EndMysteryBox();
+            CloseMysteryBox();
         }
 
-        private void EndMysteryBox()
+        /// <summary>Back to the level after the reveal (Great!) or a skip.</summary>
+        public void CloseMysteryBox()
         {
             BoxPhase = MysteryBoxPhase.Done; Game.CameraRig.Spotlight = null; Resume();
         }
@@ -179,6 +204,13 @@ namespace GravityBox.Venom
         private bool MysteryBoxPopup()
         {
             if (Popup != COgheProductPopup.MysteryBox && Popup != COgheProductPopup.MysteryReveal) return false;
+            if (Popup == COgheProductPopup.MysteryReveal && Time.unscaledTime < boxFxAt + COgheMysteryBox.ShowTime)
+            {
+                // First the lid lifts and the prize rises out of the box over the level (Codex's storyboard); the
+                // panel follows at ShowTime. The clear shield still holds the level's input.
+                popupRoot.Find("Input shield").GetComponent<Image>().color = Color.clear;
+                BoxPrize(); return true;
+            }
             float w = Mathf.Min(312, width - 40), h = Popup == COgheProductPopup.MysteryBox ? 214 : 268;
             // Low on the screen: the box stays in view above it.
             var panel = art.Box(popupRoot, "Panel", new Rect((width - w) * .5f, height - h - 28, w, h), COgheUIArt.Paper, true).rectTransform;
@@ -192,7 +224,7 @@ namespace GravityBox.Venom
             }
             else
             {
-                COgheRewardFx.Fireworks(panel, boxFxAt);
+                COgheRewardFx.Fireworks(panel, boxFxAt + COgheMysteryBox.ShowTime);
                 PopupTitle(panel, w, "Surprise!");
                 var item = BoxItem != null ? COgheEconomy.Find(BoxItem) : null;
                 if (item != null)
@@ -208,9 +240,63 @@ namespace GravityBox.Venom
                     var amount = art.Label(reward, "Amount", "+" + BoxDrops + " Drops", new Rect(42, 0, 130, 48), 26, COgheUIArt.Teal, TextAnchor.MiddleLeft);
                     amount.font = art.BoldFont; COgheCountUp.Run(amount, BoxDrops, "+", " Drops");
                 }
-                LabelButton(panel, "Mystery box continue", new Rect(24, h - 70, w - 48, 54), COgheIcon.Forward, "Great!", EndMysteryBox, true);
+                LabelButton(panel, "Mystery box continue", new Rect(24, h - 70, w - 48, 54), COgheIcon.Forward, "Great!", CloseMysteryBox, true);
+                BoxPrize();   // on top of the panel: it flies into the panel's picture
             }
             return true;
+        }
+
+        /// <summary>The prize over the opened box: an ivory card with the real icon, rising from the box mouth, then its
+        /// name; after ShowTime it flies into the reveal panel's picture and fades. Rebuilt from <see cref="boxFxAt"/>,
+        /// so a rebuild never restarts it.</summary>
+        private void BoxPrize()
+        {
+            boxPrize = null;
+            if (mysteryBox == null || Time.unscaledTime >= boxFxAt + COgheMysteryBox.OpenTime) return;
+            var item = BoxItem != null ? COgheEconomy.Find(BoxItem) : null;
+            Vector3 up = mysteryBox.transform.up, side = Game.Owner.View.transform.right;
+            float gift = (BonusScreen(mysteryBox.Rest + side * COgheMysteryBox.Size) - BonusScreen(mysteryBox.Rest)).magnitude;
+            float s = Mathf.Clamp(gift * 1.15f, 64, 112);
+            boxPrizeFrom = BonusScreen(mysteryBox.Mouth + up * .1f * COgheMysteryBox.Size);
+            boxPrizeTop = boxPrizeFrom + Vector2.up * Mathf.Max((BonusScreen(mysteryBox.Mouth + up * 1.25f * COgheMysteryBox.Size) - boxPrizeFrom).magnitude, s * .9f);
+            // The reveal panel (MysteryBoxPopup, 268 high, 28 above the bottom): the item picture, or the drop icon.
+            float panel = 268;
+            boxPrizeTo = item != null ? new Vector2(width * .5f, panel - 86) : new Vector2(width * .5f - 66, panel - 92);
+            boxPrizeEnd = item != null ? 88 / s : 36 / (s * .6f);
+            boxPrize = art.Rect(popupRoot, "Box prize", new Rect(0, 0, s, s));
+            boxPrize.anchorMin = boxPrize.anchorMax = Vector2.zero; boxPrize.pivot = new Vector2(.5f, .5f);
+            boxPrizeAlpha = boxPrize.gameObject.AddComponent<CanvasGroup>(); boxPrizeAlpha.blocksRaycasts = false;
+            art.Box(boxPrize, "Card", new Rect(0, 0, s, s), COgheUIArt.Paper).pixelsPerUnitMultiplier = 1.2f;
+            if (item != null) ItemPicture(boxPrize, item.Id, new Rect(s * .1f, s * .1f, s * .8f, s * .8f));
+            else DropIcon(boxPrize, new Rect(s * .2f, s * .2f, s * .6f, s * .6f));
+            var tag = art.Box(boxPrize, "Name", new Rect((s - 180) * .5f, s + 6, 180, 30), COgheUIArt.Paper);
+            boxPrizeName = tag.gameObject.AddComponent<CanvasGroup>();
+            art.Label(tag.transform, "Text", item != null ? item.Name : "+" + BoxDrops + " Drops", new Rect(0, 0, 180, 30), 16, item != null ? COgheUIArt.Ink : COgheUIArt.Teal).font = art.BoldFont;
+            AnimateBoxPrize();
+        }
+
+        /// <summary>Codex's timing (unscaled, from the reward): hidden to .40 s; rises .40–.90 with a 1.08 overshoot; holds
+        /// with its name to ShowTime; then into the panel by OpenTime.</summary>
+        private void AnimateBoxPrize()
+        {
+            if (boxPrize == null) return;
+            float t = Time.unscaledTime - boxFxAt, scale, alpha = 1; Vector2 at;
+            if (t < .4f) { at = boxPrizeFrom; scale = 0; }
+            else if (t < .9f)
+            {
+                float u = (t - .4f) / .5f, rise = 1 - (1 - u) * (1 - u) * (1 - u);
+                at = Vector2.LerpUnclamped(boxPrizeFrom, boxPrizeTop, rise);
+                scale = u < .7f ? Mathf.Lerp(.25f, 1.08f, Mathf.Sin(u / .7f * Mathf.PI * .5f)) : Mathf.Lerp(1.08f, 1, Mathf.SmoothStep(0, 1, (u - .7f) / .3f));
+            }
+            else if (t < COgheMysteryBox.ShowTime) { at = boxPrizeTop; scale = 1; }
+            else
+            {
+                float v = Mathf.SmoothStep(0, 1, (t - COgheMysteryBox.ShowTime) / (COgheMysteryBox.OpenTime - COgheMysteryBox.ShowTime));
+                at = Vector2.Lerp(boxPrizeTop, boxPrizeTo, v); scale = Mathf.Lerp(1, boxPrizeEnd, v); alpha = 1 - v;
+            }
+            boxPrize.anchoredPosition = at; boxPrize.localScale = Vector3.one * scale; boxPrizeAlpha.alpha = alpha;
+            boxPrizeName.alpha = t < COgheMysteryBox.ShowTime ? Mathf.Clamp01((t - .9f) / .15f) : 0;
+            if (t >= COgheMysteryBox.OpenTime) { Destroy(boxPrize.gameObject); boxPrize = null; }
         }
     }
 }
