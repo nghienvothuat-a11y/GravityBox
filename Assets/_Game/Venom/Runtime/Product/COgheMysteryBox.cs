@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 namespace GravityBox.Venom
 {
@@ -8,7 +9,7 @@ namespace GravityBox.Venom
     /// The mystery gift box seen in a level (Mrk 21/10/2026): Codex's gift, 468 triangles (Mrk: under 500) in a body, a
     /// lid and a bow riding on the lid (Resources/COgheMysteryGift; source, storyboard and timings in
     /// Tools/MysteryGift/HANDOFF.md). It drops near the exit, wiggles now and then until COghe reaches it, then opens
-    /// (the lid lifts away from COghe, the prize rises in the product UI, two small confetti bursts) or flies away.
+    /// (the lid lifts away from COghe, two small confetti bursts, the prize card rises out of it) or flies away.
     /// Renderers only: no collider, rigidbody or light, so taps, paths and the puzzle never see it. Every animation runs
     /// on unscaled time because the offer popup pauses the level.
     /// </summary>
@@ -36,6 +37,9 @@ namespace GravityBox.Venom
         readonly List<Transform> confetti = new List<Transform>();
         Vector3 lidRest, away = Vector3.right; Quaternion lidRestRotation;
         float clock;
+        // The prize: a world-space card over the box facing the camera (Codex's billboard), so it sits right in any view.
+        const float CardWidth = .056f, CardHeight = .068f, Units = 10000;   // canvas units of 0.1 mm
+        RectTransform prize; CanvasGroup prizeAlpha, prizeName; Image prizePicture; Camera view;
 
         /// <summary>The box mouth (world), where the prize comes out.</summary>
         public Vector3 Mouth => Rest + transform.up * .04f;
@@ -91,7 +95,28 @@ namespace GravityBox.Venom
             Vector3 d = transform.InverseTransformDirection(Rest - creature); d.y = 0;
             if (d.sqrMagnitude > 1e-8f) away = d.normalized;
         }
-        public void Open() { if (Phase == State.Opening || Phase == State.Gone) return; Phase = State.Opening; clock = 0; }
+        /// <summary>Opens, then shows the prize rising out of it: its real icon and name (or Drops) on an ivory card.</summary>
+        public void Open(Sprite icon, string label, bool drops, COgheUIArt art, Camera camera)
+        {
+            if (Phase == State.Opening || Phase == State.Gone) return;
+            Phase = State.Opening; clock = 0; view = camera;
+            if (art != null) BuildPrize(icon, label, drops, art);
+        }
+
+        void BuildPrize(Sprite icon, string label, bool drops, COgheUIArt art)
+        {
+            var go = new GameObject("Prize", typeof(RectTransform), typeof(Canvas), typeof(CanvasGroup));
+            prize = (RectTransform)go.transform; prize.SetParent(transform, false);
+            go.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
+            prize.sizeDelta = new Vector2(CardWidth, CardHeight) * Units; prize.pivot = new Vector2(.5f, 0); prize.localScale = Vector3.zero;
+            prizeAlpha = go.GetComponent<CanvasGroup>(); prizeAlpha.blocksRaycasts = false; prizeAlpha.interactable = false;
+            float w = CardWidth * Units, h = CardHeight * Units;
+            art.Box(prize, "Card", new Rect(0, 0, w, h), COgheUIArt.Paper).pixelsPerUnitMultiplier = .27f;   // ~1.2 cm corners
+            var picture = art.Rect(prize, "Icon", drops ? new Rect(w * .2f, w * .14f, w * .6f, w * .6f) : new Rect(w * .1f, w * .06f, w * .8f, w * .8f)).gameObject.AddComponent<Image>();
+            prizePicture = picture; picture.sprite = icon; picture.preserveAspect = true; picture.raycastTarget = false; if (icon == null) picture.color = COgheUIArt.Ink;
+            var name = art.Label(prize, "Name", label, new Rect(w * .04f, w * .88f, w * .92f, h - w * .9f), 66, drops ? COgheUIArt.Teal : COgheUIArt.Ink);
+            name.font = art.BoldFont; prizeName = name.gameObject.AddComponent<CanvasGroup>();
+        }
         public void FlyAway() { if (Phase == State.Leaving || Phase == State.Gone) return; Phase = State.Leaving; clock = 0; }
         public bool Landed => Phase != State.Falling;
 
@@ -165,7 +190,7 @@ namespace GravityBox.Venom
                         glint = Mathf.Clamp01(1 - (t - .24f) / .2f);
                     }
                     if (t > ShowTime) pivot.localScale *= 1 - Smooth((t - ShowTime) / (OpenTime - ShowTime));
-                    PoseConfetti(t - .5f);
+                    PoseConfetti(t - .5f); PosePrize(t);
                     if (t >= OpenTime) Phase = State.Gone;
                     break;
                 }
@@ -182,6 +207,36 @@ namespace GravityBox.Venom
             glints.gameObject.SetActive(glint > .01f);
             if (glint > .01f) for (int i = 0; i < glints.childCount; i++)
                 glints.GetChild(i).localScale = Vector3.one * glint * (.7f + .3f * Mathf.Sin(Time.unscaledTime * 9 + i * 2));
+        }
+
+        /// <summary>The prize card's picture while it shows (world centre and width): where the reveal panel's picture flies from.</summary>
+        public bool PrizePicture(out Vector3 centre, out float width)
+        {
+            centre = default; width = 0;
+            if (prizePicture == null) return false;
+            var r = prizePicture.rectTransform; centre = r.TransformPoint(r.rect.center); width = r.rect.width * r.lossyScale.x;
+            return true;
+        }
+
+        /// <summary>Codex's timing: hidden to .40 s; rises .40–.90 from .1 W to 1.25 W over the mouth, scale .25 → 1.08 → 1;
+        /// the name from .90 s; holds to ShowTime, when the reveal panel opens and the picture flies into it. In front
+        /// of the lifted lid (towards the camera), facing it.</summary>
+        void PosePrize(float t)
+        {
+            if (prize == null) return;
+            float scale, alpha = 1, rise;
+            if (t < .4f) { scale = 0; rise = .1f; }
+            else if (t < .9f)
+            {
+                float u = (t - .4f) / .5f; rise = Mathf.Lerp(.1f, 1.25f, CubicOut(u));
+                scale = u < .7f ? Mathf.Lerp(.25f, 1.08f, Mathf.Sin(u / .7f * Mathf.PI * .5f)) : Mathf.Lerp(1.08f, 1, Smooth((u - .7f) / .3f));
+            }
+            else { rise = 1.25f; scale = 1; alpha = 1 - Mathf.Clamp01((t - ShowTime) / .12f); }   // its picture flies into the panel
+            Vector3 toward = view != null ? -view.transform.forward : Vector3.zero;
+            prize.position = Mouth + transform.up * rise * Size + toward * .06f;
+            if (view != null) prize.rotation = view.transform.rotation;
+            prize.localScale = Vector3.one * scale / Units; prizeAlpha.alpha = alpha;
+            prizeName.alpha = Mathf.Clamp01((t - .9f) / .15f);
         }
 
         /// <summary>Two bursts of six flakes from the sides of the mouth, arcing out and falling; gone by .65 s.</summary>

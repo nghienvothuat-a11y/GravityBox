@@ -67,7 +67,9 @@ namespace GravityBox.Venom
             // Leave forceRenderingOff to the victory camera. Only the near
             // decorative corner disappears while following the creature.
             // Compartment views retain the frame as a spatial reference.
-            foreach(var r in FocusOccluders)if(r!=null&&r.enabled==game.Zoom)r.enabled=!game.Zoom;
+            // The mystery gift close-up (a camera Spotlight) hides it too: no rail across the box or COghe's face.
+            bool hide=game.Zoom||game.CameraRig!=null&&game.CameraRig.Spotlight.HasValue;
+            foreach(var r in FocusOccluders)if(r!=null&&r.enabled==hide)r.enabled=!hide;
             // This authored room is locked upright. The contact patch follows
             // the existing moving crate on its flat floor; it never adds force.
             if(Step!=null&&StepShadow!=null)StepShadow.position=new Vector3(Step.position.x,-.2997f,Step.position.z);

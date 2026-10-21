@@ -19,12 +19,16 @@ namespace GravityBox.Tests
             CollectionAssert.AreEqual(new[] { 3, 8, 13, 18, 23, 28, 33, 38, 44, 48, 53, 58, 63 }, levels);
         }
 
+        /// <summary>The product UI's own canvas (the UI sits on the level root: GetComponentInChildren would also find the
+        /// gift's world-space prize card).</summary>
+        private Canvas ProductCanvas => ui.transform.Find("COghe Product Canvas").GetComponent<Canvas>();
+
         /// <summary>A 720×1280 still with the UI, for review (Artifacts/MysteryBox).</summary>
         private void BoxSnapshot(string name)
         {
             System.IO.Directory.CreateDirectory("Artifacts/MysteryBox");
             var rt = new RenderTexture(720, 1280, 24) { antiAliasing = 4 }; var tex = new Texture2D(720, 1280, TextureFormat.RGB24, false);
-            var canvas = ui.GetComponentInChildren<Canvas>(); var camera = game.Owner.View;
+            var canvas = ProductCanvas; var camera = game.Owner.View;
             try
             {
                 canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera = camera; canvas.planeDistance = camera.nearClipPlane + .01f;
@@ -74,6 +78,7 @@ namespace GravityBox.Tests
                 float end = Time.realtimeSinceStartup + 5;
                 while ((ui.MysteryBox == null || !ui.MysteryBox.Landed) && Time.realtimeSinceStartup < end) yield return null;
                 Assert.IsNotNull(ui.MysteryBox, "The box drops near the exit");Assert.IsTrue(ui.MysteryBox.Landed);
+                float playerYaw = game.CameraRig.OrbitYaw;
                 Assert.AreEqual(0, ui.MysteryBox.GetComponentsInChildren<Collider>().Length, "Presentation only: no collider");
                 Assert.AreEqual(0, ui.MysteryBox.GetComponentsInChildren<Rigidbody>().Length);
                 yield return WalkToBehindTheWall();
@@ -91,12 +96,18 @@ namespace GravityBox.Tests
                 Assert.IsTrue(COgheShop.Paid("box:" + game.Definition.Id));
                 yield return new WaitForSecondsRealtime(.6f);
                 Assert.IsNull(GameObject.Find("Mystery box continue"), "The prize rises out of the box before the panel");
-                Assert.IsNotNull(GameObject.Find("Box prize"), "The prize card over the box");
-                yield return new WaitForSecondsRealtime(COgheMysteryBox.OpenTime);
+                Assert.IsNotNull(ui.MysteryBox.transform.Find("Prize"), "The prize card rises out of the box");
+                yield return new WaitForSecondsRealtime(COgheMysteryBox.ShowTime + .15f - .6f);
+                Assert.IsNotNull(GameObject.Find("Mystery box continue"), "The reveal panel opens at ShowTime");
+                Assert.IsNotNull(GameObject.Find("Box prize flight"), "The card's picture flies into the panel");
+                yield return new WaitForSecondsRealtime(COgheMysteryBox.OpenTime - COgheMysteryBox.ShowTime + .3f);
+                Assert.IsNull(GameObject.Find("Box prize flight"), "It landed in the panel's picture");
                 Assert.IsTrue(ui.MysteryBox == null, "The box opened and is gone");
-                Assert.IsNull(GameObject.Find("Box prize"), "The prize card flew into the panel");
                 yield return Click("Mystery box continue");
                 Assert.AreEqual(COgheProductPopup.None, ui.Popup); Assert.IsFalse(game.CameraRig.Spotlight.HasValue);
+                end = Time.realtimeSinceStartup + 4;
+                while (Mathf.Abs(Mathf.DeltaAngle(game.CameraRig.OrbitYaw, playerYaw)) > .5f && Time.realtimeSinceStartup < end) yield return null;
+                Assert.AreEqual(0, Mathf.DeltaAngle(game.CameraRig.OrbitYaw, playerYaw), .5f, "The view turns back to where the player had it");
                 Assert.AreEqual(COgheProductUI.MysteryBoxPhase.Done, ui.BoxPhase);
                 yield return ExitLevel();
                 Assert.IsFalse(ui.MysteryBoxHere, "Opened once: no second box on this level");
@@ -133,12 +144,16 @@ namespace GravityBox.Tests
             string dir = "Artifacts/MysteryBox/frames"; if (System.IO.Directory.Exists(dir)) System.IO.Directory.Delete(dir, true); System.IO.Directory.CreateDirectory(dir);
             int frame = 0; var rt = new RenderTexture(720, 1280, 24) { antiAliasing = 4 }; var tex = new Texture2D(720, 1280, TextureFormat.RGB24, false);
             Time.captureFramerate = 30;
+            float paced = Time.realtimeSinceStartup;
             IEnumerator Film(float seconds, System.Func<bool> until = null)
             {
                 for (int guard = 0; guard < seconds * 30 + 2 && (until == null || !until()); guard++)
                 {
+                    // Each frame takes a real 1/30 s: the gift animates on unscaled (real) time, the level on 1/30 steps.
+                    while (Time.realtimeSinceStartup - paced < 1f / 30) { }
+                    paced = Time.realtimeSinceStartup;
                     yield return null;   // (WaitForEndOfFrame never resumes in batch mode)
-                    var canvas = ui.GetComponentInChildren<Canvas>(); var camera = game.Owner.View;
+                    var canvas = ProductCanvas; var camera = game.Owner.View;
                     canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera = camera; canvas.planeDistance = camera.nearClipPlane + .01f;
                     game.CameraRig.Frame(720, 1280, 1f / 30); camera.targetTexture = rt; camera.Render(); camera.targetTexture = null;   // phone framing
                     canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -149,6 +164,7 @@ namespace GravityBox.Tests
             try
             {
                 yield return LoadDisplay(3); yield return null;
+                COgheProductUI.LayoutAreaForTests = new Rect(0, 0, 720, 1280); ui.RelayoutForTests();   // the UI as on a phone
                 yield return Film(2.2f);                                                       // the box drops and hops
                 game.Motion.Move(game.Motion.Selected, game.Root.TransformPoint(new Vector3(-.23f, -.281f, .23f)));
                 yield return Film(14, () => game.Motion.Get(game.Motion.Selected) == null);
@@ -162,7 +178,7 @@ namespace GravityBox.Tests
                 yield return Film(12, () => game.Owner.Completed); yield return Film(2.5f);      // wearing it out of the exit
                 Debug.Log("MYSTERY BOX FILM frames " + frame);
             }
-            finally { Time.captureFramerate = 0; Object.DestroyImmediate(tex); rt.Release(); EndShop(); }
+            finally { Time.captureFramerate = 0; Object.DestroyImmediate(tex); rt.Release(); COgheProductUI.LayoutAreaForTests = null; ui.RelayoutForTests(); EndShop(); }
         }
 
         // Levels 8 and 13: the box lands on the floor COghe crosses before the exit (routes.txt) and the offer opens there.

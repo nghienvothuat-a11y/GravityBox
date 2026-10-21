@@ -763,7 +763,9 @@ namespace GravityBox.Venom
             if(Owner==null)return;
             if(ProductUI!=null&&ProductUI.Showcase){ProductUI.FrameShowcase();return;}
             if(Owner.Completed){Owner.Celebration.Frame(Screen.width,Screen.height);return;}
-            CameraRig.Frame(Screen.width,Screen.height,Time.unscaledDeltaTime,false,Screen.safeArea);
+            // Tests that lay the product out as a phone (COgheProductUI.LayoutAreaForTests) frame the camera the same way.
+            var layout=COgheProductUI.LayoutAreaForTests;
+            CameraRig.Frame(layout.HasValue?(int)layout.Value.width:Screen.width,layout.HasValue?(int)layout.Value.height:Screen.height,Time.unscaledDeltaTime,false,layout??Screen.safeArea);
         }
         private void OnGUI()
         {
