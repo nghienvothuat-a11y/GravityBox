@@ -81,7 +81,7 @@ namespace GravityBox.Venom
             if (!COgheShop.PickAbility(abilityChapter, ability)) return false;
             abilityChosen = true;
             abilityFirstIntelligence = ability == COgheAbility.Intelligence && COgheAbilities.Level(ability) == 1;
-            if (ability == COgheAbility.Agility) Game.Motion.SpeedScale = COgheEnergy.LevelSpeed;
+            if (ability == COgheAbility.Agility) Game.Motion.SpeedScale = COgheAbilities.SpeedScale;
             Game.Personality?.Force(COgheAct.Shape, ability == COgheAbility.Emotion ? COgheShape.Heart : ability == COgheAbility.Agility ? COgheShape.Rocket : COgheShape.Star);
             COgheAudio.Happy();
             Rebuild();

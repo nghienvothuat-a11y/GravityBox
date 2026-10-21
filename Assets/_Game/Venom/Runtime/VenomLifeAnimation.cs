@@ -230,7 +230,7 @@ namespace GravityBox.Venom
                 DrawFeet(state,key,points,ids,count,centre,up,floorPoint,support,sliding);
             }
             if(level.Campaign!=null)CampaignPerformance(points,supports,count,centre,up,velocity,grounded,ids[0]);
-            // An exhausted COghe sighs at a tapped device (COghePersonality.Weary): the skin slumps and rises while it walks.
+            // An exhausted COghe sighs at a tapped device, and a hungry one droops (COghePersonality.Weary): skin only.
             float sag=personality!=null&&count==CohesiveOrganism.ParticleCount?personality.Sag:0;
             if(sag>.001f)Slump(points,supports,count,up,grounded?floorPoint:centre-up*.03f,sag);
             int physicalCount=count;

@@ -732,6 +732,14 @@ def tired_sfx():
     gap = int(.05 * SR); x = np.zeros(n + gap + len(exhale))
     x[:n] += inhale; x[n + gap:] += exhale + air
     out["creature_sigh"] = save("creature_sigh", small_room(x, .14), -8)
+    # a stop for breath on the way: three quick, breathy "hah"s, each a little lower
+    x = np.zeros(int(.86 * SR))
+    for k, (f0, at) in enumerate([(430, .0), (400, .27), (370, .54)]):
+        hah = voice(np.array([f0, f0 * .93, f0 * .86]), .17, (A, A), breath=.45, vib=.01) * (1 - .12 * k)
+        air = bandpass(noise(len(hah)), 600, 2600) * env(len(hah), .015, .12) * .3
+        place(x, hah + air, int(at * SR))
+        m = int(.07 * SR); place(x, swept_bandpass(noise(m), glide(m, 1100, 1600), q=2.5) * env(m, .03, .03) * .12, int((at + .19) * SR))
+    out["creature_pant"] = save("creature_pant", small_room(x, .12), -10)
     return out
 
 if __name__ == "__main__":

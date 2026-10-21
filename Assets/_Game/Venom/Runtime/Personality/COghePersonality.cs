@@ -106,6 +106,7 @@ namespace GravityBox.Venom
             lastDt = dt;
             TrickOverlay();
             if (game.Home) { HomeTrickEvents(now); UpdateHome(dt); return; }
+            TiredSounds(dt);
 
             bool commanded = game.Feedback != null && game.Feedback.CommandCount != lastCommands;
             if (game.Feedback != null) lastCommands = game.Feedback.CommandCount;

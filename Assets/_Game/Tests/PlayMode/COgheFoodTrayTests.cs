@@ -67,9 +67,10 @@ namespace GravityBox.Tests
 
             ui.ShowVictoryForTests(ui.Catalog.Levels[order - 1].Id, order);
             Assert.AreEqual(40, COgheEnergy.Value); Assert.AreEqual(COgheHunger.Hungry, COgheEnergy.State);
-            game.ResetLevel(); Assert.AreEqual(COgheEnergy.HungrySpeed, game.Motion.SpeedScale, .0001f, "Hungry: slower");
+            game.ResetLevel(); Assert.AreEqual(1f, game.Motion.SpeedScale, .0001f, "Hungry: it only looks tired, the walk is the same");
+            Assert.Greater(game.Personality.Droop, 0f, "and droops");
             COgheShop.Current.Agility = 2; game.ResetLevel();
-            Assert.AreEqual(1.2f * COgheEnergy.HungrySpeed, game.Motion.SpeedScale, .0001f, "Agility still counts");
+            Assert.AreEqual(1.2f, game.Motion.SpeedScale, .0001f, "Agility counts as usual");
             COgheShop.Current.Agility = 0;
 
             yield return Click(COgheProductUI.FeedAfterVictoryButton);
@@ -98,9 +99,11 @@ namespace GravityBox.Tests
             while (game.Personality.Snack != null && Time.realtimeSinceStartup < end) yield return null;
             Assert.AreEqual(COgheEnergy.Max, COgheEnergy.Value, "60 + 75, full at 100");
             game.ResetLevel(); Assert.AreEqual(1f, game.Motion.SpeedScale, .0001f, "Fed again: the usual pace");
+            Assert.AreEqual(0f, game.Personality.Droop, "Fed: no droop");
 
             COgheShop.SetEnergyUsed(80); game.ResetLevel();
-            Assert.AreEqual(COgheHunger.Exhausted, COgheEnergy.State); Assert.AreEqual(COgheEnergy.ExhaustedSpeed, game.Motion.SpeedScale, .0001f, "Exhausted: slower still");
+            Assert.AreEqual(COgheHunger.Exhausted, COgheEnergy.State); Assert.AreEqual(1f, game.Motion.SpeedScale, .0001f, "Exhausted: still the same walk");
+            Assert.Greater(game.Personality.Droop, COghePersonality.HungryDroop + COghePersonality.HungryHeave, "Exhausted: droops more");
         }
     }
 }

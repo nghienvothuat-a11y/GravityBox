@@ -15,8 +15,10 @@ namespace GravityBox.Venom
         /// <summary>Sighs since the level started (tests).</summary>
         public int Sighs { get; private set; }
 
-        /// <summary>How far the body sags for a sigh, 0–1 (the renderer squashes the skin by it).</summary>
-        public float Sag
+        /// <summary>How far the body sags, 0–1: a sigh, or a hungry COghe's droop (the renderer squashes the skin by it).</summary>
+        public float Sag => game == null || game.Matter == null ? 0 : Mathf.Max(SighSag, Droop);
+        /// <summary>The sigh's share of <see cref="Sag"/>.</summary>
+        public float SighSag
         {
             get
             {
@@ -27,7 +29,37 @@ namespace GravityBox.Venom
             }
         }
 
-        private void ResetSigh() { sighAt = -100; Sighs = 0; }
+        // Hungry or exhausted in a level (Mrk 21/10/2026: "chỉ thể hiện bằng animation", nothing of the level changes), the
+        // body droops and heaves with slow, heavy breaths, walking or standing, and an exhausted one pants now and then on the
+        // way. Skin only (VenomLifeAnimation.Slump): the walk, its speed and every force stay as a fed COghe's.
+        /// <summary>A hungry COghe's droop, and an exhausted one's, each plus a breath's heave (fractions of a sigh's sag).</summary>
+        public const float HungryDroop = .16f, HungryHeave = .08f, ExhaustedDroop = .32f, ExhaustedHeave = .14f;
+        /// <summary>Seconds of walking between an exhausted COghe's pants.</summary>
+        public const float PantEvery = 6.5f;
+        /// <summary>The droop's share of <see cref="Sag"/>.</summary>
+        public float Droop
+        {
+            get
+            {
+                if (game == null || game.Matter == null || game.Home || !COgheEnergy.TiredIn(game)) return 0;
+                bool exhausted = COgheEnergy.State == COgheHunger.Exhausted;
+                float breath = .5f + .5f * Mathf.Sin(game.Matter.SimulationTime * (exhausted ? 1.3f : 1f) * 2 * Mathf.PI);
+                return exhausted ? ExhaustedDroop + ExhaustedHeave * breath : HungryDroop + HungryHeave * breath;
+            }
+        }
+        private float walkedSincePant;
+        /// <summary>Pants since the level started (tests).</summary>
+        public int Pants { get; private set; }
+        private void TiredSounds(float dt)
+        {
+            if (!COgheEnergy.TiredIn(game) || COgheEnergy.State != COgheHunger.Exhausted || !grounded || speed < .03f) return;
+            walkedSincePant += dt;
+            if (walkedSincePant < PantEvery) return;
+            walkedSincePant = 0; Pants++;
+            COgheAudio.Instance?.Play("creature_pant", .4f, 0, .3f);
+        }
+
+        private void ResetSigh() { sighAt = -100; Sighs = 0; walkedSincePant = PantEvery * .6f; Pants = 0; }
 
         private void OnMechanismTouched(COgheMechanism touched)
         {

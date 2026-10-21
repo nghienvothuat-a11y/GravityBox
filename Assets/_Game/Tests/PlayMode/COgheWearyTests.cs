@@ -34,12 +34,13 @@ namespace GravityBox.Tests
                 end = Time.realtimeSinceStartup + 10;
                 while (game.Matter.SimulationTime - tappedAt < COghePersonality.SighLength + .2f && Time.realtimeSinceStartup < end)
                 {
-                    deepest = Mathf.Max(deepest, p.Sag);
-                    if (p.Sag > 0) movedDuringSigh = Vector3.Distance(game.Motion.Centre(game.Motion.Selected), start);
+                    deepest = Mathf.Max(deepest, p.SighSag);   // (Sag also holds the tired droop)
+                    if (p.SighSag > 0) movedDuringSigh = Vector3.Distance(game.Motion.Centre(game.Motion.Selected), start);
                     yield return null;
                 }
                 Assert.Greater(deepest, .8f, "The body sags");
-                Assert.AreEqual(0, p.Sag, "…and rises again");
+                Assert.AreEqual(0, p.SighSag, "…and rises again");
+                Assert.Greater(p.Droop, COghePersonality.ExhaustedDroop - .001f, "Exhausted, it still droops");
                 Assert.Greater(movedDuringSigh, .01f, "It walks while it sighs: no wait");
                 Assert.IsTrue(rail.Busy || rail.CompletedJourneys > 0, "Still on its way to the handle");
 
