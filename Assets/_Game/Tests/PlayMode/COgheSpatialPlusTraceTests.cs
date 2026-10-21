@@ -27,17 +27,20 @@ namespace GravityBox.Tests
   // A solve with a running log: every tap, every wait, each new walk order with its path, and the parts twice a second.
   System.Action trace;string traceFile;
   void T(string line){File.AppendAllText(traceFile,line+"\n");}
-  IEnumerator TracePlus(string key,float speed=1)
+  IEnumerator TracePlus(string key,float speed=1,COgheHunger hunger=COgheHunger.Fed)
   {
-   Directory.CreateDirectory("Artifacts/SpatialPlus");traceFile=$"Artifacts/SpatialPlus/trace-{key}{(speed!=1?"-x"+speed:"")}.txt";File.WriteAllText(traceFile,"");
+   string suffix=(speed!=1?"-x"+speed:"")+(hunger==COgheHunger.Hungry?"-h":hunger==COgheHunger.Exhausted?"-e":"");
+   Directory.CreateDirectory("Artifacts/SpatialPlus");traceFile=$"Artifacts/SpatialPlus/trace-{key}{suffix}.txt";File.WriteAllText(traceFile,"");
    yield return key.StartsWith("COgheSpatial")?LoadScene(key):LoadPlus(key);int ticks=0;var seen=new System.Collections.Generic.HashSet<int>();
-   game.Motion.SpeedScale=speed;   // a slower (hungry) or faster (Agility) COghe
+   game.Motion.SpeedScale=speed;   // a faster (Agility) COghe
+   COgheEnergy.ApplyRests(game.Motion,hunger);int rests=0;   // a hungry one's stops for breath
    var lastCentre=new System.Collections.Generic.Dictionary<int,Vector3>();
    PlusContactProbe.Frame=game.Root;var rails=game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>();var contacts=new PlusContactProbe[rails.Length];
    for(int i=0;i<rails.Length;i++)contacts[i]=rails[i].Body.gameObject.AddComponent<PlusContactProbe>();
    trace=()=>
    {
     ticks++;
+    if(game.Motion.Rests!=rests){rests=game.Motion.Rests;T($"  REST #{rests} t={ticks*Dt:F2}{Parts()}");}
     for(int i=0;i<32;i++){var o=game.Motion.Get(i);if(o!=null&&seen.Add(o.CommandId)){string p="";foreach(var q in o.Path)p+=q.ToString("F2");T($"  order p{i} #{o.CommandId} exit={o.Exit} target={o.Target:F3} path {p}");}}
     if(ticks%60==0)
     {
@@ -62,19 +65,24 @@ namespace GravityBox.Tests
    System.Func<Vector3,IEnumerator> tap=p=>{T($"TAP {L(p):F3} selected={game.Motion.Selected}");return Tap(p);};
    System.Func<float,System.Func<bool>,string,IEnumerator> until=(sec,c,r)=>{T($"UNTIL {r}");return Until(sec,c,r);};
    try{yield return new COgheSpatialScenario(game,tap,until).Solve();T("SOLVED");}
-   finally{trace=null;}
+   finally{trace=null;COgheEnergy.ApplyRests(game.Motion,COgheHunger.Fed);}
   }
 
   // Run by name with COGHE_PLUS_TRACE=<key> (e.g. E07) to write Artifacts/SpatialPlus/trace-<key>.txt; skipped otherwise.
-  // Several keys, comma separated; a key may be a whole scene name (COgheSpatial13) and may carry a walking speed (E11@0.85).
+  // Several keys, comma separated; a key may be a whole scene name (COgheSpatial13) and may carry a walking speed (E11@0.85),
+  // with h or e after it for a hungry or exhausted COghe's stops for breath (E11@1e).
   [UnityTest,Explicit("diagnostic")] public IEnumerator TracePlusLevel()
   {
    string keys=System.Environment.GetEnvironmentVariable("COGHE_PLUS_TRACE");
    if(string.IsNullOrEmpty(keys))Assert.Ignore("Set COGHE_PLUS_TRACE to a Spatial Plus key (E01…E18, B1, B2).");
    foreach(var entry in keys.Split(','))
    {
-    var part=entry.Split('@');float speed=part.Length>1?float.Parse(part[1],System.Globalization.CultureInfo.InvariantCulture):1;
-    string error=null;yield return Flat(TracePlus(part[0],speed),e=>error=e);trace=null;   // a failed solve skips TracePlus's finally
+    // a speed ending in h or e adds a hungry or exhausted COghe's stops for breath (E11@1e)
+    var part=entry.Split('@');string token=part.Length>1?part[1]:"1";int mark=token.IndexOfAny(new[]{'h','e'});
+    var hunger=mark<0?COgheHunger.Fed:token[mark]=='e'?COgheHunger.Exhausted:COgheHunger.Hungry;
+    float speed=float.Parse(mark<0?token:token.Substring(0,mark),System.Globalization.CultureInfo.InvariantCulture);
+    string error=null;yield return Flat(TracePlus(part[0],speed,hunger),e=>error=e);trace=null;   // a failed solve skips TracePlus's finally
+    COgheEnergy.ApplyRests(game.Motion,COgheHunger.Fed);
     if(error!=null)T("FAILED "+error);
    }
   }
