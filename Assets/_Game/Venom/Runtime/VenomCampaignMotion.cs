@@ -48,6 +48,25 @@ namespace GravityBox.Venom
         /// <summary>Walking speed multiplier in levels (the Agility ability: +10% a level); Home keeps the base pace.</summary>
         public float SpeedScale=1;
         private float MoveSpeed=>game.Home?BaseMoveSpeed:BaseMoveSpeed*SpeedScale;
+        /// <summary>Stops for breath on the way (a hungry or exhausted COghe, COgheEnergy): after <see cref="RestWalk"/>
+        /// seconds of walking over still, level ground, the body stops for <see cref="RestPause"/> seconds and pants, then
+        /// walks on at its usual pace. 0 = never (fed, Home, the lab). A slower pace was tried first (21/10/2026): every
+        /// pace tipped different marginal spots of the levels, while stops on still floor leave every climb, step, handle,
+        /// tube and merge as the usual pace plays them.</summary>
+        public float RestWalk,RestPause;
+        private readonly float[] restWalked=new float[32],restSince=new float[32];
+        /// <summary>Seconds since the group of <paramref name="particle"/> stopped for breath, or -1 while it is not
+        /// resting.</summary>
+        public float RestingFor(int particle)
+        {
+            if(game.Matter==null||particle<0||particle>=32)return -1;
+            int a=RestAnchor(particle);
+            return a>=0&&restSince[a]>=0?game.Matter.SimulationTime-restSince[a]:-1;
+        }
+        /// <summary>Stops for breath since the level started (tests, the pant).</summary>
+        public int Rests {get;private set;}
+        private int RestAnchor(int particle)
+        {int group=game.Matter.Groups[particle];for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group&&!game.Matter.Escaped[i])return i;return -1;}
         private readonly float[] gripStrain=new float[32], detachedUntil=new float[32];
         private readonly HashSet<VenomSurfacePatch>[] detachedSurfaces=new HashSet<VenomSurfacePatch>[32];
         private sealed class RingCatch
@@ -60,8 +79,8 @@ namespace GravityBox.Venom
         public int Selected;
         private int nextCommandId;
         public int RouteCount=>nodes.Count;
-        public VenomCampaignMotion(VenomCampaign owner){game=owner;System.Array.Fill(stallSince,-1f);}
-        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);System.Array.Clear(gripStrain,0,32);System.Array.Clear(detachedUntil,0,32);System.Array.Clear(detachedSurfaces,0,32);System.Array.Clear(ringCatches,0,32);System.Array.Fill(stallSince,-1f);Selected=0;nextCommandId=0;BuildGraph(true);}
+        public VenomCampaignMotion(VenomCampaign owner){game=owner;System.Array.Fill(stallSince,-1f);System.Array.Fill(restSince,-1f);}
+        public void Reset(){System.Array.Clear(orders,0,32);System.Array.Clear(support,0,32);System.Array.Clear(gripStrain,0,32);System.Array.Clear(detachedUntil,0,32);System.Array.Clear(detachedSurfaces,0,32);System.Array.Clear(ringCatches,0,32);System.Array.Fill(stallSince,-1f);System.Array.Clear(restWalked,0,32);System.Array.Fill(restSince,-1f);Rests=0;Selected=0;nextCommandId=0;BuildGraph(true);}
         public Vector3 Centre(int anchor)
         {
             Vector3 c=Vector3.zero;int count=0;int group=game.Matter.Groups[anchor];
@@ -480,6 +499,56 @@ namespace GravityBox.Venom
                     !game.Clear(game.Matter.Bodies[i].position,target,game.Matter.Profile.ParticleRadius))return false;
             return true;
         }
+        // A stop for breath (RestWalk, RestPause) starts only on a free stretch of a walk: the player's or to a device's handle
+        // (not the exit, not a tube mouth), every foot gripping still, level floor (no carriage, lift, deck, prop or turning
+        // chamber), and the route level and clear of the goal for RestClear ahead. It ends after RestPause, or at once when any
+        // of that changes; the walking time toward the next stop is kept across orders.
+        private const float RestClear=.10f;
+        private bool Rest(int a,Order o,Vector3 centre,float dt,Rigidbody chamberBody)
+        {
+            bool free=RestWalk>0&&RestPause>0&&!game.Home&&!o.Exit&&o.AvoidSlippery&&!o.AwaitingContact&&!game.Attached&&
+                !game.InTube&&RestFloor(a,chamberBody)&&RestStretch(o,centre);
+            if(!free)return EndRest(a);
+            float now=game.Matter.SimulationTime;
+            if(restSince[a]>=0)
+            {
+                if(now-restSince[a]<RestPause)return true;
+                restWalked[a]=0;return EndRest(a);
+            }
+            restWalked[a]+=dt;
+            if(restWalked[a]<RestWalk)return false;
+            restSince[a]=now;restWalked[a]=0;Rests++;
+            return true;
+        }
+        private bool EndRest(int a){restSince[a]=-1;return false;}
+        private bool RestFloor(int a,Rigidbody chamberBody)
+        {
+            if(chamberBody!=null&&chamberBody.angularVelocity.sqrMagnitude>.0001f)return false;
+            int group=game.Matter.Groups[a],feet=0;
+            for(int i=0;i<32;i++)
+            {
+                if(game.Matter.Groups[i]!=group||game.Matter.Escaped[i]||support[i]==null)continue;
+                var patch=support[i];var frame=patch.Shape!=null?patch.Shape.attachedRigidbody:null;
+                if(patch.MotionFrame!=null||frame!=null&&frame!=chamberBody||patch.IsCurved||!HasGrip(i)||
+                   Vector3.Dot(patch.NormalAt(contact[i]),game.Root.up)<.9f)return false;
+                feet++;
+            }
+            return feet>=2;
+        }
+        private bool RestStretch(Order o,Vector3 centre)
+        {
+            if(o.Path.Count<2||o.Cursor>=o.Path.Count-1)return false;
+            if(Vector3.Distance(centre,game.Root.TransformPoint(o.Target))<RestClear)return false;
+            Vector3 up=game.Root.up,from=centre;
+            float level=Vector3.Dot(game.Root.TransformPoint(o.Path[o.Cursor]),up),travelled=0;
+            for(int k=o.Cursor;k<o.Path.Count&&travelled<RestClear;k++)
+            {
+                Vector3 p=game.Root.TransformPoint(o.Path[k]);
+                if(Mathf.Abs(Vector3.Dot(p,up)-level)>.006f)return false;
+                travelled+=Vector3.Distance(from,p);from=p;
+            }
+            return true;
+        }
         public void Step(float dt)
         {
             // Scene children are not enabled yet during the owner's Awake.
@@ -530,7 +599,7 @@ namespace GravityBox.Venom
                 float weight=mass*9.81f;
                 strain=grips>=2&&capacity<weight?strain+dt*8*(weight-capacity)/weight:Mathf.Max(0,strain-dt*.25f);
                 bool suppressed=game.MechanismSuppressesMotion(a)||game.IsFlowing(a);
-                if(o!=null&&!o.Holding&&!o.Exit&&caught==null&&!suppressed&&!game.Attached&&!game.InTube)FreeTunnelledNodes(a,centre);else stallSince[a]=-1;
+                if(o!=null&&!o.Holding&&!o.Exit&&caught==null&&!suppressed&&!game.Attached&&!game.InTube&&restSince[a]<0)FreeTunnelledNodes(a,centre);else stallSince[a]=-1;
                 bool peeled=strain>.14f&&!suppressed;
                 HashSet<VenomSurfacePatch> released=null;
                 if(peeled)
@@ -567,11 +636,13 @@ namespace GravityBox.Venom
                         BodyCanReach(a,game.Root.TransformPoint(o.Target))){Cancel(a);o=null;}
                 }
                 bool anchored=(grips>=2||caught!=null)&&(!game.Definition.Passive||game.Home)&&!suppressed;
-                if(o!=null&&caught==null&&anchored)target=EdgeTarget(o,a,centre,target);
+                bool resting=o!=null&&caught==null&&anchored?Rest(a,o,centre,dt,chamberBody):EndRest(a);
+                if(o!=null&&caught==null&&anchored&&!resting)target=EdgeTarget(o,a,centre,target);
+                if(resting)target=centre;   // stands where it stopped; the drive below brakes it
                 Vector3 delta=target-centre;
-                Vector3 desired=o!=null?delta.normalized*MoveSpeed:Vector3.zero;
+                Vector3 desired=o!=null&&!resting?delta.normalized*MoveSpeed:Vector3.zero;
                 // the last stretch keeps the base pace, so a faster COghe (Agility) still stops exactly where it is sent
-                if(o!=null&&o.Cursor==o.Path.Count-1)desired=Vector3.ClampMagnitude(delta*4,BaseMoveSpeed);
+                if(o!=null&&!resting&&o.Cursor==o.Path.Count-1)desired=Vector3.ClampMagnitude(delta*4,BaseMoveSpeed);
                 if(caught!=null)desired=Vector3.ClampMagnitude((caught.Surface.transform.TransformPoint(caught.LocalTarget)-centre)*6,.35f);
                 bool railManipulation=game.TryRailManipulationIntent(a,out var handleTarget,out var handleVelocity);
                 if(railManipulation){delta=handleTarget-centre;desired=handleVelocity;}

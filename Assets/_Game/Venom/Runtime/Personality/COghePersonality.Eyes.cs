@@ -52,6 +52,7 @@ namespace GravityBox.Venom
             float now = game.Matter.SimulationTime;
             bool exhausted = COgheEnergy.TiredIn(game) && COgheEnergy.State == COgheHunger.Exhausted;
             if (exhausted && Sag > .05f) return COgheMood.Sleepy;   // the sigh at a device (COghePersonality.Weary)
+            if (RestSag > .05f) return COgheMood.Sleepy;              // panting at a stop for breath
             foreach (var m in game.Mechanisms)
             {
                 if (m == null) continue;

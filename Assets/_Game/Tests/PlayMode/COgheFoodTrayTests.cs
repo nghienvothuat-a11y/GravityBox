@@ -64,11 +64,14 @@ namespace GravityBox.Tests
             Assert.AreEqual(50, COgheEnergy.Value, "10 a win"); Assert.AreEqual(COgheHunger.Fed, COgheEnergy.State);
             Assert.IsFalse(ui.GetComponentsInChildren<Button>().Any(b => b.name == COgheProductUI.FeedAfterVictoryButton), "Fed: no prompt");
             game.ResetLevel(); Assert.AreEqual(1f, game.Motion.SpeedScale, .0001f, "Fed: the usual pace");
+            Assert.AreEqual(0f, game.Motion.RestWalk, "Fed: no stops for breath");
 
             ui.ShowVictoryForTests(ui.Catalog.Levels[order - 1].Id, order);
             Assert.AreEqual(40, COgheEnergy.Value); Assert.AreEqual(COgheHunger.Hungry, COgheEnergy.State);
-            game.ResetLevel(); Assert.AreEqual(1f, game.Motion.SpeedScale, .0001f, "Hungry: it only looks tired, the walk is the same");
+            game.ResetLevel(); Assert.AreEqual(1f, game.Motion.SpeedScale, .0001f, "Hungry: the usual pace between stops");
             Assert.Greater(game.Personality.Droop, 0f, "and droops");
+            Assert.AreEqual(COgheEnergy.HungryWalk, game.Motion.RestWalk, "Hungry: stops for breath");
+            Assert.AreEqual(COgheEnergy.HungryPause, game.Motion.RestPause);
             COgheShop.Current.Agility = 2; game.ResetLevel();
             Assert.AreEqual(1.2f, game.Motion.SpeedScale, .0001f, "Agility counts as usual");
             COgheShop.Current.Agility = 0;
@@ -100,10 +103,13 @@ namespace GravityBox.Tests
             Assert.AreEqual(COgheEnergy.Max, COgheEnergy.Value, "60 + 75, full at 100");
             game.ResetLevel(); Assert.AreEqual(1f, game.Motion.SpeedScale, .0001f, "Fed again: the usual pace");
             Assert.AreEqual(0f, game.Personality.Droop, "Fed: no droop");
+            Assert.AreEqual(0f, game.Motion.RestWalk, "Fed again: no stops");
 
             COgheShop.SetEnergyUsed(80); game.ResetLevel();
             Assert.AreEqual(COgheHunger.Exhausted, COgheEnergy.State); Assert.AreEqual(1f, game.Motion.SpeedScale, .0001f, "Exhausted: still the same walk");
             Assert.Greater(game.Personality.Droop, COghePersonality.HungryDroop + COghePersonality.HungryHeave, "Exhausted: droops more");
+            Assert.AreEqual(COgheEnergy.ExhaustedWalk, game.Motion.RestWalk, "Exhausted: stops more often");
+            Assert.AreEqual(COgheEnergy.ExhaustedPause, game.Motion.RestPause, "and longer");
         }
     }
 }

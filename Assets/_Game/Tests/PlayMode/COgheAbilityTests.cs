@@ -63,26 +63,73 @@ namespace GravityBox.Tests
    game.Motion.SpeedScale=1;
   }
 
-  // Every level of the catalog solved with COghe at Agility 10 (Explicit, ~25 min): COGHE_AGILITY_SCALE (default 2),
-  // COGHE_AGILITY_LEVELS (positions, default all). Report: Artifacts/Agility/solve.txt.
+  // Hungry or exhausted, COghe stops on the way to catch its breath, stands still meanwhile, and still gets where it was
+  // sent; fed, it never stops.
+  [UnityTest] public IEnumerator AHungryCOgheStopsForBreathOnTheWayAndStillArrives()
+  {
+   int Walk(COgheHunger hunger,out float seconds,out float still)
+   {
+    game.ResetLevel();COgheEnergy.ApplyRests(game.Motion,hunger);
+    for(int i=0;i<90;i++)Tick();
+    Vector3 start=game.Motion.Centre(0),local=game.Root.InverseTransformPoint(start);
+    game.Motion.Move(0,game.Root.TransformPoint(new Vector3(local.x>0?-.32f:.32f,-.30f,local.z)));
+    seconds=0;still=0;
+    for(int i=0;i<20f/Dt&&game.Motion.Get(0)!=null;i++)
+    {
+     Tick();seconds+=Dt;
+     if(game.Motion.RestingFor(0)>.3f)still=Mathf.Max(still,game.Matter.Bodies[0].linearVelocity.magnitude);
+    }
+    Assert.IsNull(game.Motion.Get(0),$"{hunger}: arrives");
+    return game.Motion.Rests;
+   }
+   yield return Load(1);
+   try
+   {
+    int fed=Walk(COgheHunger.Fed,out float fedTime,out _);
+    int hungry=Walk(COgheHunger.Hungry,out float hungryTime,out float hungryStill);
+    int exhausted=Walk(COgheHunger.Exhausted,out float exhaustedTime,out float exhaustedStill);
+    Debug.Log($"RESTS fed {fed} in {fedTime:F2}s, hungry {hungry} in {hungryTime:F2}s, exhausted {exhausted} in {exhaustedTime:F2}s; still {hungryStill:F3}/{exhaustedStill:F3} m/s");
+    Assert.AreEqual(0,fed,"Fed: no stops");
+    Assert.GreaterOrEqual(hungry,1,"Hungry: a stop on a long walk");
+    Assert.Greater(exhausted,hungry,"Exhausted: more stops");
+    Assert.Greater(exhaustedTime,hungryTime,"and slower");Assert.Greater(hungryTime,fedTime);
+    Assert.Less(Mathf.Max(hungryStill,exhaustedStill),.03f,"Standing still at a stop");
+   }
+   finally{COgheEnergy.ApplyRests(game.Motion,COgheHunger.Fed);}
+  }
+
+  // Every level of the catalog solved with COghe at Agility 10 (Explicit, ~2.5 min a speed): COGHE_AGILITY_SCALE (default 2;
+  // a comma list runs each speed in turn; a speed ending in h or e adds a hungry or exhausted COghe's stops for breath,
+  // e.g. 1e, and a factor after the mark scales the walk between stops, moving where they fall: 1e.85),
+  // COGHE_AGILITY_LEVELS (positions, default all). Report: Artifacts/Agility/solve.txt, and solve-x<speed>.txt for each.
   [UnityTest,Explicit,Timeout(10800000)] public IEnumerator SolveEveryLevelAtTopAgility()
   {
-   float scale=float.TryParse(Environment.GetEnvironmentVariable("COGHE_AGILITY_SCALE"),out float s)?s:2;
+   string scales=Environment.GetEnvironmentVariable("COGHE_AGILITY_SCALE");if(string.IsNullOrEmpty(scales))scales="2";
    string only=Environment.GetEnvironmentVariable("COGHE_AGILITY_LEVELS");
-   Directory.CreateDirectory("Artifacts/Agility");string log="Artifacts/Agility/solve.txt";File.WriteAllText(log,$"speed x{scale}\n");
+   Directory.CreateDirectory("Artifacts/Agility");string log="Artifacts/Agility/solve.txt";File.WriteAllText(log,"");
    yield return Load(1);var order=game.Definition.SceneSequence;
    var levels=new List<int>();if(string.IsNullOrEmpty(only))for(int i=1;i<=order.Length;i++)levels.Add(i);else foreach(var p in only.Split(','))levels.Add(int.Parse(p));
    var failures=new List<string>();
-   foreach(int n in levels)
+   var invariant=System.Globalization.CultureInfo.InvariantCulture;
+   foreach(string text in scales.Split(','))
    {
-    yield return LoadScene(order[n-1]);game.Motion.SpeedScale=scale;
-    string error="";float start=game.Matter.SimulationTime;
-    yield return Flat(new COgheSpatialScenario(game,Tap,Until).Solve(),e=>error=e);
-    bool solved=game.Owner.Completed&&string.IsNullOrEmpty(error);
-    string line=$"{n:00} {Path.GetFileNameWithoutExtension(order[n-1])}: {(solved?"solved":"FAILED")} in {game.Matter.SimulationTime-start:F1}s {error}";
-    File.AppendAllText(log,line+"\n");if(!solved)failures.Add(line);
+    string token=text.Trim();int mark=token.IndexOfAny(new[]{'h','e'});
+    var hunger=mark<0?COgheHunger.Fed:token[mark]=='e'?COgheHunger.Exhausted:COgheHunger.Hungry;
+    float scale=float.Parse(mark<0?token:token.Substring(0,mark),invariant);
+    float walkFactor=mark>=0&&mark<token.Length-1?float.Parse(token.Substring(mark+1),invariant):1;
+    string speedLog=$"Artifacts/Agility/solve-x{token}.txt";File.WriteAllText(speedLog,$"speed x{token}\n");
+    File.AppendAllText(log,$"speed x{token}\n");
+    foreach(int n in levels)
+    {
+     yield return LoadScene(order[n-1]);game.Motion.SpeedScale=scale;COgheEnergy.ApplyRests(game.Motion,hunger);game.Motion.RestWalk*=walkFactor;
+     string error="";float start=game.Matter.SimulationTime;
+     yield return Flat(new COgheSpatialScenario(game,Tap,Until).Solve(),e=>error=e);
+     bool solved=game.Owner.Completed&&string.IsNullOrEmpty(error);
+     string line=$"{n:00} {Path.GetFileNameWithoutExtension(order[n-1])}: {(solved?"solved":"FAILED")} in {game.Matter.SimulationTime-start:F1}s rests {game.Motion.Rests} {error}";
+     File.AppendAllText(log,line+"\n");File.AppendAllText(speedLog,line+"\n");if(!solved)failures.Add($"x{token} "+line);
+    }
    }
-   game.Motion.SpeedScale=1;
+   game.Motion.SpeedScale=1;COgheEnergy.ApplyRests(game.Motion,COgheHunger.Fed);
    Assert.IsEmpty(failures,string.Join("\n",failures));
   }
 

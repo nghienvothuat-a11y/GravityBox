@@ -426,6 +426,7 @@ namespace GravityBox.Venom
                     game.Motion.Support(i, out var collider, out _, out _) && collider == WorkingSurface.Shape) feet++;
             if (Phase == TaskPhase.Approaching)
             {
+                if (game.Motion.RestingFor(Actor) >= 0) lastProgressAt += dt;   // a stop for breath is not a stall
                 float distance = Vector3.Distance(centre, StandPoint);
                 if (distance < bestDistance - .006f) { bestDistance = distance; lastProgressAt = now; }
                 if (distance < .039f && feet >= 2 && game.Clear(centre, HandPoint, 0, Rail.Body))
