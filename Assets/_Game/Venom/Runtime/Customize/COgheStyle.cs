@@ -18,6 +18,8 @@ namespace GravityBox.Venom
         {
             Hat("HAT_BEANIE", "Beanie", 11), Hat("HAT_PARTY", "Party hat", 17), Hat("HAT_FLOWER", "Flower crown", 19), Hat("HAT_CAP", "Cap", 25),
             Hat("HAT_STRAW", "Straw hat", 29), Hat("HAT_PROPELLER", "Propeller cap", 36), Hat("HAT_CROWN", "Crown", 45), Hat("HAT_ASTRO", "Space helmet", 58),
+            // The first mystery gift box (display 3) holds it; anyone who skips that box can buy it once Style opens.
+            Hat("HAT_BEE", "Bee hat", 8),
         };
         public static readonly COgheWear[] InsideItems =
         {

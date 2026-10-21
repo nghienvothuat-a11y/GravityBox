@@ -50,7 +50,7 @@ namespace GravityBox.Venom
         private static int Value(string key, int fallback) => overrides.TryGetValue(key, out int v) ? v : fallback;
 
         private static List<COgheShopItem> items;
-        /// <summary>Everything that can be owned: 14 Home items, 12 inks, 8 hats, 6 inside things.</summary>
+        /// <summary>Everything that can be owned: 14 Home items, 12 inks, 9 hats, 6 inside things.</summary>
         public static IReadOnlyList<COgheShopItem> Items
         {
             get

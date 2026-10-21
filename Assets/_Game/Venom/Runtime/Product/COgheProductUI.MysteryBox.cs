@@ -1,0 +1,193 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace GravityBox.Venom
+{
+    /// <summary>
+    /// Mystery gift box (Mrk 21/10/2026): on display level 3 and every 5 levels after (a boss passes its turn to the
+    /// next level), a small bright box drops near the exit. When the merged body comes near, COghe walks to it on its
+    /// own, the camera closes in, and the player may open it with a rewarded ad without knowing what is inside: Drops
+    /// or an item (the first box: the Bee hat). Skip and it flies away. Each level's box opens once (key box:&lt;level&gt;).
+    /// The box is presentation only (<see cref="COgheMysteryBox"/>); the puzzle, its exit and its physics are unchanged.
+    /// </summary>
+    public sealed partial class COgheProductUI
+    {
+        public enum MysteryBoxPhase { None, Waiting, Walking, Offer, Reveal, Done }
+        public MysteryBoxPhase BoxPhase { get; private set; }
+        public COgheMysteryBox MysteryBox => mysteryBox;
+        /// <summary>What the opened box gave (tests, reveal): an item id, or null with <see cref="BoxDrops"/>.</summary>
+        public string BoxItem { get; private set; }
+        public int BoxDrops { get; private set; }
+        private COgheMysteryBox mysteryBox;
+        private float boxClock, boxFxAt;
+        private const float BoxTriggerRadius = .14f, BoxExitRadius = .18f, BoxWalkLimit = 3.5f, BoxDropDelay = 1f;
+        public const string BoxPlacement = "mystery_box";
+        public const string FirstBoxItem = "HAT_BEE";
+
+        /// <summary>Where each level's box rests (level root space, on the floor COghe crosses on its way out) and the
+        /// camera yaw that sees it in a view-only box. A level without a place here has no box until one is chosen and
+        /// tested.</summary>
+        public static readonly Dictionary<string, (Vector3 spot, float yaw)> BoxSpots = new Dictionary<string, (Vector3, float)>
+        {
+            // 03: behind the observation wall, beside the floor route to the back-glass exit; seen from the right (yaw -72).
+            { "coghe.spatial.pilot.03", (new Vector3(.10f, -.30f, .17f), -72) },
+        };
+
+        /// <summary>Display 3, 8, 13 …: every fifth level from 3; a boss passes its turn to the level after it.</summary>
+        public static bool BoxScheduled(int order, System.Func<int, bool> boss)
+        {
+            bool Slot(int n) => n >= 3 && (n - 3) % 5 == 0;
+            if (order < 3 || boss(order)) return false;
+            return Slot(order) || Slot(order - 1) && boss(order - 1);
+        }
+        private bool IsBoss(int order) => Catalog != null && order >= 1 && order <= Catalog.Levels.Length && Catalog.Levels[order - 1] != null && Catalog.Levels[order - 1].Boss;
+        private string BoxKey => "box:" + LevelId;
+        public bool MysteryBoxHere => Game != null && Game.Definition != null && BoxSpots.ContainsKey(LevelId) &&
+            BoxScheduled(Game.Definition.Order, IsBoss) && !COgheShop.Paid(BoxKey);
+        private bool BoxWalking => BoxPhase == MysteryBoxPhase.Walking;
+
+        private void TickMysteryBox()
+        {
+            if (Page != COgheProductPage.Game) return;
+            if (BoxPhase == MysteryBoxPhase.None)
+            {
+                if (!MysteryBoxHere || Popup != COgheProductPopup.None || Time.timeSinceLevelLoad < BoxDropDelay) return;
+                DropMysteryBox(); return;
+            }
+            if (BoxPhase is MysteryBoxPhase.Walking or MysteryBoxPhase.Offer or MysteryBoxPhase.Reveal)
+                Game.CameraRig.TurnTo(BoxSpots[LevelId].yaw, Time.unscaledDeltaTime);   // the close-up sees round walls
+            if (mysteryBox == null || Popup != COgheProductPopup.None) return;
+            if (BoxPhase == MysteryBoxPhase.Waiting)
+            {
+                if (!mysteryBox.Landed || Game.Owner.Completed || Game.Owner.Lost || Game.Matter.FragmentCount != 1) return;
+                Vector3 centre = Game.Motion.Centre(Game.Motion.Selected);
+                bool near = Vector3.Distance(centre, mysteryBox.Rest) < BoxTriggerRadius ||
+                            Game.Owner.Outlet != null && Vector3.Distance(centre, Game.Owner.Outlet.position) < BoxExitRadius;
+                if (near) WalkToMysteryBox(centre);
+            }
+            else if (BoxPhase == MysteryBoxPhase.Walking)
+            {
+                boxClock += Time.deltaTime;
+                if (Game.Motion.Get(Game.Motion.Selected) == null || boxClock > BoxWalkLimit) { BoxPhase = MysteryBoxPhase.Offer; ShowPopup(COgheProductPopup.MysteryBox); }
+            }
+        }
+
+        private void DropMysteryBox()
+        {
+            var root = Game.Root; Vector3 up = root.up;
+            var go = new GameObject("Mystery gift box"); go.transform.SetParent(root, true);
+            mysteryBox = go.AddComponent<COgheMysteryBox>();
+            mysteryBox.Initialize(Game.Owner.MatterProfile.Skin, root.TransformPoint(BoxSpots[LevelId].spot), up);
+            BoxPhase = MysteryBoxPhase.Waiting;
+            COgheAnalytics.Log("mystery_box_drop", "level_id", LevelId);
+        }
+
+        private void WalkToMysteryBox(Vector3 centre)
+        {
+            // Stand beside the box as the close-up camera sees it (not in front of it), on the side COghe comes from.
+            Vector3 up = Game.Root.up, heading = Game.Definition.CameraEuler; heading.y += BoxSpots[LevelId].yaw;
+            Vector3 across = Vector3.ProjectOnPlane(Quaternion.Euler(heading) * Vector3.right, up).normalized;
+            if (Vector3.Dot(centre - mysteryBox.Rest, across) < 0) across = -across;
+            // 9 cm aside and 3 cm further from the camera, so the 8 cm body never covers the 4 cm box; the close-up
+            // centres between them.
+            Vector3 deeper = Vector3.ProjectOnPlane(Quaternion.Euler(heading) * Vector3.forward, up).normalized;
+            Vector3 stand = mysteryBox.Rest + across * .09f + deeper * .03f + up * .019f;
+            Game.Motion.Move(Game.Motion.Selected, stand);
+            Game.CameraRig.Spotlight = mysteryBox.Rest + across * .035f + up * .03f;
+            BoxPhase = MysteryBoxPhase.Walking; boxClock = 0; HideHint();
+            COgheAnalytics.Log("mystery_box_reach", "level_id", LevelId);
+        }
+
+        /// <summary>The prize, decided when the box opens (so it is never something already owned) and the same for a
+        /// given level and save: the first box is the Bee hat; later ones are Drops (30/50/80) or an item not owned yet,
+        /// up to ten levels ahead of its unlock.</summary>
+        public static COgheReward MysteryPrize(string levelId, int order)
+        {
+            if (COgheEconomy.Find(FirstBoxItem) != null && !COgheShop.Owns(FirstBoxItem) && order <= 3) return COgheReward.Mystery(levelId, 0, FirstBoxItem);
+            var rng = new System.Random(StableSeed(levelId));
+            if (rng.NextDouble() < .45)
+            {
+                var pool = new List<string>();
+                foreach (var item in COgheEconomy.Items)
+                    if (!COgheEconomy.IsGift(item.Id) && !COgheShop.Owns(item.Id) && item.Level <= order + 10) pool.Add(item.Id);
+                if (pool.Count > 0) return COgheReward.Mystery(levelId, 0, pool[rng.Next(pool.Count)]);
+            }
+            double roll = rng.NextDouble();
+            return COgheReward.Mystery(levelId, roll < .5 ? 30 : roll < .85 ? 50 : 80, null);
+        }
+        private static int StableSeed(string s) { unchecked { int h = 23; foreach (char c in s ?? "") h = h * 31 + c; return h; } }
+
+        public void OpenMysteryBox()
+        {
+            if (BoxPhase != MysteryBoxPhase.Offer) return;
+            var reward = MysteryPrize(LevelId, Game.Definition.Order);
+            void Reveal()
+            {
+                if (this == null) return;
+                BoxItem = reward.ItemId; BoxDrops = reward.Amount; BoxPhase = MysteryBoxPhase.Reveal; boxFxAt = Time.unscaledTime;
+                if (BoxItem != null && COgheWardrobe.Find(BoxItem) is { Inside: false })
+                { var look = COgheStyle.Current; look.Hat = BoxItem; look.Save(); look.ApplyTo(Game); }   // worn at once
+                mysteryBox?.Open(); COgheAudio.Happy();
+                COgheAnalytics.Log("mystery_box_open", "level_id", LevelId, "prize", BoxItem ?? "drops", "amount", BoxDrops);
+                Popup = COgheProductPopup.MysteryReveal; Rebuild();
+            }
+            if (COgheAds.RewardedAvailable)
+                COgheAds.Rewarded(BoxPlacement, reward, ok =>
+                {
+                    if (this == null) return;
+                    if (ok) Reveal(); else Notify("No ad right now. Try again in a moment.");
+                });
+            else { COgheShop.ApplyReward(reward); Reveal(); }   // never locked behind an ad that cannot load (as hints)
+        }
+
+        public void SkipMysteryBox()
+        {
+            if (BoxPhase != MysteryBoxPhase.Offer) return;
+            mysteryBox?.FlyAway(); COgheAnalytics.Log("mystery_box_skip", "level_id", LevelId);
+            EndMysteryBox();
+        }
+
+        private void EndMysteryBox()
+        {
+            BoxPhase = MysteryBoxPhase.Done; Game.CameraRig.Spotlight = null; Resume();
+        }
+
+        private bool MysteryBoxPopup()
+        {
+            if (Popup != COgheProductPopup.MysteryBox && Popup != COgheProductPopup.MysteryReveal) return false;
+            float w = Mathf.Min(312, width - 40), h = Popup == COgheProductPopup.MysteryBox ? 214 : 268;
+            // Low on the screen: the box stays in view above it.
+            var panel = art.Box(popupRoot, "Panel", new Rect((width - w) * .5f, height - h - 28, w, h), COgheUIArt.Paper, true).rectTransform;
+            if (Popup == COgheProductPopup.MysteryBox)
+            {
+                PopupTitle(panel, w, "A mystery gift!");
+                art.Label(panel, "Message", "What's inside? Open it to find out.", new Rect(24, 70, w - 48, 24), 14, COgheUIArt.Muted);
+                var open = LabelButton(panel, "Open mystery box", new Rect(24, h - 116, w - 48, 54), COgheIcon.Play, "Watch an ad to open", OpenMysteryBox, true);
+                open.interactable = !COgheAds.Showing;
+                LabelButton(panel, "Skip mystery box", new Rect(24, h - 56, w - 48, 40), COgheIcon.Close, "Skip", SkipMysteryBox);
+            }
+            else
+            {
+                COgheRewardFx.Fireworks(panel, boxFxAt);
+                PopupTitle(panel, w, "Surprise!");
+                var item = BoxItem != null ? COgheEconomy.Find(BoxItem) : null;
+                if (item != null)
+                {
+                    ItemPicture(panel, item.Id, new Rect((w - 88) * .5f, 70, 88, 88));
+                    var name = art.Label(panel, "Prize", item.Name, new Rect(24, 162, w - 48, 26), 18, COgheUIArt.Ink); name.font = art.BoldFont;
+                    if (item.Group == COgheShopGroup.Hat) art.Label(panel, "Worn", "COghe is wearing it!", new Rect(24, 188, w - 48, 20), 12, COgheUIArt.Teal);
+                }
+                else
+                {
+                    var reward = art.Rect(panel, "Prize", new Rect(w * .5f - 84, 96, 168, 48));
+                    DropIcon(reward, new Rect(0, 6, 36, 36));
+                    var amount = art.Label(reward, "Amount", "+" + BoxDrops + " Drops", new Rect(42, 0, 130, 48), 26, COgheUIArt.Teal, TextAnchor.MiddleLeft);
+                    amount.font = art.BoldFont; COgheCountUp.Run(amount, BoxDrops, "+", " Drops");
+                }
+                LabelButton(panel, "Mystery box continue", new Rect(24, h - 70, w - 48, 54), COgheIcon.Forward, "Great!", EndMysteryBox, true);
+            }
+            return true;
+        }
+    }
+}

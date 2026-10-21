@@ -126,6 +126,19 @@ namespace GravityBox.Venom
             foreach (var id in Inside) BuildInside(id);
         }
 
+        /// <summary>The Bee hat (mystery gift box, 21/10/2026): yellow with two cocoa stripes, a cocoa band and two antennae
+        /// with yellow tips, so they read against the black body. Shared with the Style icon renderer.</summary>
+        public static void BeeHat(COgheLowPoly k)
+        {
+            k.Paint("#f2c230").Lathe(new[] { new Vector2(.026f, .004f), new Vector2(.025f, .011f), new Vector2(.022f, .018f), new Vector2(.015f, .024f), new Vector2(.007f, .027f), new Vector2(0, .028f) }, 14);
+            k.Paint("#4a372c").Cylinder(.0257f, .0257f, .0085f, .0118f, 14); k.Cylinder(.0226f, .0226f, .0168f, .0198f, 14);
+            k.Cylinder(.0275f, .0275f, -.002f, .007f, 14);
+            foreach (float side in new[] { -1f, 1f })
+            {
+                k.Paint("#4a372c").Rod(new Vector3(side * .007f, .025f, 0), new Vector3(side * .014f, .043f, .003f), .0011f, 6);
+                k.Paint("#f2c230").Ico(new Vector3(side * .0145f, .0448f, .0032f), Vector3.one * .0034f, 0);
+            }
+        }
         private void BuildHat(string id)
         {
             var k = new COgheLowPoly(); Material glassFx = null; COgheLowPoly glass = null, blades = null;
@@ -192,6 +205,7 @@ namespace GravityBox.Venom
                         k.Paint(Ivory).Ico(tip + Vector3.up * .0015f, Vector3.one * .0018f, 0);
                     }
                     sink = .006f; break;
+                case "HAT_BEE": BeeHat(k); sink = .012f; break;
                 case "HAT_ASTRO":
                     k.Paint(Ivory).Cylinder(.031f, .031f, -.002f, .006f, 16);
                     k.Paint(Slate).Rod(new Vector3(.012f, .03f, 0), new Vector3(.016f, .045f, 0), .0011f, 6);

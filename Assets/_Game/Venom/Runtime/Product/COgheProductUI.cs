@@ -9,7 +9,7 @@ using UnityEngine.UI;
 namespace GravityBox.Venom
 {
     public enum COgheProductPage { MainMenu, Game, Home, Intro, Victory, Style }
-    public enum COgheProductPopup { None, Pause, Help, Restart, LeaveMenu, LeaveHome, Collection, Locked, Failure, Levels, StyleReplaceInk, StyleRinse, StyleReplaceInside, StyleLocked, StyleNeedsClear, StyleTryOn, Buy, Unlocks, Gift, Plus, BonusOffer, BonusDone, AbilityPick, AbilityStats }
+    public enum COgheProductPopup { None, Pause, Help, Restart, LeaveMenu, LeaveHome, Collection, Locked, Failure, Levels, StyleReplaceInk, StyleRinse, StyleReplaceInside, StyleLocked, StyleNeedsClear, StyleTryOn, Buy, Unlocks, Gift, Plus, BonusOffer, BonusDone, AbilityPick, AbilityStats, MysteryBox, MysteryReveal }
 
     /// <summary>Test-only tools (the level picker in Pause): compiled into development builds and the team's test builds
     /// (COGHE_TEST_TOOLS, added by the build scripts unless COGHE_STORE=1); absent from a store build.</summary>
@@ -29,7 +29,7 @@ namespace GravityBox.Venom
         public COgheProductPage Page {get;private set;}
         public COgheProductPopup Popup {get;private set;}
         public COgheProductCatalog Catalog {get;private set;}
-        public bool BlockWorldInput => Page!=COgheProductPage.Game && Page!=COgheProductPage.Home || Popup!=COgheProductPopup.None;
+        public bool BlockWorldInput => Page!=COgheProductPage.Game && Page!=COgheProductPage.Home || Popup!=COgheProductPopup.None || BoxWalking;
         public bool Showcase => Page==COgheProductPage.MainMenu || Page==COgheProductPage.Home || Page==COgheProductPage.Style;
         public RectTransform SafeRoot => safe;
         public int ResumeLevel => Catalog.NextIncomplete(Game.Progress);
@@ -107,7 +107,7 @@ namespace GravityBox.Venom
             if(Page==COgheProductPage.Game)
             {
                 if(Game.Owner.Lost&&Popup==COgheProductPopup.None){ShowPopup(COgheProductPopup.Failure);return;}
-                WatchRefusals();
+                WatchRefusals();TickMysteryBox();
                 if(Game.Owner.Completed){Page=COgheProductPage.Victory;BeginVictory();Rebuild();COgheConfetti.Burst(safe,height,ConfettiOrigin(),Game.Definition.Order);return;}
                 if(Time.unscaledTime>=nextRefresh)
                 {

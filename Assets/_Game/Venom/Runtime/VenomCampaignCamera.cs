@@ -16,6 +16,9 @@ namespace GravityBox.Venom
         public float ZoomScale {get;private set;}=1;
         public void Orbit(float pixels,float viewportWidth)
         {if(game.Definition.ViewOnly&&!game.Home)OrbitYaw=Mathf.Repeat(OrbitYaw-pixels/Mathf.Max(1,viewportWidth)*240+180,360)-180;}
+        /// <summary>Turn a view-only box's camera toward <paramref name="yaw"/> (the mystery box close-up), at most 120°/s.</summary>
+        public void TurnTo(float yaw,float dt)
+        {if(game.Definition.ViewOnly&&!game.Home)OrbitYaw=Mathf.MoveTowardsAngle(OrbitYaw,yaw,Mathf.Max(0,dt)*120);}
         public void Pinch(float ratio)
         {if(game.Definition.ViewOnly&&!game.Home&&ratio>0)ZoomScale=Mathf.Clamp(ZoomScale/ratio,.35f,1.5f);}
         public void PinchAt(float ratio,Vector2 screen)
@@ -112,6 +115,8 @@ namespace GravityBox.Venom
             float scale=Mathf.Min(width/540f,height/960f);
             return p.y>165*scale&&p.y<height-(ShowZones?244:195)*scale;
         }
+        /// <summary>World point to close in on (null: the usual framing), and its half-extent in metres.</summary>
+        public Vector3? Spotlight;public float SpotlightHalf=.10f;
         public void Frame(int width,int height,float dt,bool snap=false,Rect? safeArea=null)
         {
             width=Mathf.Max(1,width);height=Mathf.Max(1,height);
@@ -124,7 +129,12 @@ namespace GravityBox.Venom
             Rect usable=UsableRect(width,height,safeArea??new Rect(0,0,width,height));
             Vector3 right=camera.transform.right,up=camera.transform.up;
             Vector3 target;float halfWidth,halfHeight;
-            if(game.Zoom)
+            if(Spotlight.HasValue)
+            {
+                // A close-up chosen by the product (the mystery gift box): half-extents around one world point.
+                target=Spotlight.Value;halfWidth=halfHeight=SpotlightHalf;
+            }
+            else if(game.Zoom)
             {
                 target=game.Motion.Centre(game.Motion.Selected);
                 halfWidth=.145f;halfHeight=.18f;
@@ -144,7 +154,7 @@ namespace GravityBox.Venom
                 }
             }
             float targetSize=Mathf.Max(halfWidth/(camera.aspect*usable.width/width),halfHeight/(usable.height/height));
-            if(game.Definition.ViewOnly&&!game.Home)targetSize*=ZoomScale;
+            if(game.Definition.ViewOnly&&!game.Home&&!Spotlight.HasValue)targetSize*=ZoomScale;
             float blend=1-Mathf.Exp(-Mathf.Max(0,dt)*10);
             if(snap||!initialized){focus=target;camera.orthographicSize=targetSize;initialized=true;}
             else
@@ -154,7 +164,7 @@ namespace GravityBox.Venom
                 // A rotating overview must never crop the real corners while
                 // catching up with its wider silhouette. Inspection transitions
                 // still blend in both directions.
-                if(!game.Zoom&&Zone<0)camera.orthographicSize=Mathf.Max(camera.orthographicSize,targetSize);
+                if(!game.Zoom&&Zone<0&&!Spotlight.HasValue)camera.orthographicSize=Mathf.Max(camera.orthographicSize,targetSize);
             }
             Vector2 offset=usable.center/new Vector2(width,height)-Vector2.one*.5f;
             Vector3 framingOffset=right*(offset.x*2*camera.orthographicSize*camera.aspect)+up*(offset.y*2*camera.orthographicSize);

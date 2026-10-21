@@ -182,7 +182,7 @@ namespace GravityBox.Venom
         {
             popupRoot=art.Rect(safe,"Popup "+Popup,new Rect(0,0,width,height));
             var veil=art.Box(popupRoot,"Input shield",new Rect(-width,-height,width*3,height*3),new Color(.13f,.23f,.21f,.36f),true);veil.sprite=null;
-            if(StylePopup()||ShopPopup()||BonusPopup()||AbilityPopup())return;
+            if(StylePopup()||ShopPopup()||BonusPopup()||AbilityPopup()||MysteryBoxPopup())return;
             float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?(InHome?324:COgheTestTools.LevelSelect?482:430):Popup==COgheProductPopup.Levels?Mathf.Min(560,height-90):Popup==COgheProductPopup.Help?450:Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null?Mathf.Min(560,height-90):260;
             bool privacy=Popup==COgheProductPopup.Pause&&COgheAds.PrivacyRequired?.Invoke()==true;
             if(privacy)h+=56;
