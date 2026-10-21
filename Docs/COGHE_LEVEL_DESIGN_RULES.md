@@ -368,6 +368,9 @@ Rút ra khi dựng, sửa và kiểm thử 65 màn Spatial cùng người dùng 
    - Hai nửa đi sát nhau tự nhập: nút giữ phải nằm ngoài đường của nửa kia.
    - Lỗ thoát mở hút phần ở gần: tay nắm cuối cách lỗ đủ xa khi còn tách đôi.
    - Một hạt kẹt sau tường giữ cả thân: khi thân có lệnh mà không đi, in vị trí cả 32 hạt.
+   - Q thả nửa thân khi mọi hạt nằm trong ±5,5 cm quanh khay. Khay cách tâm Q 14 cm thì đuôi nửa thân còn trong cửa
+     của Q; nửa đó rẽ ngay sát vỏ Q (ra sau Q) sẽ móc đuôi vào mép cửa và đứng im. Đặt khay cách tâm ít nhất 17 cm
+     (Boss 21: 18 cm; màn 51: khay phải 17 cm, 21/10/2026).
 3. **Đổi luật dùng chung theo phạm vi nhỏ nhất.** Bộ tìm đường, độ bám, coating tác động mọi màn. Luật "không leo
    lên kính trơn" áp cho cả game làm hỏng 10 test, vì bài 4 Origin và màn 04 cố ý để COghe leo kính trơn rồi tuột
    cho người chơi tự học; luật đó giờ chỉ bật bằng cờ `NoSlickClimb` trên màn đường kính.

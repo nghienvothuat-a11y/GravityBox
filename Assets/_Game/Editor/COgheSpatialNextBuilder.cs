@@ -134,8 +134,9 @@ namespace GravityBox.Editor
   // Quantum machine Q: a low chamber open at the front (local -z). The septum is stored in a rear housing and slides
   // forward through a slot in the back wall between the two lobes; side lanes lead to two trays. The casing walls are
   // slick (routes go round Q; see below); only the septum and scan sheet belong to the machine's action.
-  static COgheQuantumSplitter NextQuantum(ExpansionContext c,Vector3 origin,float trayZ=.025f,float trayX=.155f)
+  static COgheQuantumSplitter NextQuantum(ExpansionContext c,Vector3 origin,float trayZ=.025f,float trayX=.155f,float rightTrayX=0)
   {
+   // rightTrayX (optional) sets the right tray alone, where a wall stops the left one from moving out too.
    var q=new GameObject("Q quantum machine",typeof(COgheQuantumSplitter)).GetComponent<COgheQuantumSplitter>();q.transform.SetParent(c.Root,false);q.transform.localPosition=origin;q.Chamber=q.transform;
    Vector3 L(float x,float y,float z)=>origin+new Vector3(x,y,z);
    int firstCasing=c.Surfaces.Count;
@@ -172,12 +173,13 @@ namespace GravityBox.Editor
    TapLabel(q.transform,"Q",new Vector3(0,.07f,-.0515f));var mark=q.transform.Find("Q");mark.localRotation=Quaternion.identity;mark.GetComponent<TextMesh>().characterSize=.012f;
    foreach(float side in new[]{-1f,1f})
    {
-    var tray=new GameObject(side<0?"Q left tray":"Q right tray").transform;tray.SetParent(c.Root,false);tray.localPosition=L(side*trayX,0,trayZ);
+    float tx=side>0&&rightTrayX>0?rightTrayX:trayX;
+    var tray=new GameObject(side<0?"Q left tray":"Q right tray").transform;tray.SetParent(c.Root,false);tray.localPosition=L(side*tx,0,trayZ);
     if(side<0)q.LeftTray=tray;else q.RightTray=tray;
-    NextOutline(c,"Q tray rim",L(side*trayX,.0006f,trayZ),new Vector2(.10f,.10f));
-    TapLabel(c.Root,"50%",L(side*trayX,.001f,trayZ-.062f));
+    NextOutline(c,"Q tray rim",L(side*tx,.0006f,trayZ),new Vector2(.10f,.10f));
+    TapLabel(c.Root,"50%",L(side*tx,.001f,trayZ-.062f));
    }
-   q.LeftLane=new[]{new Vector3(-.045f,.025f,trayZ),new Vector3(-Mathf.Min(.10f,trayX-.03f),.025f,trayZ)};q.RightLane=new[]{new Vector3(.045f,.025f,trayZ),new Vector3(Mathf.Min(.10f,trayX-.03f),.025f,trayZ)};
+   q.LeftLane=new[]{new Vector3(-.045f,.025f,trayZ),new Vector3(-Mathf.Min(.10f,trayX-.03f),.025f,trayZ)};q.RightLane=new[]{new Vector3(.045f,.025f,trayZ),new Vector3(Mathf.Min(.10f,(rightTrayX>0?rightTrayX:trayX)-.03f),.025f,trayZ)};
    // The scan is a soft cool white; mint belongs to the final exit only.
    q.ScanSheet=MechanismVisual(q.transform,"Q scan sheet",new Vector3(0,.045f,0),new Vector3(.002f,.085f,.095f),SpatialMaterial("Q scan soft white",new Color(.92f,.95f,.96f)));q.ScanSheet.gameObject.SetActive(false);
    q.GatherLocal=new Vector3(0,.03f,0);q.ReceiveHalfSize=new Vector3(.075f,.05f,.05f);q.TouchCentre=new Vector3(0,.075f,.01f);q.TouchHalfSize=new Vector3(.10f,.04f,.065f);
@@ -661,13 +663,17 @@ namespace GravityBox.Editor
   {
    c.Exit=new Vector3(.40f,-.160f,.12f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.20f,-.11f,-.262f);c.Definition.CameraEuler=new Vector3(40,20,0);NextShell(c,.30f,true);var floor=c.Surfaces[0];
    // The start banks are ivory all round: a half that drops off the rope climbs straight back (the goal side stays slick).
-   var bankFront=Top(NextPlinth(c,"Start bank",new Vector3(-.20f,-.23f,-.16f),new Vector3(.40f,.14f,.28f),false));
+   // The front bank reaches 3 cm past x 0 so Q's right tray (17 cm out, below) stays whole on it.
+   var bankFront=Top(NextPlinth(c,"Start bank",new Vector3(-.185f,-.23f,-.16f),new Vector3(.43f,.14f,.28f),false));
    var bankBack=Top(NextPlinth(c,"Start bank",new Vector3(-.28f,-.23f,.14f),new Vector3(.24f,.14f,.32f),false));
    // A shoulder behind Q's right tray: the right half walks behind the rear housing to the back bank.
    // It stops short of the swing plane (z .14) so the rope arc never scrapes it.
    NextPlinth(c,"Start bank shoulder",new Vector3(-.125f,-.23f,.03f),new Vector3(.07f,.14f,.10f),false);
    NextStairs(c,"Recovery stairs",new Vector3(-.045f,0,-.02f),Vector3.forward,-.16f,.08f,3,.05f);
-   NextQuantum(c,new Vector3(-.20f,-.16f,-.18f),.025f,.14f);
+   // The right half walks round Q's back. At 14 cm its tray (±5.5 cm catch) released the half with its trailing lobe
+   // still in Q's right doorway; turning behind the casing then hooked that lobe there (2 of 4 player-like runs at
+   // 30 fps, 20/10/2026). At 17 cm the delivered half is 2 cm clear of the doorway, as B1's 18 cm trays.
+   NextQuantum(c,new Vector3(-.20f,-.16f,-.18f),.025f,.14f,.17f);
    var a=ExpansionPad(c,"A",new Vector3(-.34f,-.158f,.24f),.009f,.09f);
    // Middle platform (slick sides, walkable top at -.188). The landing tray is stored inside it and slides out
    // through a slot under the top of its left face, so the top stays clear for the half that arrives by tube.

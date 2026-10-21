@@ -149,6 +149,27 @@ namespace GravityBox.Tests
    yield return s.Walk(anchor,game.Root.TransformPoint(top),"Back up the stairs");
    Capture(n,"climbed");
   }
+  // Level 51 at 30 fps, as a player: one tap on the tube mouth must take the right half round Q's back into the tube.
+  // With its tray 14 cm out the half left Q with its trailing lobe still in Q's right doorway and hooked it there on
+  // the turn (stuck after a 0.5 s or 2 s wait, 21/10/2026). The right tray now sits 17 cm out.
+  IEnumerator RightHalfReachesTube26(float settle)
+  {
+   Time.captureFramerate=30;
+   try
+   {
+    yield return Load(26);yield return Wait(settle);
+    var s=new COgheSpatialNextScenario(game,Tap,Until);var q=s.Find<COgheQuantumSplitter>();var tube=s.Find<COgheTubeNetwork>();
+    yield return s.Split(q,game.Motion.Selected);int holder=q.LastLeft,worker=q.LastRight;
+    yield return s.Walk(holder,game.Root.TransformPoint(new Vector3(-.34f,-.158f,.24f)),"Holder loads pad A");
+    yield return Until(10,()=>tube.IsEntryOpen(0),"Pad A holds the tube cap open");
+    game.SelectFragment(worker);yield return Tap(game.Root.TransformPoint(tube.Nodes[0].LocalPosition));
+    for(int i=0;i<12/Dt&&!tube.IsParticleInside(worker);i++){Tick();if(i%4==3)yield return null;}
+    Assert.IsTrue(tube.IsParticleInside(worker),"Right half stopped at "+game.Root.InverseTransformPoint(game.Motion.Centre(worker)).ToString("F3"));
+   }
+   finally{Time.captureFramerate=0;}
+  }
+  [UnityTest] public IEnumerator Spatial26RightHalfReachesTubeAfterShortWait(){yield return RightHalfReachesTube26(.5f);}
+  [UnityTest] public IEnumerator Spatial26RightHalfReachesTubeAfterLongWait(){yield return RightHalfReachesTube26(2);}
   [UnityTest] public IEnumerator Spatial21ClimbBack(){yield return DownAndBack(21,new Vector3(0,-.30f,-.20f),new Vector3(-.30f,-.20f,-.18f));}
   [UnityTest] public IEnumerator Spatial26ClimbBack(){yield return DownAndBack(26,new Vector3(-.045f,-.30f,.19f),new Vector3(-.05f,-.16f,-.08f));}
   [UnityTest] public IEnumerator Spatial29ClimbBack(){yield return DownAndBack(29,new Vector3(-.34f,-.30f,-.24f),new Vector3(-.34f,-.18f,.13f));}
