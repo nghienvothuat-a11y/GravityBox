@@ -377,6 +377,8 @@ namespace GravityBox.Editor
    edges[2].AccessGate=door;
    var a=ViewTask(c,"A",new Vector3(-.34f,-.097f,.02f),Vector3.right,.08f,balcony);
    ViewLink(c,a.Rail,door,false,null);
+   // As level 53 (same balcony): the walk from A to the balcony mouth goes round A's carriage, not over it (21/10/2026).
+   nodes[2].KeepOff=a.Rail.Body;
   }
   // 16 · Q splits the whole body 50/50; each half loads one pad; together they slide the step bridge out of the
   // platform until its pawl catches, then both halves may leave and merge.

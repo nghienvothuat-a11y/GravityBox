@@ -64,6 +64,9 @@ namespace GravityBox.Venom
         public float LoadShare;
         /// <summary>How long a hand may pull at full strength against a load that will not move before it lets go.</summary>
         public float StrainSeconds = 1.5f;
+        /// <summary>The walk to the handle goes round this block rather than over it, when there is a way round (level 58:
+        /// over low block B, whose sides are slick, the route ran along B's edge and the body straddled it).</summary>
+        public bool ApproachAround;
         /// <summary>0..1: how hard the hand pulls against a load that is not moving (presentation reads it).</summary>
         public float Strain { get; private set; }
         /// <summary>Pulling at full strength and the load still does not move.</summary>
@@ -364,7 +367,7 @@ namespace GravityBox.Venom
         }
         private void Reapproach(VenomCampaign game)
         {
-            game.Motion.Move(Actor, StandPoint, true);
+            game.Motion.Move(Actor, StandPoint, true, false, ApproachAround ? Rail.Body : null);
             order = game.Motion.Get(Actor);
             Phase = TaskPhase.Approaching;
             lastProgressAt = game.Matter.SimulationTime;

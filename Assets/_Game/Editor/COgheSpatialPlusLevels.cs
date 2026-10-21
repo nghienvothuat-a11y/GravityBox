@@ -896,6 +896,9 @@ namespace GravityBox.Editor
    // B holds back .45 N: a whole body pushes .67 N at most, a half .34 N.
    var b=NextCrate(c,"B",new Vector3(-.028f,-.285f,-.14f),Vector3.forward,.28f,new Vector3(.12f,.03f,.14f),floor,new Vector3(0,0,-.078f),new Vector3(0,0,-.052f),.08f,.45f,.28f,true);
    b.CompensateLoad=true;b.LoadShare=1;
+   // Back to B's handle in the bay, the shortest route ran over B along its edge; the body straddled the slick edge and
+   // stuck (21/10/2026, at a 2 % slower walk or with stops for breath). The walk goes round B instead.
+   b.ApproachAround=true;
    TapLabel(c.Root,"100%",new Vector3(-.028f,-.2985f,-.235f));
    var pad=ExpansionPad(c,"A",new Vector3(-.33f,-.298f,-.03f),.009f,.09f);PadGauge(pad,1);
    var bolt=PlusGate(c,"A lock bolt",new Vector3(-.285f,-.285f,.14f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
@@ -1255,6 +1258,9 @@ namespace GravityBox.Editor
    // The exit shutter on the landing, raised for good by handle C on the balcony.
    var shutter=PlusGate(c,"C exit shutter",new Vector3(.392f,-.052f,.19f),Vector3.up,.10f,new Vector3(.012f,.10f,.10f));
    var handle=ViewTask(c,"C",new Vector3(-.34f,-.097f,.02f),Vector3.right,.08f,balcony);handle.OneWay=true;
+   // From C to the balcony mouth the shortest route ran over C's carriage; the body was pinned on its front face (21/10/2026,
+   // fed at a 2 % slower or faster walk, and in the gift-box test). The walk to the mouth goes round the carriage.
+   nodes[2].KeepOff=handle.Rail.Body;
    ViewLink(c,handle.Rail,shutter,true,ViewExitSurface(c));
    // The gearbox, front right (right of the tube, as P and the start: crossing the tube's rising foot, a body climbed it): two
    // rows front to back (motor, slot, output), 16 cm apart; G's cart runs between their slots. G (3.5 cm) between 4 cm

@@ -19,6 +19,9 @@ namespace GravityBox.Venom
             public Vector3 LocalPosition;
             public Vector3 LocalOutward;
             public TerminalKind Terminal;
+            /// <summary>Optional: a body the walk to this mouth keeps off when there is a way round (level 53: over handle
+            /// C's carriage, beside the balcony mouth, the body was pinned on the carriage's front face).</summary>
+            public Rigidbody KeepOff;
 
             public Node(string name, Vector3 position, TerminalKind terminal=TerminalKind.Junction)
             { Name=name;LocalPosition=position;Terminal=terminal;LocalOutward=Vector3.zero; }
@@ -691,7 +694,7 @@ namespace GravityBox.Venom
             Vector3 approach=ClosestGripPoint(mouth-inward*(Radius+.008f));
             int group=game.Matter.Groups[anchor];Vector3 local=root.InverseTransformPoint(approach);
             for(int i=0;i<32;i++)if(game.Matter.Groups[i]==group){queuedEntry[i]=node;queuedEdge[i]=edge;queuedApproach[i]=local;}
-            game.Motion.Move(anchor,approach,true);
+            game.Motion.Move(anchor,approach,true,false,Nodes[node].KeepOff);
         }
 
         private Vector3 EntryInwardWorld(int node)

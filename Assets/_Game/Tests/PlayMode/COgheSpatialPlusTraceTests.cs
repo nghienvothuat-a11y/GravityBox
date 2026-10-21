@@ -27,13 +27,13 @@ namespace GravityBox.Tests
   // A solve with a running log: every tap, every wait, each new walk order with its path, and the parts twice a second.
   System.Action trace;string traceFile;
   void T(string line){File.AppendAllText(traceFile,line+"\n");}
-  IEnumerator TracePlus(string key,float speed=1,COgheHunger hunger=COgheHunger.Fed)
+  IEnumerator TracePlus(string key,float speed=1,COgheHunger hunger=COgheHunger.Fed,float walkFactor=1)
   {
-   string suffix=(speed!=1?"-x"+speed:"")+(hunger==COgheHunger.Hungry?"-h":hunger==COgheHunger.Exhausted?"-e":"");
+   string suffix=(speed!=1?"-x"+speed:"")+(hunger==COgheHunger.Hungry?"-h":hunger==COgheHunger.Exhausted?"-e":"")+(walkFactor!=1?walkFactor.ToString(System.Globalization.CultureInfo.InvariantCulture):"");
    Directory.CreateDirectory("Artifacts/SpatialPlus");traceFile=$"Artifacts/SpatialPlus/trace-{key}{suffix}.txt";File.WriteAllText(traceFile,"");
    yield return key.StartsWith("COgheSpatial")?LoadScene(key):LoadPlus(key);int ticks=0;var seen=new System.Collections.Generic.HashSet<int>();
    game.Motion.SpeedScale=speed;   // a faster (Agility) COghe
-   COgheEnergy.ApplyRests(game.Motion,hunger);int rests=0;   // a hungry one's stops for breath
+   COgheEnergy.ApplyRests(game.Motion,hunger);game.Motion.RestWalk*=walkFactor;int rests=0;   // a hungry one's stops for breath
    var lastCentre=new System.Collections.Generic.Dictionary<int,Vector3>();
    PlusContactProbe.Frame=game.Root;var rails=game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>();var contacts=new PlusContactProbe[rails.Length];
    for(int i=0;i<rails.Length;i++)contacts[i]=rails[i].Body.gameObject.AddComponent<PlusContactProbe>();
@@ -81,7 +81,8 @@ namespace GravityBox.Tests
     var part=entry.Split('@');string token=part.Length>1?part[1]:"1";int mark=token.IndexOfAny(new[]{'h','e'});
     var hunger=mark<0?COgheHunger.Fed:token[mark]=='e'?COgheHunger.Exhausted:COgheHunger.Hungry;
     float speed=float.Parse(mark<0?token:token.Substring(0,mark),System.Globalization.CultureInfo.InvariantCulture);
-    string error=null;yield return Flat(TracePlus(part[0],speed,hunger),e=>error=e);trace=null;   // a failed solve skips TracePlus's finally
+    float walkFactor=mark>=0&&mark<token.Length-1?float.Parse(token.Substring(mark+1),System.Globalization.CultureInfo.InvariantCulture):1;   // E11@1e.85: the walk between stops x.85
+    string error=null;yield return Flat(TracePlus(part[0],speed,hunger,walkFactor),e=>error=e);trace=null;   // a failed solve skips TracePlus's finally
     COgheEnergy.ApplyRests(game.Motion,COgheHunger.Fed);
     if(error!=null)T("FAILED "+error);
    }

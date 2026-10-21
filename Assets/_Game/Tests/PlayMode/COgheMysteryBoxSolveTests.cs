@@ -35,6 +35,10 @@ namespace GravityBox.Tests
             var text = new StringBuilder();
             foreach (var w in game.Owner.Apparatus.GetComponentsInChildren<COgheSwingTransfer>()) text.Append($"; swing {w.Label} phase={w.Phase} actor={w.Actor} msg={w.LastMessage} landings={w.Landings} misses={w.Misses}");
             foreach (var r in game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>()) text.Append($"; rail {r.name} pos={r.Position:F4} locked={r.Locked} latch={r.Latched}");
+            int actor = game.Motion.Selected; var order = game.Motion.Get(actor);
+            text.Append($"; parts={game.Matter.TotalFragmentCount} attached={game.Attached} order={(order == null ? "none" : game.Root.InverseTransformPoint(order.Target).ToString("F3") + $" cursor={order.Cursor}/{order.Path.Count} holding={order.Holding}")} t={game.Matter.SimulationTime:F1}");
+            foreach (var tube in game.Root.GetComponentsInChildren<COgheTubeNetwork>())
+                for (int n = 0; n < tube.Nodes.Length; n++) if (tube.Nodes[n].Terminal == COgheTubeNetwork.TerminalKind.Entry && tube.IsApproachingEntry(actor, n)) text.Append("; tube " + tube.DebugEntryState(actor, n));
             return text.ToString();
         }
         /// <summary>Runs nested coroutines here, so an exception anywhere in a solve is caught (as COgheLevelMetrics.Flat).</summary>

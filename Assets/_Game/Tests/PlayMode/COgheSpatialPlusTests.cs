@@ -1,4 +1,5 @@
 using System.Collections;
+using GravityBox.Venom;
 using GravityBox.Venom.ChapterProof;
 using NUnit.Framework;
 using UnityEngine;
@@ -80,6 +81,55 @@ namespace GravityBox.Tests
   [UnityTest] public IEnumerator SpatialPlusN33Solve(){yield return SolvePlus("N33");}
   [UnityTest] public IEnumerator SpatialPlusN35Solve(){yield return SolvePlus("N35");}
   [UnityTest] public IEnumerator SpatialPlusN32Solve(){yield return SolvePlus("N32");}
+  // Level 58 (21/10/2026): back to B's handle in its bay, the route ran over B along its slick edge; the body straddled the
+  // edge and stuck (fed at a 2 % slower or a 0.5 % faster walk, and with stops for breath). B's handle is reached round B.
+  [UnityTest] public IEnumerator SpatialPlusN32ReachesBRoundTheBlockAtOtherPaces()
+  {
+   foreach(var (speed,hunger) in new[]{(.98f,COgheHunger.Fed),(.995f,COgheHunger.Fed),(1.005f,COgheHunger.Fed),(1f,COgheHunger.Exhausted)})
+   {
+    yield return LoadPlus("N32");game.Motion.SpeedScale=speed;COgheEnergy.ApplyRests(game.Motion,hunger);
+    var b=System.Array.Find(game.Owner.Apparatus.GetComponentsInChildren<COgheTapRail>(),t=>t.Label=="B");bool over=false;
+    System.Func<float,System.Func<bool>,string,IEnumerator> until=(seconds,done,reason)=>Until(seconds,()=>
+    {
+     var o=b.Busy?game.Motion.Get(b.Actor):null;
+     if(o!=null&&b.Phase==COgheTapRail.TaskPhase.Approaching&&b.Rail.Position<.01f)
+      foreach(var p in o.Path)if(p.y>-.265f)over=true;   // a waypoint on B's top (floor waypoints are at -.28)
+     return done();
+    },reason);
+    try{yield return new COgheSpatialScenario(game,Tap,until).Solve();}
+    finally{game.Motion.SpeedScale=1;COgheEnergy.ApplyRests(game.Motion,COgheHunger.Fed);}
+    Assert.IsTrue(game.Owner.Completed,$"Level 58 solved at x{speed} {hunger}");
+    Assert.IsFalse(over,$"At x{speed} {hunger} the walk to B's handle in its bay went over B");
+   }
+  }
+  // Levels 53 and 41 (21/10/2026): from the balcony handle (C; A on 41) to the balcony tube mouth the route ran over the
+  // handle's carriage, and the body was pinned on its front face (fed at a 2 % slower or faster walk; level 53 also in the
+  // gift-box test after other tests). The walk to the mouth goes round the carriage.
+  private IEnumerator BalconyMouthRoundTheCarriage(string scene,params float[] speeds)
+  {
+   foreach(float speed in speeds)
+   {
+    yield return LoadScene(scene);game.Motion.SpeedScale=speed;
+    var tube=game.Owner.Apparatus.GetComponentInChildren<COgheTubeNetwork>();bool over=false;
+    System.Func<float,System.Func<bool>,string,IEnumerator> until=(seconds,done,reason)=>Until(seconds,()=>
+    {
+     int actor=game.Motion.Selected;var o=game.Motion.Get(actor);
+     if(o!=null&&tube.IsApproachingEntry(actor,2))foreach(var p in o.Path)if(p.y>-.08f)over=true;   // on the carriage (the balcony's waypoints are at -.10)
+     return done();
+    },reason);
+    try{yield return new COgheSpatialScenario(game,Tap,until).Solve();}
+    finally{game.Motion.SpeedScale=1;}
+    Assert.IsTrue(game.Owner.Completed,$"{scene} solved at x{speed}");
+    Assert.IsFalse(over,$"{scene} at x{speed}: the walk to the balcony mouth went over the handle's carriage");
+   }
+  }
+  [UnityTest] public IEnumerator SpatialPlusN43ReachesTheBalconyMouthRoundC(){yield return BalconyMouthRoundTheCarriage("COgheSpatialPlusN43",.97f,.98f,1.01f,1.02f,1.7f);}
+  [UnityTest] public IEnumerator Spatial15ReachesTheBalconyMouthRoundA(){yield return BalconyMouthRoundTheCarriage("COgheSpatial15",.98f,.85f,1.1f,1.5f);}
+  // The same level with a frame every 2 or 4 physics steps (a 60 or 30 fps phone), as the glass-crawl levels.
+  [UnityTest,Timeout(900000)] public IEnumerator SpatialPlusN32SolveAt60And30Fps()
+  {
+   yield return GlassCrawlSolveAtFrameRate("N32");yield return GlassCrawlSolveAtFrameRate("N32",30);
+  }
   [UnityTest] public IEnumerator SpatialPlusN40Solve(){yield return SolvePlus("N40");}
   [UnityTest] public IEnumerator SpatialPlusN34Solve(){yield return SolvePlus("N34");}
   [UnityTest] public IEnumerator SpatialPlusN44Solve(){yield return SolvePlus("N44");}

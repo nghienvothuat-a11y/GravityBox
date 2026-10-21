@@ -14,6 +14,8 @@ namespace GravityBox.Venom
             public int Cursor;
             public int CommandId;
             public bool Holding, Exit, AwaitingContact, AvoidSlippery;
+            /// <summary>A body whose surfaces the route keeps off when there is a way round (<see cref="FindPath"/>).</summary>
+            public Rigidbody KeepOff;
         }
         private readonly VenomCampaign game;
         private readonly List<Vector3> nodes=new List<Vector3>();
@@ -120,7 +122,7 @@ namespace GravityBox.Venom
                     {count++;if(orders[i].CommandId>winner.CommandId)winner=orders[i];}
                 if(count<2)continue;
                 Cancel(a);orders[winner.Anchor]=winner;winner.Cursor=0;
-                FindPath(Centre(winner.Anchor),game.Root.TransformPoint(winner.Target),winner.Path,winner.AvoidSlippery);
+                FindPath(Centre(winner.Anchor),game.Root.TransformPoint(winner.Target),winner.Path,winner.AvoidSlippery,false,winner.KeepOff);
                 SetCatch(winner.Anchor,null);
             }
         }
@@ -306,7 +308,7 @@ namespace GravityBox.Venom
             }
             graphRevision.Capture(game);COgheMobileMetrics.End(2);
         }
-        public void Move(int anchor,Vector3 world,bool hold=false,bool exit=false)
+        public void Move(int anchor,Vector3 world,bool hold=false,bool exit=false,Rigidbody keepOff=null)
         {
             if(game.Props.Length>0)BuildGraph();
             SetCatch(anchor,null);
@@ -314,7 +316,7 @@ namespace GravityBox.Venom
             bool tubeDrop=game.Tube!=null&&game.Tube.Entrance!=null&&
                 Vector3.Distance(game.Tube.Entrance.Closest(world),world)<.05f;
             var o=new Order{Anchor=anchor,Target=game.Root.InverseTransformPoint(world),Holding=hold,Exit=exit,
-                AvoidSlippery=!exit&&!tubeDrop,CommandId=++nextCommandId};
+                AvoidSlippery=!exit&&!tubeDrop,KeepOff=keepOff,CommandId=++nextCommandId};
             int grips=0;bool recovering=false;
             for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[anchor])
             {
@@ -327,10 +329,18 @@ namespace GravityBox.Venom
             o.AwaitingContact=grips<2||recovering;
             LastMoveReachable=true;MoveCount++;
             if(game.Definition.Passive&&!game.Home)o.Path.Add(o.Target);
-            else LastMoveReachable=FindPath(Centre(anchor),world,o.Path,o.AvoidSlippery);
+            else LastMoveReachable=FindPath(Centre(anchor),world,o.Path,o.AvoidSlippery,false,o.KeepOff);
             orders[anchor]=o;
         }
-        public bool FindPath(Vector3 start,Vector3 goal,List<Vector3> path,bool avoidSlippery=false,bool quiet=false)
+        /// <summary>The route over the surface graph from <paramref name="start"/> to <paramref name="goal"/>. With
+        /// <paramref name="keepOff"/> the route stays off that body's surfaces when there is a way round, else it takes the
+        /// usual route (level 58: walking over block B to its own handle, the body straddled B's slick edge).</summary>
+        public bool FindPath(Vector3 start,Vector3 goal,List<Vector3> path,bool avoidSlippery=false,bool quiet=false,Rigidbody keepOff=null)
+        {
+            if(keepOff!=null&&Search(start,goal,path,avoidSlippery,true,keepOff))return true;
+            return Search(start,goal,path,avoidSlippery,quiet,null);
+        }
+        private bool Search(Vector3 start,Vector3 goal,List<Vector3> path,bool avoidSlippery,bool quiet,Rigidbody keepOff)
         {
             COgheMobileMetrics.Begin(3);
             path.Clear();int n=nodes.Count;
@@ -355,6 +365,7 @@ namespace GravityBox.Venom
                 done=new bool[capacity];heap=new int[capacity];heapPositions=new int[capacity];
             }
             for(int i=0;i<n;i++){costs[i]=float.PositiveInfinity;parents[i]=-1;done[i]=false;heapPositions[i]=-1;}
+            if(keepOff!=null)MarkKeptOff(keepOff,n);
             heapCount=0;costs[a]=0;Queue(a);
             while(heapCount>0)
             {
@@ -362,6 +373,7 @@ namespace GravityBox.Venom
                 foreach(int next in links[current])
                 {
                     if(done[next])continue;
+                    if(keepOff!=null&&next!=b&&keptOff[next])continue;
                     // On glass roads (NoSlickClimb) a slick wall more than a small step above its foot is entered only going
                     // down (a slide): a far tap once planned a short slick climb (it slipped back) over the long road that was
                     // the way (19/10/2026). Other levels keep the slick climb a far tap may try, which the Origin lessons teach.
@@ -379,6 +391,27 @@ namespace GravityBox.Venom
                 if(TryInsideCorner(parents[at],at,out var corner))path.Add(corner);
             }
             path.Reverse();path.Add(game.Root.InverseTransformPoint(goal));COgheMobileMetrics.End(3);return true;
+        }
+        // A route kept off a body stays off its surfaces and off the floor round it: a waypoint by a low block's corner let
+        // the body ride up its edge and stick (level 58, B). The body's half-width in clearance.
+        private const float KeepOffClearance=.04f;
+        private bool[] keptOff=System.Array.Empty<bool>();
+        private readonly List<Collider> keptOffShapes=new List<Collider>();
+        private void MarkKeptOff(Rigidbody body,int n)
+        {
+            if(keptOff.Length<n)keptOff=new bool[Mathf.NextPowerOfTwo(n)];
+            body.GetComponentsInChildren(keptOffShapes);
+            keptOffShapes.RemoveAll(c=>c==null||!c.enabled||c.isTrigger||!c.gameObject.activeInHierarchy);
+            var reach=new Bounds(body.position,Vector3.zero);foreach(var c in keptOffShapes)reach.Encapsulate(c.bounds);
+            reach.Expand(KeepOffClearance*2);
+            for(int i=0;i<n;i++)
+            {
+                var shape=nodeSurfaces[i].Shape;bool near=shape!=null&&shape.attachedRigidbody==body;
+                if(!near&&reach.Contains(worldNodes[i]))
+                    foreach(var c in keptOffShapes)
+                        if(Vector3.Distance(c.ClosestPoint(worldNodes[i]),worldNodes[i])<KeepOffClearance){near=true;break;}
+                keptOff[i]=near;
+            }
         }
         // Dijkstra with a decrease-key heap. Equal costs retain the old scan's
         // lowest-node-index tie break, so this optimization does not reroute puzzles.
@@ -630,7 +663,7 @@ namespace GravityBox.Venom
                 if(o!=null)
                 {
                     if(grips<2)o.AwaitingContact=true;
-                    else if(o.AwaitingContact){FindPath(centre,game.Root.TransformPoint(o.Target),o.Path,o.AvoidSlippery);o.Cursor=0;o.AwaitingContact=false;}
+                    else if(o.AwaitingContact){FindPath(centre,game.Root.TransformPoint(o.Target),o.Path,o.AvoidSlippery,false,o.KeepOff);o.Cursor=0;o.AwaitingContact=false;}
                 }
                 if(o!=null)
                 {
