@@ -144,16 +144,23 @@ namespace GravityBox.Venom
                     k.Paint(Ivory).Ico(new Vector3(0, .047f, 0), Vector3.one * .006f, 1);
                     sink = .005f; break;
                 case "HAT_FLOWER":
+                    // Small enamel flowers: saturated petals, warm centres and fresh leaves read against black liquid.
+                    // A single baked mesh; round petals replace the dark five-triangle buds.
+                    string[] blooms = { "#F47988", "#B58BE8", "#FFD36A", "#6FC9E2", "#F69FAE", "#B58BE8", "#FFD36A" };
                     for (int i = 0; i < 7; i++)
                     {
-                        float a = i * Mathf.PI * 2 / 7; var c = new Vector3(Mathf.Cos(a) * .024f, .004f, Mathf.Sin(a) * .024f);
-                        k.Paint(i % 3 == 0 ? Coral : i % 3 == 1 ? Rose : Ivory);
-                        for (int p = 0; p < 5; p++) { float b = p * Mathf.PI * 2 / 5; k.Ico(c + new Vector3(Mathf.Cos(b), .3f, Mathf.Sin(b)) * .0042f, Vector3.one * .0036f, 0); }
-                        k.Paint(Amber).Ico(c + Vector3.up * .002f, Vector3.one * .0025f, 0);
-                        var n = new Vector3(Mathf.Cos(a + Mathf.PI / 7) * .025f, .001f, Mathf.Sin(a + Mathf.PI / 7) * .025f);
-                        k.Paint(Leaf).Ico(n, new Vector3(.005f, .0015f, .0028f), 0);
+                        float a = i * Mathf.PI * 2 / 7; var c = new Vector3(Mathf.Cos(a) * .025f, .006f, Mathf.Sin(a) * .025f);
+                        k.Paint(blooms[i]);
+                        for (int p = 0; p < 5; p++)
+                        {
+                            float b = p * Mathf.PI * 2 / 5;
+                            k.Ico(c + new Vector3(Mathf.Cos(b), .25f, Mathf.Sin(b)) * .005f, new Vector3(.0042f,.0028f,.0042f), 1, null, true);
+                        }
+                        k.Paint("#FFE08A").Ico(c + Vector3.up * .003f, new Vector3(.0028f,.002f,.0028f), 1, null, true);
+                        var n = new Vector3(Mathf.Cos(a + Mathf.PI / 7) * .025f, .003f, Mathf.Sin(a + Mathf.PI / 7) * .025f);
+                        k.Paint("#62BB8C").Ico(n, new Vector3(.0055f, .0018f, .0032f), 1, null, true);
                     }
-                    sink = .008f; break;
+                    sink = .005f; break;
                 case "HAT_CAP":
                     k.Paint(Coral).Lathe(new[] { new Vector2(.025f, .002f), new Vector2(.024f, .009f), new Vector2(.02f, .016f), new Vector2(.012f, .021f), new Vector2(0, .023f) }, 14);
                     k.Paint(Ivory).Ico(new Vector3(0, .023f, 0), Vector3.one * .0035f, 0);

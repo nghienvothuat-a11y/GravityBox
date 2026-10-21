@@ -29,7 +29,7 @@ namespace GravityBox.Editor
    // their scenes, IDs and saves stay). Docs/LevelDesign/COghe/GlassRoads.
    "01","02","03","04","05","K01","06","G6","09","10",
    // Chapter 2: climbing, cargo, splitting, held controls and full-body force before stacked cooperation.
-   "G7","K02","G2","N22","N29","16","N13","N18","13","12","B1",
+   "G7","K02","G2","N22","F1","16","N13","N18","13","12","B1",
    // Chapter 3: tube lesson/practice, then ceiling routes and gears before the two-role relay boss.
    "14","N15","K03","G8","G3","G9","N44","17","G4","22","G5",
    // Chapter 4: rehearse swing landing before combining it with a pipe.
@@ -38,8 +38,8 @@ namespace GravityBox.Editor
    "K05","N42","K06","N26","N31","N33","K07","26","N35","N43","N40",
    // Chapter 6: rotate a loaded carrier, then motor load and linked engines.
    "N46","N45","N49","N32","G10","N34","K09","29","G11","N19","N50",
-   // 66–68 (Mrk 20/10/2026: the 65 stay as they are, these are three new levels): physics props, chain "physics".
-   "F1","F2","F3"};
+   // 21/10: F1 moves from 66 to 15 and replaces N29. F2/F3 now occupy 66/67; six boss positions stay fixed.
+   "F2","F3"};
   public static string SpatialContentPath(string key)=>char.IsDigit(key[0])?$"{SpatialFolder}/COgheSpatial{key}.unity":$"{SpatialFolder}/COgheSpatialPlus{key}.unity";
   public static string SpatialContentPath(int n)=>SpatialContentPath(n.ToString("00"));
   public static int SpatialPosition(string key){int i=Array.IndexOf(SpatialOrder,key);if(i<0)throw new ArgumentException("Not in the Spatial order: "+key);return i+1;}

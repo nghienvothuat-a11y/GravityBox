@@ -17,6 +17,9 @@ namespace GravityBox.Venom
         // Optional fixed call panels at the landings (0 = lower stop, 1 = upper stop; null = none) and props carried as cargo.
         public Transform[] CallPanels=System.Array.Empty<Transform>();
         public bool CarriesProps;
+        // Cargo stations may call an empty raised tray by tapping the tray itself while standing at its lower
+        // landing. This is a call DOWN, never remote operation UP; passenger-only lifts leave it off.
+        public bool EmptyTrayCallFromLowerLanding;
         // Dead-man enable: while RequiredRail is not at its end the tray may not rise, and a raised tray returns to its
         // lower landing under the same finite, damped motor (nothing is snapped; tissue on the deck rides down).
         public bool ReturnWhenDisabled;
@@ -35,7 +38,8 @@ namespace GravityBox.Venom
         public Vector3 PressPoint=>Panel.TransformPoint(Vector3.up);
         private VenomCampaign game;
         private int actor=-1;private float target,stable,buttonClock,callClock,travelIntegral;
-        private bool callReleasing;
+        private bool callReleasing, passengerTrip;
+        private float withoutRider;
         private VenomCampaignMotion.Order boardingOrder;
         private Vector3 panelRest;
         private Vector3[] callRest=System.Array.Empty<Vector3>();
@@ -70,6 +74,16 @@ namespace GravityBox.Venom
             if(!HitsPanel(ray,obstruction))return false;
             if(Moving){Refuse(owner,Refusal.Busy,Panel.position);return true;}
             if(!Powered){Refuse(owner,Refusal.NoPower,Panel.position);return true;}
+            if(EmptyTrayCallFromLowerLanding && Rail.Position>Rail.CatchTolerance*2)
+            {
+                bool occupied=false;for(int i=0;i<32;i++)if(!owner.Matter.Escaped[i]&&OnDeck(i)){occupied=true;break;}
+                var p=Rail.transform.parent.InverseTransformPoint(owner.Motion.Centre(owner.Motion.Selected));
+                if(!occupied && p.y<Rail.Start.y+DeckHeight+.10f && Mathf.Abs(p.x-Rail.Start.x)<.36f && Mathf.Abs(p.z-Rail.Start.z)<.30f)
+                {
+                    actor=owner.Motion.Selected;if(!owner.PrepareTapCommand(actor))return true;
+                    BeginTravel(0,false,-1);owner.Feedback.ShowCommand(Panel.position,Vector3.up,Panel);return true;
+                }
+            }
             return Board(owner,Panel);
         }
         /// <summary>A held crate is let go for a tap on a lift button (Mrk: the button near COghe looked dead).</summary>
@@ -85,10 +99,8 @@ namespace GravityBox.Venom
         {
             actor=owner.Motion.Selected;
             if(!owner.PrepareTapCommand(actor))return true;
-            // From below, the button calls the empty tray down; from the landing beside it, COghe boards and rides.
-            bool below=owner.Motion.Centre(actor).y<Deck.transform.position.y-.06f;
-            if(NextDirection<0&&!OnDeck(actor)&&CallPanels.Length==0&&below){BeginTravel(0,true,-1);return true;}
-            Boarding=true;Button=ButtonState.Armed;buttonClock=0;
+            // A tray button is operated by its rider. Remote calls only belong to explicit landing panels.
+            Boarding=true;Button=ButtonState.Armed;buttonClock=stable=0;
             owner.Motion.Move(actor,BoardPoint!=null?BoardPoint.position:Deck.Closest(Rail.Body.position+Vector3.up*DeckHeight)+Vector3.up*.018f);
             boardingOrder=owner.Motion.Get(actor);
             owner.Feedback.ShowCommand(pressed.position,Vector3.up,pressed);return true;
@@ -102,6 +114,7 @@ namespace GravityBox.Venom
         private void BeginTravel(float destination,bool carrying,int call)
         {
             target=destination;Moving=true;Boarding=false;stable=0;travelIntegral=0;Rail.Locked=false;Rail.ReleaseLatch();
+            passengerTrip=carrying;withoutRider=0;
             if(call>=0){CalledPanel=call;callReleasing=false;}else if(carrying){Button=ButtonState.Latched;buttonClock=0;}
             if(carrying)game.Motion.Cancel(actor);
         }
@@ -126,6 +139,18 @@ namespace GravityBox.Venom
             }
             if(ReturnWhenDisabled&&!Powered&&Rail.Position>Rail.CatchTolerance*2&&!(Moving&&target<=0)){Boarding=false;Button=ButtonState.Ready;BeginTravel(0,false,-1);}
             if(!Moving)return;
+            if(passengerTrip)
+            {
+                bool aboard=false;
+                for(int i=0;i<32;i++)
+                    if(!owner.Matter.Escaped[i]&&owner.Matter.Groups[i]==owner.Matter.Groups[actor]&&OnDeck(i)){aboard=true;break;}
+                withoutRider=aboard?0:withoutRider+dt;
+                if(withoutRider>.2f)
+                {
+                    Moving=false;Rail.Locked=true;Button=ButtonState.Releasing;buttonClock=0;
+                    owner.Motion.BuildGraph(true);return;
+                }
+            }
             float error=target-Rail.Position,speed=Vector3.Dot(Rail.Body.linearVelocity,Rail.WorldAxis);
             float desired=Mathf.Clamp(error*4,-Speed,Speed);
             float mass=Rail.Body.mass;for(int i=0;i<32;i++)if(OnDeck(i))mass+=owner.Matter.Bodies[i].mass;

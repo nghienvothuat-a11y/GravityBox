@@ -22,7 +22,7 @@ namespace GravityBox.Venom
         private float fullHeight; private bool bannerDirty;
         // the victory screen
         private readonly List<string> victoryUnlocks = new List<string>(6);
-        private bool victoryHome, victoryAdChecked, victoryNextRequested, tripleTaken; private float tripleUntil; private int victoryDrops;
+        private bool victoryHome, victoryAdChecked, victoryNextRequested, tripleTaken; private int victoryDrops;
 
         public int VictoryDrops => victoryDrops;
         public IReadOnlyList<string> VictoryUnlocks => victoryUnlocks;
@@ -73,10 +73,6 @@ namespace GravityBox.Venom
             if (dropsLabel != null && dropsShown != balance) { dropsShown = balance; dropsLabel.text = dropsShown.ToString(); }
             if (dropsBox != null) { float k = Time.time - dropsBumpAt; dropsBox.localScale = Vector3.one * (1 + (k >= 0 && k < .5f ? .16f * Mathf.Exp(-k * 9) : 0)); }
             if (bannerDirty && !injecting) { bannerDirty = false; Rebuild(); }
-            if (Page == COgheProductPage.Victory && tripleUntil > 0 && Time.unscaledTime >= tripleUntil && !COgheAds.Showing)
-            {
-                tripleUntil = 0; Rebuild(); // An expired reward offer never advances the level.
-            }
         }
         private bool placingBanner;
         private void OnBannerChanged() { if (!placingBanner) bannerDirty = true; }
@@ -217,7 +213,6 @@ namespace GravityBox.Venom
                 victoryHome = Game.Progress.RevealHome;
                 if (victoryHome) COgheAnalytics.Log("feature_unlock", "feature", "home");
             }
-            tripleUntil = victoryDrops > 0 && COgheAds.RewardedAvailable ? Time.unscaledTime + COgheEconomy.TripleWindow : 0;
             OfferBonusAfter(order);
         }
         /// <summary>After Next Level: finish unlocks and any eligible ad before loading once.</summary>
@@ -240,20 +235,23 @@ namespace GravityBox.Venom
         }
         private void TripleButton()
         {
-            if (victoryDrops <= 0 || !COgheAds.RewardedAvailable) return;
+            if (victoryDrops <= 0) return;
             float w = Mathf.Min(260, width - 80), y = height - 140;
-            if (tripleTaken) return;   // the single earned amount above the button now includes the bonus
-            if (Time.unscaledTime >= tripleUntil) return;
-            var b = LabelButton(pageRoot, "Triple drops", new Rect((width - w) * .5f, y, w, 52), COgheIcon.Play, "+" + COgheEconomy.TripleExtra + (COgheEntitlements.InstantRewards ? " Drops · Plus" : " Drops · watch an ad"), () =>
+            var b = LabelButton(pageRoot, "Triple drops", new Rect((width - w) * .5f, y, w, 52),
+                tripleTaken ? COgheIcon.Check : COgheIcon.Play,
+                tripleTaken ? "Claimed" : "+" + COgheEconomy.TripleExtra + (COgheEntitlements.InstantRewards ? " Drops · Plus" : " Drops · watch an ad"), () =>
             {
-                tripleUntil = Time.unscaledTime + 60;   // hold the screen while the ad plays
+                if (tripleTaken) return;
                 COgheAds.Rewarded("victory_triple", COgheReward.Victory(victoryLevel), ok =>
                 {
                     if (this == null) return;
                     if (ok) { tripleTaken = true; rewardFxAt = Time.unscaledTime; COgheAudio.Happy(); }
-                    tripleUntil = 0; Rebuild();
+                    Rebuild();
                 });
-            }, true);
+            }, !tripleTaken);
+            // Keep the offer in place while an ad loads, or after a cancelled/failed ad.
+            // The availability event refreshes it; a paid reward stays as a disabled receipt until Next.
+            b.interactable = !tripleTaken && COgheAds.RewardedAvailable && !COgheAds.Showing;
         }
 
         /// <summary>What this win unlocked: gifts are already yours, the rest can be bought (or taken for an ad) now or later.</summary>

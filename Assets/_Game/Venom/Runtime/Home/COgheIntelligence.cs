@@ -68,7 +68,7 @@ namespace GravityBox.Venom
         private bool StepDone(int index)
         {
             var target = targets[index];
-            if (target is COgheTapRail rail) return rail.CompletedJourneys > journeysAtStep;
+            if (target is COgheTapRail rail) return rail.CompletedJourneys > journeysAtStep || (rail.HoldAtEnd && rail.Holding);
             if (target is COgheTissueSensor pad) return pad.Active;
             return deviceTouched;
         }

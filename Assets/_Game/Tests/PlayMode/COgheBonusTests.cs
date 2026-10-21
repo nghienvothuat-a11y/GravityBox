@@ -85,7 +85,7 @@ namespace GravityBox.Tests
                 game.TouchPoint(ScreenOf(game.HomeRoom.BoundsOf(ball).center));
                 yield return AwaitBonus(() => p.Playing == ball, 10, "It runs off to play ball");
                 yield return AwaitBonus(() => p.BonusRound == 2 && p.BonusAsking, 25, "then asks the last question");
-                Assert.AreEqual(COgheShape.Mushroom, p.BonusAsk.Value.Shape);
+                Assert.AreEqual(COgheShape.Apple, p.BonusAsk.Value.Shape);
 
                 // a mushroom: food
                 int eaten = p.BallsEaten;

@@ -1,5 +1,9 @@
 # COghe — Day Lab Puzzle Prototype
 
+**Playtest refinement, 21/10/2026:** Speedy để lại vệt nước có ánh sao nhỏ; Clever đọc sách và hiện ký tự toán; Flower crown nhiều màu. Màn F1 (cũ 66) thay N29 tại 15, catalog còn 67 màn, giữ sáu Boss và save. Đồng bộ bo góc khi khối đỗ, bỏ nút gọi thang thừa ở 19, bỏ mái chìa khó đọc ở Boss 21, làm rõ bậc 3–6–9–12 cm ở 31. [Thiết kế và kiểm chứng](Docs/Verification/COghePlaytestRefinement/README.md).
+
+**Hoàn thiện sau playtest, 20/10/2026:** intro chuyển vào cảnh màn 1 thật; sửa nháy bục 02; hộp kéo được phần đường còn trống; thang phải có COghe trên khay. Nút thưởng quảng cáo giữ đến Next, nhận xong hiện “Claimed”. Xin ăn bằng hình táo; Ability có hiệu ứng nhẹ theo từng đợt. Bài tiêm màu dùng Mint và phải bấm Done. [Thay đổi và kiểm chứng](Docs/Verification/COghePlaytestPolish/README.md) · [Ảnh runtime](Docs/Verification/COghePlaytestPolish/review.html).
+
 **Hiểu ra, 19/10/2026:** 6 bài luyện ngắn sau 6/16/27/38/49/60 xen 6 bài sau Boss; 12 lần chọn thẻ trong 65 màn. Luyện riêng trước khi kết hợp, giảm chuỗi khó và giữ bước đúng khi trả lời sai. Nhà/tiêm màu và Boss 10 giữ nguyên; save cũ không phải chơi bù các bài luyện đã qua. [12 hồ sơ](Docs/LevelDesign/COghe/Understand12/README.md) · [Kiểm chứng](Docs/Verification/COgheUnderstandPacing/README.md).
 
 **Ability cards, 17/10/2026:** ba thẻ xếp ngang, cùng kích thước, không chọn sẵn; Playful / Speedy / Clever, trong đó Clever là giáo sư COghe theo yêu cầu. Giữ nguyên cơ chế và dữ liệu đã lưu. [Thiết kế](Docs/COGHE_ABILITY_CARDS.md) · [Ảnh UI trong game](Docs/Verification/COgheAbilityCards/review.html).
@@ -18,7 +22,7 @@
 **Ống và mạch, 14/10/2026:** vận tốc chui ống ×1,5; mạch và chân tiếp điểm bám mặt kính/sàn/bệ thật. Đã rà 65 màn, giữ nguyên dữ liệu vật lý cơ quan. [Kiểm chứng và ảnh runtime](Docs/Verification/COghePipeCircuits/README.md).
 
 **Tiến trình 14/10/2026:** trang trí mở sau màn hiển thị 8 với bài hướng dẫn tiêm màu
-Ocean miễn phí; Boss 10 phối hợp thang, cầu nâng và bốn circuit theo chuỗi phụ thuộc.
+Mint miễn phí (thay Ocean ngày 20/10); Boss 10 phối hợp thang, cầu nâng và bốn circuit theo chuỗi phụ thuộc.
 “Understand COghe” là phần bắt buộc sau mỗi Boss trước chương tiếp, có checkpoint
 khi về menu/thoát game. Nhà vẫn mở sau Boss 10. Giữ nguyên tiến độ và đồ đã sở hữu.
 [Thiết kế và kiểm chứng](Docs/Verification/COgheChapterProgression/README.md).

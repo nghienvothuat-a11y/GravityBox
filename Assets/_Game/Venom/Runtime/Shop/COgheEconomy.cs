@@ -19,7 +19,7 @@ namespace GravityBox.Venom
     public static partial class COgheEconomy
     {
         // Gifts (Mrk 02/10): the ball when Home opens, and the first item of each Style group.
-        public static readonly string[] Gifts = { "BALL", "INK_OCEAN", "HAT_BEANIE", "FLOAT_STARS" };
+        public static readonly string[] Gifts = { "BALL", "INK_MINT", "HAT_BEANIE", "FLOAT_STARS" };
         private static readonly Dictionary<string, int> overrides = new Dictionary<string, int>();
 
         public static int CleanWin => Value("drops_clean_win", 0);
@@ -41,7 +41,7 @@ namespace GravityBox.Venom
         public static int InterstitialDailyCap => Value("interstitial_daily_cap", 10);
         /// <summary>No full-screen ad this soon after a rewarded one.</summary>
         public static int RewardedQuietSeconds => Value("rewarded_quiet_seconds", 90);
-        /// <summary>Seconds the ×3 button waits on the victory screen.</summary>
+        /// <summary>Legacy config value. Victory offers now remain until Next and do not use this timeout.</summary>
         public static float TripleWindow => Value("victory_triple_ms", 3500) / 1000f;
 
         /// <summary>Remote Config: replace a value (key names as in the plan, prices as price_ITEM_ID).</summary>

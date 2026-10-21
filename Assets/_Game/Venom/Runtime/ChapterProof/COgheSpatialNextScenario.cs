@@ -367,8 +367,8 @@ namespace GravityBox.Venom.ChapterProof
     yield return Operate("A");yield return until(5,()=>a.AtEnd,"Low block into its socket");
     yield return Go(W(-.12f,-.27f,.08f),"Mount the low block");
     yield return Go(W(-.016f,-.24f,.08f),"Mount the tall block");
-    yield return Go(W(.095f,-.24f,.08f),"Onto the span");
-    yield return GoSurface("Exit platform",W(.27f,-.24f,.12f),"Onto the exit platform");
+    yield return Go(W(.095f,-.209f,.08f),"Onto the span");
+    yield return GoSurface("Exit platform",W(.27f,-.18f,.12f),"Onto the exit platform");
    }
    else if(n==23)
    {

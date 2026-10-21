@@ -184,12 +184,30 @@ namespace GravityBox.Venom.ChapterProof
         }
         private IEnumerator Tap(Vector3 point)
         {
+            // Normal touch replays must wait for the same temporary input lock a player sees.
+            // A rapid merge/step sequence can trigger the 3-second sulk; do not spend every retry during it.
+            yield return Until(12,()=>!game.InputLocked,"Wait for the temporary character input lock");
+            yield return null;
             game.CameraRig.Frame(Screen.width,Screen.height,0,true,Screen.safeArea);
             Vector2 screen=game.Owner.View.WorldToScreenPoint(point);
             if(!game.CameraRig.AllowsPointer(screen,Screen.width,Screen.height))throw new InvalidOperationException("Target under HUD: "+screen);
             bool before=measuring;measuring=false;yield return Capture("tap"+result.taps);yield return null;yield return null;Array.Clear(COgheMobileMetrics.Milliseconds,0,4);measuring=before;
+            // Capture yields frames; use the currently drawn camera, not its pre-capture interpolated pose.
+            screen=game.Owner.View.WorldToScreenPoint(point);int moves=game.Motion.MoveCount,mechanismTaps=game.MechanismTaps;
             InputSystem.QueueStateEvent(touchscreen,new TouchState{touchId=1,phase=UnityEngine.InputSystem.TouchPhase.Began,position=screen});yield return null;
             InputSystem.QueueStateEvent(touchscreen,new TouchState{touchId=1,phase=UnityEngine.InputSystem.TouchPhase.Ended,position=screen});yield return null;yield return null;result.taps++;
+            Debug.Log($"VIEW_TAP {result.taps} point={point:F3} moves={game.Motion.MoveCount-moves} mechanisms={game.MechanismTaps-mechanismTaps} target={game.Motion.Get(game.Motion.Selected)?.Target} focused={Application.isFocused} locked={game.InputLocked}");
+            if(game.Motion.MoveCount==moves)
+            {
+                var hits=Physics.RaycastAll(game.Owner.View.ScreenPointToRay(screen),game.Owner.View.farClipPlane);Array.Sort(hits,(a,b)=>a.distance.CompareTo(b.distance));int count=0;
+                foreach(var hit in hits)
+                {
+                    if(hit.collider.GetComponent<VenomContact>()!=null)continue;
+                    var patch=hit.collider.GetComponent<VenomSurfacePatch>();
+                    Debug.Log($"VIEW_PICK {hit.collider.name} point={hit.point:F3} patch={patch!=null} selectable={patch!=null&&patch.Selectable} exterior={patch!=null&&patch.ExteriorGlass} normal={hit.normal:F3}");
+                    if(++count==6)break;
+                }
+            }
         }
         private IEnumerator Until(float seconds,Func<bool> done,string message)
         {

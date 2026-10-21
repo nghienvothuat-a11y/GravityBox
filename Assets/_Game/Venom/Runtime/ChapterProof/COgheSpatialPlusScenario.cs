@@ -822,7 +822,7 @@ namespace GravityBox.Venom.ChapterProof
    yield return s.Walk(holder,W(.30f,-.298f,-.20f),"One half loads pad A");
    yield return s.Walk(climber,W(.02f,-.21f,.06f),"The other climbs C1's exposed end");
    yield return s.Walk(climber,W(-.28f,-.12f,.16f),"From C1 onto the lever shelf");
-   game.SelectFragment(climber);yield return Pull("B","Lever B");
+   game.SelectFragment(climber);yield return s.Hold("B");
    yield return until(10,()=>latch.Caught,"Pad A and lever B catch C1's bolt");
    game.SelectFragment(climber);yield return Pull("C2","From the shelf, C2 across to C1's tower end");
    yield return s.Walk(climber,W(-.10f,-.12f,.06f),"Onto C2's free strip");
@@ -830,7 +830,7 @@ namespace GravityBox.Venom.ChapterProof
    yield return s.Merge(W(-.10f,-.30f,-.08f));
    yield return Pull("C1","The whole body hauls C1 against the tower",60);
    yield return s.Go(W(-.04f,-.21f,.08f),"Onto C1");yield return s.Go(W(.06f,-.12f,.08f),"Onto C2");
-   yield return s.Go(W(.17f,-.03f,.21f),"Onto C3");yield return s.Go(W(.31f,-.03f,.15f),"Onto the tower");
+   yield return s.Go(W(.17f,-.03f,.21f),"Onto C3");yield return s.Go(W(.31f,-.03f,.27f),"Onto the tower");
   }
   IEnumerator E08()
   {

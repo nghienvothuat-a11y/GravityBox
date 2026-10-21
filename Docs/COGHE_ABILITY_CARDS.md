@@ -81,6 +81,32 @@ not a claim of tested comprehension by children.
 - Existing development reel `-coghe-ability-reel <dir>` retains stable control
   identifiers even though visible names have changed.
 
+## Gameplay accents — 21/10/2026
+
+Owned abilities cycle, showing the most recently picked card first
+(`COgheShop.State.LastAbility`). Their presentation never changes ability levels,
+speeds, forces or puzzle solutions.
+
+- Playful: small coral hearts float upward in occasional bursts.
+- Speedy: crawling leaves a continuous, short-lived translucent water ribbon on
+  the actual contact surface. Small four-point stars occasionally lift from it.
+  The ribbon follows glass walls and moving supports and breaks when unsupported,
+  entering a tube or working a prop. No trace while resting or falling.
+- Clever: while stationary, whole and clear of mechanisms, COghe draws a little
+  bound book from its body, opens it, reads and turns a page. Its eyes follow the
+  pages. Teal numbers and mathematical signs rise above it. The 5.2-second act
+  yields immediately to the player's next command through a short fade.
+
+The water uses one pooled, depth-tested mesh: at most 80 segments / 640 triangles,
+fading over 2.4 seconds. Rising accents share one UI mesh with twelve pooled
+motes. Bursts start 14–20 active seconds apart; the first is eligible after two
+seconds. Speedy stars require motion; Clever waits for a safe idle opportunity.
+Pause, menus, Home, intro, victory and Retry clear the transient drawings. The
+book has no collider or extra skin sources, and its cached mesh/materials are
+released with the scene. No additional real-time lights or per-frame allocations.
+
+[Native review and verification](Verification/COghePlaytestRefinement/README.md).
+
 ## Verification — 17/10/2026 redesign
 
 - **5/5 targeted PlayMode tests passed**, including real pointer selection,

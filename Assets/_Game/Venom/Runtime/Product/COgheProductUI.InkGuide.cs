@@ -26,7 +26,7 @@ namespace GravityBox.Venom
             if (inkGuide)
             {
                 if (COgheShop.Current.InkGuideStep == 0) COgheShop.SetInkGuideStep(1);
-                styleInk = "INK_OCEAN"; styleScroll = 1;
+                styleInk = "INK_MINT"; styleScroll = 1;
                 COgheAnalytics.Log("ink_guide_start", "step", COgheShop.Current.InkGuideStep);
             }
             Rebuild();
@@ -67,10 +67,10 @@ namespace GravityBox.Venom
             if (step < 2)
             {
                 styleCaption.text = "Choose a syringe below.";
-                styleDetail.text = "Free · Tap Ocean to begin.";
+                styleDetail.text = "Free · Tap Mint to begin.";
             }
             else if (step >= 3 && !injecting) styleCaption.text = "Your first color. Make it yours!";
-            inkGuideText.text = step < 2 ? "1 / 3 · Choose your ink\nTap the Ocean syringe below. This color is free." :
+            inkGuideText.text = step < 2 ? "1 / 3 · Choose your ink\nTap the Mint syringe below. This color is free." :
                 step < 3 ? (injecting && held >= .6f ? "2 / 3 · Now lift your finger\nThe ink spreads through COghe and saves automatically." :
                     "2 / 3 · Press and hold on COghe\nHold to inject. Move your finger to color another spot.") :
                 "3 / 3 · Ready to play\nTap Done to save your color and continue.";
@@ -80,7 +80,7 @@ namespace GravityBox.Venom
         {
             if (!inkGuide) { LeaveStyle(); return; }
             if (COgheShop.Current.InkGuideStep < 3)
-            { Notify("Choose Ocean, then hold on COghe and release."); return; }
+            { Notify("Choose Mint, then hold on COghe and release."); return; }
             // The final step may be reached while the liquid is still settling: persist the actual look now.
             SaveLook(); COgheShop.SetInkGuideStep(4); inkGuide = false;
             COgheAnalytics.Log("ink_guide_complete");

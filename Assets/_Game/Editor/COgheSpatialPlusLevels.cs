@@ -209,14 +209,16 @@ namespace GravityBox.Editor
   // A three-tier stack is both the tool and the goal. C1 (9 cm, heavy: only the whole body hauls it) runs to the 27 cm
   // exit tower; C2 rides C1 across, C3 rides C2 front ↔ back. At the start C1 stands against the lever shelf, whose
   // ivory side is climbable from C1 only. C1's bolt is caught only with pad A loaded AND lever B pulled (a split).
-  // From the shelf, push C2 to C1's tower end; standing on C2, push C3 back (it only unlocks once C2 is across), or
-  // the tower's overhang (18–27 cm band, front half) stops C1 short. Merged, the body hauls C1 over and climbs.
+  // C2 extends the stack toward the tower; C3 aligns its rear landing. Both remain reversible, with no invisible
+  // ordering lock. Merged, the body hauls C1 over and climbs the assembled staircase.
   static void PlusB1(ExpansionContext c)
   {
-   c.Exit=new Vector3(.40f,.02f,.15f);c.Outward=Vector3.right;c.Spawn=new Vector3(0,-.25f,-.262f);c.Definition.CameraEuler=new Vector3(38,20,0);NextShell(c,.30f,true);var floor=c.Surfaces[0];
-   NextQuantum(c,new Vector3(.0f,-.30f,-.20f),.025f,.14f);
-   NextPlinth(c,"Exit tower",new Vector3(.31f,-.165f,.15f),new Vector3(.18f,.27f,.30f));
-   NextPlinth(c,"Tower overhang",new Vector3(.19f,-.072f,.06f),new Vector3(.06f,.084f,.12f)); // 6 mm over C2's top, C3's band
+   c.Exit=new Vector3(.40f,.02f,.27f);c.Outward=Vector3.right;c.Spawn=new Vector3(0,-.25f,-.262f);c.Definition.CameraEuler=new Vector3(31,24,0);NextShell(c,.30f,true);var floor=c.Surfaces[0];
+   // Wider exit trays clear the entire half-body past the casing, including its trailing lobe.
+   NextQuantum(c,new Vector3(.0f,-.30f,-.20f),.025f,.18f);
+   NextPlinth(c,"Exit tower",new Vector3(.31f,-.165f,.27f),new Vector3(.18f,.27f,.06f));
+   // A visible 12 cm gap remains if C3 stays at the front. C2 gives horizontal reach; C3 aligns the back landing.
+   // No hidden overhang trap; each cargo block is necessary to form the staircase.
    var shelfFaces=NextPlinth(c,"Lever shelf",new Vector3(-.315f,-.21f,.21f),new Vector3(.17f,.18f,.18f));var shelf=Top(shelfFaces);
    shelfFaces.First(f=>f.Normal.x>.9f).Slippery=false; // ivory toward C1: the stack is the stair to the lever
    var c1=NextCrate(c,"C1",new Vector3(-.08f,-.255f,.14f),Vector3.right,.15f,new Vector3(.30f,.09f,.24f),floor,new Vector3(0,0,-.128f),new Vector3(0,0,-.06f),.22f,.45f,0,false);
@@ -229,20 +231,20 @@ namespace GravityBox.Editor
    c3.Handle.localRotation=Quaternion.Euler(0,90,0);c3.CompensateLoad=true;MountOnCarrier(c,c3,c2.GetComponent<VenomMovableProp>());
    var pad=ExpansionPad(c,"A",new Vector3(.30f,-.298f,-.20f),.009f,.10f);
    var bolt=PlusGate(c,"C1 bolt",new Vector3(-.12f,-.285f,.285f),Vector3.up,.03f,new Vector3(.02f,.02f,.02f));
-   var lever=ViewTask(c,"B",new Vector3(-.35f,-.097f,.21f),Vector3.right,.05f,shelf);lever.OneWay=true;
+   var lever=ViewTask(c,"B",new Vector3(-.35f,-.097f,.21f),Vector3.right,.05f,shelf);lever.HoldAtEnd=true;lever.Rail.LatchAtEnd=false;
    var hold=new GameObject("A and B catch C1's bolt",typeof(COgheLoadLatch)).GetComponent<COgheLoadLatch>();hold.transform.SetParent(c.Root,false);
-   hold.Inputs=new[]{pad};hold.Rails=new[]{lever.Rail};hold.Output=bolt;hold.Any=false;hold.Retain=true;
-   c1.RequiredRail=bolt;c1.RequiredEnd=true;c3.RequiredRail=c2.Rail;c3.RequiredEnd=true;
+   hold.Inputs=new[]{pad};hold.Holds=new[]{lever};hold.Output=bolt;hold.Any=false;hold.Retain=true;
+   c1.RequiredRail=bolt;c1.RequiredEnd=true;
    NextTrace("A",new Vector3(.30f,-.2992f,-.15f),new Vector3(.30f,-.2992f,-.07f),new Vector3(-.12f,-.2992f,-.07f),new Vector3(-.12f,-.2992f,.27f));
    NextTrace("B",new Vector3(-.31f,-.1192f,.21f),new Vector3(-.26f,-.1192f,.21f),new Vector3(-.26f,-.1192f,.29f));
    PlusStep(1,new Vector3(0,-.27f,-.17f));PlusStep(2,new Vector3(.30f,-.29f,-.20f));PlusStep(3,new Vector3(-.33f,-.12f,.21f));PlusStep(4,new Vector3(-.27f,-.12f,.16f));PlusStep(5,new Vector3(-.03f,-.12f,.09f));
-   PlusStep(6,new Vector3(-.08f,-.29f,-.06f));PlusStep(7,new Vector3(.10f,-.29f,-.06f));PlusStep(8,new Vector3(.31f,-.03f,.15f));
+   PlusStep(6,new Vector3(-.08f,-.29f,-.06f));PlusStep(7,new Vector3(.10f,-.29f,-.06f));PlusStep(8,new Vector3(.31f,-.03f,.27f));
    PlusGhost("50%",new Vector3(.30f,-.28f,-.20f));PlusGhost("50%",new Vector3(-.33f,-.11f,.21f));
-   PlusLabel("C1",new Vector3(-.19f,-.21f,.03f));PlusLabel("C2",new Vector3(-.14f,-.12f,.03f));PlusLabel("C3",new Vector3(-.10f,-.03f,.03f));PlusLabel("mái chìa",new Vector3(.19f,-.03f,.02f));
+   PlusLabel("C1",new Vector3(-.19f,-.21f,.03f));PlusLabel("C2",new Vector3(-.14f,-.12f,.03f));PlusLabel("C3",new Vector3(-.10f,-.03f,.03f));
    PlusRoute("100",c.Spawn,new Vector3(0,-.27f,-.17f));PlusRoute("50a",new Vector3(.14f,-.29f,-.18f),new Vector3(.30f,-.29f,-.20f));
    PlusRoute("50b",new Vector3(-.14f,-.29f,-.18f),new Vector3(-.19f,-.29f,-.05f),new Vector3(-.19f,-.21f,.10f),new Vector3(-.26f,-.12f,.18f),new Vector3(-.33f,-.12f,.21f));
    PlusRoute("100",new Vector3(-.08f,-.29f,-.06f),new Vector3(.10f,-.29f,-.06f));
-   PlusRoute("100",new Vector3(.12f,-.21f,.05f),new Vector3(.13f,-.12f,.21f),new Vector3(.17f,-.03f,.21f),new Vector3(.31f,-.03f,.15f),c.Exit);
+   PlusRoute("100",new Vector3(.12f,-.21f,.05f),new Vector3(.13f,-.12f,.21f),new Vector3(.17f,-.03f,.21f),new Vector3(.31f,-.03f,.27f),c.Exit);
   }
 
   // ---- chapter 4 -------------------------------------------------------------------------------------------------

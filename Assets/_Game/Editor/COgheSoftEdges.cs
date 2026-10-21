@@ -109,8 +109,59 @@ namespace GravityBox.Editor
             var root=game.GetComponent<VenomLevelController>().Rotation.transform;
             int tapes=Tape(game,root,TapeMaterial());
             var (blocks,open,notBox)=RoundBlocks(game);
+            BindDockedArt(game);
+            SeparateStepArtFromGlass(game);
             Debug.Log($"SOFT EDGES {key}: {tapes} tape runs, {blocks} rounded blocks ({open} open, {notBox} not boxes left as they were)");
             return (tapes,blocks,open,notBox);
+        }
+
+        /// <summary>Level 2's ivory steps meet the floor/back/right glass exactly. Keep physical contacts there,
+        /// but inset only their rendered skin 1.5 mm so the rear view cannot depth-fight with the glass.</summary>
+        public static void SeparateStepArtFromGlass(VenomCampaign game)
+        {
+            var panes=game.GetComponentsInChildren<VenomSurfacePatch>(true)
+                .Where(p=>p.ExteriorGlass||p.name=="Laboratory floor").ToArray();
+            const string folder=Out+"/StepGlassClearance";
+            Directory.CreateDirectory(folder);AssetDatabase.Refresh();
+            int index=0;
+            foreach(var filter in game.GetComponentsInChildren<MeshFilter>(true))
+            {
+                var renderer=filter.GetComponent<Renderer>();
+                if(!filter.name.Contains("Ivory ")||!filter.name.Contains("step")||renderer==null||!renderer.enabled)continue;
+                var vertices=filter.sharedMesh.vertices;bool changed=false;
+                for(int i=0;i<vertices.Length;i++)
+                {
+                    Vector3 world=filter.transform.TransformPoint(vertices[i]);
+                    foreach(var pane in panes)
+                    {
+                        float d=Vector3.Dot(world-pane.transform.position,pane.Normal);
+                        if(d<-.0002f||d>=.00149f)continue;
+                        Vector3 q=pane.transform.InverseTransformPoint(world);
+                        if(Mathf.Abs(q.x)>pane.Size.x*.5f+.002f||Mathf.Abs(q.y)>pane.Size.y*.5f+.002f)continue;
+                        world+=pane.Normal*(.0015f-d);changed=true;
+                    }
+                    vertices[i]=filter.transform.InverseTransformPoint(world);
+                }
+                if(!changed)continue;
+                var mesh=Object.Instantiate(filter.sharedMesh);mesh.name=filter.sharedMesh.name+" glass clearance";
+                mesh.vertices=vertices;mesh.RecalculateBounds();
+                string path=$"{folder}/{index++:00}-{filter.name.Replace(' ','-').Replace('·','-')}.asset";
+                var saved=AssetDatabase.LoadAssetAtPath<Mesh>(path);
+                if(saved!=null){EditorUtility.CopySerialized(mesh,saved);Object.DestroyImmediate(mesh);mesh=saved;}
+                else AssetDatabase.CreateAsset(mesh,path);
+                filter.sharedMesh=mesh; // Collider/navigation meshes deliberately retain the original asset.
+            }
+        }
+        public static void RepairStepGlassFromCommandLine()
+        {
+            string path=VenomCampaignBuilder.SpatialContentPath("02");
+            string before=COgheViewArtVerification.CapturePhysics(new[]{path});
+            var scene=EditorSceneManager.OpenScene(path);
+            SeparateStepArtFromGlass(Object.FindFirstObjectByType<VenomCampaign>());
+            EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);AssetDatabase.SaveAssets();
+            if(before!=COgheViewArtVerification.CapturePhysics(new[]{path}))
+                throw new InvalidOperationException("Step art repair changed physical geometry");
+            Debug.Log("STEP GLASS REPAIR: render skins separated; physics unchanged.");
         }
 
         // ---- the tape ---------------------------------------------------------------------------------------------------
@@ -218,11 +269,17 @@ namespace GravityBox.Editor
         /// slick sides). The faces' renderers are hidden; the faces, colliders and navigation stay as they were.</summary>
         static (int rounded,int open,int notBox) RoundBlocks(VenomCampaign game)
         {
+            var dockedFaces=new HashSet<VenomSurfacePatch>();
+            foreach(var deck in game.GetComponentsInChildren<COgheDockedBridgeDeck>(true))
+            {
+                if(deck.DockedTop!=null)dockedFaces.Add(deck.DockedTop);
+                if(deck.DockedSurfaces!=null)foreach(var face in deck.DockedSurfaces)if(face!=null)dockedFaces.Add(face);
+            }
             var groups=new Dictionary<(Transform,string),List<VenomSurfacePatch>>();
             foreach(var p in game.GetComponentsInChildren<VenomSurfacePatch>(true))
             {
                 var r=p.GetComponent<Renderer>();
-                if(r==null||!r.enabled||!p.gameObject.activeInHierarchy||p.ExteriorGlass||p.SphereRadius>0||p.Curved!=null||p.Hole||p.name=="Laboratory floor")continue;
+                if(r==null||!r.enabled||(!p.gameObject.activeInHierarchy&&!dockedFaces.Contains(p))||p.ExteriorGlass||p.SphereRadius>0||p.Curved!=null||p.Hole||p.name=="Laboratory floor")continue;
                 var k=(p.transform.parent,p.name);if(!groups.TryGetValue(k,out var list))groups[k]=list=new List<VenomSurfacePatch>();list.Add(p);
             }
             var all=game.GetComponentsInChildren<VenomSurfacePatch>(true).Where(p=>p.gameObject.activeInHierarchy).ToArray();
@@ -264,6 +321,45 @@ namespace GravityBox.Editor
             }
             return (count,openSides,notBoxes);
         }
+        static void BindDockedArt(VenomCampaign game)
+        {
+            Renderer[] Skins(IEnumerable<VenomSurfacePatch> faces) => faces.Where(f=>f!=null)
+                .Select(f=>f.transform.parent.Find($"{Marker} · {f.name}"))
+                .Where(t=>t!=null).Select(t=>t.GetComponent<Renderer>()).Where(r=>r!=null).Distinct().ToArray();
+            foreach(var deck in game.GetComponentsInChildren<COgheDockedBridgeDeck>(true))
+            {
+                deck.MovingArt=Skins(deck.MovingSurfaces??Array.Empty<VenomSurfacePatch>());
+                deck.DockedArt=Skins((deck.DockedSurfaces??Array.Empty<VenomSurfacePatch>()).Concat(new[]{deck.DockedTop}));
+                foreach(var r in deck.MovingArt)r.enabled=true;
+                foreach(var r in deck.DockedArt)r.enabled=false;
+            }
+        }
+
+        /// <summary>Repair saved scenes without rebuilding geometry or touching puzzle state.</summary>
+        public static void RepairDockedArtFromCommandLine()
+        {
+            const string report="Artifacts/COghePlaytestRefinement";Directory.CreateDirectory(report);
+            var paths=VenomCampaignBuilder.SpatialScenePaths();
+            string before=COgheViewArtVerification.CapturePhysics(paths);
+            var rows=new List<string>{"scene,decks,newRoundedShells"};
+            foreach(var path in paths)
+            {
+                var scene=EditorSceneManager.OpenScene(path);var game=Object.FindFirstObjectByType<VenomCampaign>();
+                int decks=game.GetComponentsInChildren<COgheDockedBridgeDeck>(true).Length;
+                if(decks==0)continue;
+                dir=Out+"/"+Path.GetFileNameWithoutExtension(path).Replace("COgheSpatial","")+"/DockedShells";
+                Directory.CreateDirectory(dir);AssetDatabase.Refresh();meshSerial=0;
+                var (added,_,__)=RoundBlocks(game);BindDockedArt(game);
+                rows.Add($"{Path.GetFileNameWithoutExtension(path)},{decks},{added}");
+                EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);
+            }
+            AssetDatabase.SaveAssets();File.WriteAllLines(report+"/rounded-docks.csv",rows);
+            string after=COgheViewArtVerification.CapturePhysics(paths);
+            File.WriteAllText(report+"/dock-physics-before.txt",before);File.WriteAllText(report+"/dock-physics-after.txt",after);
+            if(before!=after)throw new InvalidOperationException("Dock art repair changed physical data");
+            Debug.Log("DOCK ART VERIFIED: physics unchanged; "+(rows.Count-1)+" scenes repaired");
+        }
+
         /// <summary>Side <paramref name="side"/> (+x, −x, +y, −y, +z, −z) of the box is covered: a face of something else
         /// lies in its plane, facing back at it, under its centre.</summary>
         static bool Closed(int side,Bounds b,Transform parent,List<VenomSurfacePatch> own,VenomSurfacePatch[] all)

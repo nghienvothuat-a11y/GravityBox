@@ -23,6 +23,7 @@ namespace GravityBox.Venom
             look = null;
             if (game == null) return COgheMood.Normal;
             if (room == null && game.Owner.Completed) return COgheMood.Happy;   // the win, and the victory dance after it
+            if (Act == COgheAct.Read) { if(life!=null)look=life.ReadingFocus;return COgheMood.Focus; }
             if (Act == COgheAct.Doze) return COgheMood.Sleepy;
             if (Act == COgheAct.Trick)
             {

@@ -40,7 +40,9 @@ namespace GravityBox.Venom
             a = place.MultiplyPoint3x4(a); b = place.MultiplyPoint3x4(b); c = place.MultiplyPoint3x4(c);
             Vector3 normal = Vector3.Cross(b - a, c - a);
             if (normal.sqrMagnitude < 1e-14f) return;
-            normal.Normalize();
+            // Vector3.Normalize zeroes vectors shorter than 1e-5. Tiny petals/page details
+            // legitimately have cross products below that threshold; zero normals render black.
+            normal /= Mathf.Sqrt(normal.sqrMagnitude);
             int i = vertices.Count; var list = triangles[paint];
             vertices.Add(a); vertices.Add(b); vertices.Add(c); normals.Add(normal); normals.Add(normal); normals.Add(normal);
             list.Add(i); list.Add(i + 1); list.Add(i + 2);
@@ -177,7 +179,7 @@ namespace GravityBox.Venom
             }
         }
         /// <summary>An icosphere (0 or 1 subdivision) with ellipsoid radii; <paramref name="paintOf"/> may colour faces.</summary>
-        public void Ico(Vector3 centre, Vector3 radii, int subdivisions, Func<Vector3, Color?> paintOf = null)
+        public void Ico(Vector3 centre, Vector3 radii, int subdivisions, Func<Vector3, Color?> paintOf = null, bool outward = false)
         {
             float t = (1 + Mathf.Sqrt(5)) / 2;
             var p = new List<Vector3> { new Vector3(-1, t, 0), new Vector3(1, t, 0), new Vector3(-1, -t, 0), new Vector3(1, -t, 0), new Vector3(0, -1, t), new Vector3(0, 1, t),
@@ -200,7 +202,8 @@ namespace GravityBox.Venom
             {
                 Vector3 a = p[f[i]], b = p[f[i + 1]], c = p[f[i + 2]];
                 if (paintOf != null) { var col = paintOf((a + b + c) / 3); if (col.HasValue) Paint(col.Value); }
-                Tri(centre + Vector3.Scale(a, radii), centre + Vector3.Scale(c, radii), centre + Vector3.Scale(b, radii));
+                // Preserve legacy Home meshes; new closed flowers explicitly use outward-facing petals.
+                Tri(centre + Vector3.Scale(a, radii), centre + Vector3.Scale(outward ? b : c, radii), centre + Vector3.Scale(outward ? c : b, radii));
                 paint = saved;
             }
         }

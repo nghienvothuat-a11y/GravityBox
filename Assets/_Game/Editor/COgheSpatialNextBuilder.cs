@@ -328,7 +328,8 @@ namespace GravityBox.Editor
    lift.DeckSize=new Vector2(.24f,.24f);lift.DeckHeight=.013f;lift.Deck=rail.GetComponentsInChildren<VenomSurfacePatch>().First(p=>p.Normal.y>.9f);lift.CarriesProps=true;lift.MaximumForce=4;
    lift.BoardPoint=new GameObject("Rider stance").transform;lift.BoardPoint.SetParent(rail.transform,false);lift.BoardPoint.localPosition=new Vector3(-.064f,.031f,0);
    lift.Panel=MechanismVisual(rail.transform,"A lift panel",new Vector3(.09f,.018f,-.09f),new Vector3(.04f,.010f,.04f),metal,PrimitiveType.Cylinder);
-   lift.CallPanels=new[]{MechanismVisual(c.Root,"A lower call panel",new Vector3(-.14f,-.262f,-.04f),new Vector3(.04f,.010f,.04f),metal,PrimitiveType.Cylinder),
+   lift.EmptyTrayCallFromLowerLanding=true;
+   lift.CallPanels=new Transform[]{null,
     MechanismVisual(c.Root,"A upper call panel",new Vector3(.20f,-.062f,.05f),new Vector3(.04f,.010f,.04f),metal,PrimitiveType.Cylinder)};
    foreach(float x in new[]{-.12f,.14f})MechanismVisual(c.Root,"Lift upright",new Vector3(x,-.18f,.285f),new Vector3(.012f,.24f,.012f),metal);
    var crate=NextLooseCrate(c,"A crate",new Vector3(-.25f,-.2525f,.16f),new Vector3(.10f,.03f,.10f),.04f);
@@ -563,15 +564,15 @@ namespace GravityBox.Editor
   // in its socket and blocks the path to span C's handle, so B waits aside, C goes in, then B, then the low block A.
   static void Next22(ExpansionContext c)
   {
-   c.Exit=new Vector3(.40f,-.172f,.12f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.28f,-.25f,-.20f);NextShell(c,.10f,true);var floor=c.Surfaces[0];
-   NextPlinth(c,"Exit platform",new Vector3(.28f,-.27f,.10f),new Vector3(.24f,.06f,.40f));
+   c.Exit=new Vector3(.40f,-.112f,.12f);c.Outward=Vector3.right;c.Spawn=new Vector3(-.28f,-.25f,-.20f);c.Definition.CameraEuler=new Vector3(28,24,0);NextShell(c,.15f,true);var floor=c.Surfaces[0];
+   NextPlinth(c,"Exit platform",new Vector3(.28f,-.24f,.10f),new Vector3(.24f,.12f,.40f));
    // A waits at the back and is pulled forward into its socket (its handle faces the player).
    NextCrate(c,"A",new Vector3(-.12f,-.285f,.25f),Vector3.back,.17f,new Vector3(.10f,.03f,.10f),floor,new Vector3(0,0,-.058f),new Vector3(0,0,-.052f),.04f,.01f,0,true);
    var b=NextCrate(c,"B",new Vector3(-.30f,-.27f,.08f),Vector3.right,.284f,new Vector3(.10f,.06f,.10f),floor,new Vector3(-.058f,-.015f,0),new Vector3(-.052f,0,0),.05f,.012f,.284f,true);
    b.Handle.localRotation=Quaternion.Euler(0,90,0);
-   var span=NextCrate(c,"C",new Vector3(.095f,-.255f,-.22f),Vector3.forward,.30f,new Vector3(.12f,.03f,.12f),floor,new Vector3(-.068f,-.015f,0),new Vector3(-.07f,0,0),.04f,.01f,0,true);
+   var span=NextCrate(c,"C",new Vector3(.095f,-.224f,-.22f),Vector3.forward,.30f,new Vector3(.12f,.03f,.12f),floor,new Vector3(-.068f,-.046f,0),new Vector3(-.07f,0,0),.04f,.01f,0,true);
    span.Handle.localRotation=Quaternion.Euler(0,90,0);span.Rail.GetComponent<VenomMovableProp>().Body.mass=.04f;
-   foreach(var bearer in new[]{.045f,.148f})ViewBlock(c,"Span bearer",new Vector3(bearer,-.286f,.08f),new Vector3(.006f,.028f,.10f));
+   foreach(var bearer in new[]{.045f,.148f})ViewBlock(c,"Span bearer",new Vector3(bearer,-.271f,.08f),new Vector3(.006f,.058f,.10f));
    NextOutline(c,"B waiting bay",new Vector3(-.30f,-.2995f,.08f),new Vector2(.105f,.105f));
    NextOutline(c,"A socket",new Vector3(-.12f,-.2995f,.08f),new Vector2(.105f,.105f));
    NextOutline(c,"B socket",new Vector3(-.016f,-.2995f,.08f),new Vector2(.105f,.105f));

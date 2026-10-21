@@ -1,8 +1,10 @@
-# Đồ vật vật lý — màn 66–68
+# Đồ vật vật lý — F1–F3
+
+**Cập nhật 21/10/2026:** F1 (màn 66 cũ) thay N29 tại **15**, theo yêu cầu của Mrk. F2/F3 hiện ở **66/67**. ID và cơ chế giữ nguyên; các số 66–68 trong ghi chép 19–20/10 bên dưới là lịch sử. [Kiểm chứng thay đổi](../../../Verification/COghePlaytestRefinement/README.md).
 
 Mrk 19/10/2026: thêm yếu tố vật lý vào màn chơi (bi sắt lăn giữ nút, sức nặng, rơi, vỡ, đổ), để vừa giải đố vừa nghịch và
 cản đường COghe. Yếu tố vật lý phải kết hợp được với cơ quan đã có. Lấy 3 màn có sẵn, biến đổi, làm 66, 67, 68 để chơi thử.
-Code: `Assets/_Game/Editor/COghePhysicsPropLevels.cs` (khoá F1–F3, nằm sau 65 màn).
+Code: `Assets/_Game/Editor/COghePhysicsPropLevels.cs` (khoá F1–F3, vị trí hiện hành 15/66/67).
 
 Mrk 20/10/2026: giữ nguyên 65 màn, F1–F3 là ba màn mới 66, 67, 68 (không thay màn nào). Chuỗi học `physics` trong
 `Difficulty65/curriculum.json`. Kế hoạch giai đoạn sau: [NEXT_PHASE_PLAN.md](NEXT_PHASE_PLAN.md).
@@ -23,9 +25,9 @@ Mrk 20/10/2026: giữ nguyên 65 màn, F1–F3 là ba màn mới 66, 67, 68 (kh�
 
 | Màn | Khoá | Từ màn | Tên | Lời giải |
 | --- | --- | --- | --- | --- |
-| 66 | F1 | N18 (màn 18) | Bi giữ cửa (dễ) | Bỏ máy tách Q. Kéo D: bi lăn xuống rãnh dọc kính trái, nằm lên nút A ở góc trước. Bi giữ cửa lò xo. Cả thân đi qua, đẩy thùng 100% (cần nguyên thân) sát kệ, leo lên, ra. COghe tự đứng A thì cửa mở nhưng bước ra là cửa sập. |
-| 67 | F2 | N41 (bài bánh răng đầu tiên) | Bánh răng thả bi (vừa) | Đầu ra của dàn bánh răng là chốt giữ bi. Kéo A (bánh G vào chỗ trống), đứng P: chốt nhấc lên, bi lăn xuống đập đổ cột. Cột nằm thành bậc 3 cm trước bệ lỗ thoát cao 6 cm (gờ 3 cm leo được, 6 cm thì không). |
-| 68 | F3 | N25 (màn 37, "Chưa đủ nặng") | Kính vỡ, đối trọng (khó, bản dài 19/10) | Bỏ thùng. Miệng hố có tấm kính mỏng, ngay dưới là khay đối trọng. COghe bắt đầu dưới sàn cạnh máy Q. Chốt giữ bi do hai nút A dưới sàn, cách nhau 43 cm, hai bên Q cùng mở: tách đôi, mỗi nửa đứng một nút thì chốt nhấc, bi lăn khỏi máng trên kính sau, rơi xuống kính; kính chịu được (0,05 < 0,12). Nửa thân đứng cùng bi chỉ làm nứt (0,098). Hai nửa nhập lại dưới sàn, cả thân leo cầu thang lên bục. Cả thân và bi thì vỡ (0,146): cả hai rơi xuống khay, đối trọng kéo cầu ván nằm ngang. Leo ra khỏi hố, qua cầu, ra. |
+| 15 | F1 | N18 (màn 18) | Bi giữ cửa (dễ) | Bỏ máy tách Q. Kéo D: bi lăn xuống rãnh dọc kính trái, nằm lên nút A ở góc trước. Bi giữ cửa lò xo. Cả thân đi qua, đẩy thùng 100% (cần nguyên thân) sát kệ, leo lên, ra. COghe tự đứng A thì cửa mở nhưng bước ra là cửa sập. |
+| 66 | F2 | N41 (bài bánh răng đầu tiên) | Bánh răng thả bi (vừa) | Đầu ra của dàn bánh răng là chốt giữ bi. Kéo A (bánh G vào chỗ trống), đứng P: chốt nhấc lên, bi lăn xuống đập đổ cột. Cột nằm thành bậc 3 cm trước bệ lỗ thoát cao 6 cm (gờ 3 cm leo được, 6 cm thì không). |
+| 67 | F3 | N25 (màn 37, "Chưa đủ nặng") | Kính vỡ, đối trọng (khó, bản dài 19/10) | Bỏ thùng. Miệng hố có tấm kính mỏng, ngay dưới là khay đối trọng. COghe bắt đầu dưới sàn cạnh máy Q. Chốt giữ bi do hai nút A dưới sàn, cách nhau 43 cm, hai bên Q cùng mở: tách đôi, mỗi nửa đứng một nút thì chốt nhấc, bi lăn khỏi máng trên kính sau, rơi xuống kính; kính chịu được (0,05 < 0,12). Nửa thân đứng cùng bi chỉ làm nứt (0,098). Hai nửa nhập lại dưới sàn, cả thân leo cầu thang lên bục. Cả thân và bi thì vỡ (0,146): cả hai rơi xuống khay, đối trọng kéo cầu ván nằm ngang. Leo ra khỏi hố, qua cầu, ra. |
 
 ## Kiểm tra
 

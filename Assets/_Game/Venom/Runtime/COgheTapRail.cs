@@ -51,9 +51,9 @@ namespace GravityBox.Venom
         /// pulls it toward itself, whichever way the crate can go (the same end tapped twice pushes, then pulls); at a long
         /// side it grips the side and walks along with the crate. A tap in the middle of the top lets COghe take the face
         /// nearest to it that works. If the chosen face has no room, the next nearest one does. Before COghe sets off, the
-        /// move is checked on the grid: the cells the crate slides through, and the cells COghe needs (behind the face to
-        /// push, just past the stop to pull, the strip beside the whole slide for a side) must be free floor; else the crate
-        /// does not move and the tap is refused at once, with the reason.</summary>
+        /// move is checked on the grid and limited to the free part of the lane. COghe also needs free floor behind the
+        /// pushing face, beyond the pulling destination or beside a side grip. A partial move can be reversed; only a
+        /// physically blocked move with no working space is refused.</summary>
         public bool CrateFaces;
         /// <summary>The crate's size along the frame's axes, and the floor it lives on (frame x, z).</summary>
         public Vector3 CrateSize;
@@ -205,11 +205,10 @@ namespace GravityBox.Venom
             if (!CrateFaces || !HasStops) return Request(anchor);
             if (!owner.Owner.CanControl || owner.Home || anchor < 0 || anchor >= CohesiveOrganism.ParticleCount || owner.Matter.Escaped[anchor]) return false;
             if (Busy) { Message("Khối đang chạy"); Refuse(owner, Refusal.Busy, HandPoint); return false; }
-            int current = CurrentStop; if (current < 0) current = Mathf.Abs(Rail.Position - Stops[0]) < Mathf.Abs(Rail.Position - Stops[1]) ? 0 : 1;
-            int next = (current + 1) % Stops.Length; float goal = Stops[next];
+            bool hasTravel = PlanCrateTravel(out int next, out float goal);
             int towards = goal > Rail.Position ? 1 : -1;   // the way the crate can go (+1: along +Axis)
             string why = null; var refusal = Refusal.Blocked;
-            if (!CrateCanSlide(goal)) why = "Khối bị chắn — có khối khác trên đường trượt";
+            if (!hasTravel) why = "Khối bị chắn — có khối khác trên đường trượt";
             else
             {
                 // The faces COghe can work from: the two ends (push from the one the crate moves away from, pull from the one
@@ -251,21 +250,40 @@ namespace GravityBox.Venom
 
         /// <summary>The way the crate's next move goes (+1: along +Axis), and whether COghe has room to make it from the
         /// <paramref name="side"/> end (+1 / −1): pushing if the crate moves away from that end, pulling if toward it.</summary>
-        public int NextMoveDirection { get { int c = CurrentStop; if (c < 0) c = Mathf.Abs(Rail.Position - Stops[0]) < Mathf.Abs(Rail.Position - Stops[1]) ? 0 : 1; return Stops[(c + 1) % Stops.Length] > Rail.Position ? 1 : -1; } }
+        public int NextMoveDirection { get { PlanCrateTravel(out _, out float goal); return goal > Rail.Position ? 1 : -1; } }
         public bool CanWorkFrom(int side)
         {
             if (!CrateFaces || !HasStops || Busy) return false;
-            int c = CurrentStop; if (c < 0) c = Mathf.Abs(Rail.Position - Stops[0]) < Mathf.Abs(Rail.Position - Stops[1]) ? 0 : 1;
-            float goal = Stops[(c + 1) % Stops.Length];
-            return CrateCanSlide(goal) && StandFree(side, side == NextMoveDirection, goal);
+            return PlanCrateTravel(out _, out float goal) && StandFree(side, side == (goal > Rail.Position ? 1 : -1), goal);
         }
         /// <summary>Whether COghe has room to take the crate by the <paramref name="sideways"/> long side (+1 / −1) for its next move.</summary>
         public bool CanWorkAcross(int sideways)
         {
             if (!CrateFaces || !HasStops || Busy) return false;
-            int c = CurrentStop; if (c < 0) c = Mathf.Abs(Rail.Position - Stops[0]) < Mathf.Abs(Rail.Position - Stops[1]) ? 0 : 1;
-            float goal = Stops[(c + 1) % Stops.Length];
-            return CrateCanSlide(goal) && SideFree(sideways, goal);
+            return PlanCrateTravel(out _, out float goal) && SideFree(sideways, goal);
+        }
+        // A distant blocker limits travel; it must not make an otherwise free crate unresponsive.
+        // After a partial journey continue if the blocker moved, otherwise reverse to remain recoverable.
+        private bool PlanCrateTravel(out int next, out float goal)
+        {
+            next = CurrentStop >= 0 ? (CurrentStop + 1) % Stops.Length : Mathf.Clamp(targetStop, 0, Stops.Length - 1);
+            goal = ClearCrateGoal(Stops[next]);
+            if (Mathf.Abs(goal - Rail.Position) > .012f) return true;
+            next = (next + 1) % Stops.Length;
+            goal = ClearCrateGoal(Stops[next]);
+            return Mathf.Abs(goal - Rail.Position) > .012f;
+        }
+        private float ClearCrateGoal(float destination)
+        {
+            if (CrateCanSlide(destination)) return destination;
+            float from = Rail.Position, clear = from, blocked = destination;
+            for (int i = 0; i < 12; i++)
+            {
+                float middle = (clear + blocked) * .5f;
+                if (CrateCanSlide(middle)) clear = middle; else blocked = middle;
+            }
+            // Footprints allow tiny authored seams. Stop before real contact, without teleporting into a neighbour.
+            return from + Mathf.Sign(destination - from) * Mathf.Max(0, Mathf.Abs(clear - from) - .008f);
         }
         /// <summary>The end COghe works from in the current task (+1 / −1).</summary>
         public int WorkingSide => backSide ? -1 : 1;
@@ -313,6 +331,7 @@ namespace GravityBox.Venom
 
         public bool Request(int anchor)
         {
+            if (CrateFaces && HasStops) return RequestFrom(anchor, 0);
             if (!owner.Owner.CanControl || owner.Home || anchor < 0 || anchor >= CohesiveOrganism.ParticleCount || owner.Matter.Escaped[anchor]) return false;
             if (Busy) { Message("Cơ quan đang thực hiện"); Refuse(owner, Refusal.Busy, HandPoint); return false; }
             if (!InterlockOpen && RequiredGrip == null)
@@ -422,7 +441,8 @@ namespace GravityBox.Venom
             stableTime = reached && Mathf.Abs(velocity) < .025f ? stableTime + dt : 0;
             if (!HoldAtEnd && stableTime >= .10f)
             {
-                if (SeatAtStops) { Rail.Body.position = Rail.Frame.TransformPoint(Rail.Start + Rail.Axis.normalized * target); Rail.Body.linearVelocity = Vector3.zero; }
+                if (SeatAtStops && (!CrateFaces || Mathf.Abs(target - Stops[targetStop]) < .0001f))
+                { Rail.Body.position = Rail.Frame.TransformPoint(Rail.Start + Rail.Axis.normalized * target); Rail.Body.linearVelocity = Vector3.zero; }
                 CompletedJourneys++; CancelTask(); game.Motion.BuildGraph(); return;
             }
             if (feet < 2 || Vector3.Distance(centre, HandPoint) > .145f)

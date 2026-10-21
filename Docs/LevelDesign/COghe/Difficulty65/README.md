@@ -21,6 +21,10 @@ sau Boss 65 (F1 Bi giữ cửa, F2 Bánh răng thả bi, F3 Kính vỡ, đối t
 Boss và mốc mở khoá. `curriculum.json` (revision 2026-10-20) thêm chuỗi `physics` (giới thiệu F1, luyện F2, kết hợp F3).
 Kế hoạch làm tiếp các màn vật lý ở giai đoạn sau: [PhysicsProps/NEXT_PHASE_PLAN.md](../PhysicsProps/NEXT_PHASE_PLAN.md).
 
+## Chuyển F1 vào màn 15 (21/10/2026)
+
+Theo yêu cầu mới, F1 cũ 66 thay N29 ở vị trí 15. N29 rút khỏi catalog, scene/ID/save được giữ để tránh mất tiến độ. F2/F3 thành 66/67. Sáu Boss và các vị trí khác trong 1–65 giữ nguyên. Pacing revision 3 giữ những mốc mở khóa đã đạt trong thứ tự 68 màn cũ. Mục “Ba màn vật lý” ở trên là lịch sử trước thay đổi này; thứ tự hiện hành nằm trong `curriculum.json`.
+
 ## Nhịp học và khó
 
 Mỗi họ cơ chế có bài giới thiệu, bài luyện trước khi kết hợp. Biến thể mới trong cùng
@@ -63,7 +67,7 @@ và tỉ lệ bỏ cuộc tại 8–10 / 18–21 / 29–32. Replay tự động 
 | 12 | K02 | 13 | Luyện ba khối trượt trên sàn. |
 | 13 | G2 | 14 | Luyện đường leo khi có lớp phủ trơn. |
 | 14 | N22 | 11 | Học chuẩn bị hàng trước khi xe cập bến. |
-| 15 | N29 | 26 | Luyện thứ tự khối trên/khối dưới, chuẩn bị tháp Boss. |
+| 15 | F1 | 66 | Bi giữ cửa: dùng bi giữ cơ quan, khám phá đồ vật vật lý trước phần tách đôi. |
 | 16 | 16 | 18 | Học Q chia đôi, chọn phần, giữ hai nút, nhập lại. |
 | 17 | N13 | 20 | Luyện một phần giữ, phần kia làm việc; buông sai có thể làm lại. |
 | 18 | N18 | 57 | Luyện hợp thể: nửa thân thử khối nặng rồi cả thân kéo được. |
@@ -114,9 +118,8 @@ và tỉ lệ bỏ cuộc tại 8–10 / 18–21 / 29–32. Replay tự động 
 | 63 | G11 | 71 | Bánh răng và dây đu (khó): bánh răng trên kính, đu dây. Thay K10 theo Mrk 19/10. |
 | 64 | N19 | 64 | Luyện đổi vai người giữ, chuẩn bị Boss cuối. |
 | 65 | N50 | 65 | Boss hộp số, phối hợp các hệ đã luyện. |
-| 66 | F1 | 66 | Bi giữ cửa (dễ): kéo D thả bi xuống nút A, bi giữ cửa thay mình; cả thân đẩy thùng 100%. |
-| 67 | F2 | 67 | Bánh răng thả bi (vừa): bánh răng nhấc chốt, bi lăn đổ cột thành bậc 3 cm lên bục lỗ thoát. |
-| 68 | F3 | 68 | Kính vỡ, đối trọng (khó): hai nửa giữ hai nút thả bi, nhập lại; cả thân cùng bi mới đủ nặng làm vỡ kính. |
+| 66 | F2 | 67 | Bánh răng thả bi (vừa): bánh răng nhấc chốt, bi lăn đổ cột thành bậc 3 cm lên bục lỗ thoát. |
+| 67 | F3 | 68 | Kính vỡ, đối trọng (khó): hai nửa giữ hai nút thả bi, nhập lại; cả thân cùng bi mới đủ nặng làm vỡ kính. |
 
 ## Kiểm chứng
 

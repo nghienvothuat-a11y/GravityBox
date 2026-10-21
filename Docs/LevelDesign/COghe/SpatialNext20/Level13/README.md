@@ -96,3 +96,7 @@ Chưa có APK/binary hoặc log cho màn này. Khi dựng, ghi hash/build/commit
 29/09/2026: tạo hồ sơ và concept v0.1 theo yêu cầu 20 màn tiếp. Kết luận: **đề xuất thiết kế, chưa nghiệm thu khả giải hoặc performance**. Tiếp theo: prototype cơ quan mới, dựng greybox, kiểm chứng theo các mốc; không lấy hình làm bằng chứng physics.
 
 29/09/2026 — **bản dựng**: Thùng rời lên khay thang cùng sinh vật; hốc trên có chốt giữ thùng nằm yên thành bậc cuối. Khác hồ sơ: Như hồ sơ. Bằng chứng: `COgheSpatialCampaignTests.Spatial13Solve` (PlayMode 120 Hz, chạm thật, 32/32 hạt qua lỗ cuối, 1 cơ thể, Retry về đầu); replay native Mac cùng kịch bản; ảnh `Docs/Verification/COgheSpatialNext20/13-*.png`. Chưa kiểm: OPPO/FPS điện thoại, người chơi mới, từng ca phục hồi và đường thay thế ở mục 8 (mới có đường giải chính).
+
+## 21/10/2026 — display 19, remove redundant floor button
+
+Remove the lower call panel beside spawn. Keep the tray panel and upper landing call panel. The optional cargo-lift property `EmptyTrayCallFromLowerLanding` allows tapping the raised empty tray's visible panel to call it DOWN when COghe is physically near the lower landing; raising still requires the body aboard. No hidden trigger/button and no automatic ride. Boss 10 does not enable this option. The crate, socket, upper platform and actual solve are unchanged. Verification: `Docs/Verification/COghePlaytestRefinement`.

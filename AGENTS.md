@@ -33,14 +33,17 @@ For Spatial 11–30, start with
 The quantum splitter and swing transfer are planned mechanisms, not existing
 runtime features. Do not claim those scenes are playable based on document checks.
 
-The Spatial catalog is 65 levels in `VenomCampaignBuilder.SpatialOrder`, six chapters
+The main Spatial campaign has 65 levels in `VenomCampaignBuilder.SpatialOrder`, six chapters
 (10, then 5 × 11), each closed by its boss at 10/21/32/43/54/65: the pilot, Spatial 11–30,
 the Spatial Plus levels, the crate levels K01–K10, the glass-crawl levels G1–G5
 ([GlassCrawl5](Docs/LevelDesign/COghe/GlassCrawl5/README.md)) and the glass-road levels G6–G11
 ([GlassRoads](Docs/LevelDesign/COghe/GlassRoads/README.md)), which replaced 08, G1, 07, N41, K08 and K10 at
 8/11/25/27/59/63 on 19/10/2026 (those stay in code and saves, out of the order). For Spatial Plus start with
 [SpatialPlus20](Docs/LevelDesign/COghe/SpatialPlus20/README.md) and its
-[verification](Docs/Verification/COgheSpatialPlus/README.md). New levels get a
+[verification](Docs/Verification/COgheSpatialPlus/README.md). The catalog also contains two post-campaign prototypes, F2/F3 (67 entries total).
+On 21/10/2026, F1 (old display 66) replaced N29 at display 15; N29 remains archived
+by stable ID, outside the order. See `Docs/Verification/COghePlaytestRefinement`.
+New levels get a
 solve test and a wander (stuck) test in `COgheSpatialPlusRecoveryTests`.
 
 This applies to the twenty Venom Origin scenes and future COghe levels. Archived

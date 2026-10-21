@@ -9,9 +9,9 @@ data = json.loads((root / "Docs/LevelDesign/COghe/Difficulty65/curriculum.json")
 source = (root / "Assets/_Game/Editor/COgheSpatialCampaignBuilder.cs").read_text()
 # Prototype levels appended at the end (a "// Prototypes" comment) are not in the curriculum until placed.
 order = re.findall(r'"([A-Z0-9]+)"', source.split("SpatialOrder={", 1)[1].split("};", 1)[0].split("// Prototypes", 1)[0])
-assert len(order) == len(set(order)) == 68  # 65 + the physics levels 66–68 (Mrk 20/10/2026)
+assert len(order) == len(set(order)) == 67  # F1 replaces retired N29 at 15; F2/F3 remain after the six chapters.
 assert order == [row["key"] for row in data["levels"]], "Dossier and builder disagree"
-assert [row["position"] for row in data["levels"]] == list(range(1, 69))
+assert [row["position"] for row in data["levels"]] == list(range(1, 68))
 assert [order[n-1] for n in data["bossPositions"]] == ["10", "B1", "G5", "20", "N40", "N50"]
 assert order[:7] == ["01", "02", "03", "04", "05", "K01", "06"], "Glass-rule opening contract"
 for chain in data["chains"]:

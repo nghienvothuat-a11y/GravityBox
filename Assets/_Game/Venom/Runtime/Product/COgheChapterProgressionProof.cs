@@ -27,7 +27,7 @@ namespace GravityBox.Venom
             for(int i=0;i<8;i++)game.Progress.Completed.Add(ui.Catalog.Levels[i].Id);
             ui.ShowMenu();yield return Shot(output,"menu-style-unlocked");
             ui.Play();yield return new WaitForSecondsRealtime(2);yield return Shot(output,"ink-1-choose");
-            ui.ChooseStyleItem("INK_OCEAN");yield return Shot(output,"ink-2-hold");
+            ui.ChooseStyleItem("INK_MINT");yield return Shot(output,"ink-2-hold");
             var points=game.Matter.GetComponent<VenomSurface>().DrawnParticles;
             Vector3 centre=Vector3.zero;foreach(var p in points)centre+=p;centre/=points.Length;
             bool held=ui.BeginStyleHold(game.Owner.View.WorldToScreenPoint(centre),false);
@@ -35,7 +35,7 @@ namespace GravityBox.Venom
             yield return new WaitForSecondsRealtime(.8f);yield return Shot(output,"ink-injecting");
             ui.EndStyleHold();yield return new WaitForSecondsRealtime(1);yield return Shot(output,"ink-3-saved");
             bool colored=COgheStyle.Current.Amount.Any(a=>a.x>.01f);
-            ui.LeaveStyle();COgheShop.SetInkGuideStep(4);game.Progress.HomeUnlocked=true;
+            COgheShop.SetInkGuideStep(4);ui.ShowMenu();game.Progress.HomeUnlocked=true;
             game.Progress.Completed.Add(ui.Catalog.Levels[8].Id);game.Progress.Completed.Add(ui.Catalog.Levels[9].Id);
             ui.Play();yield return new WaitForSecondsRealtime(4);yield return Shot(output,"required-understand-coghe");
             File.WriteAllText(Path.Combine(output,"result.json"),"{\"uiFixture\":true,\"inkInjected\":"+colored.ToString().ToLowerInvariant()+",\"bonusChapter\":"+ui.BonusChapter+",\"writesPlayerSave\":false}");

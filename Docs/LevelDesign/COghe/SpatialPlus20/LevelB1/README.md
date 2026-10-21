@@ -1,13 +1,17 @@
-# COghe 30 — BOSS · Tháp khối
+# COghe 21 — BOSS · Tháp khối
 
 `coghe.spatial.plus.b1` · Theo [LEVEL_TEMPLATE](../../LEVEL_TEMPLATE.md). Nguồn: [quy tắc](../../../../COGHE_LEVEL_DESIGN_RULES.md), [style](../../../../ArtDirection/COghe/STYLE_RULES.md), [đề xuất 50 màn](../PLACEMENT.md), [cơ quan](../MECHANICS.md).
 
-![30 · BOSS · Tháp khối](../Illustrations/30-B1.png)
+Bố cục gốc ngày 30/09 (ảnh lịch sử, có mái chìa đã bỏ):
+
+![Bố cục gốc](../Illustrations/30-B1.png)
+
+Bố cục và kiểm thử hiện hành: [21/10/2026](../../../../Verification/COghePlaytestRefinement/README.md).
 
 ## 1. Định danh, phạm vi và trạng thái
 
-- ID `coghe.spatial.plus.b1` · vị trí đề xuất **30/50** · chương 3 (Dây, đối trọng và khối chồng) · **Boss** · hồ sơ v0.1, 30/09/2026.
-- Trạng thái: **Đã dựng — chơi được** (30/09/2026). Scene `COgheSpatialPlusB1.unity`, vị trí 30/50 trong catalog Spatial (save theo ID). Mục 4 là lời giải như đã dựng; thay đổi so với thiết kế ở cuối mục 1.
+- ID `coghe.spatial.plus.b1` · vị trí hiện hành **21/67** · cuối chương 2 · **Boss** · cập nhật 21/10/2026. Vị trí lịch sử: 30/50.
+- Trạng thái: **Đã dựng — chơi được** (30/09/2026). Scene `COgheSpatialPlusB1.unity`, vị trí 21/67 trong catalog Spatial (save theo ID). Mục 4 là lời giải như đã dựng; thay đổi so với thiết kế ở cuối mục 1.
 - Hình: chụp từ scene thật (dựng bằng `B1` trong [COgheSpatialPlusLevels.cs](../../../../../Assets/_Game/Editor/COgheSpatialPlusLevels.cs)) bằng `COgheSpatialPlusDesignRender` (góc camera trong game + mặt bằng). Đường màu và số là lời giải mẫu, không phải hướng dẫn trong game.
 - Được yêu cầu (Mrk, 29/09/2026): 18 màn dễ xen giữa 30 màn có sẵn để độ khó mượt hơn, 2 Boss rất khó bằng khối/bánh răng xếp nhiều lớp; có hình mô tả; đề xuất thứ tự tổng 50 màn.
 
@@ -23,20 +27,20 @@
 - C2 rộng 22 cm, trượt 8 cm tới đầu tháp của C1; tay nắm ở mép trên bên trái, đẩy từ lùi 12 cm trên kệ: bản cũ người đẩy bị C2 kéo ra khỏi kệ và mất điểm bám.
 - C3 nằm nửa phải C2, chừa dải trống bên trái để đứng đẩy C3.
 - C2, C3 nổi 2 mm trên khối mang (như E07).
-- Mái chìa nâng 6 mm: C2 lọt dưới, C3 vẫn bị chặn nếu chưa đẩy ra sau.
+- Cập nhật 21/10: bỏ mái chìa. C2/C3 được thao tác tự do, không khóa thứ tự ẩn; vị trí bến phía sau buộc người chơi xếp đủ các khối thành đường.
 
 ## 2. Mục tiêu trải nghiệm và vị trí trong tiến trình
 
 **Tháp khối vừa là dụng cụ vừa là đích: dùng nó để lên, rồi sắp lại nó để thoát.**
 
-- Vai trò: Boss chương 3 (rất khó). Trước: 29 · Chồng hai tầng (mới) · sau: 31 · Bánh răng đầu tiên (mới).
-- Vì sao ở đây: Boss mới thay chỗ Boss 30 cũ (nay ở 40). Khối xếp chồng ba tầng; tháp vừa là bậc để lên cần gạt vừa là cầu thang cuối.
+- Vai trò hiện hành: Boss chương 2. Trước: display 20 (`12`, chồng khối); sau: display 22 (`14`, học đường ống).
+- Vì sao ở đây: tổng hợp tách/hợp thể, giữ đồng thời, tải trọng và xếp khối đã học. Khối xếp chồng ba tầng; tháp vừa là bậc để lên cần gạt vừa là cầu thang cuối.
 - Cơ quan: Không (Boss chỉ phối hợp): ray trên khối (21, 29), khối nặng cần cả thân (35), giữ + chốt (18), Q.
 - Gợi ý: không có hướng dẫn lời giải (Boss). Giải đố thuần, không cần nâng chỉ số hay mua đồ.
 
 ## 3. Phác thảo, hình học, camera và thao tác
 
-Tháp thoát 27 cm bên phải có mái chìa ở dải 18–27 cm phía trước. Xe C1 (9 cm, nặng: chỉ cả thân kéo nổi) chở C2 (9 cm, rộng 22 cm, trượt 8 cm tới đầu tháp của C1) chở C3 (9 cm, nằm nửa phải C2, trượt trước → sau). Lúc đầu C2 sát kệ cần gạt 18 cm bên trái (mặt kệ phía C1 ngà). Then C1 chỉ rút khi nút A có tải VÀ cần B đã kéo. Tay nắm C2 ở mép trên bên trái, đẩy từ kệ; khối trên nổi 2 mm trên khối mang.
+Tháp thoát 27 cm bên phải có mặt đáp sạch, không mái chìa; bến dài 6 cm ở phía sau (z = 24–30 cm). C3 chưa dịch ra sau còn cách bến 12 cm, nhìn thấy rõ. C2 tạo đủ tầm ngang, C3 tạo đoạn nối ra phía sau. Xe C1 (9 cm, nặng: chỉ cả thân kéo nổi) chở C2 (9 cm, rộng 22 cm, trượt 8 cm tới đầu tháp của C1) chở C3 (9 cm, nằm nửa phải C2, trượt trước → sau). Lúc đầu C2 sát kệ cần gạt 18 cm bên trái (mặt kệ phía C1 ngà). Then C1 chỉ rút khi nút A có tải VÀ cần B đang được giữ cùng lúc. Khi then bắt chốt, có thể rời cả hai. Tay nắm C2 ở mép trên bên trái, đẩy từ kệ; khối trên nổi 2 mm trên khối mang.
 
 - Hộp cố định 0,8 × 0,6 m như Spatial 11–30; kéo đổi góc nhìn, pinch zoom; không nghiêng trọng lực. Camera đầu 3/4 như hình.
 - Mặt ngà leo được, mặt tím trơn (bậc trơn ≤3,5 cm vượt được, ≥5 cm chặn); mint chỉ ở lỗ thoát. Mọi đường tắt phải bị chặn bằng hình học công khai (mặt trơn, khe), không bằng số màn.
@@ -50,12 +54,12 @@ Tháp thoát 27 cm bên phải có mái chìa ở dải 18–27 cm phía trướ
 | 2 | Nửa 1 đứng nút A (bên phải) | Mốc 1 → mốc 2; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
 | 3 | Nửa 2 leo đầu hở của C1 → C2 → kệ, kéo B: then C1 bắt chốt | Mốc 2 → mốc 3; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
 | 4 | Nửa 2 đứng trên kệ, đẩy C2 (tay nắm mép trên) sang đầu tháp của C1 | Mốc 3 → mốc 4; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
-| 5 | Nửa 2 xuống dải trống bên trái C2, đẩy C3 ra sau (C3 chỉ mở khi C2 đã sang) | Mốc 4 → mốc 5; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
+| 5 | Nửa 2 xuống dải trống bên trái C2, đẩy C3 ra sau (C3 nối với bến phía sau) | Mốc 4 → mốc 5; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
 | 6 | Hai nửa xuống sàn trước, tự nhập 100% | Mốc 5 → mốc 6; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
 | 7 | Cả thân kéo C1 sát tháp (nửa thân kéo không nổi) | Mốc 6 → mốc 7; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
 | 8 | Leo C1 → C2 → C3 → tháp, chui ra | Mốc 7 → mốc 8; cơ quan/tiếp xúc thật xác nhận | Vật thật đổi trạng thái (chốt, bậc, cửa, dây) | Đổi đích huỷ tiếp cận; cơ quan chưa chốt thì kéo ngược/làm lại được |
 
-- **Phục hồi riêng:** Kéo C1 khi C3 còn phía trước: mái chìa chặn, C1 dừng ngắn — kéo C1 về, đẩy C3 ra sau, kéo lại. Mọi khối kéo ngược được trừ then đã chốt.
+- **Phục hồi riêng:** Các khối kéo ngược được; then đã bắt thì giữ nguyên. Buông B trước khi A có tải: then không bắt, cần trở về; có thể giữ lại. C1 chỉ kéo nổi sau khi hai phần hợp thể. Không mất lượt vì thử sai.
 - Dòng khối lượng: `100% → 50% + 50% → 100%`. Tách chỉ qua Q; đủ gần và không vật cản thì tự nhập, không cooldown.
 - Thắng: toàn bộ mô nhập thành một cơ thể **trong hộp** rồi qua lỗ cuối; ra trước khi nhập hết thì thua đúng câu hiện hành. Retry trả mọi vật về đầu.
 
@@ -90,14 +94,22 @@ Không gộp thành điểm khó tổng. So sánh vị trí dùng số chạm đ
 - `SpatialPlusB1Solve`: lời giải mẫu bằng chạm thật từ đầu tới lỗ thoát, rồi Retry về đầu (PlayMode, 120 Hz).
 - `SpatialPlusB1Wander`: đi lang thang — chạm mọi góc và giữa mọi mặt cố định đi được (sàn, bệ, sàn cao), rồi về điểm xuất phát; kẹt ở đâu là trượt tại đó. Sau đó Retry và giải trọn.
 
-- Native Mac (build 50 màn, chạy theo thứ tự catalog): qua, 16 chạm, 30 s, p95 16.7 ms.
+- Bằng chứng lịch sử 30/09 — Native Mac (build 50 màn, chạy theo thứ tự catalog): qua, 16 chạm, 30 s, p95 16.7 ms.
 - Bằng chứng: [báo cáo kiểm thử Spatial Plus](../../../../Verification/COgheSpatialPlus/README.md).
 
 ## 9. Bằng chứng hiệu năng trên thiết bị
 
-Mac (M4, author replay): p95 16.7 ms/khung. OPPO: chưa đo — đo như PLAN của Spatial 11–30.
+Số liệu lịch sử 30/09: Mac (M4, author replay), p95 16.7 ms/khung. Không gán số liệu này cho bố cục 21/10. OPPO: chưa đo — đo như PLAN của Spatial 11–30.
 
 ## 10. Tích hợp, tương thích và nghiệm thu
 
 - ID mới, không đụng save của 30 màn đã có; thứ tự hiển thị đổi theo [PLACEMENT](../PLACEMENT.md), ID màn cũ giữ nguyên.
 - Kết luận: **đã dựng và kiểm thử tự động**; chờ Mrk chơi thử, đo OPPO và người chơi mới.
+
+## 21/10/2026 — user correction, display 21
+
+Remove the small tower overhang, retain the Q → A+B latch → C2/C3 stack → whole-body C1 haul. This removes an unreadable physical trap without deleting the split/merge or stacking puzzle. A changed block order may be recovered by reversing the same handles; it is no longer punished by a hidden 6 mm clearance. Camera `(31,24,0)` shows the three block risers. This amendment supersedes references above to the overhang as a required order lock. Verification: `Docs/Verification/COghePlaytestRefinement`.
+
+Boss 21 correction: B is now a held spring lever (`HoldAtEnd`, no end latch); the C1 latch uses `Holds`, not merely `Rails.AtEnd`. A and B must be actively loaded together. After its pawl catches, both may leave. This makes Q useful and removes the former solo B-then-A bypass. The reference solve uses the real Hold command.
+
+Final layout validation (21/10): Q output tray offsets ±18 cm; rear landing z=24–30 cm. 13/13 focused tests pass, including attempted escape with C3 still at the front, then correcting it after hauling C1. Native Mac normal-loop touch solve: 32/32 particles escaped, 16 taps. Device FPS is not measured in this change.

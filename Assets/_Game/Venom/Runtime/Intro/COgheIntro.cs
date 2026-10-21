@@ -7,7 +7,7 @@ using UnityEngine;
 namespace GravityBox.Venom
 {
     /// <summary>
-    /// The opening: a 20 s wordless motion comic over level 1 that ends in an ink dissolve revealing the live glass box.
+    /// The opening: a 20 s wordless motion comic over level 1 that crossfades into the live glass box.
     /// Layers load by name from Resources/COgheIntro, prepared by Tools/intro/prepare_intro_layers.py (layout.txt gives
     /// each trimmed texture's rect in the canvas it was painted on, and where COghe sits in the layers that hold it).
     /// It plays once, the first time a player opens position 1 of the Spatial catalog, with the level paused underneath;
@@ -17,7 +17,7 @@ namespace GravityBox.Venom
     public sealed class COgheIntro : MonoBehaviour
     {
         public const float Length = 20f;
-        /// <summary>Where a skip lands: COghe already seated in the drawn box, just before the dissolve.</summary>
+        /// <summary>End of the skip-button display window; pressing Skip hands over immediately.</summary>
         public const float SkipTo = 17.3f;
         private const float Seat = 16.3f, DissolveStart = 18.0f, DissolveEnd = 19.6f;
         private const string SeenKey = "coghe.intro.seen", Folder = "COgheIntro/", Catalog = "coghe.spatial.pilot";
@@ -164,7 +164,7 @@ namespace GravityBox.Venom
             if (Clock >= Length) Finish();
         }
 
-        /// <summary>Skip hands over immediately. Natural playback still finishes with the ink dissolve.</summary>
+        /// <summary>Skip hands over immediately. Natural playback finishes on the live level.</summary>
         public void Skip()
         {
             Clock = Length;
@@ -363,7 +363,7 @@ namespace GravityBox.Venom
             Glint(focus + new Vector2(30, -215), 13.2f, t, cam, zoom);
         }
 
-        private void Place(float t)
+        private void Place(float t, float handover = 0)
         {
             // a close panel slides over the close-up: her hands lower COghe onto the glass floor
             float slide = 1 - EaseOut(Seg(t, 14.6f, 14.85f));
@@ -375,6 +375,13 @@ namespace GravityBox.Venom
             // big enough that the forearms' cut edge stays above the screen, and the right cut edge beyond it
             float wide = Mathf.Max(W * 1.02f, (target.y + H * .03f) / (anchor.y * 1300 / 1080f));
             wide = Mathf.Max(wide, (W - target.x + 12 * s0) / (1 - anchor.x));
+            // Pull back to the creature's real screen position/scale before revealing the level.
+            // Fading the close-up while it is still central creates two COghes far apart.
+            if (handover > 0)
+            {
+                target = Vector2.Lerp(target, LiveSeat(s0, o0), handover);
+                wide = Mathf.Lerp(wide, LiveBodyWidth(bodyShare * wide) / bodyShare, handover);
+            }
             float down = EaseOut(Seg(t, 14.7f, 15.9f)), settle = Mathf.Sin(Seg(t, 15.9f, 16.25f) * Mathf.PI) * 12 * s0;
             float shift = slide * W;
             var at = target + new Vector2(shift, -H * .45f * (1 - down) + settle);
@@ -388,26 +395,18 @@ namespace GravityBox.Venom
                 Eyes(at - new Vector2(0, .06f * body), body, Glance(t, 15.85f, new Vector2(0, 1), new Vector2(.3f, -.2f)), Blink(t, 16.05f));
         }
 
+        private float overlayOpacity = 1;
         private void Seated(float t)
         {
-            float dissolve = Mathf.Pow(Seg(t, DissolveStart, DissolveEnd), 1.4f) * 1.12f;   // opens slowly around COghe, then spreads
-            Align(out float s, out Vector2 o);
-            Vector2 seat = LiveSeat(s, o);
-            // the wide panel settles onto the real camera's framing, then everything dissolves into the live level
-            float z = 1 + .035f * (1 - EaseOut(Seg(t, Seat, Seat + .3f)));
-            s *= z; o = seat + (o - seat) * z;
-            mat.SetVector("_DissolveCentre", new Vector4(seat.x / H, seat.y / H, 0, 0));   // target heights from the top-left
-            Quad(white, new Rect(0, 0, W, H), new Color(.93f, .94f, .92f, 1), 1, 0, 0, dissolve);
-            var plate = Get("S7_BG_LAB_MATCH");
-            if (plate != null) Quad(plate.Tex, new Rect(o.x, o.y, Panel.x * s, Panel.y * s), Color.white, 1, 0, 0, dissolve);
-            // COghe hops out of her palm into the box, lands, looks around
-            float drop = 1 - EaseIn(Seg(t, Seat, Seat + .16f)), wob = Wobble(t - Seat - .16f);
-            float idle = t > Seat + 1.2f ? Mathf.Sin((t - Seat) * 7) * .025f : 0;
-            Creature(seat - new Vector2(0, 70 * s * drop), RefCogheWidth * s, Color.white, 1 + .12f * wob + idle, 1 - .16f * wob - idle, dissolve);
-            // a squint as it lands, then a look around its new box (left, right, at the player), a blink
-            var look = Glance(t, Seat + .5f, Vector2.zero, new Vector2(-1, .15f)); look = Glance(t, Seat + 1.05f, look, new Vector2(1, .15f)); look = Glance(t, Seat + 1.6f, look, Vector2.zero);
-            SeatedEyes(seat - new Vector2(0, 70 * s * drop), RefCogheWidth * s, 1 + .12f * wob + idle, 1 - .16f * wob - idle, look,
-                t < Seat + .35f && t > Seat + .1f ? 1 : 0, Blink(t, Seat + 2.05f), dissolve);
+            // The final shot is the actual level, with its current camera, glass, exit and creature.
+            // Finish the pullback before crossfading; an old painted box cannot register to all device aspects.
+            overlayOpacity = 1 - Smooth(Seg(t, Seat + .85f, Seat + 1.5f));
+            if (overlayOpacity > .001f)
+            {
+                Quad(white, new Rect(0, 0, W, H), new Color(.90f, .93f, .91f, 1), 1, 0, 0, 0);
+                Place(Seat - .001f, Smooth(Seg(t, Seat, Seat + 1f)));
+            }
+            overlayOpacity = 1;
         }
 
         // Layers ---------------------------------------------------------------------------------------------------------
@@ -509,6 +508,7 @@ namespace GravityBox.Venom
 
         private void Quad(Texture tex, Rect r, Color tint, float alpha, float invert, float blur, float dissolve, Rect? source = null)
         {
+            alpha *= overlayOpacity;
             if (tex == null || alpha <= .001f || dissolve >= 1.12f) return;
             mat.SetFloat("_Alpha", alpha); mat.SetFloat("_Invert", invert); mat.SetFloat("_Blur", blur); mat.SetFloat("_Dissolve", dissolve);
             mat.SetColor("_Tint", tint); mat.SetTexture("_NoiseTex", noise);
@@ -545,6 +545,21 @@ namespace GravityBox.Venom
             if (view == null || game.Motion == null) return o + RefSeat * s;
             var p = Project(view, game.Motion.Centre(game.Motion.Selected));
             return float.IsNaN(p.x) ? o + RefSeat * s : p;
+        }
+
+        private float LiveBodyWidth(float fallback)
+        {
+            var view = game != null && game.Owner != null ? game.Owner.View : null;
+            var skin = game != null && game.Matter != null ? game.Matter.GetComponent<VenomSurface>()?.SkinRenderer : null;
+            if (view == null || skin == null) return fallback;
+            var bounds = skin.bounds; float left = float.PositiveInfinity, right = float.NegativeInfinity;
+            for (int i = 0; i < 8; i++)
+            {
+                var corner = bounds.center + Vector3.Scale(bounds.extents,
+                    new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                float x = Project(view, corner).x; left = Mathf.Min(left, x); right = Mathf.Max(right, x);
+            }
+            return Mathf.Clamp(right - left, 24 * s0, fallback);
         }
 
         private Vector2 Project(Camera view, Vector3 world)

@@ -64,6 +64,7 @@ namespace GravityBox.Venom
             go.transform.SetParent(transform,false);canvas=go.GetComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=100;
             var scaler=go.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ConstantPixelSize;
             safe=art.Rect(go.transform,"Safe area",new Rect());
+            COgheAbilityFx.Create(this);
             EnsureInput();
             Page=COgheProductPage.Game;
         }
@@ -78,6 +79,7 @@ namespace GravityBox.Venom
             EnsureInput();started=true;Layout();Guide=COgheGuide.Create(this,Game,safe,art);
             COgheStyle.Current.ApplyTo(Game);   // COghe's own look, everywhere it appears
             COgheShop.Migrate(Game);            // a player from before the shop keeps every item already earned
+            COgheShop.MigrateInkGift(StyleUnlocked);
             COgheShop.MigrateUnderstand(Catalog,Game.Progress);
             COgheAds.BannerChanged += OnBannerChanged;
             COgheAds.AvailabilityChanged += OnBannerChanged;
@@ -209,7 +211,7 @@ namespace GravityBox.Venom
         public void NextLevel()
         {
             if(leaving||Page!=COgheProductPage.Victory||Popup!=COgheProductPopup.None||COgheAds.Showing||victoryNextRequested)return;
-            victoryNextRequested=true;tripleUntil=0;Rebuild();
+            victoryNextRequested=true;Rebuild();
         }
         /// <summary>Boss levels show a short warning at the gameplay angle, the level paused underneath.</summary>
         private void PlayBossIntro()

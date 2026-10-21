@@ -96,3 +96,7 @@ Chưa có APK/binary hoặc log cho màn này. Khi dựng, ghi hash/build/commit
 29/09/2026: tạo hồ sơ và concept v0.1 theo yêu cầu 20 màn tiếp. Kết luận: **đề xuất thiết kế, chưa nghiệm thu khả giải hoặc performance**. Tiếp theo: prototype cơ quan mới, dựng greybox, kiểm chứng theo các mốc; không lấy hình làm bằng chứng physics.
 
 29/09/2026 — **bản dựng**: Ba mảnh ray: thấp, cao, nhịp ngang; khối cao nằm sẵn trong hốc chắn tay nhịp nên phải chờ ngoài. Khác hồ sơ: Như hồ sơ. Bằng chứng: `COgheSpatialCampaignTests.Spatial22Solve` (PlayMode 120 Hz, chạm thật, 32/32 hạt qua lỗ cuối, 1 cơ thể, Retry về đầu); replay native Mac cùng kịch bản; ảnh `Docs/Verification/COgheSpatialNext20/22-*.png`. Chưa kiểm: OPPO/FPS điện thoại, người chơi mới, từng ca phục hồi và đường thay thế ở mục 8 (mới có đường giải chính).
+
+## 21/10/2026 — display 31, readable stair heights
+
+Stable ID and the B-away → C → B → A solution are retained. Tops above the floor are now A 3 cm, B 6 cm, C 9.1 cm and exit platform 12 cm. Span C stays a real 3 cm-thick platform on two 5.8 cm bearers, with its handle at floor reach. Camera `(28,24,0)` exposes the risers. The exit follows the raised landing. This supersedes the old low/high/level dimensions; verification and native images: `Docs/Verification/COghePlaytestRefinement`.

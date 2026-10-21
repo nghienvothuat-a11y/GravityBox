@@ -88,7 +88,8 @@ namespace GravityBox.Tests
      Assert.IsTrue(t.Busy,"A tap near the long edge takes the crate: "+t.LastFailure);
      Assert.AreEqual(s,t.WorkingAcross,"COghe holds the side that was tapped");
      yield return Until(25,()=>t.CompletedJourneys==done+1,"It slides with COghe walking beside it");
-     Assert.Greater(Mathf.Abs(t.Rail.Position-before),t.Rail.Travel*.9f);
+     Assert.Greater(Mathf.Abs(t.Rail.Position-before),.08f);
+     Assert.AreEqual(t.RequestedPosition,t.Rail.Position,.008f,"Uses available travel, including a partial lane");
      float beside=Vector3.Dot(game.Motion.Centre(0)-t.Rail.Body.position,across)*s;
      Assert.Greater(beside,half,"COghe is beside the crate, on that side");
      shown=true;
@@ -97,20 +98,23 @@ namespace GravityBox.Tests
    Assert.IsTrue(shown,"Some crate in level 6 can be taken by a long side");
   }
 
-  [UnityTest] public IEnumerator ABlockedCrateIsRefusedAtOnce()
+  [UnityTest] public IEnumerator RedCrateMovesInFreeSpaceBeforeItsBlockerIsRemoved()
   {
    yield return LoadPlus("K01");yield return Wait(.5f);
-   // the red crate is held in by the others at the start: a tap is refused there and then, and nothing moves
-   var red=CrateTask("Red crate");float before=red.Rail.Position;var me=game.Motion.Centre(0);
-   foreach(int s in new[]{1,-1})
-   {
-    var spot=CrateSpot(red,red.Rail.Body.position+red.Rail.WorldAxis*s*.03f+game.Root.up*red.CrateSize.y*.5f);if(!spot.HasValue)continue;
-    yield return Tap(spot.Value);
-    Assert.IsFalse(red.Busy,"Blocked: COghe does not set off");Assert.IsFalse(string.IsNullOrEmpty(red.LastFailure),"It says why");
-   }
-   yield return Wait(1);
-   Assert.AreEqual(before,red.Rail.Position,.001f,"The red crate has not moved");
-   Assert.Less(Vector3.Distance(me,game.Motion.Centre(0)),.02f,"COghe did not walk onto the crate");
+   var red=CrateTask("Red crate");
+   yield return Tap(EndSpot(red,-1));
+   Assert.IsTrue(red.Busy,"A red-crate tap uses the free part of its lane: "+red.LastFailure);
+   Assert.That(red.RequestedPosition,Is.InRange(.12f,.15f));
+   yield return Until(25,()=>red.CompletedJourneys==1,"Red crate moves to its physical blocker");
+   Assert.That(red.Rail.Position,Is.InRange(.12f,.15f));
+   Assert.IsFalse(game.Owner.Completed,"The partly moved crate still covers the floor hole");
+   yield return Tap(EndSpot(red,-1));
+   Assert.IsTrue(red.Busy,"A blocked forward path can be reversed");
+   yield return Until(25,()=>red.CompletedJourneys==2,"Red crate pulls back");
+   Assert.Less(red.Rail.Position,.008f);Assert.IsFalse(game.Owner.Lost);
+   game.ResetLevel();yield return Wait(1);
+   yield return new GravityBox.Venom.ChapterProof.COgheSpatialScenario(game,Tap,Until).Solve();
+   Assert.AreEqual(32,game.Matter.EscapedCount,"The authored solution still works");
   }
  }
 }

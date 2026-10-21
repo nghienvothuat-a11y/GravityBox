@@ -2,11 +2,11 @@ using UnityEngine;
 
 namespace GravityBox.Venom
 {
-    public enum COgheAct { None, Tantrum, Wave, Shape, Melt, GlassTap, Doze, Home, Monster, Trick }
+    public enum COgheAct { None, Tantrum, Wave, Shape, Melt, GlassTap, Doze, Home, Monster, Trick, Read }
     /// <summary>Shapes COghe can make of itself, in the order they unlock (see <see cref="COghePersonality.ShapeUnlocks"/>).
     /// Shapes after the unlock list (Ball, One–Three: that many tendrils raised like fingers, and the toys' words such as the
     /// Drum) are words of the bonus "Hiểu ra" only, never picked at random.</summary>
-    public enum COgheShape { Heart, Star, Question, Mushroom, Snowman, ThumbsUp, Rocket, Umbrella, Ball, One, Two, Three, Drum, Horn, Balloon, Top, MusicBox }
+    public enum COgheShape { Heart, Star, Question, Mushroom, Snowman, ThumbsUp, Rocket, Umbrella, Ball, One, Two, Three, Drum, Horn, Balloon, Top, MusicBox, Apple }
 
     /// <summary>
     /// COghe's character in the Spatial levels: curious, cheerful, a little comic. It decides *when* the creature performs a
@@ -150,7 +150,7 @@ namespace GravityBox.Venom
             Shape = shape;
             if (act == COgheAct.Tantrum) FindWall(.30f, true);
             if (act == COgheAct.GlassTap) FindWall(.12f, false);
-            Begin(act, act == COgheAct.Tantrum ? TantrumLength : act == COgheAct.Monster ? MonsterLength : act == COgheAct.Doze ? 1e6f : act == COgheAct.Melt ? 2.3f : act == COgheAct.GlassTap ? 2.1f : 2.9f);
+            Begin(act, act == COgheAct.Tantrum ? TantrumLength : act == COgheAct.Monster ? MonsterLength : act == COgheAct.Read ? 5.2f : act == COgheAct.Doze ? 1e6f : act == COgheAct.Melt ? 2.3f : act == COgheAct.GlassTap ? 2.1f : 2.9f);
         }
 
         // Sounds on the beats of each act (clips in Resources/COgheAudio; a missing clip is simply silent).
@@ -334,6 +334,14 @@ namespace GravityBox.Venom
 
         private static void At(float from, float to, float beat, string clip, float volume)
         { if (from < beat && to >= beat || from == 0 && beat == 0) COgheAudio.Instance?.Play(clip, volume, 0, .2f); }
+
+        /// <summary>Cosmetic reading, only when idle and clear of mechanisms. A player command cancels it normally.</summary>
+        public bool TryRead()
+        {
+            if(!Enabled||game==null||game.Home||Act!=COgheAct.None||idle<.7f||!Ready(true)||game.Owner.Completed||game.Owner.Lost)return false;
+            if(!life.Clearance(centre,up,.11f)||!life.Clearance(centre+up*.035f,Right(),.065f)||!life.Clearance(centre+up*.035f,-Right(),.065f))return false;
+            Begin(COgheAct.Read,5.2f);nextActAt=idle+12;return true;
+        }
 
         private bool Ready(bool quietOnly)
         {

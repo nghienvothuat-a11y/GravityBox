@@ -27,12 +27,14 @@ namespace GravityBox.Venom
             public List<string> Understood = new List<string>();
             // 0/1: choose a free ink; 2: hold on the body; 3: inspect the saved result; 4: finished.
             public int InkGuideStep;
+            public int InkGiftRevision;
             public List<string> Retried = new List<string>();
             // Preserve unlock milestones from the orders before 15/10 and 19/10; completed puzzles still use stable IDs.
             public int PacingRevision;
             public List<int> ReachedBeforePacing = new List<int>();
             // Ability cards (Mrk 16/10/2026): one card per "Hiểu ra", each stat 0–10; the chapters whose card is taken.
             public int Emotion, Agility, Intelligence;
+            public int LastAbility = -1;
             public List<int> CardsPicked = new List<int>();
             public int UnderstandPacingRevision;
             public List<int> SkippedPractices = new List<int>();
@@ -77,6 +79,18 @@ namespace GravityBox.Venom
 
         public static int Drops => Current.Drops;
 
+        /// <summary>Mint replaces the free Ocean lesson without removing an existing player's Ocean.</summary>
+        public static void MigrateInkGift(bool styleUnlocked)
+        {
+            if (Current.InkGiftRevision >= 1) return;
+            if (styleUnlocked || Current.InkGuideStep > 0)
+            {
+                if (!Current.Owned.Contains("INK_OCEAN")) Current.Owned.Add("INK_OCEAN");
+                if (Current.InkGuideStep > 0 && Current.InkGuideStep < 4) Current.InkGuideStep = 1;
+            }
+            Current.InkGiftRevision = 1; Save();
+        }
+
         /// <summary>Owned: bought, a gift, part of COghe Plus, or (tests) unlocked.</summary>
         public static bool Owns(string id)
         {
@@ -119,6 +133,7 @@ namespace GravityBox.Venom
             if (ability == COgheAbility.Emotion) Current.Emotion++;
             else if (ability == COgheAbility.Agility) Current.Agility++;
             else Current.Intelligence++;
+            Current.LastAbility = (int)ability;
             Save();
             COgheAnalytics.Log("ability_pick", "chapter", chapter, "ability", ability.ToString(), "level", COgheAbilities.Level(ability));
             return true;

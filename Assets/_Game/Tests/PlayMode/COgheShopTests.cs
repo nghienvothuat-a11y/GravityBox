@@ -75,8 +75,8 @@ namespace GravityBox.Tests
             {
                 FreshShop(false);
                 yield return EnterStyle(new COgheStyle(), 36);
-                Assert.IsTrue(COgheShop.Owns("INK_OCEAN") && COgheShop.Owns("HAT_BEANIE") && COgheShop.Owns("FLOAT_STARS"), "First of each group: gifts");
-                Assert.IsFalse(COgheShop.Owns("INK_MINT"));
+                Assert.IsTrue(COgheShop.Owns("INK_MINT") && COgheShop.Owns("HAT_BEANIE") && COgheShop.Owns("FLOAT_STARS"), "First of each group: gifts");
+                Assert.IsFalse(COgheShop.Owns("INK_OCEAN"));
                 // try a hat on without Drops, then take it off on the way out
                 yield return Click("Accessories"); yield return Card("HAT_STRAW");
                 Assert.AreEqual("HAT_STRAW", COgheStyle.Current.Hat, "Tried on COghe");
@@ -193,7 +193,7 @@ namespace GravityBox.Tests
                 var amounts = ui.GetComponentsInChildren<Text>().Where(t => t.name == "Drops earned" || t.name == "Tripled").ToArray();
                 Assert.AreEqual(1, amounts.Length, "One earned amount after claiming, not two totals");
                 Assert.AreEqual("+" + (COgheEconomy.FirstWin + COgheEconomy.TripleExtra) + " Drops", amounts[0].text);
-                Assert.IsFalse(ui.GetComponentsInChildren<Button>().Any(b => b.name == "Triple drops"));
+                Assert.IsFalse(ui.GetComponentsInChildren<Button>().Single(b => b.name == "Triple drops").interactable);
                 Assert.AreEqual(COgheEconomy.FirstWin + COgheEconomy.TripleExtra, COgheShop.Drops);
             }
             finally { COgheProductUI.LayoutAreaForTests = null; ui.RelayoutForTests(); EndShop(); }

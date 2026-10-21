@@ -23,12 +23,21 @@ namespace GravityBox.Venom
             "K05","N42","K06","N26","N31","N33","K07","26","N35","N43","N40",
             "N46","N45","N49","N32","K08","N34","K09","29","K10","N19","N50"
         };
-        internal const int LatestRevision = 2;
+        // 21/10: F1 replaces N29 at 15; the three post-campaign prototypes become two.
+        private static readonly string[] Before21October = {
+            "01","02","03","04","05","K01","06","G6","09","10",
+            "G7","K02","G2","N22","N29","16","N13","N18","13","12","B1",
+            "14","N15","K03","G8","G3","G9","N44","17","G4","22","G5",
+            "18","N23","E10","21","N25","N48","N47","K04","15","E11","20",
+            "K05","N42","K06","N26","N31","N33","K07","26","N35","N43","N40",
+            "N46","N45","N49","N32","G10","N34","K09","29","G11","N19","N50","F1","F2","F3"
+        };
+        internal const int LatestRevision = 3;
         /// <summary>Positions the player had reached in the order of a revision (1: before 15/10, 2: before 19/10). By stable ID,
         /// not through the catalog: a level that has since left the order still counts.</summary>
         internal static void Capture(VenomCampaign game, List<int> reached, int revision)
         {
-            var order = revision == 1 ? Before15October : Before19October;
+            var order = revision == 1 ? Before15October : revision == 2 ? Before19October : Before21October;
             for (int i = 0; i < order.Length; i++)
                 if (game.Progress.Completed.Contains(IdOf(order[i])) && !reached.Contains(i + 1)) reached.Add(i + 1);
         }

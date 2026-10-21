@@ -92,12 +92,18 @@ namespace GravityBox.Tests
   [UnityTest,Explicit,Timeout(10800000)] public IEnumerator RecordSolutionSteps()
   {
    const string output="Assets/_Game/Venom/Resources/COgheUI/SolutionSteps.json";
-   yield return Load(1);var order=game.Definition.SceneSequence;var book=new COgheSolutionSteps.Book();var report=new System.Text.StringBuilder();
+   yield return Load(1);var order=game.Definition.SceneSequence;var report=new System.Text.StringBuilder();
+   string only=Environment.GetEnvironmentVariable("COGHE_RECORD_LEVELS");
+   var book=string.IsNullOrEmpty(only)?new COgheSolutionSteps.Book():JsonUtility.FromJson<COgheSolutionSteps.Book>(File.ReadAllText(output));
+   var selected=string.IsNullOrEmpty(only)?null:new HashSet<int>(only.Split(',').Select(int.Parse));
+   var failures=new List<string>();
    for(int n=1;n<=order.Length;n++)
    {
+    if(selected!=null&&!selected.Contains(n))continue;
     yield return LoadScene(order[n-1]);
     var root=game.Owner.Apparatus;var level=new COgheSolutionSteps.Level{Id=game.Definition.Id};
     var rails=root.GetComponentsInChildren<COgheTapRail>(true);var journeys=rails.Select(r=>r.CompletedJourneys).ToArray();
+    var held=rails.Select(r=>r.Holding).ToArray();
     var pads=root.GetComponentsInChildren<COgheTissueSensor>(true);var active=pads.Select(p=>p.Active).ToArray();
     void Add(Component c,string kind)
     {
@@ -114,15 +120,27 @@ namespace GravityBox.Tests
     game.MechanismTouched+=touched;
     trace=()=>
     {
-     for(int i=0;i<rails.Length;i++)if(rails[i].CompletedJourneys>journeys[i]){journeys[i]=rails[i].CompletedJourneys;Add(rails[i],COgheSolutionSteps.RailKind);}
-     for(int i=0;i<pads.Length;i++){if(pads[i].Active&&!active[i])Add(pads[i],COgheSolutionSteps.PadKind);active[i]=pads[i].Active;}
+     for(int i=0;i<rails.Length;i++)
+     {
+      if(rails[i].CompletedJourneys>journeys[i]||(rails[i].Holding&&!held[i]))Add(rails[i],COgheSolutionSteps.RailKind);
+      journeys[i]=rails[i].CompletedJourneys;held[i]=rails[i].Holding;
+     }
+     for(int i=0;i<pads.Length;i++)
+     {
+      // A ball/prop settling on a pad is the consequence of a player action, not another instruction for COghe.
+      bool tissue=game.Matter.Bodies.Any(body=>pads[i].Holds(body.position));
+      if(pads[i].Active&&!active[i]&&(pads[i].Weights.Length==0||tissue))Add(pads[i],COgheSolutionSteps.PadKind);
+      active[i]=pads[i].Active;
+     }
     };
     string error="";
     yield return Flat(new COgheSpatialScenario(game,Tap,Until).Solve(),e=>error=e);
     trace=null;game.MechanismTouched-=touched;
-    book.Levels.Add(level);
+    if(!game.Owner.Completed||!string.IsNullOrEmpty(error)){failures.Add(level.Id+": "+error);continue;}
+    book.Levels.RemoveAll(l=>l.Id==level.Id);book.Levels.Add(level);
     report.AppendLine($"{n:00} {level.Id}: {level.Steps.Count} steps {(game.Owner.Completed?"":"UNSOLVED "+error)} | "+string.Join(" > ",level.Steps.Select(st=>st.Kind+":"+st.Path.Split('/').Last())));
    }
+   Assert.IsEmpty(failures,"Do not overwrite solution steps after an incomplete solve: "+string.Join("\n",failures));
    File.WriteAllText(output,JsonUtility.ToJson(book,true));
    Directory.CreateDirectory("Artifacts/Steps");File.WriteAllText("Artifacts/Steps/report.txt",report.ToString());
 #if UNITY_EDITOR

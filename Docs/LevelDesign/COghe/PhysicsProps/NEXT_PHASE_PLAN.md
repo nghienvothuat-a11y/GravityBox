@@ -1,5 +1,7 @@
 # Màn vật lý — kế hoạch giai đoạn sau
 
+**Mốc mới 21/10/2026:** Mrk đã chọn chuyển F1 (66 cũ) vào màn 15 thay N29. F2/F3 còn lại ở 66/67. Các phương án và số thứ tự tương lai bên dưới là đề xuất ngày 20/10, chưa triển khai; khi tiếp tục phải lấy catalog hiện hành làm gốc.
+
 Mrk 20/10/2026 (thread Venom f65d362c): giữ nguyên 65 màn, ba màn vật lý là ba màn mới 66, 67, 68; "lưu kế hoạch làm
 những bài vật lý vào để triển khai cho giai đoạn sau". Tài liệu này là điểm bắt đầu khi quay lại phần vật lý.
 Màn đã dựng và cách dựng: [README.md](README.md).

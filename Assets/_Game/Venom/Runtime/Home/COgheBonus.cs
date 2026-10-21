@@ -53,7 +53,7 @@ namespace GravityBox.Venom
     public static class COgheBonus
     {
         private static COgheBonusAsk Cuddle(int n = 1) => new COgheBonusAsk(COgheShape.Heart, COgheBonusAnswer.Touch, null, n);
-        private static COgheBonusAsk Food(int n = 1) => new COgheBonusAsk(COgheShape.Mushroom, COgheBonusAnswer.Feed, null, n);
+        private static COgheBonusAsk Food(int n = 1) => new COgheBonusAsk(COgheShape.Apple, COgheBonusAnswer.Feed, null, n);
         private static COgheBonusAsk Play() => new COgheBonusAsk(COgheShape.Ball, COgheBonusAnswer.Item, "BALL");
         /// <summary>The drum, a word from chapter 3 on (chapter 2's game gives it to every player).</summary>
         private static COgheBonusAsk Drum(int n = 1) => new COgheBonusAsk(COgheShape.Drum, COgheBonusAnswer.Item, COgheToys.Drum, n);

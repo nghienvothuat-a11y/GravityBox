@@ -1,0 +1,87 @@
+{
+  "date": "2026-10-21",
+  "runtimeChanges": {
+    "result": "Passed",
+    "total": 1006,
+    "passed": 961,
+    "failed": 0,
+    "skipped": 45,
+    "durationSeconds": 3445.6,
+    "evidence": "Artifacts/Tests/refinement-full-final.xml",
+    "scope": "Full suite for shared runtime; final B1/N13 authoring and proof adjustments validated separately by 13 final-layout tests and native touch replays."
+  },
+  "finalLayoutTests": {
+    "result": "Passed",
+    "passed": 13,
+    "failed": 0,
+    "tests": [
+      "LatchedDeckKeepsGripThroughLoadSettlingButReleasesOnReverse",
+      "Refined17At30Fps",
+      "Refined17At60Fps",
+      "Refined17StillNeedsTheTallCrate",
+      "Refined21And31RequireTheirMechanisms",
+      "Refined21At30Fps",
+      "Refined21At60Fps",
+      "Refined21NeedsC3AndRecoversByMovingIt",
+      "Refined21NeedsTwoSimultaneousRoles",
+      "SpatialPlusB1Solve",
+      "SpatialPlusB1Wander",
+      "SpatialPlusN13Solve",
+      "SpatialPlusN13Wander"
+    ],
+    "evidence": "Artifacts/Tests/refinement-layout-final2.xml"
+  },
+  "nativeReplays": [
+    {
+      "display": 15,
+      "passed": true,
+      "escaped": 32,
+      "fragments": 1,
+      "taps": 6,
+      "evidence": "Artifacts/COghePlaytestRefinement/NativeFinal/15/20261020T183322Z/run.json",
+      "execution": "Normal player loop; InputSystem touch events; screenshots excluded from frame samples. Author replay, not novice evidence."
+    },
+    {
+      "display": 17,
+      "passed": true,
+      "escaped": 32,
+      "fragments": 1,
+      "taps": 12,
+      "evidence": "Artifacts/COghePlaytestRefinement/NativeFinal/17/20261020T183102Z/run.json",
+      "execution": "Normal player loop; InputSystem touch events; screenshots excluded from frame samples. Author replay, not novice evidence."
+    },
+    {
+      "display": 19,
+      "passed": true,
+      "escaped": 32,
+      "fragments": 1,
+      "taps": 9,
+      "evidence": "Artifacts/COghePlaytestRefinement/NativeFinal/19/20261020T183238Z/run.json",
+      "execution": "Normal player loop; InputSystem touch events; screenshots excluded from frame samples. Author replay, not novice evidence."
+    },
+    {
+      "display": 21,
+      "passed": true,
+      "escaped": 32,
+      "fragments": 1,
+      "taps": 16,
+      "evidence": "Artifacts/COghePlaytestRefinement/NativeRecovery2/21/20261020T182802Z/run.json",
+      "execution": "Normal player loop; InputSystem touch events; screenshots excluded from frame samples. Author replay, not novice evidence."
+    },
+    {
+      "display": 31,
+      "passed": true,
+      "escaped": 32,
+      "fragments": 1,
+      "taps": 9,
+      "evidence": "Artifacts/COghePlaytestRefinement/NativeRealtime/31/20261020T180648Z/run.json",
+      "execution": "Normal player loop; InputSystem touch events; screenshots excluded from frame samples. Author replay, not novice evidence."
+    }
+  ],
+  "devicePerformanceMeasured": false,
+  "finalMainImport": {
+    "result": "Passed",
+    "catalogEntries": 67,
+    "evidence": "Artifacts/COghePlaytestRefinement/final-main-import.log"
+  }
+}

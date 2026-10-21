@@ -217,6 +217,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 19519098}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -486,6 +487,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 54118156}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -1103,6 +1105,7 @@ MonoBehaviour:
     y: -0.19999997
     width: 0.8
     height: 0.09
+  NoSlickClimb: 0
   Shape: {fileID: 131654715}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -1236,6 +1239,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 170050642}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -1268,7 +1272,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 170050640}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -1510,6 +1514,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 214773733}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -1636,6 +1641,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 232756933}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -1784,6 +1790,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 237696328}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -1972,6 +1979,10 @@ MonoBehaviour:
   - {fileID: 1219486843}
   - {fileID: 800352186}
   - {fileID: 170050641}
+  MovingArt:
+  - {fileID: 1614263382}
+  DockedArt:
+  - {fileID: 1321847781}
 --- !u!153 &303935103
 ConfigurableJoint:
   m_ObjectHideFlags: 0
@@ -2324,6 +2335,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 326013537}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -2471,6 +2483,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 335878974}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -2708,6 +2721,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 387107860}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -2834,6 +2848,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 414217658}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -2990,6 +3005,7 @@ MonoBehaviour:
   Overload: {fileID: 0}
   Beam: {fileID: 0}
   BeamTilt: 14
+  Weights: []
 --- !u!4 &461552876
 Transform:
   m_ObjectHideFlags: 0
@@ -3618,6 +3634,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 564837773}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -3765,6 +3782,7 @@ Transform:
   - {fileID: 81651937}
   - {fileID: 1367991070}
   - {fileID: 1217085238}
+  - {fileID: 1321847783}
   m_Father: {fileID: 278663287}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &571491207
@@ -4342,6 +4360,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 642310015}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -4453,6 +4472,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 656911582}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -4485,7 +4505,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 656911580}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -4758,6 +4778,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 722301344}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -4959,6 +4980,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 732073920}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -4991,7 +5013,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 732073918}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -5148,6 +5170,7 @@ MonoBehaviour:
     y: -0.11000003
     width: 0.076000005
     height: 0.08000004
+  NoSlickClimb: 0
   Shape: {fileID: 734050747}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -5421,6 +5444,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 751748818}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -5532,6 +5556,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 800352187}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -5564,7 +5589,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 800352185}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -5716,6 +5741,7 @@ MonoBehaviour:
     y: -0.21000001
     width: 0.09
     height: 0.42000002
+  NoSlickClimb: 0
   Shape: {fileID: 805733579}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -5864,6 +5890,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 810047870}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -6400,6 +6427,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 840432627}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -6637,6 +6665,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 872784174}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -6864,6 +6893,7 @@ MonoBehaviour:
     y: -0.2
     width: 0.6
     height: 0.09
+  NoSlickClimb: 0
   Shape: {fileID: 898360156}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -6997,6 +7027,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 935251295}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -7029,7 +7060,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 935251293}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -7506,6 +7537,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1022150826}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -7675,6 +7707,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1036595535}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -8071,6 +8104,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1107234972}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -8411,6 +8445,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1219486844}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -8443,7 +8478,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1219486842}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -8595,6 +8630,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1247436722}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -8925,6 +8961,101 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1308380877}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1321847780
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1321847783}
+  - component: {fileID: 1321847782}
+  - component: {fileID: 1321847781}
+  m_Layer: 0
+  m_Name: "COghe soft edges \xB7 Step bridge docked"
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!23 &1321847781
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1321847780}
+  m_Enabled: 0
+  m_CastShadows: 0
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: b98ee9d01c8f346959a0b06f8678e9a2, type: 2}
+  - {fileID: 2100000, guid: b98ee9d01c8f346959a0b06f8678e9a2, type: 2}
+  - {fileID: 2100000, guid: b98ee9d01c8f346959a0b06f8678e9a2, type: 2}
+  - {fileID: 2100000, guid: b98ee9d01c8f346959a0b06f8678e9a2, type: 2}
+  - {fileID: 2100000, guid: b98ee9d01c8f346959a0b06f8678e9a2, type: 2}
+  - {fileID: 2100000, guid: b98ee9d01c8f346959a0b06f8678e9a2, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1321847782
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1321847780}
+  m_Mesh: {fileID: 4300000, guid: bf692ef3cef6641209f367117b5cc4aa, type: 2}
+--- !u!4 &1321847783
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1321847780}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.19999999, y: -0.2745, z: 0.089999996}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 571491206}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1322956809
 GameObject:
   m_ObjectHideFlags: 0
@@ -9012,6 +9143,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1322956811}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -9228,6 +9360,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1332922960}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -9651,6 +9784,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1385940610}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -9966,6 +10100,7 @@ MonoBehaviour:
     y: -0.11
     width: 0.10000004
     height: 0.002000004
+  NoSlickClimb: 0
   Shape: {fileID: 1435502254}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -10772,6 +10907,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1542378627}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -11371,6 +11507,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1688076191}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -12136,6 +12273,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1778559218}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -12708,6 +12846,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1897945096}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -12908,6 +13047,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1909628010}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -13333,6 +13473,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1991930174}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -13480,6 +13621,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 1994662699}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -13840,6 +13982,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 2072517742}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -13966,6 +14109,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 2077460163}
   SphereRadius: 0
   Curved: {fileID: 0}
@@ -14204,6 +14348,7 @@ MonoBehaviour:
     width: 0
     height: 0
   SlipRegions: []
+  NoSlickClimb: 0
   Shape: {fileID: 2133984746}
   SphereRadius: 0
   Curved: {fileID: 0}

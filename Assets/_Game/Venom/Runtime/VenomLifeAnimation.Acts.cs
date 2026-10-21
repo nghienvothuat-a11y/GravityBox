@@ -52,6 +52,7 @@ namespace GravityBox.Venom
                 case COgheAct.GlassTap: return GlassTap(p, points, count, centre, ground, t);
                 case COgheAct.Home: return HomePose(p, points, supports, weights, count, centre, ground, up, floor);
                 case COgheAct.Monster: return MonsterAct(p, points, supports, weights, count, centre, ground, up, floor, t);
+                case COgheAct.Read: return ReadingAct(p, points, count, ground, floor, t);
                 case COgheAct.Trick: return TrickAct(p, points, supports, weights, count, centre, ground, up, floor, t);
             }
             // Wave and Shape: morph into the template and back
@@ -215,6 +216,16 @@ namespace GravityBox.Venom
                     LimbQ(new Vector3(0, 1.08f, 0), new Vector3(0, 1.5f, 0), new Vector3(.62f, 1.65f, 0), new Vector3(.62f, 2.15f, 0), .2f, .2f, false);
                     LimbQ(new Vector3(.62f, 2.15f, 0), new Vector3(.62f, 2.8f, 0), new Vector3(-.6f, 2.85f, 0), new Vector3(-.58f, 2.22f, 0), .2f, .19f);
                     Src(0, 1.0f, 0, .34f);
+                    break;
+                case COgheShape.Apple:
+                    // Two shoulders, a tapered base and a stem/leaf joined into the liquid silhouette.
+                    Src(-.38f, 1.25f, 0, .86f); Src(.38f, 1.25f, 0, .86f);
+                    Src(-.28f, .72f, 0, .73f); Src(.28f, .72f, 0, .73f);
+                    Src(0, .45f, 0, .58f);
+                    LimbQ(new Vector3(0, 1.36f, 0), new Vector3(-.12f, 1.66f, 0),
+                        new Vector3(.12f, 1.96f, 0), new Vector3(.12f, 2.12f, 0), .16f, .09f);
+                    LimbQ(new Vector3(.08f, 1.86f, 0), new Vector3(.28f, 2.12f, 0),
+                        new Vector3(.6f, 2.12f, 0), new Vector3(.75f, 2.06f, 0), .20f, .035f);
                     break;
                 case COgheShape.Mushroom:
                     for (int i = 0; i < 4; i++) Src(0, .3f + i * .36f, 0, .62f);

@@ -104,10 +104,19 @@ This outfit is illustration only. Keep calm ivory panels and pastel coral,
 amber and teal wells; no rarity frames, flashing urgency or stats-heavy copy.
 See [ability presentation contract](../../COGHE_ABILITY_CARDS.md).
 
+20/10 gameplay accents: use small coral hearts for Playful, soft pearl/mint
+contact trails for Speedy, and small teal numbers/arithmetic marks for Clever.
+Show a short first cue, then sparse bursts with quiet intervals; never constant
+confetti. Speedy requires real movement and a real support surface. Use one
+bounded, pooled UI mesh, no new lights or physics. Hide during pause, menus,
+Home, intro and victory. Pausing must not restart the cue repeatedly.
+
 ### Reward polish and first-ink guidance — 15/10/2026
 
 Reuse the existing amber, outlined arrow and target ring for the ink lesson:
-Ocean syringe → hold/release on the live creature → Done → continue playing.
+Mint syringe (20/10 replacement for Ocean) → hold/release on the live creature
+→ Done → continue playing. Hide Back during this mandatory lesson and block
+Back/Escape until Done; retain old Ocean ownership and completed lessons.
 The guide follows the real target after layout/camera changes, never intercepts
 input, hides under popups and resumes the saved lesson step.
 Unlocks get two brief mint/gold/coral fireworks beside the item panel, not a
@@ -116,6 +125,9 @@ play once per event, survive layout changes without restarting, expire on UI tim
 and never pay rewards or advance a level. Use UI geometry/shared materials;
 no realtime lights, bloom, screen shake or new particle systems. Keep the victory
 dance and the existing next-level text unobstructed.
+The victory rewarded-ad offer stays until Next, including while an ad loads or
+is cancelled. Once paid, keep a disabled “Claimed” receipt in its place; never
+pay twice or expire the offer on a timer.
 
 ### First launch and control targeting — 15/10/2026
 
@@ -472,3 +484,7 @@ The Spatial generator calls `RefineSpatialReadability`; for existing scenes use
 50 scenes' physics and definitions before/after and writes an affected-level audit.
 Run visual tests with a graphics device (not `-nographics` when the test captures
 `Camera.Render`). [Verification](../../Verification/COgheSurfaceReadability/README.md).
+
+### 21/10/2026 — Ability accents and rounded dock hand-offs
+
+Speedy leaves translucent mint water at actual contact, with infrequent tiny pearly stars rising from it. Clever occasionally retrieves/opens a small book at rest; fine math symbols rise during reading. These are cosmetic, interruptible, depth-aware and bounded, never new physics objects or continuous screen confetti. Flower crown has coordinated coral/lilac/yellow/sky petals and green leaves rather than desaturated gray buds. Moving mechanisms and their fixed dock replicas must preserve the same rounded silhouette; changing contact representation must not change the visible object into a sharp box.
