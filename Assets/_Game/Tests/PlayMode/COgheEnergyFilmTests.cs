@@ -23,6 +23,7 @@ namespace GravityBox.Tests
             int frame = 0; var rt = new RenderTexture(720, 1280, 24) { antiAliasing = 4 }; var tex = new Texture2D(720, 1280, TextureFormat.RGB24, false);
             Time.captureFramerate = 30;
             float paced = Time.realtimeSinceStartup;
+            int pants = 0, sighs = 0; var sounds = new System.Text.StringBuilder();
             IEnumerator Film(float seconds, System.Func<bool> until = null)
             {
                 for (int guard = 0; guard < seconds * 30 + 2 && (until == null || !until()); guard++)
@@ -36,6 +37,9 @@ namespace GravityBox.Tests
                     canvas.renderMode = RenderMode.ScreenSpaceOverlay;
                     var prev = RenderTexture.active; RenderTexture.active = rt; tex.ReadPixels(new Rect(0, 0, 720, 1280), 0, 0); tex.Apply(); RenderTexture.active = prev;
                     System.IO.File.WriteAllBytes($"{dir}/{frame++:0000}.jpg", tex.EncodeToJPG(92));
+                    var p = game.Personality;   // the frames of the sounds, for the review clip's audio
+                    if (p != null && p.Pants != pants) { pants = p.Pants; sounds.Append($" pant@{frame - 1}"); }
+                    if (p != null && p.Sighs != sighs) { sighs = p.Sighs; sounds.Append($" sigh@{frame - 1}"); }
                 }
             }
             void Press(string name) => ui.GetComponentsInChildren<Button>().First(b => b.name == name).onClick.Invoke();
@@ -51,11 +55,12 @@ namespace GravityBox.Tests
                 COgheProductUI.LayoutAreaForTests = new Rect(0, 0, 720, 1280); ui.RelayoutForTests();
                 Debug.Log($"ENERGY FILM level speed x{game.Motion.SpeedScale:F2} energy {COgheEnergy.Value}");
                 yield return Film(1.5f);
-                yield return Walk(new Vector3(-.12f, -.22f, .10f), 14);   // slow, heavy-eyed
+                yield return Walk(new Vector3(-.12f, -.22f, .10f), 14);   // drooping, heavy-eyed, panting
                 yield return Film(5);                                      // stops: worn out, it flops
                 yield return Walk(new Vector3(.15f, -.14f, .18f), 14);
                 yield return Film(3);
                 yield return Walk(default, 14, true); yield return Film(3.5f);   // the win: "Hungry · Feed"
+                Debug.Log($"ENERGY FILM level part ends at frame {frame}; sounds{sounds}");
                 Press(COgheProductUI.FeedAfterVictoryButton);
                 yield return Film(12, () => ui.Page == COgheProductPage.Home && ui.Popup == COgheProductPopup.Food);
                 ui.RelayoutForTests(); yield return Film(2.5f);           // Home, the Food tray open
