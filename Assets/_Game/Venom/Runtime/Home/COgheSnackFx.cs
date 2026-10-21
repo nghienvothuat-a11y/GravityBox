@@ -43,7 +43,7 @@ namespace GravityBox.Venom
             {
                 Vector3 side = Quaternion.AngleAxis(360f * i / count + 20 * Rand(), up) * across;
                 Vector3 from = centre + up * (.07f + .03f * Rand()) + side * (.03f + .04f * Rand());
-                var p = Add(Bit.Snow, "#FFFFFF", from, -up * (.035f + .015f * Rand()) + side * .008f, 1.6f + .5f * Rand(), .0045f);
+                var p = Add(Bit.Snow, "#BFE2FF", from, -up * (.035f + .015f * Rand()) + side * .008f, 1.6f + .5f * Rand(), .0045f);
                 p.Born += .12f * i; Replace(p);   // they come one after another
             }
         }

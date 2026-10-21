@@ -129,7 +129,11 @@ namespace GravityBox.Venom
                 if(current!=null&&!ReferenceEquals(current,boardingOrder)){Boarding=false;Button=ButtonState.Ready;return;}
                 bool all=true;for(int i=0;i<32;i++)if(owner.Matter.Groups[i]==owner.Matter.Groups[actor]&&!OnDeck(i)){all=false;break;}
                 stable=all?stable+dt:0;
-                if(stable>.2f&&(!ReturnWhenDisabled||Powered))
+                // At its spot too (the walk to BoardPoint is over): a rider still walking rode wherever it happened to be,
+                // and a slower, hungry COghe rode under the top ledge and was pinned there (level 19, 21/10/2026). One that
+                // cannot quite get there still goes after a moment aboard.
+                bool atSpot=current==null||stable>1.2f;
+                if(stable>.2f&&atSpot&&(!ReturnWhenDisabled||Powered))
                 {
                     // Fully aboard: COghe presses the button, then the tray leaves.
                     if(Button!=ButtonState.Pressing){Button=ButtonState.Pressing;buttonClock=0;}

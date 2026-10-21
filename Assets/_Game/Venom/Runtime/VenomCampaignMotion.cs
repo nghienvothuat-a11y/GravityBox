@@ -608,7 +608,11 @@ namespace GravityBox.Venom
                     Vector3 relative=body.linearVelocity-(patch!=null&&patch.MotionFrame!=null?patch.MotionFrame:chamberBody).GetPointVelocity(body.position);
                     Vector3 acceleration=Vector3.up*9.81f;
                     bool manipulating=game.Attached&&game.Matter.Groups[a]==game.Matter.Groups[Selected];
-                    if(!manipulating)acceleration+=Vector3.ClampMagnitude((desired-relative)*(caught!=null?35:26),caught!=null?18:5);
+                    // a slower (hungry) COghe walks slower but pushes as hard when something stops it: a step, a tray lip,
+                    // a block to climb (the drive was proportional to the pace, and x0.85 could not climb level 42's tray
+                    // or level 58's block); at the usual pace or faster nothing changes
+                    float drive=caught!=null?35:26*Mathf.Max(1,BaseMoveSpeed/MoveSpeed);
+                    if(!manipulating)acceleration+=Vector3.ClampMagnitude((desired-relative)*drive,caught!=null?18:5);
                     acceleration=Vector3.ClampMagnitude(acceleration,capacity/Mathf.Max(mass,.0001f));
                     intent[i]=desired/MoveSpeed;
                     if(HasGrip(i))

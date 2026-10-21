@@ -111,7 +111,7 @@ namespace GravityBox.Tests
      var b=new Bounds(renderers[0].bounds.center,Vector3.zero);foreach(var r in renderers)b.Encapsulate(r.bounds);
      cam.transform.rotation=room.Root.rotation*Quaternion.Euler(28,-24+180,0);   // Codex's fronts face -Z
      cam.transform.position=b.center-cam.transform.forward*1f;cam.nearClipPlane=.01f;cam.farClipPlane=3;
-     cam.orthographicSize=Mathf.Max(b.extents.x,b.extents.y,b.extents.z)*1.3f;
+     cam.orthographicSize=Mathf.Max(b.extents.x,b.extents.y,b.extents.z)*1.5f;
      var black=Shot(Color.black);var white=Shot(Color.white);
      var pb=black.GetPixels();var pw=white.GetPixels();var full=new Color[pb.Length];
      for(int i=0;i<pb.Length;i++)

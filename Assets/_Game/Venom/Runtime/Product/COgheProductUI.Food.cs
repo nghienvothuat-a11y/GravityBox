@@ -24,7 +24,7 @@ namespace GravityBox.Venom
             ClosePopup(panel, w, Resume);
             // COghe's energy, with what it means right now
             EnergyMeter(panel, new Rect(24, 70, 120, 34), null);
-            string mood = COgheEnergy.State == COgheHunger.Exhausted ? "Exhausted: very slow" : COgheEnergy.Hungry ? "Hungry: slow, no toys" : "Full of energy";
+            string mood = COgheEnergy.State == COgheHunger.Exhausted ? "Exhausted: very slow" : COgheEnergy.Hungry ? "Hungry: slow, no toys" : COgheEnergy.Value >= COgheEnergy.Max ? "Full of energy" : "Not hungry";
             art.Label(panel, "Energy note", mood, new Rect(152, 70, w - 176, 34), 11, COgheUIArt.Muted, TextAnchor.MiddleLeft);
             for (int i = 0; i <= COgheSnacks.Catalog.Length; i++)
             {
