@@ -27,10 +27,11 @@ namespace GravityBox.Tests
   // A solve with a running log: every tap, every wait, each new walk order with its path, and the parts twice a second.
   System.Action trace;string traceFile;
   void T(string line){File.AppendAllText(traceFile,line+"\n");}
-  IEnumerator TracePlus(string key)
+  IEnumerator TracePlus(string key,float speed=1)
   {
-   Directory.CreateDirectory("Artifacts/SpatialPlus");traceFile=$"Artifacts/SpatialPlus/trace-{key}.txt";File.WriteAllText(traceFile,"");
-   yield return LoadPlus(key);int ticks=0;var seen=new System.Collections.Generic.HashSet<int>();
+   Directory.CreateDirectory("Artifacts/SpatialPlus");traceFile=$"Artifacts/SpatialPlus/trace-{key}{(speed!=1?"-x"+speed:"")}.txt";File.WriteAllText(traceFile,"");
+   yield return key.StartsWith("COgheSpatial")?LoadScene(key):LoadPlus(key);int ticks=0;var seen=new System.Collections.Generic.HashSet<int>();
+   game.Motion.SpeedScale=speed;   // a slower (hungry) or faster (Agility) COghe
    var lastCentre=new System.Collections.Generic.Dictionary<int,Vector3>();
    PlusContactProbe.Frame=game.Root;var rails=game.Owner.Apparatus.GetComponentsInChildren<COgheRailSlider>();var contacts=new PlusContactProbe[rails.Length];
    for(int i=0;i<rails.Length;i++)contacts[i]=rails[i].Body.gameObject.AddComponent<PlusContactProbe>();
@@ -41,6 +42,7 @@ namespace GravityBox.Tests
     if(ticks%60==0)
     {
      T($"t={ticks*Dt:F1}{Parts()} act={game.Activity} fail={game.Failure}");
+     string railState="";foreach(var rl in rails)railState+=$" {rl.name}={rl.Position:F4}/{rl.Travel:F3} e={rl.Effort:F2}{(rl.Locked?" L":"")}{(rl.Latched?" C":"")}";T("   rails"+railState);
      // A part with a walk order that has not moved: name what is around it.
      var bodies=new System.Collections.Generic.HashSet<Rigidbody>(game.Matter.Bodies);
      for(int i=0;i<32;i++)
@@ -64,11 +66,17 @@ namespace GravityBox.Tests
   }
 
   // Run by name with COGHE_PLUS_TRACE=<key> (e.g. E07) to write Artifacts/SpatialPlus/trace-<key>.txt; skipped otherwise.
+  // Several keys, comma separated; a key may be a whole scene name (COgheSpatial13) and may carry a walking speed (E11@0.85).
   [UnityTest,Explicit("diagnostic")] public IEnumerator TracePlusLevel()
   {
-   string key=System.Environment.GetEnvironmentVariable("COGHE_PLUS_TRACE");
-   if(string.IsNullOrEmpty(key))Assert.Ignore("Set COGHE_PLUS_TRACE to a Spatial Plus key (E01…E18, B1, B2).");
-   yield return TracePlus(key);
+   string keys=System.Environment.GetEnvironmentVariable("COGHE_PLUS_TRACE");
+   if(string.IsNullOrEmpty(keys))Assert.Ignore("Set COGHE_PLUS_TRACE to a Spatial Plus key (E01…E18, B1, B2).");
+   foreach(var entry in keys.Split(','))
+   {
+    var part=entry.Split('@');float speed=part.Length>1?float.Parse(part[1],System.Globalization.CultureInfo.InvariantCulture):1;
+    string error=null;yield return Flat(TracePlus(part[0],speed),e=>error=e);trace=null;   // a failed solve skips TracePlus's finally
+    if(error!=null)T("FAILED "+error);
+   }
   }
  }
 }

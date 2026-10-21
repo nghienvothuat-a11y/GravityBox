@@ -56,6 +56,8 @@ namespace GravityBox.Venom
                 if (m.Refusals > 0 && now - m.RefusedAt < 1.3f) { look = m.RefusalPoint; return COgheMood.Sad; }
                 if (m is COgheTapRail t && t.Busy && t.Actor >= 0 && game.Matter.Groups[t.Actor] == group) { look = t.HandPoint; return COgheMood.Focus; }
             }
+            // hungry in a level: heavy eyelids once it stops; exhausted: all the time (COgheEnergy)
+            if (COgheEnergy.TiredIn(game) && (COgheEnergy.State == COgheHunger.Exhausted || idle > .8f)) return COgheMood.Sleepy;
             return COgheMood.Normal;
         }
 
@@ -87,10 +89,12 @@ namespace GravityBox.Venom
             switch (home)
             {
                 case HomeState.Sulk: return COgheMood.Sulky;
+                case HomeState.Snack: return SnackMood(out look);
                 case HomeState.React:
                     switch (reaction)
                     {
                         case Reaction.Hug: return COgheMood.Love;
+                        case Reaction.Hungry: return COgheMood.Sad;
                         case Reaction.Flatten: case Reaction.Dodge: return COgheMood.Surprised;
                         case Reaction.Roll: return COgheMood.Hidden;
                         default: return COgheMood.Happy;
@@ -112,7 +116,8 @@ namespace GravityBox.Venom
                     if (target != null) look = room.BoundsOf(target).center;
                     return COgheMood.Normal;
             }
-            return COgheMood.Normal;
+            // resting hungry: a sad look; exhausted: heavy eyelids (COgheEnergy)
+            return COgheEnergy.State == COgheHunger.Exhausted ? COgheMood.Sleepy : COgheEnergy.Hungry ? COgheMood.Sad : COgheMood.Normal;
         }
     }
 }

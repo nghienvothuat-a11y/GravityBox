@@ -38,6 +38,8 @@ namespace GravityBox.Venom
             public List<int> CardsPicked = new List<int>();
             public int UnderstandPacingRevision;
             public List<int> SkippedPractices = new List<int>();
+            // COghe's energy (COgheEnergy, Mrk 21/10/2026), as the energy used: an old save starts full.
+            public int EnergyUsed;
         }
 
         private const string Key = "coghe.shop.v1";
@@ -187,6 +189,16 @@ namespace GravityBox.Venom
             COgheAnalytics.Log("drops_spend", "item", id, "amount", price, "balance", Current.Drops);
             return true;
         }
+        /// <summary>Spend Drops on something used up (a snack): false, and nothing changes, if there are not enough.</summary>
+        public static bool Spend(int amount, string kind, string id)
+        {
+            if (amount <= 0 || Current.Drops < amount) return false;
+            Current.Drops -= amount; Save();
+            COgheAnalytics.Log("drops_spend", kind, id, "amount", amount, "balance", Current.Drops);
+            return true;
+        }
+        /// <summary>COgheEnergy's store: how much of COghe's energy is used up.</summary>
+        public static void SetEnergyUsed(int used) { if (Current.EnergyUsed == used) return; Current.EnergyUsed = used; Save(); }
         /// <summary>Owned without paying Drops (a rewarded ad, a migration).</summary>
         public static void Grant(string id, string source)
         {

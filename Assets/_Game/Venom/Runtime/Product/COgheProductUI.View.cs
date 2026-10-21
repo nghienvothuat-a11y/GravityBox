@@ -122,7 +122,7 @@ namespace GravityBox.Venom
                 return;
             }
             Top(true);float x=width*.5f-148,y=height-152;
-            MenuEntry(x,y,"Feed",COgheIcon.Food,()=>{Game.FeedHome();COgheAudio.Happy();});
+            MenuEntry(x,y,"Feed",COgheIcon.Food,()=>ShowPopup(COgheProductPopup.Food));   // the Food tray: steel balls and snacks
             // Ability (the ability cards, Mrk 16/10/2026) where Play was: Play only cuddled COghe, as a tap on COghe does
             MenuEntry(x+80,y,"Ability",COgheIcon.Cards,()=>ShowPopup(COgheProductPopup.AbilityStats));
             if(COgheAbilities.Pending()>0)art.Box(pageRoot,"Ability ready",new Rect(x+80+42,y-4,14,14),new Color(.86f,.36f,.3f)).pixelsPerUnitMultiplier=6;
@@ -131,6 +131,7 @@ namespace GravityBox.Venom
             // the camera's Zoom stays one tap away, floating above the row (Codex: four main actions, not five)
             art.Button(pageRoot,homeZoom?"Zoom out":"Zoom in",new Rect(width-72,y-64,48,48),homeZoom?COgheIcon.Overview:COgheIcon.Pinch,ToggleHomeZoom);
             GiftButton(y-64);DropsCounter(pageRoot,new Rect(width-124,88,100,40));   // under Pause, clear of the title
+            EnergyMeter(pageRoot,new Rect(24,88,100,40),()=>ShowPopup(COgheProductPopup.Food));   // under Back, across from the Drops
             if(COgheEntitlements.HasPlus)art.Button(pageRoot,"Monster",new Rect(width-72,y-120,48,48),COgheIcon.Sparkles,()=>Game.Personality?.Force(COgheAct.Monster));
             // a skipped bonus "Hiểu ra" waits here
             int waiting=COgheBonus.Waiting(Catalog,Game.Progress);
@@ -163,7 +164,7 @@ namespace GravityBox.Venom
                 COgheRewardFx.Shine(DropIcon(reward,new Rect(0,3,26,26)).rectTransform,rewardFxAt);
                 art.Label(reward,"Drops earned","+"+earned+" Drops",new Rect(34,0,114,32),17,COgheUIArt.Teal,TextAnchor.MiddleLeft);
             }
-            TripleButton();
+            TripleButton();HungryVictoryButton();
             if(final)
             {
                 art.Button(pageRoot,"Back to menu",new Rect(width*.5f-130,height-74,260,58),COgheIcon.Menu,NextLevel,"Menu",true).interactable=!victoryNextRequested;
@@ -182,7 +183,7 @@ namespace GravityBox.Venom
         {
             popupRoot=art.Rect(safe,"Popup "+Popup,new Rect(0,0,width,height));
             var veil=art.Box(popupRoot,"Input shield",new Rect(-width,-height,width*3,height*3),new Color(.13f,.23f,.21f,.36f),true);veil.sprite=null;
-            if(StylePopup()||ShopPopup()||BonusPopup()||AbilityPopup()||MysteryBoxPopup())return;
+            if(StylePopup()||ShopPopup()||BonusPopup()||AbilityPopup()||MysteryBoxPopup()||FoodPopup())return;
             float w=Mathf.Min(312,width-40),h=Popup==COgheProductPopup.Pause?(InHome?324:COgheTestTools.LevelSelect?482:430):Popup==COgheProductPopup.Levels?Mathf.Min(560,height-90):Popup==COgheProductPopup.Help?450:Popup==COgheProductPopup.Collection&&Game.HomeRoom!=null?Mathf.Min(560,height-90):260;
             bool privacy=Popup==COgheProductPopup.Pause&&COgheAds.PrivacyRequired?.Invoke()==true;
             if(privacy)h+=56;

@@ -154,6 +154,7 @@ namespace GravityBox.Tests
                     ui.OfferItem("SWING", null); yield return null; Audit("Buy (item)", screen, report, ref problems); ui.Resume();
                     ui.ShowShopPopup(COgheProductPopup.Buy); yield return null; Audit("Drops", screen, report, ref problems); ui.Resume();
                     ui.ShowShopPopup(COgheProductPopup.Gift); yield return null; Audit("Daily gift", screen, report, ref problems); ui.Resume();
+                    ui.ShowPopup(COgheProductPopup.Food); yield return null; Audit("Food tray", screen, report, ref problems); ui.Resume();
                     ui.OpenStyle(); yield return new WaitForSecondsRealtime(.3f); Audit("Style colors", screen, report, ref problems);
                     Press("Rinse"); yield return null; Audit("Style rinse", screen, report, ref problems); ui.Resume();
                     ui.ChooseStyleItem("INK_GOLD"); yield return null; Audit("Style ink on trial", screen, report, ref problems);
@@ -163,7 +164,9 @@ namespace GravityBox.Tests
                     ui.SetStyleTab(1, 1); yield return null; Audit("Style inside", screen, report, ref problems);
                     ui.LeaveStyle(); yield return null; Audit("Style keep this look", screen, report, ref problems);
                     Press("Take it off"); yield return null;
+                    COgheShop.SetEnergyUsed(60);   // hungry after this win: "Hungry · Feed" top left, with the Drops top right
                     ui.ShowVictoryForTests(ui.Catalog.Levels[9].Id, 10); yield return null; Audit("Victory (banner)", screen, report, ref problems);
+                    COgheShop.SetEnergyUsed(0);
                     ui.VictoryStepForTests(); yield return null; Audit("New for COghe", screen, report, ref problems); ui.Resume();
                     ui.ShowMenu(); ui.Play(); yield return new WaitForSecondsRealtime(.3f); Audit("Level", screen, report, ref problems);
                     foreach (var popup in new[] { COgheProductPopup.Pause, COgheProductPopup.Help, COgheProductPopup.Restart, COgheProductPopup.Failure, COgheProductPopup.Levels })

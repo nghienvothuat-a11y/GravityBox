@@ -45,7 +45,8 @@ namespace GravityBox.Venom
         // Sustained excess load peels the footprint before it can reattach.
         private const float GripAccelerationLimit=36f;
         private const float BaseMoveSpeed=.1638f; // m/s; +30% from the previous .126 m/s.
-        /// <summary>Walking speed multiplier in levels (the Agility ability: +10% a level); Home keeps the base pace.</summary>
+        /// <summary>Walking speed multiplier in levels (the Agility ability: +10% a level; a hungry COghe walks slower,
+        /// COgheEnergy); Home keeps the base pace.</summary>
         public float SpeedScale=1;
         private float MoveSpeed=>game.Home?BaseMoveSpeed:BaseMoveSpeed*SpeedScale;
         private readonly float[] gripStrain=new float[32], detachedUntil=new float[32];
@@ -570,8 +571,9 @@ namespace GravityBox.Venom
                 if(o!=null&&caught==null&&anchored)target=EdgeTarget(o,a,centre,target);
                 Vector3 delta=target-centre;
                 Vector3 desired=o!=null?delta.normalized*MoveSpeed:Vector3.zero;
-                // the last stretch keeps the base pace, so a faster COghe (Agility) still stops exactly where it is sent
-                if(o!=null&&o.Cursor==o.Path.Count-1)desired=Vector3.ClampMagnitude(delta*4,BaseMoveSpeed);
+                // the last stretch keeps the base pace, so a faster COghe (Agility) still stops exactly where it is sent;
+                // a tired one stays at its own slower pace
+                if(o!=null&&o.Cursor==o.Path.Count-1)desired=Vector3.ClampMagnitude(delta*4,Mathf.Min(BaseMoveSpeed,MoveSpeed));
                 if(caught!=null)desired=Vector3.ClampMagnitude((caught.Surface.transform.TransformPoint(caught.LocalTarget)-centre)*6,.35f);
                 bool railManipulation=game.TryRailManipulationIntent(a,out var handleTarget,out var handleVelocity);
                 if(railManipulation){delta=handleTarget-centre;desired=handleVelocity;}

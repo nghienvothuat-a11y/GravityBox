@@ -206,7 +206,9 @@ namespace GravityBox.Venom
             victoryDrops = COgheShop.Earn(key, COgheShop.WinReward(levelId), "level_win");
             if (victoryDrops > 0) rewardFxAt = Time.unscaledTime;
             COgheAds.NoteWin();
-            victoryUnlocks.Clear(); victoryHome = false; victoryAdChecked = false; victoryNextRequested = false; tripleTaken = false;
+            victoryUnlocks.Clear(); victoryHome = false; victoryAdChecked = false; victoryNextRequested = false; tripleTaken = false; feedAfterVictory = false;
+            // COghe worked for this win (COgheEnergy): from when Home is open, not on the win that opens it
+            if (Game.Progress.HomeUnlocked && !(first && Game.Progress.RevealHome)) COgheEnergy.UseForLevel(levelId);
             if (first)
             {
                 foreach (var item in COgheEconomy.Items) if (item.Level == order && !COgheShop.Current.ReachedBeforePacing.Contains(order)) { victoryUnlocks.Add(item.Id); COgheAnalytics.Log("item_unlock", "item", item.Id); }

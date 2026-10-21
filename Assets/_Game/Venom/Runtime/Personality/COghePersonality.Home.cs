@@ -23,8 +23,8 @@ namespace GravityBox.Venom
     /// </summary>
     public sealed partial class COghePersonality
     {
-        private enum HomeState { Rest, Walk, Play, React, Sulk, User, Eat }
-        private enum Reaction { Tickle, Hop, Heart, Roll, Flatten, Dodge, Nuzzle, Hug }
+        private enum HomeState { Rest, Walk, Play, React, Sulk, User, Eat, Snack }
+        private enum Reaction { Tickle, Hop, Heart, Roll, Flatten, Dodge, Nuzzle, Hug, Hungry }
         private HomeState home;
         private COgheHomeRoom room;
         private COgheHomeItem target, playing;
@@ -42,6 +42,9 @@ namespace GravityBox.Venom
         private int warmth; private float lastTouch = -100; private bool userPlay, affectionHearts, greetPending; private int greetStep;
         /// <summary>True once when COghe's affection should send little hearts up (a hug, a thank-you): the UI shows them.</summary>
         public bool TakeAffectionHearts() { bool due = affectionHearts; affectionHearts = false; return due; }
+        private bool hungryRefusal;
+        /// <summary>True once after a hungry COghe turned a toy down (COgheEnergy): the UI says why.</summary>
+        public bool TakeHungryRefusal() { bool due = hungryRefusal; hungryRefusal = false; return due; }
         public COgheSkinPose Pose;
         public COgheHomeItem Playing => playing;
         public bool Sulking => home == HomeState.Sulk;
@@ -79,6 +82,7 @@ namespace GravityBox.Venom
             if (room == null || Act == COgheAct.Monster) return;   // the monster finishes its show
             if (InBonus) { BonusHeard(COgheBonusAnswer.Touch, null); return; }   // a touch is an answer, not a poke
             if (home == HomeState.Sulk) { COgheAudio.Instance?.Play("creature_hmph", .45f, 0, .6f); return; }   // it is not talking to you
+            if (home == HomeState.Snack) return;   // a snack's short show: taps wait until it is over
             float now = game.Matter.SimulationTime;
             for (int i = touches.Length - 1; i > 0; i--) touches[i] = touches[i - 1];
             touches[0] = now;
@@ -100,9 +104,20 @@ namespace GravityBox.Venom
         {
             if (room == null || item == null) return;
             if (InBonus) { if (item.Root.activeInHierarchy) BonusHeard(COgheBonusAnswer.Item, item.Id); return; }   // a toy out for its game counts too
-            if (!room.Present(item)) return;
+            if (!room.Present(item) || home == HomeState.Snack) return;   // not in the middle of a snack
+            if (COgheEnergy.Hungry && !Showcase) { AskForFood(); return; }   // hungry: no games until it is fed (Mrk 21/10/2026)
             greetPending = false; revealVisit = false;      // the player's choice comes before its hello and its visit to what is new
             StopPlaying(); GoTo(item); userPlay = true;   // chosen by the player: it thanks them after
+        }
+
+        /// <summary>A toy offered to a hungry COghe: it shakes its head and makes itself into an apple, food first.</summary>
+        private void AskForFood()
+        {
+            if (home == HomeState.React && reaction == Reaction.Hungry) return;   // already saying so
+            StopPlaying(); game.Motion.StopAll();
+            reaction = Reaction.Hungry; home = HomeState.React; stateTime = 0; hungryRefusal = true;
+            Begin(COgheAct.Home, 2.4f);
+            COgheAudio.Instance?.Play("creature_grumble", .5f, 0, .1f);
         }
 
         /// <summary>Previews and tests: put COghe at the item and start its game now.</summary>
@@ -122,7 +137,7 @@ namespace GravityBox.Venom
             bool commanded = game.Feedback != null && game.Feedback.CommandCount != lastCommands;
             if (game.Feedback != null) lastCommands = game.Feedback.CommandCount;
             if (bonusPhase != BonusPhase.None && UpdateBonus(dt)) return;   // the bonus "Hiểu ra" holds COghe
-            if (commanded && home != HomeState.User) { StopPlaying(); home = HomeState.User; stateTime = 0; }   // the player steers: step aside
+            if (commanded && home != HomeState.User && home != HomeState.Snack) { StopPlaying(); home = HomeState.User; stateTime = 0; }   // the player steers: step aside (a snack's short show first)
             else if (game.HomeFeeding && !Showcase && (home == HomeState.Rest || home == HomeState.Walk || home == HomeState.Play))
             { StopPlaying(); home = HomeState.Eat; stateTime = 0; meal = null; }                                          // food! off to eat it
             if (Act != COgheAct.None && Act != COgheAct.Home)
@@ -166,6 +181,9 @@ namespace GravityBox.Venom
                 case HomeState.Eat:
                     UpdateEat(dt);
                     break;
+                case HomeState.Snack:
+                    UpdateSnack(dt);
+                    break;
             }
         }
 
@@ -182,6 +200,7 @@ namespace GravityBox.Venom
                 Begin(small, small == COgheAct.Melt ? 2.3f : 2.9f);
                 return;
             }
+            if (COgheEnergy.Hungry) { HungryActivity(); return; }
             choices.Clear();
             foreach (var item in room.Items) if (room.Present(item) && item != lastPlayed) choices.Add(item);
             float r = (float)rnd.NextDouble();
@@ -203,6 +222,23 @@ namespace GravityBox.Venom
             COgheAct act = rnd.Next(3) == 0 ? COgheAct.Wave : rnd.Next(2) == 0 ? COgheAct.Shape : COgheAct.Melt;
             if (act == COgheAct.Shape) Shape = PickShape();
             Begin(act, act == COgheAct.Melt ? 2.3f : 2.9f);
+        }
+
+        /// <summary>Hungry at Home (COgheEnergy): no toys and no tricks. It asks for food (an apple of itself, a grumbling
+        /// tummy), mopes about, flops; exhausted, it mostly dozes.</summary>
+        private void HungryActivity()
+        {
+            float r = (float)rnd.NextDouble();
+            if (COgheEnergy.State == COgheHunger.Exhausted)
+            {
+                if (r < .45f) { Begin(COgheAct.Doze, 6f); homeNext = 7f; }
+                else if (r < .75f) Begin(COgheAct.Melt, 2.3f);
+                else { Shape = COgheShape.Apple; Begin(COgheAct.Shape, 2.9f); COgheAudio.Instance?.Play("creature_grumble", .45f, 0, .1f); }
+                return;
+            }
+            if (r < .45f) { Shape = COgheShape.Apple; Begin(COgheAct.Shape, 2.9f); COgheAudio.Instance?.Play("creature_grumble", .45f, 0, .1f); }
+            else if (r < .75f) game.Motion.Move(0, room.WanderPoint(rnd));
+            else Begin(COgheAct.Melt, 2.3f);
         }
 
         private static readonly COgheTrick[] HomeTricks = { COgheTrick.Groove, COgheTrick.Wink, COgheTrick.Raspberry, COgheTrick.Clap,
@@ -247,6 +283,7 @@ namespace GravityBox.Venom
         private void StopPlaying()
         {
             StopEating();   // a touch, a toy or a preview mid-meal: the half-swallowed ball is finished first
+            if (home == HomeState.Snack) { DropSnack(); home = HomeState.Rest; }   // the wardrobe, the bonus, a chosen toy
             if (playing != null) ResetParts(playing);
             playing = null; target = null;
             if (Act != COgheAct.None) EndAct();
@@ -330,6 +367,14 @@ namespace GravityBox.Venom
                     break;
                 }
                 case Reaction.Dodge: Pose.Centre = centre + (touchDirection.sqrMagnitude > .5f ? touchDirection : Vector3.Cross(up, CameraFlat())) * (s * 1.3f * e) + up * (s * .4f * e); Pose.Squash = 1 + .1f * e; break;
+                case Reaction.Hungry:
+                {   // a droopy head shake at the toy, then it makes itself into an apple: food first
+                    float shake = Smooth01(0, .12f, t) * (1 - Smooth01(.6f, .85f, t));
+                    Pose.Turn = Quaternion.AngleAxis(22 * Mathf.Sin(t * 19) * shake, up);
+                    Pose.Squash = 1 - .1f * shake;
+                    Pose.Morph = Smooth01(.85f, 1.2f, t) * (1 - Smooth01(2.05f, 2.35f, t)); Pose.Shape = COgheShape.Apple;
+                    break;
+                }
             }
         }
 
@@ -698,7 +743,7 @@ namespace GravityBox.Venom
             if (meal != null)
             {
                 if (t < .86f) meal.Place(ballAt, Mathf.Lerp(1, .6f, pull) * (1 - swallow));
-                else { game.HomeFeedBalls?.Consume(meal); meal = null; BallsEaten++; game.GreetHomeQuietly(); }
+                else { game.HomeFeedBalls?.Consume(meal); meal = null; BallsEaten++; COgheEnergy.EatBall(); game.GreetHomeQuietly(); }
             }
             p.Tendrils = t < .7f ? 1 : 0; p.TipA = t < .3f ? Vector3.Lerp(centre + dir * s, mealFrom, reach) : ballAt;
             p.Centre = centre + dir * (s * .25f * reach * (1 - swallow));
@@ -728,7 +773,7 @@ namespace GravityBox.Venom
             if (meal != null)
             {
                 if (t < 2.35f) meal.Place(ballAt, Mathf.Lerp(1, .7f, pull) * (1 - swallow));
-                else { game.HomeFeedBalls?.Consume(meal); meal = null; BallsEaten++; game.GreetHomeQuietly(); }
+                else { game.HomeFeedBalls?.Consume(meal); meal = null; BallsEaten++; COgheEnergy.EatBall(); game.GreetHomeQuietly(); }
             }
             p.Tendrils = t < 2.2f ? 1 : 0; p.TipA = t < .3f ? Vector3.Lerp(centre + dir * s, mealFrom, reach) : ballAt;
             p.Centre = centre - dir * (s * .3f * recoil) + dir * (s * .2f * swallow * (1 - Smooth01(2.35f, 2.6f, t)));

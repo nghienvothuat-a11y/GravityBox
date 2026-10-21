@@ -50,7 +50,7 @@ namespace GravityBox.Venom
         private VenomLifeAnimation life;
         private readonly float[] taps = new float[TapsForTantrum];
         private bool tantrumPending, releasing, sawWave;
-        private float lastSim = -1, idle, nextActAt, tantrumAllowedAt, pendingSince, releaseStart;
+        private float lastSim = -1, idle, nextActAt, tantrumAllowedAt, pendingSince, releaseStart, tiredActAt;
         private int lastCommands, lastAct = -1, lastShape = -1;
         private System.Random rnd;
         // what the renderer saw of the whole body this frame
@@ -139,8 +139,26 @@ namespace GravityBox.Venom
                 return;
             }
 
+            // hungry (COgheEnergy): soon after each stop it shows it, a flop, an apple of itself for food, a doze
+            if (COgheEnergy.TiredIn(game))
+            {
+                if (idle <= 0) tiredActAt = COgheEnergy.State == COgheHunger.Exhausted ? 1.2f : 3f;
+                else if (idle >= tiredActAt && Ready(true)) { TiredAct(); return; }
+            }
             if (idle < nextActAt || !Ready(true)) return;
             ChooseIdleAct();
+        }
+
+        private void TiredAct()
+        {
+            const float body = .036f;
+            bool exhausted = COgheEnergy.State == COgheHunger.Exhausted;
+            bool open = life.Clearance(centre, up, .15f) && life.Clearance(centre + up * .05f, Right(), .06f) && life.Clearance(centre + up * .05f, -Right(), .06f);
+            if (exhausted && idle > 9f) Begin(COgheAct.Doze, 1e6f);                       // nods off where it stopped
+            else if (!exhausted && open && rnd.NextDouble() < .5) { Shape = COgheShape.Apple; Begin(COgheAct.Shape, 2.9f); COgheAudio.Instance?.Play("creature_grumble", .4f, 0, .1f); }
+            else if (life.Clearance(centre, Right(), body * 1.2f)) Begin(COgheAct.Melt, 2.3f);   // flops down, worn out
+            tiredActAt = idle + (exhausted ? 4f : 7f) + (float)rnd.NextDouble() * 3f;
+            nextActAt = Mathf.Max(nextActAt, tiredActAt + 2);   // the usual acts wait their turn
         }
 
         /// <summary>Starts an act now, whatever the state (tests, previews, a debug menu).</summary>

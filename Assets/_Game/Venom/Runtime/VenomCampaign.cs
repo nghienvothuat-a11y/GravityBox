@@ -119,7 +119,7 @@ namespace GravityBox.Venom
         {
             MechanismTaps=0;PartSelections=0;
             ResetPointerInput();
-            if(Motion!=null)Motion.SpeedScale=COgheProductMode.Applies(this)?COgheAbilities.SpeedScale:1;
+            if(Motion!=null)Motion.SpeedScale=COgheProductMode.Applies(this)?COgheEnergy.LevelSpeed:1;   // Agility, slowed by hunger
             if(Matter!=null)LastInputTime=Matter.SimulationTime;
             if(Owner==null||Matter==null)return;
             habitat?.Leave();Owner.Rotation.ResetState();Owner.ResetCampaignState();

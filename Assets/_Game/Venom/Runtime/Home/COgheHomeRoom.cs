@@ -38,6 +38,8 @@ namespace GravityBox.Venom
         public readonly List<COgheHomeItem> Items = new List<COgheHomeItem>();
         private readonly VenomCampaign game;
         private readonly COgheHomeMaterials materials;
+        /// <summary>The room's palette (snacks and their bits are made from it and go with the room).</summary>
+        public COgheHomeMaterials Materials => materials;
         private readonly Dictionary<COgheHomeItem, Bounds> bounds = new Dictionary<COgheHomeItem, Bounds>();
         private readonly Dictionary<Renderer, Material[]> realMaterials = new Dictionary<Renderer, Material[]>();
         private COgheHomeItem ghost;

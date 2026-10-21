@@ -9,7 +9,7 @@ using UnityEngine.UI;
 namespace GravityBox.Venom
 {
     public enum COgheProductPage { MainMenu, Game, Home, Intro, Victory, Style }
-    public enum COgheProductPopup { None, Pause, Help, Restart, LeaveMenu, LeaveHome, Collection, Locked, Failure, Levels, StyleReplaceInk, StyleRinse, StyleReplaceInside, StyleLocked, StyleNeedsClear, StyleTryOn, Buy, Unlocks, Gift, Plus, BonusOffer, BonusDone, AbilityPick, AbilityStats, MysteryBox, MysteryReveal }
+    public enum COgheProductPopup { None, Pause, Help, Restart, LeaveMenu, LeaveHome, Collection, Locked, Failure, Levels, StyleReplaceInk, StyleRinse, StyleReplaceInside, StyleLocked, StyleNeedsClear, StyleTryOn, Buy, Unlocks, Gift, Plus, BonusOffer, BonusDone, AbilityPick, AbilityStats, MysteryBox, MysteryReveal, Food }
 
     /// <summary>Test-only tools (the level picker in Pause): compiled into development builds and the team's test builds
     /// (COGHE_TEST_TOOLS, added by the build scripts unless COGHE_STORE=1); absent from a store build.</summary>
@@ -100,7 +100,7 @@ namespace GravityBox.Venom
         {
             if(!started||leaving)return;
             TrackAttempt();
-            StyleTick();TickShop();TickHints();
+            StyleTick();TickShop();TickEnergy();TickHints();
             if(lastWidth!=Screen.width||lastHeight!=Screen.height||lastSafe!=Screen.safeArea){Layout();Rebuild();}
             if(Page==COgheProductPage.Intro)return;
             if(Game.Owner.Paused&&Popup==COgheProductPopup.None)ShowPopup(COgheProductPopup.Pause);
@@ -118,11 +118,13 @@ namespace GravityBox.Venom
             if(Page==COgheProductPage.Home&&bonusChapter>0)BonusTick();
             else if((Page==COgheProductPage.Home||Page==COgheProductPage.MainMenu)&&Game.Personality!=null&&Game.Personality.TakeAffectionHearts())
                 COgheHearts.Burst(safe,BonusScreen(Game.Personality.SkinCentre+Vector3.up*.05f),Time.frameCount,10,.7f);   // a hug, a thank-you
+            if(Page==COgheProductPage.Home&&Game.Personality!=null&&Game.Personality.TakeHungryRefusal())Notify("COghe is hungry. Feed it first!");
             if(Page==COgheProductPage.Victory && Popup==COgheProductPopup.None && victoryNextRequested && VictoryReady())
             {
                 victoryNextRequested=false;
                 if(Game.Progress.RevealHome){Game.Progress.RevealHome=false;Game.Progress.Write();}
-                if(Game.Definition.Order<Game.PlayableLevelCount)Load(Game.Definition.Order+1);
+                if(FeedAfterVictoryReady()){}   // "Hungry · Feed": Home and its Food tray
+                else if(Game.Definition.Order<Game.PlayableLevelCount)Load(Game.Definition.Order+1);
                 else ShowMenu();
             }
             if(toast!=null&&Time.unscaledTime>toastUntil){Destroy(toast.transform.parent.gameObject);toast=null;}
