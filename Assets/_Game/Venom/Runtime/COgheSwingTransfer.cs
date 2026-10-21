@@ -119,6 +119,7 @@ namespace GravityBox.Venom
         public override void StepMechanism(VenomCampaign game, float dt)
         {
             owner = game; clock += dt;
+            if (Phase == SwingPhase.Approaching && Actor >= 0 && game.Motion.RestingFor(Actor) >= 0) clock -= dt;   // a stop for breath is not a stall
             if (game.Owner.Lost || game.Home) { if (carrying) LetGo(null, null); return; }
             if (!Ring.isKinematic) Ring.AddForce(Vector3.down * 9.81f, ForceMode.Acceleration);
             if (Phase == SwingPhase.Approaching)

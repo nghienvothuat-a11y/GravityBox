@@ -106,7 +106,7 @@ namespace GravityBox.Venom
             }
             else if (BoxPhase == MysteryBoxPhase.Walking)
             {
-                boxClock += Time.deltaTime;
+                if (Game.Motion.RestingFor(Game.Motion.Selected) < 0) boxClock += Time.deltaTime;   // not while it catches its breath
                 // The offer once COghe stands by the box and the camera has finished turning to the close-up, after a
                 // .15 s rest (Codex's storyboard); never later than BoxWalkLimit + 2 s.
                 bool arrived = Game.Motion.Get(Game.Motion.Selected) == null || boxClock > BoxWalkLimit;

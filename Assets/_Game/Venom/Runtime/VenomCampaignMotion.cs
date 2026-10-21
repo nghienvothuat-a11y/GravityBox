@@ -54,7 +54,7 @@ namespace GravityBox.Venom
         /// pace tipped different marginal spots of the levels, while stops on still floor leave every climb, step, handle,
         /// tube and merge as the usual pace plays them.</summary>
         public float RestWalk,RestPause;
-        private readonly float[] restWalked=new float[32],restSince=new float[32];
+        private readonly float[] restWalked=new float[32],restSince=new float[32];private readonly int[] restOrder=new int[32];
         /// <summary>Seconds since the group of <paramref name="particle"/> stopped for breath, or -1 while it is not
         /// resting.</summary>
         public float RestingFor(int particle)
@@ -499,25 +499,27 @@ namespace GravityBox.Venom
                     !game.Clear(game.Matter.Bodies[i].position,target,game.Matter.Profile.ParticleRadius))return false;
             return true;
         }
-        // A stop for breath (RestWalk, RestPause) starts only on a free stretch of a walk: the player's or to a device's handle
-        // (not the exit, not a tube mouth), every foot gripping still, level floor (no carriage, lift, deck, prop or turning
-        // chamber), and the route level and clear of the goal for RestClear ahead. It ends after RestPause, or at once when any
-        // of that changes; the walking time toward the next stop is kept across orders.
+        // A stop for breath (RestWalk, RestPause) starts only on a free stretch of a walk of the whole COghe (never a part on
+        // its way to a merge): the player's walk or to a device's handle (not the exit, not a tube mouth), every foot
+        // gripping still, level floor (no carriage, lift, deck, prop or turning chamber), and the route level and clear of the
+        // goal for RestClear ahead. It ends after RestPause, at once on a new order (a tap is never held up), or when any of
+        // that changes; the walking time toward the next stop is kept across orders.
         private const float RestClear=.10f;
         private bool Rest(int a,Order o,Vector3 centre,float dt,Rigidbody chamberBody)
         {
             bool free=RestWalk>0&&RestPause>0&&!game.Home&&!o.Exit&&o.AvoidSlippery&&!o.AwaitingContact&&!game.Attached&&
-                !game.InTube&&RestFloor(a,chamberBody)&&RestStretch(o,centre);
+                !game.InTube&&game.Matter.TotalFragmentCount==1&&game.Matter.EscapedCount==0&&
+                RestFloor(a,chamberBody)&&RestStretch(o,centre);
             if(!free)return EndRest(a);
             float now=game.Matter.SimulationTime;
             if(restSince[a]>=0)
             {
-                if(now-restSince[a]<RestPause)return true;
+                if(now-restSince[a]<RestPause&&restOrder[a]==o.CommandId)return true;
                 restWalked[a]=0;return EndRest(a);
             }
             restWalked[a]+=dt;
             if(restWalked[a]<RestWalk)return false;
-            restSince[a]=now;restWalked[a]=0;Rests++;
+            restSince[a]=now;restOrder[a]=o.CommandId;restWalked[a]=0;Rests++;
             return true;
         }
         private bool EndRest(int a){restSince[a]=-1;return false;}
@@ -599,7 +601,9 @@ namespace GravityBox.Venom
                 float weight=mass*9.81f;
                 strain=grips>=2&&capacity<weight?strain+dt*8*(weight-capacity)/weight:Mathf.Max(0,strain-dt*.25f);
                 bool suppressed=game.MechanismSuppressesMotion(a)||game.IsFlowing(a);
-                if(o!=null&&!o.Holding&&!o.Exit&&caught==null&&!suppressed&&!game.Attached&&!game.InTube&&restSince[a]<0)FreeTunnelledNodes(a,centre);else stallSince[a]=-1;
+                if(o!=null&&!o.Holding&&!o.Exit&&caught==null&&!suppressed&&!game.Attached&&!game.InTube&&restSince[a]<0)FreeTunnelledNodes(a,centre);
+                else if(restSince[a]>=0&&stallSince[a]>=0){stallSince[a]+=dt;stallSeen[a]+=dt;}   // a stop for breath pauses the stall clock
+                else stallSince[a]=-1;
                 bool peeled=strain>.14f&&!suppressed;
                 HashSet<VenomSurfacePatch> released=null;
                 if(peeled)

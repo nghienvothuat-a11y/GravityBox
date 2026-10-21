@@ -42,7 +42,8 @@ namespace GravityBox.Tests
             IEnumerator Walk(Vector3 world) { game.Motion.Move(game.Motion.Selected, world); yield return Film(16, () => game.Motion.Get(game.Motion.Selected) == null); }
             try
             {
-                yield return LoadDisplay(1); yield return null; game.Progress.HomeUnlocked = true;   // the loaded level has its own progress
+                yield return LoadDisplay(2); yield return LoadDisplay(1);   // (the fixture starts on level 1: reload it fresh)
+                yield return null; game.Progress.HomeUnlocked = true;          // the loaded level has its own progress
                 COgheProductUI.LayoutAreaForTests = new Rect(0, 0, 720, 1280); ui.RelayoutForTests();
                 foreach (var (used, name) in new[] { (0, "fed"), (60, "hungry"), (80, "exhausted") })
                 {
