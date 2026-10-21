@@ -83,7 +83,7 @@ namespace GravityBox.Tests
    Time.captureFramerate=fps;ticksPerFrame=Mathf.RoundToInt(1/(Dt*fps));
    try
    {
-    yield return LoadPlus(key);yield return Wait(.5f);
+    yield return key.StartsWith("COgheSpatial")?LoadScene(key):LoadPlus(key);yield return Wait(.5f);   // a Plus key or a scene name
     yield return new GravityBox.Venom.ChapterProof.COgheSpatialScenario(game,Tap,FrameUntil).Solve();
     Assert.AreEqual(32,game.Matter.EscapedCount);Assert.IsFalse(game.Owner.Lost);
    }

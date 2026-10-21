@@ -125,6 +125,10 @@ namespace GravityBox.Tests
   }
   [UnityTest] public IEnumerator SpatialPlusN43ReachesTheBalconyMouthRoundC(){yield return BalconyMouthRoundTheCarriage("COgheSpatialPlusN43",.97f,.98f,1.01f,1.02f,1.7f);}
   [UnityTest] public IEnumerator Spatial15ReachesTheBalconyMouthRoundA(){yield return BalconyMouthRoundTheCarriage("COgheSpatial15",.98f,.85f,1.1f,1.5f);}
+  [UnityTest,Timeout(900000)] public IEnumerator BalconyLevelsSolveAt60And30Fps()
+  {
+   foreach(var key in new[]{"N43","COgheSpatial15"}){yield return GlassCrawlSolveAtFrameRate(key);yield return GlassCrawlSolveAtFrameRate(key,30);}
+  }
   // The same level with a frame every 2 or 4 physics steps (a 60 or 30 fps phone), as the glass-crawl levels.
   [UnityTest,Timeout(900000)] public IEnumerator SpatialPlusN32SolveAt60And30Fps()
   {

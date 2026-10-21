@@ -374,6 +374,13 @@ Rút ra khi dựng, sửa và kiểm thử 65 màn Spatial cùng người dùng 
 3. **Đổi luật dùng chung theo phạm vi nhỏ nhất.** Bộ tìm đường, độ bám, coating tác động mọi màn. Luật "không leo
    lên kính trơn" áp cho cả game làm hỏng 10 test, vì bài 4 Origin và màn 04 cố ý để COghe leo kính trơn rồi tuột
    cho người chơi tự học; luật đó giờ chỉ bật bằng cờ `NoSlickClimb` trên màn đường kính.
+4. **Khối thấp và xe trên đường đi: đi vòng, đừng trèo qua.** Bộ tìm đường coi khối cao 2,6–3 cm là một bậc và trèo
+   qua nếu đó là đường ngắn nhất. Đường chạy sát mép khối (điểm đi cách mép 1,7 cm) thì thân vắt ngang mép, nhất là
+   mép trơn, rồi đứng im. Đã gặp (21/10/2026): màn 58 đi tới tay nắm B trèo qua đầu B; màn 53 và 41 từ tay nắm trên
+   ban công tới miệng ống "Ban công" trèo qua xe của tay nắm. Lúc no, lệch tốc độ 2 % là hỏng. Cách sửa theo phạm vi
+   nhỏ nhất: `COgheTapRail.ApproachAround` (đi tới tay nắm thì vòng quanh chính khối đó) và
+   `COgheTubeNetwork.Node.KeepOff` (đi tới miệng ống thì vòng quanh một vật). Đường vòng tránh cả sàn trong 4 cm
+   quanh vật: điểm đi sát góc khối cũng làm thân trèo lên mép. Không có đường vòng thì đi đường cũ.
 
 ### 6.3 Kiểm thử bắt được lỗi thật
 
@@ -388,7 +395,10 @@ Bổ sung cho ma trận ở mục 4; tên test trong `Assets/_Game/Tests/PlayMod
 3. **Chạm theo cách khác lời giải mẫu.** Người chơi chạm thẳng đích xa hoặc chạm cơ quan từ chỗ khác; viết ít nhất
    một test chạm như vậy (71: chạm vòng dây từ sàn thì rơi ở góc kệ; lời giải mẫu lên kệ trước nên không thấy).
 4. **Lỗi chỉ hiện khi chạy cả bộ test vẫn là lỗi thật** (bẫy hố N25 phụ thuộc thứ tự test). Chạy lại riêng và dò
-   bằng chính các lần chạm cuối.
+   bằng chính các lần chạm cuối. PhysX ở đây không bật enhanced determinism, nên có lẽ cùng một màn chạy sau các test
+   khác thì thân lệch đi chút ít, giống như lệch tốc độ. Hộp quà màn 53 hỏng y hệt mỗi lần chạy sau đủ 15 test đứng
+   trước nó trong fixture, nhưng chạy sau từng nhóm nhỏ (5, 6, 4 test) thì không hỏng. Cách dò nhanh hơn: giải riêng màn đó ở tốc độ lệch vài phần trăm (`COGHE_AGILITY_LEVELS=53
+   COGHE_AGILITY_SCALE="0.97,0.98,1.02,…"`, test `SolveEveryLevelAtTopAgility`). Chỗ nào hỏng ở đó là chỗ mong manh.
 5. **Đo số thật thay vì đoán từ hình:** tải trên nút, tâm thân, vị trí từng hạt, pha cơ quan. Log tạm phải gỡ
    trước khi commit.
 6. **Gắn kết quả với đúng trạng thái code:** ghi commit hoặc dấu vân tay working tree của lần chạy; chạy cả bộ
