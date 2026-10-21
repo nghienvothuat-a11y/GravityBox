@@ -62,6 +62,7 @@ namespace GravityBox.Venom
         {
             game = owner;
             rnd = new System.Random(owner.Definition.Order * 7919 + 17);
+            game.MechanismTouched -= OnMechanismTouched; game.MechanismTouched += OnMechanismTouched;
             ResetState();
         }
 
@@ -71,6 +72,7 @@ namespace GravityBox.Venom
             nextActAt = IdleBeforeFirstAct; cameraMovedAt = -1; for (int i = 0; i < taps.Length; i++) taps[i] = -100;
             pendingTrick = null; journeysSeen = -1; airborne = 0; lastCentreAt = -1; for (int i = 0; i < reactedAt.Length; i++) reactedAt[i] = -100;
             lastCommands = game != null && game.Feedback != null ? game.Feedback.CommandCount : 0;
+            ResetSigh();
         }
 
         /// <summary>A real tap from the player (touch or mouse, not a script).</summary>

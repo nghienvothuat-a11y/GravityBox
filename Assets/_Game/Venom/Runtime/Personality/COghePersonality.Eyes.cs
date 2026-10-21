@@ -50,11 +50,14 @@ namespace GravityBox.Venom
             if (room != null) return HomeMood(out look);
             if (GuideLook.HasValue) { look = GuideLook; return COgheMood.Focus; }   // Intelligence: looking around for the next device
             float now = game.Matter.SimulationTime;
+            bool exhausted = COgheEnergy.TiredIn(game) && COgheEnergy.State == COgheHunger.Exhausted;
+            if (exhausted && Sag > .05f) return COgheMood.Sleepy;   // the sigh at a device (COghePersonality.Weary)
             foreach (var m in game.Mechanisms)
             {
                 if (m == null) continue;
                 if (m.Refusals > 0 && now - m.RefusedAt < 1.3f) { look = m.RefusalPoint; return COgheMood.Sad; }
-                if (m is COgheTapRail t && t.Busy && t.Actor >= 0 && game.Matter.Groups[t.Actor] == group) { look = t.HandPoint; return COgheMood.Focus; }
+                // on its way to the handle: eyes on it, heavy-lidded when it is worn out
+                if (m is COgheTapRail t && t.Busy && t.Actor >= 0 && game.Matter.Groups[t.Actor] == group) { look = t.HandPoint; return exhausted ? COgheMood.Sleepy : COgheMood.Focus; }
             }
             // hungry in a level: heavy eyelids once it stops; exhausted: all the time (COgheEnergy)
             if (COgheEnergy.TiredIn(game) && (COgheEnergy.State == COgheHunger.Exhausted || idle > .8f)) return COgheMood.Sleepy;

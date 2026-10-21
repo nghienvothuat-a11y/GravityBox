@@ -719,6 +719,21 @@ def monster_sfx():
     out["monster_slurp"] = save("monster_slurp", small_room(slide + clicks + bubble, .14), -10)
     return out
 
+# ---------------------------------------------------------------------------------------------------------------------
+# An exhausted COghe at a tapped device (COghePersonality.Weary): a quick breath in, then a long, falling, breathy "haaah".
+def tired_sfx():
+    global RNG
+    RNG = np.random.default_rng(9292)
+    out = {}
+    n = int(.26 * SR)
+    inhale = swept_bandpass(noise(n), glide(n, 900, 1700, 1.2), q=2.5) * env(n, .12, .08) * .3
+    exhale = voice(np.array([420, 400, 360, 310, 270, 245, 235]), .8, (A, O), breath=.32, vib=.012)
+    air = bandpass(noise(len(exhale)), 450, 2200) * env(len(exhale), .04, .45) * .22
+    gap = int(.05 * SR); x = np.zeros(n + gap + len(exhale))
+    x[:n] += inhale; x[n + gap:] += exhale + air
+    out["creature_sigh"] = save("creature_sigh", small_room(x, .14), -8)
+    return out
+
 if __name__ == "__main__":
     sfx()
     # The music is only rebuilt on request: the committed loop is the one that was approved by ear.
@@ -729,6 +744,7 @@ if __name__ == "__main__":
     if "--moments" in sys.argv: moments_sfx()
     if "--feed" in sys.argv: feed_sfx()
     if "--monster" in sys.argv: monster_sfx()
+    if "--tired" in sys.argv: tired_sfx()
     print("written to", os.path.abspath(OUT))
     for f in sorted(os.listdir(OUT)):
         if f.endswith(".ogg"):

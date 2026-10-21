@@ -230,6 +230,9 @@ namespace GravityBox.Venom
                 DrawFeet(state,key,points,ids,count,centre,up,floorPoint,support,sliding);
             }
             if(level.Campaign!=null)CampaignPerformance(points,supports,count,centre,up,velocity,grounded,ids[0]);
+            // An exhausted COghe sighs at a tapped device (COghePersonality.Weary): the skin slumps and rises while it walks.
+            float sag=personality!=null&&count==CohesiveOrganism.ParticleCount?personality.Sag:0;
+            if(sag>.001f)Slump(points,supports,count,up,grounded?floorPoint:centre-up*.03f,sag);
             int physicalCount=count;
             float expression=Mathf.Max(state.Head,state.Dance);
             if (expression < .008f)
@@ -723,6 +726,17 @@ namespace GravityBox.Venom
             tendrils.Clear(); tendrils.SetVertices(vertices); tendrils.SetNormals(normals); tendrils.SetTriangles(triangles,0); tendrils.RecalculateBounds();
         }
         private static float Smooth(float min, float max, float value) => Mathf.SmoothStep(0,1,Mathf.InverseLerp(min,max,value));
+        // Lower and wider about the floor point: a sag of the whole body, skin only.
+        private void Slump(Vector3[] points,float[] supports,int count,Vector3 up,Vector3 ground,float sag)
+        {
+            for(int i=0;i<count;i++)
+            {
+                Vector3 w=transform.TransformPoint(points[i]),d=w-ground;
+                float h=Vector3.Dot(d,up);Vector3 flat=d-up*h;
+                points[i]=transform.InverseTransformPoint(ground+flat*(1+.2f*sag)+up*(h*(1-.32f*sag)));
+                supports[i]*=1+.06f*sag;
+            }
+        }
         private static float Noise(int key) => Mathf.Repeat(Mathf.Sin(key*127.1f+19.7f)*43758.5453f,1);
         private void OnDestroy() { if (tendrils != null) Destroy(tendrils); }
     }
