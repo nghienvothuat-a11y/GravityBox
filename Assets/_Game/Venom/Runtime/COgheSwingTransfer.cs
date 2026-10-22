@@ -42,6 +42,10 @@ namespace GravityBox.Venom
 
         private VenomCampaign owner;
         private VenomCampaignMotion.Order order;
+        // Clever: where COghe stands to take the ring; it waits while COghe is on the rope.
+        public override bool GuidePoint(VenomCampaign game, int anchor, out Vector3 point)
+        { point = StandPoint != null ? StandPoint.position : default; return StandPoint != null; }
+        public override bool Occupies(VenomCampaign game, int anchor) => Phase != SwingPhase.Idle;
         private int replans;
         private readonly bool[] member = new bool[CohesiveOrganism.ParticleCount];
         private readonly Vector3[] offset = new Vector3[CohesiveOrganism.ParticleCount];

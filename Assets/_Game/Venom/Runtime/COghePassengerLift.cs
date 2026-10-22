@@ -25,6 +25,7 @@ namespace GravityBox.Venom
         public bool ReturnWhenDisabled;
         public Transform BoardPoint;
         public bool Moving {get;private set;}
+        public override bool Occupies(VenomCampaign game,int anchor)=>Moving;
         public bool Boarding {get;private set;}
         public int Trips {get;private set;}
         public ButtonState Button {get;private set;}

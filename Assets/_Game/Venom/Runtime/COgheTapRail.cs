@@ -265,6 +265,30 @@ namespace GravityBox.Venom
             if (!CrateFaces || !HasStops || Busy) return false;
             return PlanCrateTravel(out _, out float goal) && SideFree(sideways, goal);
         }
+        /// <summary>Where Clever leads COghe to work this rail: its stand point; for a crate, the stand point of the face a tap
+        /// with no face chosen would take (the nearest one with room and a route), not the face last used. The crate is not
+        /// taken.</summary>
+        public Vector3 GuideStandPoint(int anchor)
+        {
+            if (!CrateFaces || !HasStops || Busy || owner == null || !PlanCrateTravel(out _, out float goal)) return StandPoint;
+            int pull = goal > Rail.Position ? 1 : -1;
+            var faces = new List<(int end, int side)> { (1, 0), (-1, 0), (0, 1), (0, -1) };
+            Vector3 me = owner.Motion.Centre(anchor);
+            faces.Sort((f, g) => (FaceStand(f.end, f.side) - me).sqrMagnitude.CompareTo((FaceStand(g.end, g.side) - me).sqrMagnitude));
+            Vector3 keptStance = stance, fallback = StandPoint; bool keptBack = backSide; int keptAcross = across;
+            owner.Motion.BuildGraph();
+            try
+            {
+                foreach (var (e, sw) in faces)
+                {
+                    if (sw != 0 ? !SideFree(sw, goal) : !StandFree(e, e == pull, goal)) continue;
+                    Hold(e, sw);
+                    if (owner.Motion.FindPath(me, StandPoint, route, true, true)) return StandPoint;
+                }
+                return fallback;
+            }
+            finally { stance = keptStance; backSide = keptBack; across = keptAcross; route.Clear(); }
+        }
         // A distant blocker limits travel; it must not make an otherwise free crate unresponsive.
         // After a partial journey continue if the blocker moved, otherwise reverse to remain recoverable.
         private bool PlanCrateTravel(out int next, out float goal)

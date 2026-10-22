@@ -639,6 +639,24 @@ namespace GravityBox.Venom
             return null;
         }
 
+        // Clever: just outside the nearest open mouth COghe has a route to (where a tap on the tube would send it first).
+        public override bool GuidePoint(VenomCampaign owner,int anchor,out Vector3 point)
+        {
+            point=default;if(game==null)return false;
+            Vector3 centre=game.Motion.Centre(anchor);float best=float.PositiveInfinity;var path=new System.Collections.Generic.List<Vector3>();
+            game.Motion.BuildGraph();
+            for(int n=0;n<Nodes.Length;n++)
+            {
+                if(Nodes[n].Terminal!=TerminalKind.Entry||!IsEntryOpen(n))continue;
+                Vector3 approach=ClosestGripPoint(NodeWorld(n)-EntryInwardWorld(n)*(Radius+.008f));
+                float d=Vector3.Distance(centre,approach);if(d>=best)continue;
+                if(!game.Motion.FindPath(centre,approach,path,true,true,Nodes[n].KeepOff))continue;
+                best=d;point=approach;
+            }
+            return best<float.PositiveInfinity;
+        }
+        public override bool Occupies(VenomCampaign owner,int anchor)=>AnyTravelling||AnyApproaching||AnyChoice||AnyWaiting;
+
         private int EntryNearGroup(int anchor)
         {
             Vector3 centre=game.Motion.Centre(anchor);int best=-1;float distance=.11f;

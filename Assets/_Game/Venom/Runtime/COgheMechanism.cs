@@ -35,6 +35,10 @@ namespace GravityBox.Venom
         }
         /// <summary>A tap this mechanism would take even while COghe holds a loose prop (the prop is let go first).</summary>
         public virtual bool ClaimsTapWhileHolding(Ray ray, float nearestSolidDistance) => false;
+        /// <summary>Where the Intelligence ability (Clever) leads COghe to work this device (false: to the device itself).</summary>
+        public virtual bool GuidePoint(VenomCampaign game, int anchor, out Vector3 point) { point = default; return false; }
+        /// <summary>COghe is in the middle of using this device (Clever waits rather than walk it away).</summary>
+        public virtual bool Occupies(VenomCampaign game, int anchor) => false;
         public abstract void ResetMechanism(VenomCampaign game);
         public abstract void StepMechanism(VenomCampaign game, float dt);
     }

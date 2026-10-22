@@ -10,6 +10,7 @@ namespace GravityBox.Venom
     /// never works a device itself; once the player has, it remembers the step after, up to as many steps as its
     /// Intelligence level. Past that it stops and wonders (the question-mark shape). Steps advance only in solution order,
     /// so a player who does something else is led back to the earliest step not done. Intelligence 0: nothing happens.
+    /// While COghe is split Clever is off (Mrk 22/10/2026).
     /// </summary>
     public sealed class COgheIntelligence : MonoBehaviour
     {
@@ -20,7 +21,11 @@ namespace GravityBox.Venom
         private readonly List<COgheSolutionSteps.Step> steps = new List<COgheSolutionSteps.Step>();
         private readonly List<Component> targets = new List<Component>();
         private Phase phase;
-        private float phaseStart, guidedInput = -1, puzzledInput = -1;
+        private float phaseStart, guidedInput = -1, puzzledInput = -1, stillSince;
+        private Vector3 stillFrom;
+        /// <summary>A guided walk is given up (COghe wonders instead of grinding against a wall) when COghe stays within
+        /// <see cref="StallMove"/> m of one spot for <see cref="StallTime"/> s.</summary>
+        public const float StallTime = 10f, StallMove = .02f;
         private int journeysAtStep;
         private bool deviceTouched;
 
@@ -37,14 +42,20 @@ namespace GravityBox.Venom
         public int GuidedStep { get; private set; } = -1;
         /// <summary>Times COghe stopped and wondered because it remembered no further.</summary>
         public int Puzzled { get; private set; }
+        /// <summary>Guided walks given up because COghe made no headway.</summary>
+        public int Stalls { get; private set; }
         public bool Looking => phase == Phase.Looking;
+        /// <summary>COghe is in more than one part: Clever is off.</summary>
+        public bool Split => game != null && game.Matter != null && game.Matter.TotalFragmentCount > 1;
+        /// <summary>Guided walks started since the level began.</summary>
+        public int Walks { get; private set; }
 
         public void Initialize(VenomCampaign owner) { game = owner; game.MechanismTouched += OnTouched; ResetForLevel(); }
         private void OnDestroy() { if (game != null) game.MechanismTouched -= OnTouched; }
 
         public void ResetForLevel()
         {
-            steps.Clear(); targets.Clear(); Progress = 0; GuidedStep = -1; Puzzled = 0; phase = Phase.Waiting;
+            steps.Clear(); targets.Clear(); Progress = 0; GuidedStep = -1; Puzzled = 0; Stalls = 0; Walks = 0; phase = Phase.Waiting;
             guidedInput = puzzledInput = -1; deviceTouched = false; ClearLook();
             if (game == null || game.Definition == null || game.Owner == null) return;
             var recorded = COgheSolutionSteps.For(game.Definition.Id); if (recorded == null) return;
@@ -79,6 +90,9 @@ namespace GravityBox.Venom
             if (game == null || targets.Count == 0) return;
             while (Progress < targets.Count && StepDone(Progress)) { Progress++; BeginStep(); }
             if (game.Owner.Completed || game.Owner.Lost || game.InTube || game.Attached) { phase = Phase.Waiting; return; }
+            // Mrk 22/10/2026: once COghe is split, Clever has no effect (it neither leads nor wonders) until it is whole
+            // again; the lesson still counts the steps the player works meanwhile.
+            if (Split) { if (phase == Phase.Looking) ClearLook(); phase = Phase.Waiting; return; }
             if (Remembered <= 0 || Progress >= targets.Count) { phase = Phase.Waiting; return; }
 
             float now = game.Matter.SimulationTime, input = game.LastInputTime;
@@ -103,10 +117,19 @@ namespace GravityBox.Venom
                     if (now - phaseStart < LookTime) return;
                     ClearLook();
                     game.Motion.Move(game.Motion.Selected, Destination(Progress));
-                    GuidedStep = Progress; guidedInput = input; phase = Phase.Walking; phaseStart = now;
+                    GuidedStep = Progress; guidedInput = input; phase = Phase.Walking; phaseStart = stillSince = now; Walks++;
+                    stillFrom = game.Motion.Centre(game.Motion.Selected);
                     return;
                 case Phase.Walking:
-                    if (game.Motion.Get(game.Motion.Selected) == null || now - phaseStart > 30 || input != guidedInput) phase = Phase.Waiting;
+                    if (game.Motion.Get(game.Motion.Selected) == null || now - phaseStart > 30 || input != guidedInput) { phase = Phase.Waiting; return; }
+                    Vector3 centre = game.Motion.Centre(game.Motion.Selected);
+                    if (Vector3.Distance(centre, stillFrom) > StallMove) { stillFrom = centre; stillSince = now; }
+                    else if (now - stillSince > StallTime)
+                    {
+                        // no way through after all: stop and wonder, until the player's next touch
+                        game.Motion.Cancel(game.Motion.Selected); phase = Phase.Waiting; Stalls++;
+                        game.Personality?.Force(COgheAct.Shape, COgheShape.Question);
+                    }
                     return;
             }
         }
@@ -114,8 +137,13 @@ namespace GravityBox.Venom
         private void ClearLook() { if (game != null && game.Personality != null) game.Personality.GuideLook = null; }
         private bool Busy()
         {
-            if (game.Motion.Get(game.Motion.Selected) != null) return true;
-            foreach (var m in game.Mechanisms) if (m is COgheTapRail rail && rail.Busy) return true;
+            int selected = game.Motion.Selected;
+            if (game.Motion.Get(selected) != null) return true;
+            foreach (var m in game.Mechanisms)
+            {
+                if (m is COgheTapRail rail && rail.Busy) return true;
+                if (m.Occupies(game, selected)) return true;   // in a tube, on a rope, riding a lift: wait for the player
+            }
             return game.Personality != null && game.Personality.Act != COgheAct.None && game.Personality.Act != COgheAct.Home;
         }
 
@@ -137,7 +165,7 @@ namespace GravityBox.Venom
         private Vector3 Destination(int index)
         {
             var target = targets[index];
-            if (target is COgheTapRail rail) return rail.StandPoint;
+            if (target is COgheTapRail rail) return rail.GuideStandPoint(game.Motion.Selected);   // a crate: a face it can work
             Vector3 centre = game.Motion.Centre(game.Motion.Selected), at = target.transform.position;
             if (target is COgheTissueSensor)
             {
@@ -146,6 +174,8 @@ namespace GravityBox.Venom
                 if (away.sqrMagnitude < .0001f) away = -game.Root.forward;
                 return at + away.normalized * .09f;
             }
+            // a tube's mouth, a rope swing's ring stand: not the device's own origin, which can be mid-air
+            if (target is COgheMechanism device && device.GuidePoint(game, game.Motion.Selected, out Vector3 point)) return point;
             return at;
         }
     }
