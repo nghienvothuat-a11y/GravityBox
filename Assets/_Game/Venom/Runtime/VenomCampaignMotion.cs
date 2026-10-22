@@ -316,7 +316,7 @@ namespace GravityBox.Venom
             bool tubeDrop=game.Tube!=null&&game.Tube.Entrance!=null&&
                 Vector3.Distance(game.Tube.Entrance.Closest(world),world)<.05f;
             var o=new Order{Anchor=anchor,Target=game.Root.InverseTransformPoint(world),Holding=hold,Exit=exit,
-                AvoidSlippery=!exit&&!tubeDrop,KeepOff=keepOff,CommandId=++nextCommandId};
+                AvoidSlippery=(!exit||game.Definition.PreferGripForExit)&&!tubeDrop,KeepOff=keepOff,CommandId=++nextCommandId};
             int grips=0;bool recovering=false;
             for(int i=0;i<32;i++)if(game.Matter.Groups[i]==game.Matter.Groups[anchor])
             {

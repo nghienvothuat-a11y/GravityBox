@@ -98,7 +98,13 @@ namespace GravityBox.Editor
    var plate=RoofPlate(c,"Roof plate",new Vector3(-.24f,.094f,0),Vector3.right,.18f,new Vector3(.18f,.006f,.56f));
    var b=ViewTask(c,"B",new Vector3(-.24f,-.277f,-.06f),Vector3.right,.08f,floor);   // clear of the walls: no step up to the glass
    ViewLink(c,b.Rail,plate,false,null);
-   ChapterLift(c,new Vector3(-.20f,-.282f,.165f),.15f,b.Rail,"L");
+   var lift=ChapterLift(c,new Vector3(-.20f,-.282f,.165f),.15f,b.Rail,"L");
+   // The exit is already visible: use the same roof route as a tap on the far floor. The shortest route instead tries
+   // the slick divider, or drops off the ceiling early into the slick wall strip on the wrong side of that divider.
+   c.Definition.PreferGripForExit=true;
+   // A missed ceiling transfer must not strand COghe below the raised tray. Calling the empty tray only lowers it;
+   // the next ascent still requires boarding and pressing the button with the whole body on the deck.
+   lift.EmptyTrayCallFromLowerLanding=true;
   }
 
   // G4 · Ba kệ: A (floor) uncovers the gap in the left wall's tape; the back shelf's pad P latches a roof plate across the

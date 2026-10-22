@@ -161,6 +161,7 @@ namespace GravityBox.Editor
    if(def==null){def=ScriptableObject.CreateInstance<VenomCampaignDefinition>();AssetDatabase.CreateAsset(def,path);}
    def.Id="coghe.spatial.plus."+d.Key.ToLowerInvariant();def.Order=position;def.Title=$"{position:00} · {d.Title}";def.Lesson=d.Lesson;def.ViewOnly=true;def.CanRotate=false;def.Passive=false;def.Boss=d.Boss;
    def.ProgressKey="coghe.spatial.pilot";def.CameraEuler=d.Camera;def.CameraZones=Array.Empty<VenomCameraZone>();def.InitialCameraZone=-1;
+   def.PreferGripForExit=false; // the level author may opt in; a rebuild must not inherit an older policy
    def.SceneSequence=SpatialSceneNames();game.Definition=def;
    owner.Apparatus=new GameObject("Apparatus").transform;owner.Apparatus.SetParent(owner.transform,false);
    var pivot=new GameObject("Fixed chamber",typeof(Rigidbody),typeof(BoxRotationController));pivot.transform.SetParent(owner.Apparatus,false);pivot.GetComponent<Rigidbody>().isKinematic=true;pivot.GetComponent<Rigidbody>().useGravity=false;owner.Rotation=pivot.GetComponent<BoxRotationController>();

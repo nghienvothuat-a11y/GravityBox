@@ -17,8 +17,8 @@ namespace GravityBox.Venom
         // Optional fixed call panels at the landings (0 = lower stop, 1 = upper stop; null = none) and props carried as cargo.
         public Transform[] CallPanels=System.Array.Empty<Transform>();
         public bool CarriesProps;
-        // Cargo stations may call an empty raised tray by tapping the tray itself while standing at its lower
-        // landing. This is a call DOWN, never remote operation UP; passenger-only lifts leave it off.
+        // Recovery-enabled stations may call an empty raised tray by tapping its button while standing at the lower
+        // landing. This is a call DOWN, never remote operation UP; other passenger lifts leave it off.
         public bool EmptyTrayCallFromLowerLanding;
         // Dead-man enable: while RequiredRail is not at its end the tray may not rise, and a raised tray returns to its
         // lower landing under the same finite, damped motor (nothing is snapped; tissue on the deck rides down).

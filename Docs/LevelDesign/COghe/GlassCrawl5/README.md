@@ -68,6 +68,10 @@ mới có thể đến được lỗ thoát. Có thể thiết kế theo nhiều
 - Bố cục: vách trơn chia hai phòng, cách trần 10 cm. Dải trơn trên kính trước/sau và trên trần ngay trên vách. Tay nắm B
   (san hô) trượt tấm bám được dưới trần, phủ dải trơn. Thang máy phòng trái chỉ chạy khi đã kéo B (RequiredRail).
 - Lời giải: kéo B → lên thang máy, bấm nút → bò tường sau lên trần, qua tấm, xuống tường phải, ra lỗ thoát.
+- Sửa thao tác màn hiển thị 26 (22/10/2026): sau khi thang dừng trên, chạm thẳng lỗ thoát cũng dùng đường bám
+  qua trần như chạm sàn phòng phải (`PreferGripForExit`). Nếu rơi về phòng trái, chạm nút trên thang trống để gọi
+  xuống; lần đi lên tiếp theo vẫn phải lên khay và bấm nút. Tái sử dụng `EmptyTrayCallFromLowerLanding`, chỉ bật
+  ở thang này, không đổi quy tắc bấm thang Boss 10. Xem [kiểm chứng](../../../Verification/COgheCeiling26/README.md).
 - Đi tắt: sàn không leo được (băng); vách trơn; dải trơn chặn đường vòng qua kính; thang khoá bởi B.
 - Rủi ro: COghe trượt ở mép dải trơn trên trần có thể rơi lên đỉnh vách. Dải trơn đặt hẳn về phía phòng trái để rơi
   luôn về phòng trái; kiểm bằng test đi tắt.

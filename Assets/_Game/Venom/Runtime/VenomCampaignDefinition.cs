@@ -25,6 +25,8 @@ namespace GravityBox.Venom
         public int Order;
         public bool CanRotate=true, Boss, Passive;
         public bool ViewOnly;
+        [Tooltip("Use the same gripping-surface route for a direct exit tap as for ordinary movement. Leave off in lessons that deliberately teach slipping on a direct exit attempt.")]
+        public bool PreferGripForExit;
         public Vector3 CameraEuler=new Vector3(24,-25,0);
         public float ViewRadius=.48f; // Legacy capture/archived framing fallback.
         public VenomCameraZone[] CameraZones=Array.Empty<VenomCameraZone>();

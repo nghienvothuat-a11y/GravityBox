@@ -1,0 +1,166 @@
+{
+  "commit": "511b90c15e3ca872041168b3e176dee7f6601918",
+  "files": {
+    "Assets/_Game/Editor/COgheGlassCrawlLevels.cs": "09272b957abc876d5ff89984b8cdc5802ee1ea7c2447f1a11a8f2f5a40d63668",
+    "Assets/_Game/Editor/COgheSpatialPlusBuilder.cs": "f21de508d912e91b049a5f0b066c5bd9edbed4b84cfcb0c31f4fb2d0b6d3d5d2",
+    "Assets/_Game/Venom/Runtime/VenomCampaignDefinition.cs": "d876322b5e7d075d051285581c29896103122fdc27c7681517812df3124dd768",
+    "Assets/_Game/Venom/Runtime/VenomCampaignMotion.cs": "af2b72938a7407b3d80ad104664731f9420794174bc9f721b22d504ca9360db3",
+    "Assets/_Game/Venom/Runtime/COghePassengerLift.cs": "591d3ec7d1357d43d5c8269be16c93a4f60cc23be1ac319790c8140effdf8335",
+    "Assets/_Game/Venom/SpatialCampaign/Definitions/SpatialPlusG3.asset": "dbe3bc8d52b9831a0f64f0fd4618bdb96de9e9d10d35abceb88e666ef44cc8c7",
+    "Assets/_Game/Venom/SpatialCampaign/COgheSpatialPlusG3.unity": "0d73ae14460a2449b504678ada2e79c92266d876d6be7d4927e1d8a0fb7e90cf",
+    "Assets/_Game/Tests/PlayMode/COgheCeiling26Tests.cs": "e3ad4e151b5ac92f850ce9aa76120f4d24489858b35184b4e66e733cf79407ae"
+  },
+  "date": "2026-10-22",
+  "branch": "NewGraphic",
+  "unity": "6000.3.19f1",
+  "level": {
+    "display": 26,
+    "content": "G3",
+    "stableId": "coghe.spatial.plus.g3"
+  },
+  "runs": {
+    "ceiling26-before": {
+      "xml": "Artifacts/Tests/ceiling26-before.xml",
+      "sha256": "6891f09d13b271e1b416dd5711f46bfc62da41c79f959d9bccd6bd64f294fa9a",
+      "result": "Failed(Child)",
+      "passed": 2,
+      "failed": 2,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26ExitFromUpperLanding",
+          "result": "Failed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26FloorFromUpperLanding",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26RecallAfterLeavingUpperLanding",
+          "result": "Failed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26RoofFromUpperLanding",
+          "result": "Passed"
+        }
+      ]
+    },
+    "ceiling26-after": {
+      "xml": "Artifacts/Tests/ceiling26-after.xml",
+      "sha256": "20dc15bc0d7935cf7197738f0cb23c7dcfd0dfef0fc769b6e59d734454912b43",
+      "result": "Passed",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26ExitFromUpperLanding",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26FloorFromUpperLanding",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26RecallAfterLeavingUpperLanding",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26RoofFromUpperLanding",
+          "result": "Passed"
+        }
+      ]
+    },
+    "ceiling26-regression": {
+      "xml": "Artifacts/Tests/ceiling26-regression.xml",
+      "sha256": "72c8f239afebfe49911d33214ea61af8a33a7e7185c5f236bd8fc908f9488dcf",
+      "result": "Passed",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26DepartureDuringRiseCanRecover",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26ExitFromUpperLanding",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26ExitFromUpperLandingAt30Fps",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26Film",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26FloorFromUpperLanding",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26HighGlassFromUpperLanding",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.Ceiling26RecallAfterLeavingUpperLanding",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.GlassCrawlG3NoShortcut",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.GlassCrawlG3SolveAt30Fps",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.GlassCrawlG3SolveAtFrameRate",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusG3Solve",
+          "result": "Passed"
+        },
+        {
+          "name": "GravityBox.Tests.COgheSpatialCampaignTests.SpatialPlusG3Wander",
+          "result": "Passed"
+        }
+      ]
+    }
+  },
+  "fullRegression": {
+    "status": "interrupted",
+    "reason": "Task stopped before Unity produced the final XML; no full-suite pass claimed for ceiling26 changes.",
+    "log": "Artifacts/Tests/ceiling26-full-regression.log",
+    "logSha256": "45e208d348a646ee4af70268a23fa60774e7197a110cba58b17feebdf774b433",
+    "finalXmlPresent": false
+  },
+  "deviceBuild": {
+    "platform": "iOS",
+    "architecture": "ARM64",
+    "configuration": "Release",
+    "team": "4J7G48PCR2",
+    "catalogScenes": 67,
+    "path": "/Users/mrk/GravityBox/Builds/SpatialLab/iOS-Ceiling26/COghe.app",
+    "sourceSnapshotMatched": true,
+    "hashes": {
+      "Builds/SpatialLab/iOS-Ceiling26/COghe.app/COghe": "085389f96e760ad6c4ae40df3cc6d1dd167aab5c52bd509a2ef97432d09fbd49",
+      "Builds/SpatialLab/iOS-Ceiling26/COghe.app/Frameworks/UnityFramework.framework/UnityFramework": "c04195417787d85b881226a85a99963342447a355c34d2f64f6c33bee500e36a",
+      "Artifacts/Ceiling26/ios/unity-export.log": "e7f7e8a45620881b4067f31c06289b8f91019e62bef01a840f06bc90623071af",
+      "Artifacts/Ceiling26/ios/xcode-build.log": "778f5a71305d2a72fe7e29a4b483171b50b93a2c9039904807a425cb7f32a2fa"
+    },
+    "install": "success",
+    "signatureVerified": true,
+    "bundleVersion": "0",
+    "launch": "success",
+    "preferencesPreservedExactly": true,
+    "preferencesKeys": 34,
+    "runningProcess": {
+      "pid": 15577,
+      "installedApplication": "9271C7FC-BD76-419C-B882-F0E3EF3E22E2",
+      "matchesInstalledBundle": true
+    }
+  }
+}

@@ -176,7 +176,10 @@ namespace GravityBox.Tests
      {
       // A ball/prop settling on a pad is the consequence of a player action, not another instruction for COghe.
       bool tissue=game.Matter.Bodies.Any(body=>pads[i].Holds(body.position));
-      if(pads[i].Active&&!active[i]&&(pads[i].Weights.Length==0||tissue))Add(pads[i],COgheSolutionSteps.PadKind);
+      // Crossing a pad on the walk to a handle is not a requested puzzle step (G11 crosses P on its way to A).
+      bool passing=rails.Any(r=>r.Phase==COgheTapRail.TaskPhase.Approaching&&
+       Enumerable.Range(0,32).Any(p=>r.Owns(p)&&pads[i].Holds(game.Matter.Bodies[p].position)));
+      if(pads[i].Active&&!active[i]&&!passing&&(pads[i].Weights.Length==0||tissue))Add(pads[i],COgheSolutionSteps.PadKind);
       active[i]=pads[i].Active;
      }
     };

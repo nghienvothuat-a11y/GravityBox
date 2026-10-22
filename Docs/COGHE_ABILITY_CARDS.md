@@ -38,6 +38,33 @@ Emotion animations (list in the design reply to Mrk, 16/10).
     not refuse.
   - Re-record after changing a level's devices or solution.
 
+## Clever correction — 22/10/2026
+
+The iPhone playtest reported Clever Lv 2 doing nothing at display level 25 (G8).
+The same failure reproduces with saved Intelligence = 2: the six glass-road
+replacements had never been added to `SolutionSteps.json`. Without a lesson,
+Clever returned before issuing any approach. The missing lessons are now recorded
+from completed reference solves for display 8/11/25/27/59/63 and prototypes 66/67. G8 is **A → B → C**:
+Lv 2 approaches A, waits for the player to use it, approaches B, and leaves C to
+the player. A pad crossed while approaching a rail is excluded from recording;
+G11 teaches its gear A before pad P, then the swing.
+
+Retry and returning from Home also reset Clever after the mechanisms reset.
+The last-input timestamp is now captured **after** the simulation clock rewinds,
+so a 17-second previous attempt cannot add 17 seconds to the next idle wait.
+Lesson progress, journey counters and the last guided step start fresh; the
+player's saved ability levels and progress are unchanged.
+
+Regression coverage is in `COgheCleverRegressionTests.cs`: all current catalog
+entries and paths, saved Lv 2 at G8 with 30/60 Hz frame cadence, A/B approaches
+without automatic device operation, the Lv 2 limit, Retry, and the product UI
+with personality/reading enabled and real pointer input. Baseline tests reproduce
+both the missing G8 lesson and stale reset clock before the fix. The focused
+campaign checks passed 6/6 and product checks 2/2; this is not a phone performance
+measurement. Full PlayMode regression passed **989 tests, 0 failures**, with 54
+opt-in Explicit tests skipped (1043 discovered; 4034 s). See the
+[verification record](Verification/COgheClever/README.md).
+
 ## UI — child-friendly redesign, 17/10/2026
 
 Audience requested by Mrk: ages 4–15. Illustrations carry the primary meaning;

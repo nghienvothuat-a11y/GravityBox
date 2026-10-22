@@ -1,0 +1,219 @@
+{
+  "date": "2026-10-22",
+  "branch": "NewGraphic",
+  "base_commit": "511b90c15e3ca872041168b3e176dee7f6601918",
+  "source_sha256": {
+    "Assets/_Game/Venom/Runtime/VenomCampaign.cs": "e22d2043d01b7e6ca62cef98ad7c77005c7b2dadcece57a3c30dd032d488915e",
+    "Assets/_Game/Venom/Resources/COgheUI/SolutionSteps.json": "86e18513782605a15354fcc297db2d1f2261481673752b72e760af80f3701e42",
+    "Assets/_Game/Tests/PlayMode/COgheAbilityTests.cs": "322e7ea97cbf6240a2a1c8fcb124d20b69d5bbc6a90bfa06c33da8b00d0c4a8d",
+    "Assets/_Game/Tests/PlayMode/COgheCleverRegressionTests.cs": "a00560dc1ac3bc92cf21a13f80f92e50205ba052fc2886b1548abdba197769bd"
+  },
+  "lesson_book_entries": 74,
+  "catalog_entries_checked": 67,
+  "baseline_reproduction": {
+    "result": "Failed(Child)",
+    "total": "2",
+    "passed": "0",
+    "failed": "2",
+    "skipped": "0",
+    "duration": "1.9700052",
+    "start-time": "2026-10-22 06:05:13Z",
+    "end-time": "2026-10-22 06:05:15Z",
+    "xml": "Artifacts/Tests/clever-before.xml",
+    "xml_sha256": "567bd0883e525f9382b924300c3f689772b4b24f51a24a50bbba3e2c5ba0a29c",
+    "cases": [
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.CleverLevelTwoGuidesLevel25At60Fps",
+        "result": "Failed",
+        "duration": "0.815931",
+        "failure": "  Level 25 has A, B and C in order\n  Expected: 3\n  But was:  0\n"
+      },
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.CleverRetryRestartsItsIdleClock",
+        "result": "Failed",
+        "duration": "1.105493",
+        "failure": "  Retry must not retain the previous attempt's clock\n  Expected: 0.0d +/- 0.0099999997764825821d\n  But was:  16.999826431274414d\n"
+      }
+    ]
+  },
+  "record_missing_lessons": {
+    "result": "Passed",
+    "total": "1",
+    "passed": "1",
+    "failed": "0",
+    "skipped": "0",
+    "duration": "23.1922052",
+    "start-time": "2026-10-22 06:05:58Z",
+    "end-time": "2026-10-22 06:06:21Z",
+    "xml": "Artifacts/Tests/clever-record-missing.xml",
+    "xml_sha256": "79e5eaab05dd064c1f405b926eb4b78729b017bcd372fb8b6a94f6ae972b54a2",
+    "cases": [
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.RecordSolutionSteps",
+        "result": "Passed",
+        "duration": "23.150828"
+      }
+    ]
+  },
+  "record_corrected_g11": {
+    "result": "Passed",
+    "total": "1",
+    "passed": "1",
+    "failed": "0",
+    "skipped": "0",
+    "duration": "3.2364",
+    "start-time": "2026-10-22 06:13:09Z",
+    "end-time": "2026-10-22 06:13:12Z",
+    "xml": "Artifacts/Tests/clever-record-g11.xml",
+    "xml_sha256": "d91588fce754c418d191f46a8eed38266a105205e2092c01ada0c3213d2ae919",
+    "cases": [
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.RecordSolutionSteps",
+        "result": "Passed",
+        "duration": "3.189651"
+      }
+    ]
+  },
+  "targeted": {
+    "result": "Passed",
+    "total": "6",
+    "passed": "6",
+    "failed": "0",
+    "skipped": "0",
+    "duration": "77.9391337",
+    "start-time": "2026-10-22 06:07:26Z",
+    "end-time": "2026-10-22 06:08:43Z",
+    "xml": "Artifacts/Tests/clever-targeted.xml",
+    "xml_sha256": "7e816ba44e498574a3c227de6172d7e42525051f27b7ae17a77c9931455643e8",
+    "cases": [
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.CleverBookCoversCurrentCatalogAndResolvesEveryStep",
+        "result": "Passed",
+        "duration": "25.482810"
+      },
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.CleverLevelTwoGuidesLevel25At30Fps",
+        "result": "Passed",
+        "duration": "15.868314"
+      },
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.CleverLevelTwoGuidesLevel25At60Fps",
+        "result": "Passed",
+        "duration": "31.121353"
+      },
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.CleverRetryRestartsItsIdleClock",
+        "result": "Passed",
+        "duration": "1.299130"
+      },
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.IntelligenceLeadsToRememberedStepsThenWonders",
+        "result": "Passed",
+        "duration": "1.269294"
+      },
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.Refined21NeedsTwoSimultaneousRoles",
+        "result": "Passed",
+        "duration": "2.815865"
+      }
+    ]
+  },
+  "product": {
+    "result": "Passed",
+    "total": "2",
+    "passed": "2",
+    "failed": "0",
+    "skipped": "0",
+    "duration": "35.4350843",
+    "start-time": "2026-10-22 06:09:58Z",
+    "end-time": "2026-10-22 06:10:33Z",
+    "xml": "Artifacts/Tests/clever-product.xml",
+    "xml_sha256": "5bbba0e3de511693084c8bfb63899da6c1a14d8633427bd2db75c1f322f4a94b",
+    "cases": [
+      {
+        "name": "GravityBox.Tests.COgheProductUITests.CleverLevel25WorksWithSavedCardAndProductPresentation",
+        "result": "Passed",
+        "duration": "31.372292"
+      },
+      {
+        "name": "GravityBox.Tests.COgheProductUITests.CleverReadsButPlayerCommandRemainsImmediate",
+        "result": "Passed",
+        "duration": "4.028042"
+      }
+    ]
+  },
+  "full_regression": {
+    "result": "Passed",
+    "total": "1043",
+    "passed": "989",
+    "failed": "0",
+    "skipped": "54",
+    "duration": "4034.1832495",
+    "start-time": "2026-10-22 06:14:12Z",
+    "end-time": "2026-10-22 07:21:27Z",
+    "xml": "Artifacts/Tests/clever-full-regression.xml",
+    "xml_sha256": "8f50b9cd0c146cca3318d2a1d3a33892933774bff78639d409b2f515d7c9717e",
+    "cases": [
+      {
+        "name": "GravityBox.Tests.COgheProductUITests.CleverLevel25WorksWithSavedCardAndProductPresentation",
+        "result": "Passed",
+        "duration": "30.970177"
+      },
+      {
+        "name": "GravityBox.Tests.COgheProductUITests.CleverReadsButPlayerCommandRemainsImmediate",
+        "result": "Passed",
+        "duration": "3.981713"
+      },
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.CleverBookCoversCurrentCatalogAndResolvesEveryStep",
+        "result": "Passed",
+        "duration": "25.183297"
+      },
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.CleverGlassRoadLessonStartsWithTheGearBeforeThePad",
+        "result": "Passed",
+        "duration": "0.032926"
+      },
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.CleverLevelTwoGuidesLevel25At30Fps",
+        "result": "Passed",
+        "duration": "15.847241"
+      },
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.CleverLevelTwoGuidesLevel25At60Fps",
+        "result": "Passed",
+        "duration": "31.115709"
+      },
+      {
+        "name": "GravityBox.Tests.COgheSpatialCampaignTests.CleverRetryRestartsItsIdleClock",
+        "result": "Passed",
+        "duration": "1.278589"
+      }
+    ]
+  },
+  "device_validation": {
+    "unity_version": "6000.3.19f1",
+    "configuration": "Release",
+    "architecture": "arm64",
+    "scene_count": 67,
+    "bundle_id": "com.gravityboxlab.venom",
+    "version": "0.1.0",
+    "build_succeeded": true,
+    "installed": true,
+    "launched": true,
+    "launch_blocker": null,
+    "saved_intelligence": 2,
+    "cards_items_drops_preserved": true,
+    "completed_count_before_and_after": 27,
+    "compiled_framework_sha256": "71143749929996a1f68efb2037046d559297c41b315a57a0221adee191321d31",
+    "resources_sha256": "ec0a2e8a11641e6e58946696fbf7f326e5b46879c02d28a7fcc87609f891dfb5",
+    "packaged_g8_lesson": true,
+    "behavior_tested_on_device": false,
+    "running_process_confirmed": true
+  },
+  "limits": [
+    "30/60 Hz cases exercise simulation/render cadence in Unity tests, not device FPS.",
+    "Catalog coverage checks lesson presence and target paths; automated A-to-B approach behavior is directly exercised on display 25.",
+    "The full suite skips 54 opt-in Explicit tests. The relevant solution recorder was explicitly run separately."
+  ]
+}

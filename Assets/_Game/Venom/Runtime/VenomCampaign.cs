@@ -125,9 +125,10 @@ namespace GravityBox.Venom
                 Motion.SpeedScale=product?COgheAbilities.SpeedScale:1;
                 COgheEnergy.ApplyRests(Motion,product?COgheEnergy.State:COgheHunger.Fed);   // hungry: stops for breath
             }
-            if(Matter!=null)LastInputTime=Matter.SimulationTime;
             if(Owner==null||Matter==null)return;
             habitat?.Leave();Owner.Rotation.ResetState();Owner.ResetCampaignState();
+            // ResetCampaignState rewinds simulation time. Home/Retry must not leave Clever waiting for the old clock.
+            LastInputTime=Matter.SimulationTime;
             for(int i=0;i<Matter.Bodies.Length;i++)
             {var shape=Matter.Bodies[i].GetComponent<Collider>();if(shape!=null)shape.enabled=true;}
             foreach(var p in Props)p.ResetTo(Root);
@@ -147,6 +148,7 @@ namespace GravityBox.Venom
             foreach(var p in Props)p.Body.transform.SetPositionAndRotation(p.Body.position,p.Body.rotation);
             Physics.SyncTransforms();Motion.Reset();Feedback.ResetFeedback();
             Onboarding?.ResetObservation();Personality?.ResetState();
+            Intelligence?.ResetForLevel(); // Fresh mechanism counters and lesson progress for this attempt.
         }
         private void ResetBody(Rigidbody body,Vector3 position)
         {if(body==null)return;body.position=Root.TransformPoint(position);body.rotation=Root.rotation;if(!body.isKinematic)body.linearVelocity=body.angularVelocity=Vector3.zero;}
