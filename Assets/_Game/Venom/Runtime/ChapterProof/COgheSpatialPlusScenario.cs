@@ -765,6 +765,14 @@ namespace GravityBox.Venom.ChapterProof
     float t1=game.Matter.SimulationTime;yield return until(10,()=>pin.AtEnd||game.Matter.SimulationTime-t1>3,"Half a body on C slides the pin");
     if(pin.AtEnd)break;
     yield return s.CommandAny(q1,new List<Vector3>{W(.32f,-.298f,.05f),W(.32f,-.298f,.02f),W(.29f,-.298f,.03f),W(.35f,-.298f,.03f)});
+    // Every tap on C lands on the half in front of it (x0.7: the quarters met 6 cm short of C): a player walks it past C,
+    // where C shows again in front of it, and taps C from there.
+    if(!s.CommandOk)
+    {
+     yield return s.CommandAny(q1,new List<Vector3>{W(.32f,-.298f,.11f),W(.28f,-.298f,.11f),W(.36f,-.298f,.11f),W(.32f,-.298f,.15f)});
+     t1=game.Matter.SimulationTime;yield return until(15,()=>pin.AtEnd||game.Motion.Get(q1)==null||game.Matter.SimulationTime-t1>8,"The merged half walks past C");
+     if(!pin.AtEnd)yield return s.CommandAny(q1,new List<Vector3>{W(.32f,-.298f,.02f),W(.32f,-.298f,-.01f),W(.29f,-.298f,.02f),W(.35f,-.298f,.02f)});
+    }
     t1=game.Matter.SimulationTime;yield return until(10,()=>pin.AtEnd||game.Motion.Get(q1)==null||game.Matter.SimulationTime-t1>6,"The merged half crosses C");
    }
    yield return until(10,()=>pin.AtEnd,"Half a body on C slides the pin");

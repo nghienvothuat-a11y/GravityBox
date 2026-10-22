@@ -339,7 +339,6 @@ namespace GravityBox.Venom
                 done=new bool[capacity];heap=new int[capacity];heapPositions=new int[capacity];
             }
             for(int i=0;i<n;i++){costs[i]=float.PositiveInfinity;parents[i]=-1;done[i]=false;heapPositions[i]=-1;}
-            var chamber=game.Owner.Rotation.GetComponent<Rigidbody>();
             heapCount=0;costs[a]=0;Queue(a);
             while(heapCount>0)
             {
@@ -353,13 +352,6 @@ namespace GravityBox.Venom
                     if(nodeSurfaces[next].NoSlickClimb&&nodeRise[next]>.06f&&!nodeSurfaces[next].Grip(worldNodes[next])&&
                        Vector3.Dot(worldNodes[next]-worldNodes[current],game.Root.up)>-.005f)continue;
                     float tractionCost=grippyGoal&&!nodeSurfaces[next].Grip(worldNodes[next])?20f:1f;
-                    // A step up onto a carriage or a block that only lies on the way is gone round where the room allows:
-                    // climbing onto a moving part is the step a body most often fails (21/10/2026: after A, levels 41 and 53
-                    // planned over the balcony carriage, which COghe could not climb; it got past only by sliding round it at
-                    // x1). Level with the floor (a lowered bridge), sent onto it, or starting on it, the route is unchanged.
-                    var shape=nodeSurfaces[next].Shape;var frame=shape!=null?shape.attachedRigidbody:null;
-                    if(frame!=null&&frame!=chamber&&nodeSurfaces[next]!=nodeSurfaces[b]&&nodeSurfaces[next]!=nodeSurfaces[a]&&
-                       Vector3.Dot(worldNodes[next]-worldNodes[current],game.Root.up)>StepHeight)tractionCost*=MovingSurfaceCost;
                     float d=costs[current]+Vector3.Distance(nodes[current],nodes[next])*tractionCost;
                     if(d<costs[next]){costs[next]=d;parents[next]=current;Queue(next);}
                 }
@@ -440,7 +432,7 @@ namespace GravityBox.Venom
         // landing), are taken at the base pace, so the moments that decide a level play out as every level was solved. A
         // 30-speed sweep (21/10/2026) showed each other pace tipping a different marginal spot: the balcony tube of 41 and 53
         // (it slid round the carriage at x1, stuck against it at x0.98 and x1.02), merges, a landing beside the exit.
-        private const float CruiseLookahead=.08f,StepHeight=.012f,MovingSurfaceCost=4f;
+        private const float CruiseLookahead=.08f,StepHeight=.012f;
         private float PaceFor(Order o,Vector3 centre)
         {
             if(MoveSpeed==BaseMoveSpeed||o.Path.Count==0)return MoveSpeed;
@@ -516,6 +508,17 @@ namespace GravityBox.Venom
                 }
                 turn[axis]=sign*(patch.Size[axis]*.5f+extent+game.Matter.Profile.ParticleRadius+.008f);
                 turn.z=-depth-game.Matter.Profile.ParticleRadius-.016f;
+                // Going round the side of a carriage or block it is still in front of, the body first slides along the
+                // face past its edge: aimed straight at the turn behind it, it pushed into the corner and stayed there (the
+                // balcony carriage of levels 41 and 53, at every pace but x1, 21/10/2026). Fixed walls and panels, and
+                // crests (over the top), keep the straight turn.
+                var faceBody=patch.Shape!=null?patch.Shape.attachedRigidbody:null;
+                Vector3 along=patch.transform.TransformDirection(axis==0?Vector3.right:Vector3.up);
+                if(faceBody!=null&&faceBody!=game.Owner.Rotation.GetComponent<Rigidbody>()&&localCentre.z>0&&
+                   Mathf.Abs(Vector3.Dot(patch.Normal,game.Root.up))<.3f&&Mathf.Abs(Vector3.Dot(along,game.Root.up))<.3f&&
+                   localCentre[axis]*sign<patch.Size[axis]*.5f+extent+game.Matter.Profile.ParticleRadius&&
+                   Mathf.Abs(goal[1-axis])<=patch.Size[1-axis]*.5f)   // round it, not up onto it
+                {Vector3 slide=turn;slide.z=localCentre.z;slide[1-axis]=localCentre[1-axis];return patch.transform.TransformPoint(slide);}
                 order.Cursor=Mathf.Min(order.Path.Count-1,Mathf.Max(order.Cursor,crest+1));
                 return patch.transform.TransformPoint(turn);
             }
